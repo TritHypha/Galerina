@@ -274,7 +274,7 @@ describe("CLI compatibility — galerina deploy", () => {
 describe("CLI compatibility — verify signature-required policy", () => {
   // AUDIT: an unsigned (placeholder) manifest is fine for dev but must fail-closed under
   // GALERINA_PROFILE=production. Default profile is dev, so existing behaviour is unchanged.
-  it("a placeholder (unsigned) manifest passes verify in dev but is REJECTED under GALERINA_PROFILE=production", () => {
+  it("a placeholder (unsigned) manifest passes verify in dev but is REJECTED under GALERINA_PROFILE=production", async () => {
     mkdirSync(join(ROOT, "build"), { recursive: true });
     const built = galerina("build", BENCH);
     assert.equal(built.code, 0, `build failed: ${built.stdout}`);
@@ -285,6 +285,15 @@ describe("CLI compatibility — verify signature-required policy", () => {
     // is configured in this environment (a configured key would produce a real signature instead).
     const manifest = JSON.parse(readFileSync(jsonPath, "utf8"));
     writeFileSync(jsonPath, JSON.stringify({ ...manifest, governanceSignature: "placeholder" }, null, 2));
+    // `verify` authenticates the authoritative CBOR, not the JSON mirror. Mutate both representations
+    // so this actually exercises an unsigned CBOR subject even when the build was signed here.
+    const cborPath = join(ROOT, "build", "benchmark.lmanifest");
+    const { decodeCBOR, serializeManifestCBOR } = await import("../dist/manifest-generator.js");
+    const cborManifest = decodeCBOR(new Uint8Array(readFileSync(cborPath))).value;
+    writeFileSync(
+      cborPath,
+      Buffer.from(serializeManifestCBOR({ ...cborManifest, governanceSignature: "placeholder" })),
+    );
 
     // DEV (default profile): a placeholder is informational → verify still succeeds.
     const dev = galerina("verify", BENCH);

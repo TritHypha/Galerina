@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, NodeFlags } from "./parser.js";
-import { callStdlib, callStdlibPureSync, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider } from "./stdlib.js";
+import { callStdlib, callStdlibPureSync, galerinaValuesEqual, moneyBinary, constantTimeStringEquals, type CryptoProvider, type CryptoProviderV2 } from "./stdlib.js";
 import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
@@ -714,6 +714,10 @@ export interface InterpreterRuntimeOptions {
   readonly outputSink?: (line: string) => void;
   /** Injected Password/BCrypt/Argon2 provider. Absent providers refuse closed. */
   readonly cryptoProvider?: CryptoProvider;
+  /** Explicit byte-capable provider; not accepted as the frozen v1 text provider. */
+  readonly cryptoProviderV2?: CryptoProviderV2;
+  /** Host-owned Password.verify plaintext ceiling; defaults to the provisional 1024-byte policy. */
+  readonly maxPasswordVerifyBytes?: number;
 }
 
 /** Default global compute-step budget — high enough that no legitimate flow reaches it (a flow doing
@@ -1618,6 +1622,12 @@ class Interpreter {
       ...(this.runtimeOptions.cryptoProvider !== undefined
         ? { cryptoProvider: this.runtimeOptions.cryptoProvider }
         : {}),
+      ...(this.runtimeOptions.cryptoProviderV2 !== undefined
+        ? { cryptoProviderV2: this.runtimeOptions.cryptoProviderV2 }
+        : {}),
+      ...(this.runtimeOptions.maxPasswordVerifyBytes !== undefined
+        ? { maxPasswordVerifyBytes: this.runtimeOptions.maxPasswordVerifyBytes }
+        : {}),
     };
   }
 
@@ -2324,6 +2334,10 @@ class Interpreter {
         const elseBlock = node.children?.[2];
         if (condition === undefined || thenBlock === undefined) return undefined;
         const condVal = await this.evalExpr(condition);
+        // A failed condition evaluation is not the same as `false`. In particular, a missing
+        // request-record field must fail the flow closed instead of selecting the else/fallthrough
+        // path and being mistaken for a valid negative authentication result.
+        if (condVal.__tag === "runtimeError") return condVal;
         // Truthy check: bool true, non-zero int/float, some, ok, non-void/non-none value
         const isTruthy =
           (condVal.__tag === "bool" && condVal.value) ||
@@ -2884,6 +2898,10 @@ class Interpreter {
     }
 
     const left = await this.evalExpr(leftNode);
+    // Equality is a decision boundary for admitted String comparisons too: a soft runtime error
+    // (for example, a missing JSON record field) must not be collapsed into ordinary inequality.
+    // Preserve left-to-right evaluation and do not run a right-side effect after this refusal.
+    if ((op === "==" || op === "!=") && left.__tag === "runtimeError") return left;
     const right = await this.evalExpr(rightNode);
 
     // 0038: a CHECKED-OP trap operand (IntegerOverflow / DivisionByZero) PROPAGATES through the
@@ -2892,6 +2910,8 @@ class Interpreter {
     // before failing). Soft runtimeErrors keep the fallthrough so graceful handling is unaffected.
     if (isCheckedTrap(left)) return left;
     if (isCheckedTrap(right)) return right;
+
+    if ((op === "==" || op === "!=") && right.__tag === "runtimeError") return right;
 
     // Enum variants are represented as unresolved names until the enum runtime
     // type is lifted. Compare their identity before numeric dispatch because an
@@ -3073,7 +3093,7 @@ class Interpreter {
 
     // Route governed calls through the capability host when present
     if (this.capabilityHost !== undefined) {
-      const capEffect = resolveCapabilityEffect(fullName);
+      const capEffect = resolveCapabilityEffect(fullName, evaluatedReceiver);
       if (capEffect !== undefined) {
         // R1B: Check contract enforcer deadline before each capability call.
         // DEFENSE-IN-DEPTH (2026-06-18 audit): previously this caught the deadline throw, logged a
@@ -3106,7 +3126,7 @@ class Interpreter {
       }
     }
 
-    if (resolveCapabilityEffect(fullName) === "secret.read" && this.capabilityHost === undefined) {
+    if (resolveCapabilityEffect(fullName, evaluatedReceiver) === "secret.read" && this.capabilityHost === undefined) {
       return {
         __tag: "err",
         error: { __tag: "string", value: "CapabilityError: environment reads require a capability host" },
@@ -4044,7 +4064,7 @@ function makeApiErrorValue(status: number, message: string): GalerinaValue {
  * Maps a fully-qualified call name to a capability effect string, or
  * returns undefined when the call is not a governed side-effectful operation.
  */
-function resolveCapabilityEffect(fullName: string): string | undefined {
+function resolveCapabilityEffect(fullName: string, evaluatedReceiver?: GalerinaValue): string | undefined {
   if (fullName.startsWith("http.") || fullName.startsWith("https.")) {
     return "network.outbound";
   }
@@ -4063,12 +4083,22 @@ function resolveCapabilityEffect(fullName: string): string | undefined {
   if (/^(AI|Model|Claude|GPT|LLM)\./i.test(fullName)) {
     return "ai.inference";
   }
-  if (
-    fullName.startsWith("Env.")
-    || fullName.startsWith("env.")
-    || fullName.startsWith("vault.")
-    || fullName.startsWith("Secrets.")
-  ) {
+  if (fullName.startsWith("Env.") || fullName.startsWith("env.")) {
+    // `Env`/`env` are secret namespaces only when the receiver is not a lexical
+    // binding. In particular, the self-hosted Fungi runtime uses `env` as an
+    // Array<Binding>; classifying `env.count/get/append` by spelling alone
+    // blocks ordinary collection operations and silently collapses lookups to
+    // their fallback value. A real unbound namespace remains capability-gated.
+    if (
+      evaluatedReceiver !== undefined &&
+      evaluatedReceiver.__tag !== "unresolved" &&
+      evaluatedReceiver.__tag !== "runtimeError"
+    ) {
+      return undefined;
+    }
+    return "secret.read";
+  }
+  if (fullName.startsWith("vault.") || fullName.startsWith("Secrets.")) {
     return "secret.read";
   }
   return undefined;

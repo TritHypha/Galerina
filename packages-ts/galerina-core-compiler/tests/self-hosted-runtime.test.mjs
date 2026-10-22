@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { parseProgram, executeFlow } from "../dist/index.js";
+import { parseProgram, executeFlow, createCapabilityHost, createContractEnforcer } from "../dist/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const RUNTIME_FUNGI = join(__dir, "..", "src", "self-hosted", "runtime.fungi");
@@ -226,6 +226,80 @@ describe("runtime.fungi — GIR evaluator (S7)", () => {
   it("reads params from the initial environment: return a (a=7) → 7", async () => {
     const env = [vRec({ name: vStr("a"), val: vRec({ ty: vStr("Int"), i: vInt(7), b: vBool(false) }) })];
     assert.equal((await runGIR([gStmt({ op: "ret", expr: [gExpr("load", "", "a")] })], env)).i, 7);
+  });
+
+  it("uses Array methods on a local binding named env without treating them as secret reads", async () => {
+    const args = new Map([
+      ["env", vList([])],
+      ["name", vStr("a")],
+      ["v", rtInt(7)],
+    ]);
+    const bound = await callRt("envBind", args);
+    assert.equal(bound.__tag, "list", "env.append must operate on the local Array binding");
+    assert.equal(bound.items.length, 1);
+
+    const lookupArgs = new Map([
+      ["env", bound],
+      ["name", vStr("a")],
+    ]);
+    const found = await callRt("envLookup", lookupArgs);
+    assert.equal(field(found, "ty"), "Int");
+    assert.equal(field(found, "i"), 7, "env.count/env.get must read the bound collection");
+
+    const host = createCapabilityHost({
+      declaredEffects: new Set(),
+      enforcer: createContractEnforcer(undefined, "envBind", {}),
+    });
+    const hostedBind = await executeFlow(
+      "envBind", args, program.ast, program.flows, undefined, host, { pureFastPath: false },
+    );
+    assert.equal(hostedBind.value.__tag, "list", "ordinary env.append must not be sent to a capability host");
+    const hostedLookup = await executeFlow(
+      "envLookup", lookupArgs, program.ast, program.flows, undefined, host, { pureFastPath: false },
+    );
+    assert.equal(field(hostedLookup.value, "i"), 7);
+    assert.equal(host.observedEffects.size, 0, "local collection access is not a secret.read capability");
+  });
+
+  it("keeps real Env/env secret access refused without a capability host", async () => {
+    for (const [caseName, access] of [
+      ["uppercase namespace", 'Env.get("RUNTIME_TEST_SECRET")'],
+      ["lowercase getter", 'env.get("RUNTIME_TEST_SECRET")'],
+      ["lowercase secret accessor", 'env.secret("RUNTIME_TEST_SECRET")'],
+    ]) {
+      const secretProgram = parseProgram(`
+secure flow readSecret(name: String) -> Result<String, Error>
+contract { effects { secret.read } }
+{ return ${access} }
+`, `runtime-env-capability-${caseName}.fungi`);
+      const result = await executeFlow(
+        "readSecret",
+        new Map(),
+        secretProgram.ast,
+        secretProgram.flows,
+        undefined,
+        undefined,
+        { pureFastPath: false },
+      );
+      assert.equal(result.value.__tag, "err", `${caseName} must refuse without a capability host`);
+      assert.match(result.value.error.value, /CapabilityError: environment reads require a capability host/);
+
+      const host = createCapabilityHost({
+        declaredEffects: new Set(),
+        enforcer: createContractEnforcer(undefined, "readSecret", {}),
+      });
+      const hostResult = await executeFlow(
+        "readSecret",
+        new Map(),
+        secretProgram.ast,
+        secretProgram.flows,
+        undefined,
+        host,
+        { pureFastPath: false },
+      );
+      assert.equal(hostResult.value.__tag, "err", `${caseName} must route through the denying host`);
+      assert.match(hostResult.value.error.value, /Effect 'secret\.read' not declared/);
+    }
   });
 
   // Regression: Bool eq/ne must compare the boolean payload (.b), not .i (which is

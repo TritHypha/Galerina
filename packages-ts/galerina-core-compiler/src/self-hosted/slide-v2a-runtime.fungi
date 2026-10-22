@@ -67,16 +67,20 @@ contract { intent { "Return a new bounded store with one explicit SSA slot initi
   return { values: values defined: defined }
 }
 
-// Read one initialized value or return a terminal-only sentinel.
+// Read one initialized value without reserving any Int value as absence.
 pure flow slideV2AStoreRead(
   store: SLIDEV2AValueStore,
   resultId: Int,
-) -> Int
-contract { intent { "Read one initialized value or return a terminal-only sentinel." } }
+) -> Option<Int>
+contract { intent { "Read one initialized value, or None when the slot is absent." } }
 {
-  if resultId < 0 or resultId >= 48 { return -2147483649 }
-  if slideV2AIntAt(store.defined, resultId) != 1 { return -2147483649 }
-  return slideV2AIntAt(store.values, resultId)
+  if resultId < 0 or resultId >= 48 { return None }
+  if slideV2AIntAt(store.defined, resultId) != 1 { return None }
+  match store.values.get(resultId) {
+    Some(value) => { return Some(value) }
+    None => { return None }
+    _ => { return None }
+  }
 }
 
 // Compute checked Int32 addition without wrapping.
@@ -134,8 +138,20 @@ contract { intent { "Instruction-drive the admitted pure V2-A callee." } }
         store = slideV2AStoreValue(store, instruction.resultId, instruction.immediate)
       }
       3 => {
-        let left = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 0))
-        let right = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 1))
+        let leftOpt = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 0))
+        let rightOpt = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 1))
+        mut left: Int = 0
+        mut right: Int = 0
+        match leftOpt {
+          Some(value) => { left = value }
+          None => { return { ok: false value: 0 failureId: 4 steps: steps + 1 } }
+          _ => { return { ok: false value: 0 failureId: 4 steps: steps + 1 } }
+        }
+        match rightOpt {
+          Some(value) => { right = value }
+          None => { return { ok: false value: 0 failureId: 4 steps: steps + 1 } }
+          _ => { return { ok: false value: 0 failureId: 4 steps: steps + 1 } }
+        }
         let added = slideV2ACheckedAdd(left, right)
         if added.ok == false {
           return { ok: false value: 0 failureId: added.failureId steps: steps + 1 }
@@ -155,13 +171,16 @@ contract { intent { "Instruction-drive the admitted pure V2-A callee." } }
   if graphBlock.terminator.terminatorId != 4 {
     return { ok: false value: 0 failureId: 4 steps: steps }
   }
-  let returned = slideV2AStoreRead(
+  let returnedOpt = slideV2AStoreRead(
     store, slideV2AIntAt(graphBlock.terminator.operands, 0),
   )
-  if returned == -2147483649 {
-    return { ok: false value: 0 failureId: 4 steps: steps }
+  match returnedOpt {
+    Some(returned) => {
+      return { ok: true value: returned failureId: 0 steps: steps + 1 }
+    }
+    None => { return { ok: false value: 0 failureId: 4 steps: steps } }
+    _ => { return { ok: false value: 0 failureId: 4 steps: steps } }
   }
-  return { ok: true value: returned failureId: 0 steps: steps + 1 }
 }
 
 // Transfer exact typed edge arguments into target block-parameter slots.
@@ -179,10 +198,13 @@ contract { intent { "Transfer exact typed edge arguments into target block-param
   mut i: Int = 0
   while i < edge.arguments.count() {
     let argumentId = slideV2AIntAt(edge.arguments, i)
-    let argument = slideV2AStoreRead(source, argumentId)
+    let argumentOpt = slideV2AStoreRead(source, argumentId)
     let parameter = slideV2ABlockParameterAt(destination.parameters, i)
-    if argument == -2147483649 {
-      return { ok: false store: source }
+    mut argument: Int = 0
+    match argumentOpt {
+      Some(value) => { argument = value }
+      None => { return { ok: false store: source } }
+      _ => { return { ok: false store: source } }
     }
     bound = slideV2AStoreValue(bound, parameter.resultId, argument)
     i = i + 1
@@ -259,8 +281,36 @@ contract { intent { "Decode, validate, and instruction-drive the V2-A entry func
         store = slideV2AStoreValue(store, instruction.resultId, instruction.immediate)
       }
       4 => {
-        let a = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 0))
-        let b = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 1))
+        let aOpt = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 0))
+        let bOpt = slideV2AStoreRead(store, slideV2AIntAt(instruction.operands, 1))
+        mut a: Int = 0
+        mut b: Int = 0
+        match aOpt {
+          Some(value) => { a = value }
+          None => {
+            return slideV2ARuntimeRefusal(
+              "SLIDE-V2A-RUNTIME-005", "runtime operand is undefined",
+            )
+          }
+          _ => {
+            return slideV2ARuntimeRefusal(
+              "SLIDE-V2A-RUNTIME-005", "runtime operand is undefined",
+            )
+          }
+        }
+        match bOpt {
+          Some(value) => { b = value }
+          None => {
+            return slideV2ARuntimeRefusal(
+              "SLIDE-V2A-RUNTIME-005", "runtime operand is undefined",
+            )
+          }
+          _ => {
+            return slideV2ARuntimeRefusal(
+              "SLIDE-V2A-RUNTIME-005", "runtime operand is undefined",
+            )
+          }
+        }
         mut compared: Int = 0
         if a >= b { compared = 1 }
         store = slideV2AStoreValue(store, instruction.resultId, compared)
@@ -284,9 +334,23 @@ contract { intent { "Decode, validate, and instruction-drive the V2-A entry func
       "SLIDE-V2A-RUNTIME-006", "entry block did not reach its Boolean terminal",
     )
   }
-  let condition = slideV2AStoreRead(
+  let conditionOpt = slideV2AStoreRead(
     store, slideV2AIntAt(entry.terminator.operands, 0),
   )
+  mut condition: Int = 0
+  match conditionOpt {
+    Some(value) => { condition = value }
+    None => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-006", "entry condition is undefined",
+      )
+    }
+    _ => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-006", "entry condition is undefined",
+      )
+    }
+  }
   mut branchIndex: Int = 1
   if condition == 1 { branchIndex = 0 }
   let branchEdge = slideV2AEdgeAt(entry.terminator.edges, branchIndex)
@@ -306,7 +370,21 @@ contract { intent { "Decode, validate, and instruction-drive the V2-A entry func
       "SLIDE-V2A-RUNTIME-008", "branch call is not admitted",
     )
   }
-  let callArgument = slideV2AStoreRead(store, slideV2AIntAt(call.operands, 0))
+  let callArgumentOpt = slideV2AStoreRead(store, slideV2AIntAt(call.operands, 0))
+  mut callArgument: Int = 0
+  match callArgumentOpt {
+    Some(value) => { callArgument = value }
+    None => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-008", "branch call argument is undefined",
+      )
+    }
+    _ => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-008", "branch call argument is undefined",
+      )
+    }
+  }
   let called = executeSLIDEV2ACallee(
     callee, callArgument, effectiveBudget - steps,
   )
@@ -350,10 +428,37 @@ contract { intent { "Decode, validate, and instruction-drive the V2-A entry func
       "SLIDE-V2A-RUNTIME-011", "join instruction is not checked addition",
     )
   }
-  let added = slideV2ACheckedAdd(
-    slideV2AStoreRead(store, slideV2AIntAt(add.operands, 0)),
-    slideV2AStoreRead(store, slideV2AIntAt(add.operands, 1)),
-  )
+  let leftOpt = slideV2AStoreRead(store, slideV2AIntAt(add.operands, 0))
+  let rightOpt = slideV2AStoreRead(store, slideV2AIntAt(add.operands, 1))
+  mut left: Int = 0
+  mut right: Int = 0
+  match leftOpt {
+    Some(value) => { left = value }
+    None => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-011", "runtime addition operand is undefined",
+      )
+    }
+    _ => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-011", "runtime addition operand is undefined",
+      )
+    }
+  }
+  match rightOpt {
+    Some(value) => { right = value }
+    None => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-011", "runtime addition operand is undefined",
+      )
+    }
+    _ => {
+      return slideV2ARuntimeRefusal(
+        "SLIDE-V2A-RUNTIME-011", "runtime addition operand is undefined",
+      )
+    }
+  }
+  let added = slideV2ACheckedAdd(left, right)
   steps = steps + added.steps
   if steps >= effectiveBudget {
     return slideV2ARuntimeRefusal(
@@ -403,7 +508,21 @@ contract { intent { "Decode, validate, and instruction-drive the V2-A entry func
   let first = slideV2AInstructionAt(exitBlock.instructions, 0)
   match first.opcodeId {
     6 => {
-      let value = slideV2AStoreRead(store, slideV2AIntAt(first.operands, 0))
+      let valueOpt = slideV2AStoreRead(store, slideV2AIntAt(first.operands, 0))
+      mut value: Int = 0
+      match valueOpt {
+        Some(readValue) => { value = readValue }
+        None => {
+          return slideV2ARuntimeRefusal(
+            "SLIDE-V2A-RUNTIME-016", "success result is undefined",
+          )
+        }
+        _ => {
+          return slideV2ARuntimeRefusal(
+            "SLIDE-V2A-RUNTIME-016", "success result is undefined",
+          )
+        }
+      }
       if steps + 2 > effectiveBudget {
         return slideV2ARuntimeRefusal(
           "SLIDE-V2A-RUNTIME-015", "runtime step budget exhausted at success",

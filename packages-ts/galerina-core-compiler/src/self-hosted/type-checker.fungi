@@ -2043,4 +2043,3 @@ contract {
 // compiler (registry emits=0, no def). The former `checkTrapDecl` (never wired into any check path)
 // emitted 027 — a FALSE DIFFERENTIAL — and was removed.
 
-

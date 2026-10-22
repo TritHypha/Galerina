@@ -8,6 +8,167 @@ Those receipts are not a clean-HEAD compiler ABI or production admission.
 Keep the remaining schema, nested-secret, copy-bound, and independent
 admission questions open; no `.fungi` conversion is authorized here.
 
+### Recursive return refusal recheck — 2026-10-09 local candidate
+
+The current dirty candidate replaces silent zeroing of non-null record pointers
+omitted by the closed recursive/depth-bounded flatten plan with refusal. Exact
+zero is the only omitted-pointer sentinel; nonzero low pointers refuse at flat
+and packed root returns, terminal/nested flatten fields, and the host-side
+schema-directed copier. The bootstrap ABI reserves the low region and allocates
+records above `WAT_HEAP_BASE`. In the nested packed path, before recursive
+preflight or stores, the emitter checks the complete output extent against
+current WASM memory with non-wrapping arithmetic and reserves that extent in the
+guest heap cursor. Later source-load traps therefore leave partial flattened
+output inside the cleanup-owned range. The separate flat exact-null path fills
+only zero bytes and advances the cursor after the fill; WebAssembly `memory.fill`
+checks bounds before writing, so an out-of-bounds trap neither partially fills
+nor advances the cursor. The configured 2,048-page maximum also keeps a valid
+flat cursor-plus-result below i32 wrap. No security/cleanup defect was identified
+in that flat path; sharing the nested path's explicit preflight would be an
+invariant/consistency improvement, not a demonstrated security fix. See the
+[WebAssembly bulk-memory `memory.fill` rule](https://github.com/WebAssembly/spec/blob/main/proposals/bulk-memory-operations/Overview.md#memoryfill-instruction).
+Separate unresolved boundary candidate: `emitFlattenChecks` rejects nested
+pointers below `WAT_HEAP_BASE` but does not establish allocation provenance for
+an in-range pointer. A controlled test-only `allocRecord` fixture placed a
+sentinel at an in-range address without staging a record there; recursive
+flattening returned the sentinel in `[2, 0x13579bdf, 0]`, while it remained
+outside the guest heap wipe extent. The `allocRecord` API is documented as
+test/differential-only and excludes flows allocating over its staging region,
+so this is not evidence of a production or hostile-host security break. The new
+refusal regression currently fails because that exact fixture is not refused.
+At the initial checkpoint, the SuperGrok review request was OPEN (no answer
+observed); a distinct Grok.com technical follow-up returned as response
+`8f7f2a92-618f-4e3d-ace5-d2f5ad79a39b` in conversation
+`f86ab403-89ee-455c-9782-93e4aee90e12` (the UI exposed no report hash or
+timestamp). Its shared-ledger recommendation and claim that the test is a valid
+bootstrap counterexample were sent to the existing Astra reviewer
+`01a11642-55bd-7c23-9ccc-587f10444bf9`; the later adjudication and unresolved
+ABI-owner decisions are recorded below. These dated entries preserve distinct
+review identities rather than describing the current queue as a single state.
+
+The earlier WSL compiler build and Q1 secret-return run passed **36/36 before
+this regression was added**; the Wasm runtime package build and full local suite
+receipt passed **73/73** on that prior candidate. On 2026-10-09, WSL with inherited
+`GIT_DIR` and `GIT_WORK_TREE` removed: the focused regression was **0/1**, and
+the full `q1-secret-return-value.test.mjs` file was **36/37**, with only this
+expected-refusal assertion failing. No GitHub CI ran. Earlier vectors covered exact-null
+omission, malformed low pointers, a secret-bearing grandchild, a ten-record
+acyclic chain beyond the plan depth, destination exhaustion with nonzero raw
+and admitted-call sentinels, exact-end flat and packed returns, and cleanup after
+a late source-load trap.
+
+Fresh exact-file WSL rerun later on 2026-10-09: test
+`q1-secret-return-value.test.mjs` SHA-256
+`AD7887C45D96EB5CD38FEF596D83B610207A8466A5490CC27A2615393228844F`, with
+`wat-emitter.ts` SHA-256
+`A8CEA968C83356843F73AC96DDDEBC26A91CDD61310DA1E7DFCA3BE30B28D375`, reports
+**36/38**. Two expected-refusal assertions fail: an unstaged nested in-range
+pointer is returned by both raw and admitted paths as `[2,324508639,0]`, and an
+in-range root outside host staging is returned as `[2,1,0]`. The earlier 36/37
+receipt is historical for its then-current test bytes; it is not the result for
+this pinned file. No GitHub CI ran.
+
+Fresh follow-up after adding explicit host-staging extent assertions:
+`q1-secret-return-value.test.mjs` SHA-256
+`815E311779AE668683061509AD0E8453FBDD0D74BEB0D86D54E7EBB4D51BEB21` still
+reports **36/38** in WSL with `GIT_DIR` and `GIT_WORK_TREE` unset. The malformed
+low-root tests pass; only the two in-range allocation-provenance refusal
+assertions still fail with the returns recorded above. The revised fixture
+  asserts that its 8192 child and 4096 root each lie beyond all staged record
+  extents and within linear memory. This strengthens fixture separation; it does
+  not establish a shared allocator, production boundary, or Fungi semantic rule.
+  Astra's independent exact-source adjudication (thread
+  `01a11642-55bd-7c23-9ccc-587f10444bf9`, turn
+  `01a11fde-8412-7023-8e73-7ec481083f6d`, message
+  `msg_0617df87b65142c5016ac8abf5f3e087d2b01dc7c4bad36048`) verified the root
+  fixture's complete staging sequence: fillers `[1024,1088)`, staged child
+  `[1088,1096)`, then direct root `[4096,4104)` with no later staging; its
+  post-call heap-end/zero and preserved-record checks bound guest ownership for
+  this case. Astra also confirmed the nested foreign extent `[8192,8200)` is
+  outside host staging. Evidence correction: the raw nested-pointer arm does
+  not assert post-call guest heap end or zeroing; only the admitted nested arm
+  and separate root arm assert cleanup. The raw expression evaluates the
+  export before its finalizer, so an export trap would bypass finalization.
+  Source comparison: `invokeAdmittedExport` catches an export trap and calls
+  `wipeOwnedSecrets`; that admitted cleanup behavior must not be attributed to
+  the raw call. This is a difference between the two test/helper boundaries,
+  not proof that raw execution is an authorized secret path.
+  Fresh WSL rerun on the same `815E...BEB21` test bytes remains 36/38. SuperGrok
+  message `codex-supergrok-galerina-wat-nested-pointer-provenance-20261009-04`
+  asks only for a read-only challenge to this cleanup-assertion distinction;
+  it is OPEN and no pickup/reply is inferred. No TODO/RD closure or Fungi
+  semantic decision follows from this review.
+  Focused WSL confirmation (2026-10-09), with `GIT_DIR` and `GIT_WORK_TREE`
+  unset, selected these two refusal cases from the same pinned test file:
+  `node --test --test-name-pattern="unstaged nested pointer|root pointer outside host staging" tests/q1-secret-return-value.test.mjs`.
+  Both fail as expected: raw and signed/admitted nested-pointer paths return
+  `[2,324508639,0]`, and the unstaged-root path returns `[2,1,0]`. This narrows
+  the current 36/38 result to the two provenance expectations; it remains
+  bootstrap evidence and does not adopt a Fungi ABI rule or close an RD.
+
+The compiler package-wide `npm test` did not complete: partial output showed
+failures in the classical-CLI revocation positive control and production
+signature-required CLI policy test, then three self-hosted integration tests
+remained at full CPU for over ten minutes without output. The run was stopped;
+there is no final suite summary. These failures are not classified as caused
+by this patch or cleared by the focused tests.
+
+At this checkpoint the patch was uncommitted and had not yet received
+independent review at this exact patch. Astra's later source-pinned review is
+recorded above: it confirms the bounded bootstrap provenance findings but does
+not approve remediation or an ABI rule. This evidence establishes only the
+tested compiler/bootstrap Wasm behavior. It does not define the final Fungi
+recursive-record ABI, prove arbitrary alias/cycle semantics, establish
+native/Fungi runtime/FFI/host security, or close RD-1296 or RD-1414. Retain those
+gates pending the owner-approved ABI/admission evidence.
+
+Latest exact-file recheck (2026-10-09):
+`q1-secret-return-value.test.mjs` SHA-256
+`1DC2D88205646835D7A824A1594CA2944DA7054F651EA2EABAD07FB0F1618E2B`,
+`wat-emitter.ts` SHA-256
+`A8CEA968C83356843F73AC96DDDEBC26A91CDD61310DA1E7DFCA3BE30B28D375`, and
+`wasm-runtime.ts` SHA-256
+`B681D5BD0E7CDFF69801EDFD7C016251AFBF8CFD1D4153CC07EC711213C95295` at HEAD
+`9a26c71e60e491766ef351d0efe0405b0739c1b6`. WSL
+`env -u GIT_DIR -u GIT_WORK_TREE node --test tests/q1-secret-return-value.test.mjs`
+reports **36/38**; the only failures are the unstaged nested-pointer refusal
+(`[2,324508639,0]` returned in both raw and admitted paths) and direct in-range
+root refusal (`[2,1,0]`). The 4096 root is written directly into linear memory
+after staging fillers `[1024,1088)` and child `[1088,1096)`; it is not passed
+through `allocRecord`. Astra's source correction already recorded above is
+verified against these current fixture lines, but its earlier `815E...BEB21`
+test pin is historical; the later pin check and identity are recorded in
+`packages-ts/galerina-core/TODO.md`. This recheck does not close either refusal,
+select an ABI, or establish a general `.fungi` rule. No GitHub CI ran.
+
+Fresh follow-up (2026-10-09), superseding the preceding test/runtime pins:
+rebuilt `galerina-core-compiler` and `galerina-core-runtime-wasm` from this
+worktree in WSL with `GIT_DIR` and `GIT_WORK_TREE` unset, then ran
+`node --test tests/q1-secret-return-value.test.mjs`: **37/39**. The exact
+current test SHA-256 is
+`C4434830D1C922B07A40CC90AF39545515ED4F2B038021CF3C138A5018C7E57B`,
+`wat-emitter.ts` is
+`A8CEA968C83356843F73AC96DDDEBC26A91CDD61310DA1E7DFCA3BE30B28D375`, and
+`wasm-runtime.ts` is
+`125C7B087D620BB5C2DE4EECB48278EA5B02EC4C18A83EFF5DA9FD499DEF8411`.
+The only failures remain the expected bounded bootstrap provenance refusals:
+the raw and admitted nested-pointer paths return `[2,324508639,0]`, and the
+admitted in-range unregistered-root path returns `[2,1,0]`. The revised
+empty-watermark oracle passes; this does not resolve the allocation-identity
+gap or adopt a Fungi pointer rule. No GitHub CI ran.
+
+Post-adjudication wording-only update (2026-10-09): the assertion now calls
+`heapEnd === HEAP_BASE` an “empty reported extent,” not a zero watermark. The
+predicate is unchanged. WSL reran this exact test file with `GIT_DIR` and
+`GIT_WORK_TREE` unset: **37/39**, with the same two provenance failures. Current
+test SHA-256 is
+`A3F5337F7250C65273888DC98FAF883ED764A1E73515A39414F6B042D5E807D9`.
+Astra's limited PASS verified the preceding `C443...` test plus current emitter
+and runtime pins; it did not rerun the tests or verify this later wording-only
+hash. The full adjudication and limits are recorded in
+`../galerina-core/TODO.md`. No semantic rule, implementation status, or TODO/RD
+disposition changes.
+
 Current sequencing and classification: [pre-.fungi work register](../../docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md),
 W04-W07/W13. Existing bounded results below do not close residual inference,
 schema or lowering semantics, or authorize .fungi changes.
@@ -33,8 +194,10 @@ schema or lowering semantics, or authorize .fungi changes.
       Recursive `Node { child: Node, n: Int }` closed flatten copies
       `[0, 1, 7]` (not lossy `[0, 7]` or 8-hop pad). Q1 **27/27**.
       Independent scoped PASS `2026-09-22-closed-recursive-flatten-hold.md`.
-      Residual: deeper than one recursive expansion still drops grandchild
-      secrets. Not clean-HEAD admission.
+      Residual: the current local candidate refuses a non-null grandchild
+      beyond the closed flatten depth and tests cleanup; arbitrary-depth
+      recursive value support remains unimplemented. The candidate is not
+      clean-HEAD admission and is still awaiting exact-patch independent review.
 - [x] `executeWASMFlow` work metering: loop-fuel ticks + worker
       instantiate/call with terminate-on-deadline (`src/wat-assembler.ts`,
       `src/wasm-flow-worker.mjs`). Tests
@@ -107,12 +270,12 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     `FUNGI-TYPE-001`/`004`/`008`. Bag digest stays multiplicity-sensitive.
     Effect/governance codes and WASM byte-parity remain outside.
 [x] C19-B governed JsonValue (`RD-1289`) in `@galerina/data-json`
-    `src/json-value.ts`. Schema `fungi.json.value.v1`. `Json.parse` never
+    package source `json-value.ts`. Schema `fungi.json.value.v1`. `Json.parse` never
     returns `any`. Compiler `json.decode`/`Json.parse` consume it.
     Float/Decimal/protected encode refuse. Streaming json_lines remains
     the archive contract.
 [x] C19-C injected CryptoProvider (`RD-1290`) in
-    `@galerina/core-security` `src/crypto-provider.ts`. Schema
+    `@galerina/core-security` package source `crypto-provider.ts`. Schema
     `fungi.security.crypto-provider.v1`. Compiler stdlib does not load
     native KDF bindings. Absent/throwing providers refuse closed.
 [x] C20 compile-time PatternCapability (`RD-1292`) in
@@ -371,6 +534,25 @@ Items marked `[x]` describe bounded slices, subject to explicit residuals.
     **4/4**. Residual: node adapter lazy-loads KDF only when invoked.
 ```
 
+## RD-0855 admission-time replanning (proposed 2026-10-06, owner decision pending)
+
+No new lowering for alternative plans until these rows pass. A failed attempt keeps
+its typed refusal; an alternative plan reuses the sealed checked input and never
+re-enters TypeScript, AST or WAT (no rescue). Owner decided 2026-10-06 (Phillip, 16:52 BST correction; supersedes the 15:21 "K3 or binary" wording), three-tier fallback order: (1) run at the requested trit-width profile (1/8/16/32/64/256 etc.); (2) only if that width cannot run, fall back to standard Galerina Trit (K3) logic; (3) only if Trit cannot be processed at all, fall back to binary implementing the same task semantics, with K3 still deciding permission (no different two-valued algorithm, no semantic degradation). Each step down is a separate, independently admitted attempt (fresh SLIDE admission, fresh VOK decision/lease, linked receipt); DENY, revocation, unknown outcome and partial effects never become a retry.
+Task-policy issuer, coordinator package and retry budget are open owner decisions; unresolved = HOLD.
+Src: RD-0855 (private; ID+line only) L23-31, L192-200, L335-351, L365-374, L488; codex-rd0855-fallback-astra-20261006-answer-01; galerina2-rd0855-astra-fallback-20261006.
+
+```text
+[HOLD] Preserve one detached checked snapshot across replanning: every alternative plan for a task binds the same immutable checked-module snapshot digest
+    No re-check, re-parse or re-lowering from source per alternative; a changed snapshot is a new task, not an alternative.
+[HOLD] K3/refusal parity for each fallback tier: tier-1 trit-width profiles and the tier-3 binary implementation return the same K3 values and typed refusals as standard K3 (tier 2)
+    UNKNOWN collapses to false only at a declared final permission boundary (only exact ALLOW maps to true; UNKNOWN kept as a diagnostic).
+    Three-tier order owner decided 2026-10-06 (16:52 BST); parity evidence and any lowering stay HOLD.
+[HOLD] Tests: early UNKNOWN collapse then NOT, illegal 4th code, post-snapshot AST/WAT/runtime re-entry
+    Early UNKNOWN->false followed by NOT must refuse (c(NOT_K3 U) = false but NOT_bin(c(U)) = true); the unused 4th code of a two-bit carrier
+    refuses; any AST, WAT or runtime re-entry after the snapshot is sealed refuses.
+```
+
 ## Post-v1 (owner-gated)
 
 Owner decision 2026-10-06 10:14 BST (O1, Phillip): DSS.wasm, Stage-B self-hosting and LSP stay parked
@@ -379,6 +561,18 @@ until v1 ships. The Int64 / UInt64 row is a separate open question, not part of 
 ```text
 [ ] DSS.wasm real supervisor (#102–106) — kernel-bypass / in-WASM isolation
 [ ] Stage-B self-hosting — bootstrap fixpoint (parser→GIR→WAT→WASM round-trip)
+    Security admission gate: every self-hosted parser AST must pass `checkValueStates` or a proven semantically equivalent checker before lowering/admission; refuse closed if that checker path is absent or fails. Add parity tests using actual self-hosted ASTs for direct secret egress, aliases, secret-dependent control, ordinary secret comparisons, and match-arm value egress, plus public and sanctioned-declassification controls. Current bootstrap TypeScript-parser tests are not proof of this connection or of loaded Fungi runtime enforcement.
 [ ] LSP (Language Server Protocol) — diagnostics on save
 [ ] Int64 / UInt64 full compiler gate lift (currently owner-gated, one line)
+    Reconciled 2026-10-06 (Grok Bot, docs/tests only, no compiler source change; Codex/owner decide closure):
+    the FUNGI-NUMERIC-001 gate set is already EMPTY - src/numeric-lowering.ts:41
+    `BACKEND_UNLOWERABLE_SCALAR = new Set([])` (its header records Int64 lifted 2026-06-25 and UInt64 lifted
+    in #52, both owner-authorized). `check` and a default `build` admit both widths:
+    tests/cli-numeric-gate.test.mjs 4/4 (its two build cases were failing on main only because the fixtures
+    were named `__numgate_*`, which the galerina.mjs:2430 artifact-name rule refuses; renamed `numgate_*`),
+    tests/u64-unlock.test.mjs, tests/interpreter-int64-dispatch.test.mjs, tests/wat-i64-lift-readiness.test.mjs.
+    Residual by design, not a gate: the i32-only fast tiers bail to the tree-walker
+    (`FAST_TIER_UNLOWERABLE_SCALAR`, numeric-lowering.ts:61), and a default UInt64 build is walker-only
+    (WASM declines). Proposed: close this row as done; if wanted, track "default-build UInt64 WASM lowering"
+    as its own post-v1 row. Until confirmed the row stays [ ] (fail-closed: nothing is lifted further).
 ```

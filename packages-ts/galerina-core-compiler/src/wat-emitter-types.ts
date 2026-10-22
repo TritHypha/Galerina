@@ -67,6 +67,7 @@ export interface FlattenStep {
   readonly srcOffset: number;
   readonly nested?: readonly FlattenStep[];
   readonly zero?: true;
+  readonly refuseNonNull?: true;
 }
 
 export interface WATFunction {

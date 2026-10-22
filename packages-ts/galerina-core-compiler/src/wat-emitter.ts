@@ -253,9 +253,8 @@ let recordLayouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("record
 let recordFieldTypes: Lookup<Map<string, Map<string, string>>> = none("recordFieldTypes:unset");
 const MAX_FLATTEN_DEPTH = 8;
 
-/** One closed expansion of a recursive field: nested records become zeros, scalars copy.
- *  Unsupported: runtime cycle walks and trees deeper than this single expansion;
- *  self-referential `let leaf = T { child: leaf }` may trap. */
+/** One closed expansion of a recursive field. A deeper record pointer is refused
+ *  instead of being silently replaced by zero in the returned value. */
 function flattenClosedRecursivePlan(
   typeName: string,
   layouts: ReadonlyMap<string, WATRecordLayout>,
@@ -265,7 +264,7 @@ function flattenClosedRecursivePlan(
   const steps: FlattenStep[] = [];
   for (const field of layout.fields) {
     if (field.watType === "i32" && layouts.has(field.type)) {
-      steps.push({ srcOffset: field.offset, zero: true });
+      steps.push({ srcOffset: field.offset, refuseNonNull: true });
     } else if (field.size === 8) {
       steps.push({ srcOffset: field.offset });
       steps.push({ srcOffset: field.offset + 4 });
@@ -292,11 +291,11 @@ function flattenPlanFor(
     if (field.watType === "i32" && layouts.has(field.type)) {
       if (next.has(field.type)) {
         const closed = flattenClosedRecursivePlan(field.type, layouts);
-        steps.push(closed.kind === "found" ? { srcOffset: field.offset, nested: closed.value } : { srcOffset: field.offset, zero: true });
+        steps.push(closed.kind === "found" ? { srcOffset: field.offset, nested: closed.value } : { srcOffset: field.offset, refuseNonNull: true });
         continue;
       }
       const nested = flattenPlanFor(field.type, layouts, next, depth + 1);
-      steps.push(nested.kind === "found" ? { srcOffset: field.offset, nested: nested.value } : { srcOffset: field.offset, zero: true });
+      steps.push(nested.kind === "found" ? { srcOffset: field.offset, nested: nested.value } : { srcOffset: field.offset, refuseNonNull: true });
     } else if (field.size === 8) {
       steps.push({ srcOffset: field.offset });
       steps.push({ srcOffset: field.offset + 4 });
@@ -316,13 +315,14 @@ function flattenWordCount(steps: readonly FlattenStep[]): number {
 function flattenNeedsTemps(steps: readonly FlattenStep[]): number {
   let n = 0;
   for (const step of steps) {
+    if (step.refuseNonNull === true) n += 1;
     if (step.nested !== undefined) n += 1 + flattenNeedsTemps(step.nested);
   }
   return n;
 }
 
 function planHasNested(steps: readonly FlattenStep[]): boolean {
-  return steps.some((step) => step.nested !== undefined || step.zero === true);
+  return steps.some((step) => step.nested !== undefined || step.zero === true || step.refuseNonNull === true);
 }
 
 /** True when the flatten plan cannot be a contiguous copy from the original record pointer.
@@ -346,6 +346,10 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
   const temps = nested
     ? Array.from({ length: flattenNeedsTemps(plan) }, (_, i) => `$__fungi_n${i}`)
     : [];
+  const checkTempAt = { value: 0 };
+  const checks = nested
+    ? emitFlattenChecks(plan, "$__fungi_heap_ret", temps, checkTempAt, `${indent}    `)
+    : [];
   const destOff = { value: 0 };
   const tempAt = { value: 0 };
   const stores = nested
@@ -360,7 +364,8 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
     return {
       extraLocals: ["$__fungi_flat"],
       body: [
-        `${indent}(if (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))`,
+        `${indent}(if (i32.and (i32.ne (local.get $__fungi_heap_ret) (i32.const 0)) (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))) (then (unreachable)))`,
+        `${indent}(if (i32.eqz (local.get $__fungi_heap_ret))`,
         `${indent}  (then`,
         ...nullThen,
         `${indent}    (local.set $__fungi_heap_ret (local.get $__fungi_flat))`,
@@ -375,19 +380,63 @@ function flattenFromHeapRet(fn: WATFunction, indent: string): { extraLocals: str
     extraLocals: ["$__fungi_flat", ...temps],
     body: [
       `${indent}(local.set $__fungi_flat (global.get $__fungi_heap))`,
-      `${indent}(if (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))`,
+      `${indent}(if (i32.and (i32.ne (local.get $__fungi_heap_ret) (i32.const 0)) (i32.lt_u (local.get $__fungi_heap_ret) (i32.const ${WAT_HEAP_BASE}))) (then (unreachable)))`,
+      // Check in i64 so an i32 cursor addition cannot wrap into the low region.
+      // Reserve the entire result before any store: if a later source load or
+      // destination access traps, the host cleanup range still owns partial bytes.
+      `${indent}(if (i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat)) (i64.const ${byteLen})) (i64.const 4294967295)) (then (unreachable)))`,
+      `${indent}(if (i64.gt_u (i64.add (i64.extend_i32_u (local.get $__fungi_flat)) (i64.const ${byteLen})) (i64.shl (i64.extend_i32_u (memory.size)) (i64.const 16))) (then (unreachable)))`,
+      `${indent}(global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
+      `${indent}(if (i32.eqz (local.get $__fungi_heap_ret))`,
       `${indent}  (then`,
       `${indent}    (memory.fill (local.get $__fungi_flat) (i32.const 0) (i32.const ${byteLen}))`,
       `${indent}  )`,
       `${indent}  (else`,
+      ...checks,
       ...stores,
       `${indent}  ))`,
-      `${indent}(global.set $__fungi_heap (i32.add (local.get $__fungi_flat) (i32.const ${byteLen})))`,
       `${indent}(global.set $__fungi_ret_is_heap (i32.const 1))`,
       `${indent}(global.set $__fungi_ret_words (i32.const ${words}))`,
       `${indent}(local.get $__fungi_flat)`,
     ],
   };
+}
+
+/** Validate every pointer omitted by a closed flatten plan before writing any
+ *  flattened output. The caller reserves the complete output range in the heap
+ *  cursor first, so a later trap leaves every partial store inside the range
+ *  that the runtime cleanup hook owns. */
+function emitFlattenChecks(
+  steps: readonly FlattenStep[],
+  src: string,
+  temps: readonly string[],
+  tempAt: { value: number },
+  indent: string,
+): string[] {
+  const lines: string[] = [];
+  for (const step of steps) {
+    if (step.refuseNonNull === true) {
+      const temp = temps[tempAt.value];
+      if (temp === undefined) return [...lines, `${indent}(unreachable)`];
+      tempAt.value += 1;
+      lines.push(`${indent}(local.set ${temp} (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))))`);
+      lines.push(`${indent}(if (i32.ne (local.get ${temp}) (i32.const 0)) (then (unreachable)))`);
+      continue;
+    }
+    if (step.nested === undefined) continue;
+
+    const temp = temps[tempAt.value];
+    if (temp === undefined) return [...lines, `${indent}(unreachable)`];
+    tempAt.value += 1;
+    lines.push(`${indent}(local.set ${temp} (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))))`);
+    lines.push(`${indent}(if (i32.and (i32.ne (local.get ${temp}) (i32.const 0)) (i32.lt_u (local.get ${temp}) (i32.const ${WAT_HEAP_BASE}))) (then (unreachable)))`);
+    lines.push(`${indent}(if (i32.ge_u (local.get ${temp}) (i32.const ${WAT_HEAP_BASE}))`);
+    lines.push(`${indent}  (then`);
+    lines.push(...emitFlattenChecks(step.nested, temp, temps, tempAt, `${indent}    `));
+    lines.push(`${indent}  )`);
+    lines.push(`${indent})`);
+  }
+  return lines;
 }
 
 function emitFlattenStores(
@@ -401,7 +450,7 @@ function emitFlattenStores(
 ): string[] {
   const lines: string[] = [];
   for (const step of steps) {
-    if (step.zero === true) {
+    if (step.zero === true || step.refuseNonNull === true) {
       lines.push(`${indent}(i32.store (i32.add (local.get ${dest}) (i32.const ${destOff.value})) (i32.const 0))`);
       destOff.value += 4;
       continue;
@@ -423,7 +472,7 @@ function emitFlattenStores(
       zeroLines.push(`${indent}  (i32.store (i32.add (local.get ${dest}) (i32.const ${start + i * 4})) (i32.const 0))`);
     }
     lines.push(`${indent}(local.set ${temp} (i32.load (i32.add (local.get ${src}) (i32.const ${step.srcOffset}))))`);
-    lines.push(`${indent}(if (i32.lt_u (local.get ${temp}) (i32.const ${WAT_HEAP_BASE}))`);
+    lines.push(`${indent}(if (i32.eqz (local.get ${temp}))`);
     lines.push(`${indent}  (then`);
     lines.push(...zeroLines);
     lines.push(`${indent}  )`);
