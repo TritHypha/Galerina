@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -46,7 +47,7 @@ function flattenGate() {
   assert.notEqual(first, -1, "gate version marker");
   rest = rest.slice(first + marker.length);
   const dir = mkdtempSync(join(tmpdir(), "q33-02-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + rest);
   return { dir, file };
 }

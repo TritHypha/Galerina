@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -65,7 +66,7 @@ function flattenUnit() {
   let portBody = splitOnce(port, CB_IMPORT, "port c-boundary");
   portBody = stripVersion(portBody);
   const dir = mkdtempSync(join(tmpdir(), "q37-diff-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + stripVersion(rcp) + "\n" + portBody + "\n" + rest);
   return { dir, file };
 }

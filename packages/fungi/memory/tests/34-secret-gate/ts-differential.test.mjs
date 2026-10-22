@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -58,7 +59,7 @@ function flattenUnit() {
   assert.equal(rcpParts.length, 2, "release-commit-point import once");
   const rest = stripVersion(rcpParts[0] + rcpParts[1]);
   const dir = mkdtempSync(join(tmpdir(), "q34-diff-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + stripVersion(rcp) + "\n" + rest);
   return { dir, file };
 }

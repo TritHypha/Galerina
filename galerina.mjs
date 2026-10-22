@@ -2976,6 +2976,16 @@ Baseline comparison (governance-cost):
       }
       process.exit(1);
     }
+    // S2 (closure path X-N1): exact arity on the raw WASM --invoke surface, as the governed path
+    // already requires. A JS call into a WebAssembly export pads missing params with 0 and drops
+    // extra ones, so a wrong-arity call used to run and could print a Success value. Refuse instead.
+    if (Number.isSafeInteger(fn.length) !== true || args.length !== fn.length) {
+      console.error(
+        `REFUSED: raw invoke of '${flowName}' expected ${fn.length} positional argument(s) ` +
+        `but received ${args.length}; exact arity is required.`,
+      );
+      process.exit(2);
+    }
     const rawOutput = fn(...args);
     const declaredReturn = (parsed.flows ?? []).find((f) => f.name === flowName)?.returnType ?? "";
     console.log(formatRunOutput(rawOutput, declaredReturn));

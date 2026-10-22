@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
@@ -41,7 +42,7 @@ function flattenProfile() {
   assert.notEqual(first, -1, "profile version marker");
   rest = rest.slice(first + marker.length);
   const dir = mkdtempSync(join(tmpdir(), "q44-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + rest);
   return { dir, file };
 }

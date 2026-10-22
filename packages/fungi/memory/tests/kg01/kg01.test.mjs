@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 import {
   classifyPath,
   TAG_AUTH_VERIFY,
@@ -50,7 +51,7 @@ function flattenGate() {
   assert.notEqual(first, -1, "gate version marker");
   rest = rest.slice(first + marker.length);
   const dir = mkdtempSync(join(tmpdir(), "kg01-flat-"));
-  const file = join(dir, "flat.fungi");
+  const file = uniqueFungiFile(dir);
   writeFileSync(file, boundary + "\n" + rest);
   return { dir, file };
 }
