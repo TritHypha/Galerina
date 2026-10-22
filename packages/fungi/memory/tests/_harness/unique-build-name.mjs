@@ -1,5 +1,5 @@
 // S2 (closure path X-H1): one build name per tmp program, never a shared fixed name.
-// A fixed root such as "flat.fungi" made every suite write build/flat.{wasm,wat,lmanifest};
+// A fixed root such as flat.fungi made every suite write build/flat.{wasm,wat,lmanifest};
 // suites running in the same checkout then read each other's manifest (FUNGI-MANIFEST-TAMPER).
 // The name is the mkdtemp folder's own unique basename. Anything else is refused (fail-closed).
 import { basename, dirname, join } from "node:path";
