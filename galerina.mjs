@@ -213,6 +213,28 @@ const compilerPath = new URL("packages-ts/galerina-core-compiler/dist/index.js",
 // FUNGI-TYPE-034 is the protected/redacted label-integrity gate: a sensitivity
 // label is not a cast, so direct cross-label assignment must fail closed.
 const SECURITY_TYPE_CODES = new Set(["FUNGI-TYPE-033", "FUNGI-TYPE-034", "FUNGI-GOV-3VL-004", "FUNGI-K3-001", "FUNGI-GOV-3VL-003", "FUNGI-K3-002", "FUNGI-K3-003", "FUNGI-K3-004", "FUNGI-K3-005"]);
+// S2 X-DUP (2026-10-22): two top-level flows of one name in ONE program are refused with FUNGI-NAME-002
+// (DuplicateName) by check, build and run alike. Before this, check printed "0 errors" and build only fell over
+// in the backend (wabt "redefinition of function"), so a flattened composition was one backend change away
+// from silently binding every caller to whichever copy won. Zero-trust choice: refuse in the front end, every
+// mode; a flow whose name is not a string is refused too. Rejected: last-wins / first-wins resolution.
+function duplicateFlowDiagnostics(flows) {
+  const seen = new Set();
+  const out = [];
+  for (const f of flows ?? []) {
+    const n = f?.name;
+    if (typeof n !== "string" || n === "") {
+      out.push({ code: "FUNGI-NAME-002", severity: "error", message: "a top-level flow has no readable name � refusing (fail-closed)" });
+      continue;
+    }
+    if (seen.has(n)) {
+      out.push({ code: "FUNGI-NAME-002", severity: "error", message: `flow '${n}' is declared more than once at top level � refusing (fail-closed), never last-wins`, location: f.location });
+      continue;
+    }
+    seen.add(n);
+  }
+  return out;
+}
 
 async function main() {
   const invokedName = basename(process.argv[1] ?? "galerina")
@@ -1528,7 +1550,8 @@ Baseline comparison (governance-cost):
     // which trips two false positives on Brand<String,"tag"> + enum — reads as failing. Only
     // --strict-types folds them into the hard, ✅-suppressing, exit-failing set. The security carve-out
     // above is ALWAYS folded (no --strict-types gate) — a fail-open must fail closed at plain check too.
-    const allDiags = [...errors, ...gov.diagnostics, ...eventDiagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...strictGovernanceEffectDiagnostics, ...securityTypeErrors, ...(strictTypes ? typeErrors : [])];
+    const dupFlowErrors = duplicateFlowDiagnostics(parsed.flows);
+    const allDiags = [...dupFlowErrors, ...errors, ...gov.diagnostics, ...eventDiagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...strictGovernanceEffectDiagnostics, ...securityTypeErrors, ...(strictTypes ? typeErrors : [])];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1589,7 +1612,7 @@ Baseline comparison (governance-cost):
     // Exit non-zero on parse errors OR fail-closed value-state errors (e.g. FUNGI-NUMERIC-001 for a
     // still-gated width) — these are unconditional correctness failures the build/run path also rejects.
     // Tier/boundary findings stay display-only WARNINGS in check mode and do NOT affect the exit code.
-    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0
+    process.exit(dupFlowErrors.length > 0 || errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0
       || strictGovernanceEffectErrors.length > 0
       || governanceErrors.length > 0 || eventErrors.length > 0 || securityTypeErrors.length > 0
       || (strictTypes && typeErrors.length > 0) ? 1 : 0);
@@ -2319,6 +2342,7 @@ Baseline comparison (governance-cost):
   const { resolveSigningProfileWarned: resolveBuildProfile } = await import("./governance/profile.mjs");
   const buildIsProduction = resolveBuildProfile().profile === "production";
   const govErrors = [];
+  for (const d of duplicateFlowDiagnostics(parsed.flows)) govErrors.push(d); // S2 X-DUP: refuse before the backend
   let fx;
   if (buildIsProduction) {
     // PRODUCTION ONLY: turn on the flow-kind tier floor (FUNGI-TIER-001) and escalate the boundary-input
