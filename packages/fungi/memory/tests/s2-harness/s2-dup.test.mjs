@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { basename, dirname, join } from "node:path";
 import { readFileSync, readdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { createHash } from "node:crypto";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, "..", "..", "src");
@@ -19,6 +20,46 @@ const REPO = join(HERE, "..", "..", "..", "..", "..");
 const GALERINA = join(REPO, "galerina.mjs");
 // Registered clashes: name -> why the duplicate is tolerated. Anything else fails.
 const REGISTERED = new Map([["finish", "identical refusal/wipe packer in body-reader, release-commit-point, serve-gate, cleanup-evidence"]]);
+// S2 round 3 (2026-10-22): DECLARED DIVERGENT clashes. kernel.fungi and auth-verify-route.fungi each define
+// mintOperation, applyClock and httpStatusFor with DIFFERENT bodies (different refusal codes and branches), so
+// any program composing both (47b's auth-verify-e2e) must say which copy it binds. Zero-trust choice: a divergent
+// clash is tolerated only when declared here with (a) exactly the units that define it, (b) the sha256 of each
+// reviewed normalised body (any edit goes red until re-reviewed), and (c) the bound copy, or "none" meaning no
+// composing root may call it. Rejected: registering by name only (lets a body divergence through), first- or
+// last-occurrence binding (silent substitution), renaming now (flow renames wait on Phillip's naming decisions).
+// Intent text and comments are ignored by the comparison and recorded in the round notes instead.
+const DIVERGENT = new Map([]);
+const sha = (t) => createHash("sha256").update(t).digest("hex");
+
+export function clashProblems(name, defs, rootSrc, where, tables = { REGISTERED, DIVERGENT }) {
+  if (tables.REGISTERED.has(name)) {
+    return defs.filter((d) => d.body !== defs[0].body).map((d) => "clash '" + name + "' in " + where + ": " + d.file + " differs from " + defs[0].file);
+  }
+  const decl = tables.DIVERGENT.get(name);
+  if (decl === undefined) {
+    return ["unregistered clash '" + name + "' in " + where + ": " + defs.map((d) => d.file).join(", ")];
+  }
+  const out = [];
+  const files = defs.map((d) => d.file).sort().join(",");
+  if (files !== [...decl.units].sort().join(",")) {
+    out.push("divergent clash '" + name + "' in " + where + " spans " + files + " but is declared for " + decl.units.join(","));
+  }
+  for (const d of defs) {
+    if (decl.sha[d.file] !== sha(d.body)) {
+      out.push("divergent clash '" + name + "' in " + where + ": " + d.file + " body is not the reviewed one (pinned sha256 mismatch)");
+    }
+  }
+  if (decl.bound !== "none" && decl.units.includes(decl.bound) !== true) {
+    out.push("divergent clash '" + name + "' binds " + decl.bound + ", which is not one of its units");
+  }
+  if (decl.bound === "none" && typeof rootSrc === "string") {
+    const calls = rootSrc.split("\n").filter((l) => DECL.test(l) !== true && /^\s*\/\//.test(l) !== true);
+    if (calls.some((l) => new RegExp("\\b" + name + "\\s*\\(").test(l))) {
+      out.push("root " + where + " calls '" + name + "', a divergent clash bound to no unit");
+    }
+  }
+  return out;
+}
 
 const DECL = /^[ \t]*(?:[a-z]+[ \t]+)*flow[ \t]+([A-Za-z_]\w*)[ \t]*\(/;
 const TOP = /^(?:\S.*\bflow\s+[A-Za-z_]\w*\s*\(|\/\/\/|@|import\b|type\b|enum\b|record\b|const\b)/;
@@ -56,8 +97,12 @@ function closure(file, seen) {
 }
 
 function clashesOf(root) {
+  return clashesOfSet(closure(root, new Set()));
+}
+
+function clashesOfSet(files) {
   const where = new Map();
-  for (const f of closure(root, new Set())) {
+  for (const f of files) {
     for (const [name, bodies] of flowsOf(readFileSync(f, "utf8"))) {
       for (const b of bodies) {
         const prior = where.get(name) ?? [];
@@ -75,10 +120,7 @@ test("S2-DUP-01 every flow-name clash inside an import closure is registered and
   for (const u of UNITS) {
     for (const [name, defs] of clashesOf(u)) {
       seenClash++;
-      assert.equal(REGISTERED.has(name), true, "unregistered clash '" + name + "' in closure of " + basename(u) + ": " + defs.map((d) => d.file).join(", "));
-      for (const d of defs) {
-        assert.equal(d.body, defs[0].body, "clash '" + name + "' in closure of " + basename(u) + ": " + d.file + " differs from " + defs[0].file);
-      }
+      assert.deepEqual(clashProblems(name, defs, readFileSync(u, "utf8"), "closure of " + basename(u)), []);
     }
   }
   assert.notEqual(seenClash, 0, "probe found no clash at all; the closure walk is broken");
@@ -159,4 +201,40 @@ test("S2-DUP-04 control: distinct names check clean; one renamed into a collisio
     assert.notEqual(r.status, 0);
     assert.match(r.text, /FUNGI-NAME-002[^\n]*'alpha'/);
   });
+});
+// Any two memory units may be composed later (47b composes kernel + auth-verify-route). Every clash such a
+// composition would carry must already be registered same-code or declared divergent, so the second of two
+// branches to merge cannot turn main red on an undeclared clash.
+test("S2-DUP-05 any two memory units composed together carry only registered same-code or declared divergent clashes", () => {
+  let pairs = 0;
+  const problems = new Set();
+  for (let i = 0; i < UNITS.length; i++) {
+    for (let j = i + 1; j < UNITS.length; j++) {
+      const seen = closure(UNITS[i], new Set());
+      closure(UNITS[j], seen);
+      for (const [name, defs] of clashesOfSet(seen)) {
+        for (const p of clashProblems(name, defs, null, basename(UNITS[i]) + " + " + basename(UNITS[j]))) {
+          problems.add(p.replace(/ in [^:]*:/, ":"));
+        }
+      }
+      pairs++;
+    }
+  }
+  assert.notEqual(pairs, 0);
+  assert.deepEqual([...problems], []);
+});
+
+test("S2-DUP-06 clash rule refuses: unregistered, tampered body, extra unit, foreign binding, unbound call", () => {
+  const D = (file, body) => ({ file, body });
+  const decl = { units: ["a.fungi", "b.fungi"], sha: { "a.fungi": sha("x"), "b.fungi": sha("y") }, bound: "none" };
+  const T = (d) => ({ REGISTERED: new Map(), DIVERGENT: new Map([["zeta", d]]) });
+  const ok = [D("a.fungi", "x"), D("b.fungi", "y")];
+  assert.deepEqual(clashProblems("zeta", ok, "flow r() -> Int\n{\n  return 1\n}", "r", T(decl)), []);
+  assert.equal(clashProblems("zeta", ok, null, "r", { REGISTERED: new Map(), DIVERGENT: new Map() }).length, 1);
+  assert.match(clashProblems("zeta", [D("a.fungi", "x"), D("b.fungi", "y2")], null, "r", T(decl)).join(), /pinned sha256 mismatch/);
+  assert.match(clashProblems("zeta", [...ok, D("c.fungi", "x")], null, "r", T(decl)).join(), /spans/);
+  assert.match(clashProblems("zeta", ok, null, "r", T({ ...decl, bound: "c.fungi" })).join(), /not one of its units/);
+  assert.match(clashProblems("zeta", ok, "flow r() -> Int\n{\n  return zeta(1)\n}", "r", T(decl)).join(), /bound to no unit/);
+  assert.deepEqual(clashProblems("zeta", ok, "flow r() -> Int\n{\n  return zeta(1)\n}", "r", T({ ...decl, bound: "a.fungi" })), []);
+  assert.match(clashProblems("finish", [D("a.fungi", "x"), D("b.fungi", "y")], null, "r", { REGISTERED: new Map([["finish", "t"]]), DIVERGENT: new Map() }).join(), /differs/);
 });
