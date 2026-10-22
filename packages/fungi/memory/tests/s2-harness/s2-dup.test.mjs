@@ -19,7 +19,9 @@ const SRC = join(HERE, "..", "..", "src");
 const REPO = join(HERE, "..", "..", "..", "..", "..");
 const GALERINA = join(REPO, "galerina.mjs");
 // Registered clashes: name -> why the duplicate is tolerated. Anything else fails.
-const REGISTERED = new Map([["finish", "identical refusal/wipe packer in body-reader, release-commit-point, serve-gate, cleanup-evidence"]]);
+const REGISTERED = new Map([["finish", "identical refusal/wipe packer in body-reader, release-commit-point, serve-gate, cleanup-evidence"],
+  ["applyConsume", "identical in kernel and auth-verify-route"],
+  ["recoverLease", "identical in kernel and auth-verify-route"]]);
 // S2 round 3 (2026-10-22): DECLARED DIVERGENT clashes. kernel.fungi and auth-verify-route.fungi each define
 // mintOperation, applyClock and httpStatusFor with DIFFERENT bodies (different refusal codes and branches), so
 // any program composing both (47b's auth-verify-e2e) must say which copy it binds. Zero-trust choice: a divergent
@@ -28,7 +30,11 @@ const REGISTERED = new Map([["finish", "identical refusal/wipe packer in body-re
 // composing root may call it. Rejected: registering by name only (lets a body divergence through), first- or
 // last-occurrence binding (silent substitution), renaming now (flow renames wait on Phillip's naming decisions).
 // Intent text and comments are ignored by the comparison and recorded in the round notes instead.
-const DIVERGENT = new Map([]);
+const DIVERGENT = new Map([
+  ["mintOperation", { units: ["auth-verify-route.fungi", "kernel.fungi"], bound: "none", sha: { "auth-verify-route.fungi": "514c4beb500566a85faaf48c257f83c1564766bf8f8770f5e763c4fb809a42d2", "kernel.fungi": "81c4c5f892613fe715ceb44d858d47e3ae1ebc1767a04818f121d17f6b188e48" }, why: "kernel and route mint with different refusal codes; 47b strips both and its root never calls it" }],
+  ["applyClock", { units: ["auth-verify-route.fungi", "kernel.fungi"], bound: "kernel.fungi", sha: { "auth-verify-route.fungi": "0c238a28b58969388547dda6fdd8e7237c77e17d17e6345bac5f5588a6ffac31", "kernel.fungi": "90f558d0c6dfd19ab4329ef5b70f58c925aca54722538186b3c45d329ed13565" }, why: "route adds a budget > 5000 refusal and other codes; 47b keeps the kernel copy" }],
+  ["httpStatusFor", { units: ["auth-verify-route.fungi", "kernel.fungi"], bound: "auth-verify-route.fungi", sha: { "auth-verify-route.fungi": "7b62b5b046a4917ac0a9ab2ad3ca0e7ca0f0327e7bea3d7ce5b287b092b4970e", "kernel.fungi": "bc5681e36cdcaf745a94d7c169cf09baab35a7d2b5f1d70afb34f121c36ad589" }, why: "route maps 112-120 to 400 and 140 to 499; 47b keeps the route copy, which its root calls" }],
+]);
 const sha = (t) => createHash("sha256").update(t).digest("hex");
 
 export function clashProblems(name, defs, rootSrc, where, tables = { REGISTERED, DIVERGENT }) {
