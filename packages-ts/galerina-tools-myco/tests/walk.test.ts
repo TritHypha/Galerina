@@ -81,6 +81,27 @@ test("walk honours NESTED .gitignore, scoped to its own subtree (the dss-host /t
   }
 });
 
+test("walk keeps a root-anchored ignore from hiding matching nested files", async () => {
+  const dir = await tmpTree({
+    ".gitignore": "/HANDOVER-*.md\n",
+    "HANDOVER-root.md": "ignore at repository root",
+    "docs/handover/HANDOVER-nested.md": "keep tracked documentation",
+  });
+  try {
+    const rels = new Set(
+      (await walk(dir, { maxFileSize: 1 << 20, useGitignore: true })).map((m) => m.relPath),
+    );
+
+    assert.ok(!rels.has("HANDOVER-root.md"), "the root-only pattern still excludes its root match");
+    assert.ok(
+      rels.has("docs/handover/HANDOVER-nested.md"),
+      "a leading slash must not turn the root-only pattern into an any-depth basename rule",
+    );
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("walk honours a leading `**/` ignore rule as match-at-any-depth", async () => {
   const dir = await tmpTree({
     "keep.txt": "keep",

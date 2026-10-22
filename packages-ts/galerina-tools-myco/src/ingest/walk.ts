@@ -103,7 +103,8 @@ function parseIgnore(text: string, base: string): Rule[] {
     if (negate) body = body.slice(1);
     const dirOnly = body.endsWith("/");
     if (dirOnly) body = body.slice(0, -1);
-    if (body.startsWith("/")) body = body.slice(1);
+    const rooted = body.startsWith("/");
+    if (rooted) body = body.slice(1);
     // A leading `**/` means "at any depth" — strip it so the remainder matches by
     // basename (git's very common `**/build/`, `**/.fungi-cache/`, `**/node_modules/`
     // idiom). This is the one `**` form worth honouring; deeper mid-path `**` stays
@@ -112,7 +113,7 @@ function parseIgnore(text: string, base: string): Rule[] {
     if (body.startsWith("**/")) body = body.slice(3);
     if (body === "" || body.length > MAX_IGNORE_PATTERN) continue;
     if (rules.length >= MAX_IGNORE_RULES) break;
-    const basename = !body.includes("/");
+    const basename = !rooted && !body.includes("/");
     rules.push({ pattern: body, dirOnly, negate, basename, base });
   }
   return rules;
