@@ -178,3 +178,35 @@ build/ts-to-fungi-sandbox/
 **/graph.db.zst
 **/node_modules
 /docs/reports/receipts
+
+# ── General hygiene (2026-10-22 dirty-checkout rescue review) ──
+# OS / editor droppings
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+# TypeScript incremental build info (two legacy tracked copies are kept via negation)
+*.tsbuildinfo
+!packages-ts/galerina-core-compiler/tsconfig.tsbuildinfo
+!packages-ts/galerina-core-logic/tsconfig.tsbuildinfo
+# Package-manager / root-level logs (committed evidence logs under docs/ stay tracked)
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/*.log
+# Temp dirs
+.tmp/
+**/.tmp/
+# Local env files (examples stay tracked)
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+# Private keys outside test fixtures (TEST-ONLY fixture keys stay tracked)
+*.key
+!**/tests/fixtures/**/*.key
