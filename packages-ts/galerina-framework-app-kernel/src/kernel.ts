@@ -31,6 +31,7 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
+import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
@@ -632,6 +633,18 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     requireBoundOperationId: true,
     requireRevocationEpoch: true,
   });
+  // S5: the gate-9.5 VERDICT is the Fungi secret-gate WebAssembly `admit` export, loaded ONCE at
+  // boot from the pinned asset (no option can inject bytes). A missing or tampered artifact is a
+  // typed BOOT refusal (APPK_SECRET_GATE_ARTIFACT_UNKNOWN / _HASH_MISMATCH), never a silent dark
+  // kernel and never admit-without-decider. The TS gate above still serves getSecret/ack only.
+  const fungiGateLoad = loadPinnedFungiSecretGate();
+  if (!fungiGateLoad.ok) {
+    throw Object.assign(new Error(`${fungiGateLoad.code}: the pinned Fungi secret-gate WebAssembly refused to load.`), {
+      code: fungiGateLoad.code,
+    });
+  }
+  const fungiGate = fungiGateLoad.gate;
+  const gateProvider = opts.secretsProvider;
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
@@ -913,7 +926,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
       // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
       // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.
-      const secretRefusal = secretGate.admit(policy.secrets.require);
+      const secretRefusal = fungiGate.admit(gateProvider, policy.secrets.require);
       if (secretRefusal !== null) {
         // 503: an absent/faulted/unresolvable secret is a server-side UNAVAILABILITY, not a client
         // error. The handler is NEVER reached (gate 9.5 < gate 10), so no side effect can occur.
@@ -956,7 +969,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // Idempotency admission may await an external store. Re-check required secrets after that
       // yield so a provider that was removed, faulted, or disposed while the claim was pending
       // cannot reach developer dispatch on the basis of the earlier gate-9.5 snapshot.
-      const postWaitSecretRefusal = secretGate.admit(policy.secrets.require);
+      const postWaitSecretRefusal = fungiGate.admit(gateProvider, policy.secrets.require);
       if (postWaitSecretRefusal !== null) {
         // The reservation remains consumed. A caller must reconcile the operation and use a new
         // idempotency key; the kernel never guesses that an external store claim can be undone.
