@@ -35,28 +35,28 @@ contract {
   intent { "Closed idempotency reserve. Missing duplicate and full refuse. Store throw is UNKNOWN never REFUSED. Already reserved after dispatch is DELIVERY_UNKNOWN never a second dispatch. Non-positive TTL refuses." }
 }
 {
-  let claimReason: Int = readForeignSafeInteger(claimClass, claimToken)
+  let claimReason: Int = readForeignBoundedInteger(claimClass, claimToken, -2147483647, 2147483647)
   if claimReason != 0 {
     if claimReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let reservedReason: Int = readForeignSafeInteger(reservedClass, alreadyReservedToken)
+  let reservedReason: Int = readForeignBoundedInteger(reservedClass, alreadyReservedToken, -2147483647, 2147483647)
   if reservedReason != 0 {
     if reservedReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let dispatchReason: Int = readForeignSafeInteger(dispatchClass, dispatchToken)
+  let dispatchReason: Int = readForeignBoundedInteger(dispatchClass, dispatchToken, -2147483647, 2147483647)
   if dispatchReason != 0 {
     if dispatchReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let ttlReason: Int = readForeignSafeInteger(ttlClass, ttl)
+  let ttlReason: Int = readForeignBoundedInteger(ttlClass, ttl, -2147483647, 2147483647)
   if ttlReason != 0 {
     if ttlReason == 11 {
       return finish(11, true)
@@ -125,14 +125,14 @@ contract {
   intent { "Closed settle sum. Before dispatch cancel succeeds so the key is not stranded. After dispatch cancel is unconditional delete and refuses. After dispatch crash is RESERVED_UNKNOWN. Unlisted refuses." }
 }
 {
-  let dispatchReason: Int = readForeignSafeInteger(dispatchClass, dispatchToken)
+  let dispatchReason: Int = readForeignBoundedInteger(dispatchClass, dispatchToken, -2147483647, 2147483647)
   if dispatchReason != 0 {
     if dispatchReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let settleReason: Int = readForeignSafeInteger(settleClass, settleToken)
+  let settleReason: Int = readForeignBoundedInteger(settleClass, settleToken, -2147483647, 2147483647)
   if settleReason != 0 {
     if settleReason == 11 {
       return finish(11, true)
@@ -185,14 +185,14 @@ contract {
   intent { "Synchronous non-blocking audit reserve. Unavailable or throw is audit-unavailable. Non-positive capacity refuses. Unlisted refuses." }
 }
 {
-  let reserveReason: Int = readForeignSafeInteger(reserveClass, auditReserveToken)
+  let reserveReason: Int = readForeignBoundedInteger(reserveClass, auditReserveToken, -2147483647, 2147483647)
   if reserveReason != 0 {
     if reserveReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let capacityReason: Int = readForeignSafeInteger(capacityClass, capacity)
+  let capacityReason: Int = readForeignBoundedInteger(capacityClass, capacity, -2147483647, 2147483647)
   if capacityReason != 0 {
     if capacityReason == 11 {
       return finish(11, true)
@@ -234,7 +234,7 @@ contract {
   intent { "Commit or cancel exactly once. Commit fail or throw is UNKNOWN never swallowed success. Cancel fail is UNKNOWN. Unlisted refuses." }
 }
 {
-  let settleReason: Int = readForeignSafeInteger(settleClass, auditSettleToken)
+  let settleReason: Int = readForeignBoundedInteger(settleClass, auditSettleToken, -2147483647, 2147483647)
   if settleReason != 0 {
     if settleReason == 11 {
       return finish(11, true)

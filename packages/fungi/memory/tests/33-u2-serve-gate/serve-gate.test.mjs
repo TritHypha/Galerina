@@ -299,8 +299,8 @@ test("mutant unlisted reach class admitted goes RED then restore", () => {
 
 test("mutant effect foreign classTag check dead goes RED then restore", () => {
   withMutant(
-    "  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)\n  if effectReason != 0 {",
-    "  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)\n  if effectReason == 99 {",
+    "  let effectReason: Int = readForeignBoundedInteger(effectClassClass, effectClass, -2147483647, 2147483647)\n  if effectReason != 0 {",
+    "  let effectReason: Int = readForeignBoundedInteger(effectClassClass, effectClass, -2147483647, 2147483647)\n  if effectReason == 99 {",
     () => {
       const r = classify({ pathClass: 9, effectClassClass: 3 });
       assert.equal(r.present, true, r.reason + " " + r.text);
@@ -312,8 +312,8 @@ test("mutant effect foreign classTag check dead goes RED then restore", () => {
 
 test("mutant reach foreign classTag check dead goes RED then restore", () => {
   withMutant(
-    "  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)\n  if reachReason != 0 {",
-    "  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)\n  if reachReason == 99 {",
+    "  let reachReason: Int = readForeignBoundedInteger(reachClassClass, reachClass, -2147483647, 2147483647)\n  if reachReason != 0 {",
+    "  let reachReason: Int = readForeignBoundedInteger(reachClassClass, reachClass, -2147483647, 2147483647)\n  if reachReason == 99 {",
     () => {
       const r = classify({ pathClass: 9, reachClassClass: 3 });
       assert.equal(r.present, true, r.reason + " " + r.text);

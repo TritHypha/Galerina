@@ -5,7 +5,7 @@
 ///   memory unit must use. Rule unit only: no I/O, no import of
 ///   release-commit-point.fungi.
 /// Every foreign Int enters through c-boundary.fungi (import and call
-///   readForeignSafeInteger; do not re-implement the 0..10 table).
+///   readForeignI32Integer / readForeignBoundedInteger; do not re-implement the 0..10 table).
 /// B5: galerina check admits the import; galerina build FUNGI-NAME-001;
 ///   galerina run --invoke WAT callee neither defined nor imported. Tests
 ///   flatten helper body plus this unit for invoke. Landed source keeps the
@@ -35,7 +35,7 @@ contract {
   intent { "Map an admitted observation class onto Q07 or DU-only. Unlisted class refuses." }
 }
 {
-  let reason: Int = readForeignSafeInteger(classClass, classVal)
+  let reason: Int = readForeignBoundedInteger(classClass, classVal, -2147483647, 2147483647)
   if reason != 0 {
     if reason == 11 {
       return 11
@@ -64,14 +64,14 @@ contract {
   intent { "Admit kind and preBeginAudit, then return the v1 table code or a typed refusal." }
 }
 {
-  let kindReason: Int = readForeignSafeInteger(kindClass, kind)
+  let kindReason: Int = readForeignI32Integer(kindClass, kind)
   if kindReason != 0 {
     if kindReason == 11 {
       return 11
     }
     return 4
   }
-  let auditReason: Int = readForeignSafeInteger(auditClass, audit)
+  let auditReason: Int = readForeignI32Integer(auditClass, audit)
   if auditReason != 0 {
     if auditReason == 11 {
       return 11

@@ -8,6 +8,8 @@
 ///   undecodable percent) and is PROTECTED (C188-N2 INTENDED_DIVERGENCE vs
 ///   TS null -> not protected). Tags 7-9 are listed public. Unlisted path
 ///   tags are PROTECTED. Unlisted effect names are secret-bearing.
+///   KG-01 host contract (RFC 3986, evidence/kg01/host-contract.md) emits
+///   tag 0 only for exact /auth/verify; unproven strings emit tag 6, never 7-9.
 ///   Layer 0 is serve()/standaloneServeSecretRefusal. Layer 1 is the
 ///   startServer fence (C188-F1, C188-F2 behavioural probes, not source-text
 ///   pins). The gate never yields COMMITTED (Astra W1). UNKNOWN is never
@@ -177,35 +179,35 @@ contract {
   intent { "Admit foreign tags then refuse protected or secret-bearing standalone serve routes." }
 }
 {
-  let layerReason: Int = readForeignSafeInteger(layerClass, layer)
+  let layerReason: Int = readForeignBoundedInteger(layerClass, layer, -2147483647, 2147483647)
   if layerReason != 0 {
     if layerReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let methodReason: Int = readForeignSafeInteger(methodClass, method)
+  let methodReason: Int = readForeignBoundedInteger(methodClass, method, -2147483647, 2147483647)
   if methodReason != 0 {
     if methodReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let pathReason: Int = readForeignSafeInteger(pathClassClass, pathClass)
+  let pathReason: Int = readForeignBoundedInteger(pathClassClass, pathClass, -2147483647, 2147483647)
   if pathReason != 0 {
     if pathReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let effectReason: Int = readForeignSafeInteger(effectClassClass, effectClass)
+  let effectReason: Int = readForeignBoundedInteger(effectClassClass, effectClass, -2147483647, 2147483647)
   if effectReason != 0 {
     if effectReason == 11 {
       return finish(11, true)
     }
     return finish(10, true)
   }
-  let reachReason: Int = readForeignSafeInteger(reachClassClass, reachClass)
+  let reachReason: Int = readForeignBoundedInteger(reachClassClass, reachClass, -2147483647, 2147483647)
   if reachReason != 0 {
     if reachReason == 11 {
       return finish(11, true)

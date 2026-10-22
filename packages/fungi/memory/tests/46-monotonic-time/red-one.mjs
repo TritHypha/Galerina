@@ -6,7 +6,7 @@ const mutants = {
   M2: ["let backwardsReading: Int = 22", "let backwardsReading: Int = 0"],
   M3: ["let crossEpoch: Int = 23", "let crossEpoch: Int = 1"],
   M4: ["let remainingUnknown: Int = 23", "let remainingUnknown: Int = 0"],
-  M5: ["readForeignLength(classTag, reading)", "readForeignSafeInteger(classTag, reading)"],
+  M5: ["readForeignLength(classTag, reading, 2147483647)", "readForeignSafeInteger(classTag, reading)"],
   M6: ["let backwardsReading: Int = 22", "while reading < lastTicks {\n        return 0\n      }\n      let backwardsReading: Int = 22"],
 };
 

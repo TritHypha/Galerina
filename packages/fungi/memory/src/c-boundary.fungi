@@ -12,14 +12,26 @@
 /// |integer| <= 2^53-1 is the host SafeInteger domain (classTag 8). Physical Int is
 ///   i32 so |integer| <= 2147483647 is always inside that domain; do not author
 ///   an unrepresentable 2^53-1 constant.
+/// KG-06: classTag 0 admits only when integer is inside a caller-declared [lo, hi].
+///   Listed tags 1..10 refuse as themselves even when the value is in range.
+///   Unlisted tags refuse 11. Inverted lo > hi refuses 11.
 /// Sequential if-return (secret-gate.fungi style). Nested if/else failed WAT emit.
 
-pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
+pure flow readForeignBoundedInteger(classTag: Int, integer: Int, lo: Int, hi: Int) -> Int
 contract {
-  intent { "Admit a foreign observation as a safe integer or return a typed refusal reason." }
+  intent { "Admit classTag 0 only inside [lo, hi]; listed tags refuse as themselves; unlisted is 11." }
 }
 {
   if classTag == 0 {
+    if lo > hi {
+      return 11
+    }
+    if integer < lo {
+      return 8
+    }
+    if integer > hi {
+      return 8
+    }
     return 0
   }
   if classTag == 1 {
@@ -55,19 +67,44 @@ contract {
   return 11
 }
 
-pure flow readForeignLength(classTag: Int, integer: Int) -> Int
+pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
 contract {
-  intent { "Admit a foreign length: non-negative safe integer, else typed refusal." }
+  intent { "Admit classTag 0 inside conservative i32 excluding i32 min, else typed refusal." }
 }
 {
-  let classReason: Int = readForeignSafeInteger(classTag, integer)
-  if classReason != 0 {
-    return classReason
+  return readForeignBoundedInteger(classTag, integer, -2147483647, 2147483647)
+}
+
+pure flow readForeignI32Integer(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit classTag 0 on the full physical i32 domain including i32 min; listed tags refuse as themselves; unlisted is 11." }
+}
+{
+  if classTag == 0 {
+    return 0
   }
-  if integer < 0 {
-    return 9
+  return readForeignBoundedInteger(classTag, integer, 0, 0)
+}
+
+pure flow readForeignLength(classTag: Int, integer: Int, hi: Int) -> Int
+contract {
+  intent { "Admit a foreign length: non-negative integer inside [0, hi], else typed refusal." }
+}
+{
+  if classTag == 0 {
+    if integer < 0 {
+      return 9
+    }
   }
-  return 0
+  return readForeignBoundedInteger(classTag, integer, 0, hi)
+}
+
+pure flow readForeignByte(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit a foreign byte: classTag 0 and integer inside [0, 255], else typed refusal." }
+}
+{
+  return readForeignBoundedInteger(classTag, integer, 0, 255)
 }
 
 pure flow readForeignBool(token: Int) -> Int
@@ -82,4 +119,169 @@ contract {
     return 0
   }
   return 11
+}
+
+/// KG-05: tagged length-prefixed wide integer.
+/// byte0 tag 1 = i64, tag 2 = u64. byte1 length exactly 8. bytes 2..9 little-endian.
+/// Total buffer length exactly 10. Size, tag, and length refuse before payload conversion.
+/// 12 unknown tag. 13 length byte not 8. 14 buffer length not 10.
+/// After decode, the i32 call-site domain is checked again (8 OutOfSafeRange).
+/// Physical Int is i32. Limb math uses 16-bit pieces so b3*16777216 never traps.
+
+pure flow u16FromBytes(lo: Int, hi: Int) -> Int
+contract {
+  intent { "Join two admitted bytes into one 16-bit limb." }
+}
+{
+  return lo + hi * 256
+}
+
+pure flow taggedPayloadFitsI32(tag: Int, w0: Int, w1: Int, w2: Int, w3: Int) -> Int
+contract {
+  intent { "Admit a 64-bit limb tuple only when it is an i32 that can sit in the call-site domain." }
+}
+{
+  if tag == 1 {
+    if w3 == 0 {
+      if w2 == 0 {
+        if w1 < 32768 {
+          return 0
+        }
+      }
+    }
+    if w3 == 65535 {
+      if w2 == 65535 {
+        if w1 > 32768 {
+          return 0
+        }
+        if w1 == 32768 {
+          if w0 > 0 {
+            return 0
+          }
+          return 8
+        }
+      }
+    }
+    return 8
+  }
+  if tag == 2 {
+    if w3 == 0 {
+      if w2 == 0 {
+        if w1 < 32768 {
+          return 0
+        }
+      }
+    }
+    return 8
+  }
+  return 12
+}
+
+pure flow taggedPayloadI32(w0: Int, w1: Int) -> Int
+contract {
+  intent { "Reconstruct the i32 bit pattern from two low 16-bit limbs. Caller proved it fits." }
+}
+{
+  if w1 < 32768 {
+    return w1 * 65536 + w0
+  }
+  if w1 == 32768 {
+    if w0 == 0 {
+      return 0
+    }
+    return -2147483647 + (w0 - 1)
+  }
+  let negHi: Int = w1 - 65536
+  return negHi * 65536 + w0
+}
+
+pure flow readTaggedWideInteger(bufLen: Int, b0: Int, b1: Int, b2: Int, b3: Int, b4: Int, b5: Int, b6: Int, b7: Int, b8: Int, b9: Int, domainLo: Int, domainHi: Int) -> Int
+contract {
+  intent { "Admit a 10-byte tagged LE i64/u64 buffer only inside the call-site i32 domain." }
+}
+{
+  if domainLo > domainHi {
+    return 11
+  }
+  if bufLen != 10 {
+    return 14
+  }
+  let r0: Int = readForeignByte(0, b0)
+  if r0 != 0 {
+    return r0
+  }
+  let r1: Int = readForeignByte(0, b1)
+  if r1 != 0 {
+    return r1
+  }
+  let r2: Int = readForeignByte(0, b2)
+  if r2 != 0 {
+    return r2
+  }
+  let r3: Int = readForeignByte(0, b3)
+  if r3 != 0 {
+    return r3
+  }
+  let r4: Int = readForeignByte(0, b4)
+  if r4 != 0 {
+    return r4
+  }
+  let r5: Int = readForeignByte(0, b5)
+  if r5 != 0 {
+    return r5
+  }
+  let r6: Int = readForeignByte(0, b6)
+  if r6 != 0 {
+    return r6
+  }
+  let r7: Int = readForeignByte(0, b7)
+  if r7 != 0 {
+    return r7
+  }
+  let r8: Int = readForeignByte(0, b8)
+  if r8 != 0 {
+    return r8
+  }
+  let r9: Int = readForeignByte(0, b9)
+  if r9 != 0 {
+    return r9
+  }
+  if b0 != 1 {
+    if b0 != 2 {
+      return 12
+    }
+  }
+  if b1 != 8 {
+    return 13
+  }
+  let w0: Int = u16FromBytes(b2, b3)
+  let w1: Int = u16FromBytes(b4, b5)
+  let w2: Int = u16FromBytes(b6, b7)
+  let w3: Int = u16FromBytes(b8, b9)
+  let fit: Int = taggedPayloadFitsI32(b0, w0, w1, w2, w3)
+  if fit != 0 {
+    return fit
+  }
+  let value: Int = taggedPayloadI32(w0, w1)
+  if value < domainLo {
+    return 8
+  }
+  if value > domainHi {
+    return 8
+  }
+  return 0
+}
+
+pure flow decodeTaggedWideI32(bufLen: Int, b0: Int, b1: Int, b2: Int, b3: Int, b4: Int, b5: Int, b6: Int, b7: Int, b8: Int, b9: Int, domainLo: Int, domainHi: Int) -> Int
+contract {
+  intent { "Return the admitted i32 after readTaggedWideInteger is 0. Refuse paths return 0." }
+}
+{
+  let reason: Int = readTaggedWideInteger(bufLen, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, domainLo, domainHi)
+  if reason != 0 {
+    return 0
+  }
+  let w0: Int = u16FromBytes(b2, b3)
+  let w1: Int = u16FromBytes(b4, b5)
+  return taggedPayloadI32(w0, w1)
 }
