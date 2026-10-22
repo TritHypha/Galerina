@@ -1,0 +1,222 @@
+// S5 (closure path): secret authority out of TypeScript. RED TESTS FIRST (gcw-s5a, 2026-10-22).
+// Zero-trust choice (preflight-s5-01-8f5158ff): option A, a thin NON-AUTHORIZING TS loader.
+// The verdict at gate 9.5 is the return code of the built secret-gate WebAssembly admit export.
+// TS only maps host observations onto the documented Int tags; any unlisted code, a load failure,
+// a missing artifact or a hash mismatch refuses (typed UNKNOWN), never admits.
+// Rejected: B fence-only (TS createSecretGate stays live), C self-hosted presence-fold twin
+// (no epoch/revocation codes), D TS shadow decider on the live path (two deciders = bypass surface),
+// and any kernel option that injects artifact bytes (a lying-artifact door).
+import { spawnSync } from "node:child_process";
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, join } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const MEM = join(HERE, "..", "..");
+const REPO = join(MEM, "..", "..", "..");
+const GALERINA = join(REPO, "galerina.mjs");
+const BOUNDARY = join(MEM, "src", "c-boundary.fungi");
+const RCP = join(MEM, "src", "release-commit-point.fungi");
+const GATE = join(MEM, "src", "secret-gate.fungi");
+const PORT = join(MEM, "src", "secrets-provider-port.fungi");
+const AK = join(REPO, "packages-ts", "galerina-framework-app-kernel");
+const KERNEL_TS = join(AK, "src", "kernel.ts");
+const HOLD_PIN_TS = join(AK, "src", "hold-pin.ts");
+const LOADER_TS = join(AK, "src", "fungi-secret-gate-loader.ts");
+const LOADER_JS = join(AK, "dist", "fungi-secret-gate-loader.js");
+const ASSET = join(AK, "assets", "secret-gate-admit.wasm");
+const CB_IMPORT = "\nimport \"./c-boundary.fungi\"\n";
+const RCP_IMPORT = "\nimport \"./release-commit-point.fungi\"\n";
+
+function sha256(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+function stripVersion(src) {
+  const marker = "@version 1";
+  const first = src.indexOf(marker);
+  assert.notEqual(first, -1, "version marker");
+  return src.slice(first + marker.length);
+}
+
+function flatGateSource(unitText) {
+  const unit = unitText === undefined ? readFileSync(GATE, "utf8") : unitText;
+  assert.equal(unit.split(CB_IMPORT).length, 2, "c-boundary import once");
+  assert.equal(unit.split(RCP_IMPORT).length, 2, "release-commit-point import once");
+  const rest = stripVersion(unit.split(CB_IMPORT).join("").split(RCP_IMPORT).join(""));
+  return readFileSync(BOUNDARY, "utf8") + "\n" + stripVersion(readFileSync(RCP, "utf8")) + "\n" + rest;
+}
+
+// Build the flattened secret-gate unit to WebAssembly under a unique build name; clean up after.
+function buildGateWasm(unitText) {
+  const dir = mkdtempSync(join(tmpdir(), "s5-gate-"));
+  const file = uniqueFungiFile(dir);
+  const name = file.slice(dir.length + 1, -".fungi".length);
+  writeFileSync(file, flatGateSource(unitText));
+  const outs = ["wasm", "wat", "lmanifest"].map((ext) => join(REPO, "build", name + "." + ext));
+  try {
+    const r = spawnSync(process.execPath, [GALERINA, "build", file], { encoding: "utf8", cwd: REPO, timeout: 180000 });
+    assert.equal(r.status, 0, "galerina build failed: " + (r.stdout || "") + (r.stderr || ""));
+    assert.equal(existsSync(outs[0]), true, "build produced no wasm");
+    return new Uint8Array(readFileSync(outs[0]));
+  } finally {
+    for (const p of outs) rmSync(p, { force: true });
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+async function loader() {
+  assert.equal(existsSync(LOADER_TS), true, "S5 loader source missing: " + LOADER_TS);
+  assert.equal(existsSync(LOADER_JS), true, "S5 loader not built (tsc app-kernel): " + LOADER_JS);
+  return import(pathToFileURL(LOADER_JS).href);
+}
+
+function importsOf(src) {
+  return [...src.matchAll(/^\s*import\s[\s\S]*?from\s+"([^"]+)"/gm)].map((m) => m[0]);
+}
+
+// ---------------- providers (synthetic only; no real credentials) ----------------
+const bytes = new Uint8Array([1, 2, 3]);
+function provider(present, epoch) {
+  const p = {
+    has(name) {
+      const v = present[name];
+      if (v === "THROW") throw new Error("disposed");
+      return v;
+    },
+    use(name, fn) { if (present[name] === true) fn(bytes); },
+  };
+  if (epoch !== "LEGACY") p.revocationEpoch = () => { if (epoch === "THROW") throw new Error("x"); return epoch; };
+  return p;
+}
+
+// Expected verdicts follow suite 34 (secret-gate.fungi admit): packed 100 admits, all else refuses.
+const GRID = [
+  ["no provider, empty require", undefined, [], null],
+  ["no provider, one required", undefined, ["a"], "secret_unavailable"],
+  ["epoch provider, empty require", provider({}, 0), [], null],
+  ["epoch provider, present", provider({ a: true }, 3), ["a"], null],
+  ["epoch provider, two present", provider({ a: true, b: true }, 3), ["a", "b"], null],
+  ["second required absent", provider({ a: true, b: false }, 3), ["a", "b"], "secret_unavailable"],
+  ["absent", provider({ a: false }, 3), ["a"], "secret_unavailable"],
+  ["has throws", provider({ a: "THROW" }, 3), ["a"], "secret_unavailable"],
+  ["has returns string true", provider({ a: "true" }, 3), ["a"], "secret_unavailable"],
+  ["has returns 1", provider({ a: 1 }, 3), ["a"], "secret_unavailable"],
+  ["has returns undefined", provider({}, 3), ["a"], "secret_unavailable"],
+  ["legacy provider, empty require (Fungi 103)", provider({}, "LEGACY"), [], "secret_unavailable"],
+  ["legacy provider, present", provider({ a: true }, "LEGACY"), ["a"], "secret_unavailable"],
+  ["epoch throws", provider({ a: true }, "THROW"), ["a"], "secret_unavailable"],
+  ["epoch negative", provider({ a: true }, -1), ["a"], "secret_unavailable"],
+  ["epoch NaN", provider({ a: true }, Number.NaN), ["a"], "secret_unavailable"],
+  ["epoch not integer", provider({ a: true }, 1.5), ["a"], "secret_unavailable"],
+  ["hole in required list", provider({ a: true }, 3), [undefined], "secret_unavailable"],
+];
+
+// ---------------- S5-R1: kernel.ts no longer decides with TS createSecretGate ----------------
+test("S5-R1a gate 9.5 admits only through the Fungi WebAssembly loader", () => {
+  const src = readFileSync(KERNEL_TS, "utf8");
+  assert.equal(/secretGate\.admit\(/.test(src), false, "gate 9.5 still calls TS secretGate.admit");
+  assert.equal(importsOf(src).some((l) => l.includes("\"./fungi-secret-gate-loader.js\"")), true, "kernel.ts must import the S5 loader");
+});
+
+test("S5-R1b kernel.ts module graph does not reach TS createSecretGate", () => {
+  const src = readFileSync(KERNEL_TS, "utf8");
+  assert.equal(importsOf(src).some((l) => /\bcreateSecretGate\b/.test(l)), false, "kernel.ts imports createSecretGate");
+  assert.equal(/\bcreateSecretGate\s*\(/.test(src), false, "kernel.ts calls createSecretGate");
+});
+
+// ---------------- S5-R2: verdict equals WebAssembly admit; artifact pinned ----------------
+test("S5-R2a shipped artifact is pinned and equals a fresh build of secret-gate.fungi", async () => {
+  const L = await loader();
+  assert.equal(existsSync(ASSET), true, "pinned artifact missing: " + ASSET);
+  const shipped = new Uint8Array(readFileSync(ASSET));
+  assert.equal(L.SECRET_GATE_ADMIT_SHA256, sha256(shipped), "pinned sha must match shipped asset");
+  assert.equal(sha256(buildGateWasm()), sha256(shipped), "shipped asset must be a reproducible build of the landed unit");
+});
+
+test("S5-R2b loader verdict matches the documented admit grid", async () => {
+  const L = await loader();
+  const shipped = new Uint8Array(readFileSync(ASSET));
+  const res = L.loadFungiSecretGate({ wasmBytes: shipped, expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, true, "load of pinned artifact: " + res.code);
+  for (const [label, p, req, want] of GRID) {
+    assert.equal(res.gate.admit(p, req), want, label);
+  }
+});
+
+test("S5-R2c tampered artifact refuses at load with a typed code", async () => {
+  const L = await loader();
+  const shipped = new Uint8Array(readFileSync(ASSET));
+  const t = new Uint8Array(shipped);
+  t[t.length - 1] ^= 0x01;
+  const res = L.loadFungiSecretGate({ wasmBytes: t, expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, false);
+  assert.equal(res.code, "APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH");
+  assert.equal("gate" in res, false, "a refused load exposes no gate");
+});
+
+test("S5-R2d an artifact returning an unlisted code refuses (never admits)", async () => {
+  const L = await loader();
+  const unit = readFileSync(GATE, "utf8");
+  const needle = "  return finish(0, true)\n}\n\npure flow deliverPreHandoff(";
+  assert.equal(unit.split(needle).length, 2, "mutant needle unique");
+  const lying = buildGateWasm(unit.replace(needle, "  return finish(5, true)\n}\n\npure flow deliverPreHandoff("));
+  const res = L.loadFungiSecretGate({ wasmBytes: lying, expectedSha256: sha256(lying) });
+  assert.equal(res.ok, true, "self-consistent mutant loads (the pin, not the loader, rejects it in the kernel)");
+  assert.equal(res.gate.admit(provider({ a: true }, 3), ["a"]), "secret_unavailable", "packed 105 is unlisted");
+  assert.equal(res.gate.admit(undefined, []), null, "empty-no-provider path still admits via finish(0)");
+});
+
+// ---------------- S5-R3: missing artifact refuses ----------------
+test("S5-R3 missing or empty artifact refuses with typed UNKNOWN", async () => {
+  const L = await loader();
+  for (const wasmBytes of [undefined, null, new Uint8Array(0), "secret-gate-admit.wasm"]) {
+    const res = L.loadFungiSecretGate({ wasmBytes, expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+    assert.equal(res.ok, false, String(wasmBytes));
+    assert.equal(res.code, "APPK_SECRET_GATE_ARTIFACT_UNKNOWN", String(wasmBytes));
+  }
+  const noPin = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)) });
+  assert.equal(noPin.ok, false, "a load without an expected hash refuses");
+});
+
+// ---------------- S5-R4: HOLD pin unaffected ----------------
+test("S5-R4 hold-pin stays non-authorizing and does not reach the loader", () => {
+  const src = readFileSync(HOLD_PIN_TS, "utf8");
+  assert.equal(importsOf(src).some((l) => /fungi-secret-gate-loader|secret-gate\.js/.test(l)), false);
+  assert.equal(existsSync(LOADER_TS), true, "S5 loader must exist for this pin to mean anything");
+});
+
+// ---------------- S5-R5: Fungi SecretsProvider port (X-KG12), per secret ----------------
+function invokePort(args) {
+  assert.equal(existsSync(PORT), true, "Fungi SecretsProvider port missing: " + PORT);
+  const unit = readFileSync(PORT, "utf8");
+  const dir = mkdtempSync(join(tmpdir(), "s5-port-"));
+  const file = uniqueFungiFile(dir);
+  writeFileSync(file, readFileSync(BOUNDARY, "utf8") + "\n" + stripVersion(readFileSync(RCP, "utf8")) + "\n" + stripVersion(unit.split(CB_IMPORT).join("").split(RCP_IMPORT).join("")));
+  try {
+    const r = spawnSync(process.execPath, [GALERINA, "run", file, "--invoke", "portAccess", ...args.map(String)], { encoding: "utf8", cwd: REPO, timeout: 120000 });
+    const text = (r.stdout || "") + (r.stderr || "");
+    const m = text.match(/=>\s*(-?\d+)\s*$/m);
+    assert.notEqual(m, null, "no value: " + text);
+    return Number(m[1]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("S5-R5 per-secret port: only a declared name with a present provider is reachable", () => {
+  // portAccess(declaredClass, declaredToken, providerClass, providerPresent)
+  assert.equal(invokePort([0, 1, 0, 1]), 100, "declared + provider");
+  assert.equal(invokePort([0, 0, 0, 1]), 112, "undeclared name refuses (12 Undeclared)");
+  assert.equal(invokePort([0, 1, 0, 0]), 119, "provider absent refuses (19 ProviderAbsent)");
+  assert.equal(invokePort([0, 2, 0, 1]), 111, "unlisted declared token");
+  assert.equal(invokePort([0, 1, 0, 7]), 111, "unlisted provider token");
+  assert.equal(invokePort([3, 1, 0, 1]), 110, "foreign class (NaN) on declared");
+  assert.equal(invokePort([0, 1, 11, 1]), 111, "unlisted class on provider");
+});
