@@ -13,11 +13,12 @@ exits 0 and the existing suites stay green. A step is closed only when its tests
 | S5 | s05-secret-authority.test.mjs | TS createSecretGate off the kernel decision path; Fungi secret-gate artifact loaded; KG-12 SecretsProvider port import |
 | S6 | s06-ingress.test.mjs | KG-06 readForeignSafeInteger reads the integer, readForeignBoundedInteger domain; KG-05 64-bit refusal and tagged buffer; KG-01 RFC 3986 refusal vectors map to UNKNOWN |
 | S7 | s07-custody.test.mjs | MLK smaps Locked >= 4 kB after lock (with a green method control); LEASE closed exactly once on every path, close without the capability refused; Q8 no secret bytes in guest linear memory; arena review PASS |
+| S7b | s07b-php-oom-reuse.test.mjs | PHP 21 Oct 2026 advisory classes: (A) out-of-memory at each request/secret-arena setup stage leaves a partial object; cleanup refuses 148 or quarantines 106, never valid, never a trap; Partial state is UNKNOWN; (B) request-1 handle/slot/Lease reused in request 2 after free refused by MB-12 generation check (150 STALE_HANDLE), free is not wipe, stale state unreadable before re-init; two green controls on constructArena / arenaEpoch |
 | S8 | s08-release.test.mjs | crash-cell campaign receipt (SQLite WAL FULL, rename+fsync+dir-fsync) with an opt-in green harness control (Q48_CRASHCELL=1, needs strace and python3); reserve/commit/reconcile idempotency; KG-07 DELIVERY_UNKNOWN |
 | S9 | s09-residual.test.mjs | KG-10 ML-DSA reports UNKNOWN; KG-04 MB-15 CT evidence harness wired to dudect/ctgrind with leaky controls; MB-15 intrinsic; signed residual UNKNOWN list |
 | S10-S13 | s10-s13-gates.test.mjs | composed run receipt + A-E disposition; S11 adjudication + drift; S12 Phillip merge yes; S13 HOLD lift citing S11 |
 
-Interfaces named here (readForeignBoundedInteger, readForeignWide*, native/linux-arena/arena-lock-probe,
+Interfaces named here (readForeignBoundedInteger, arenaSetupAbort, arenaSlotCheck, arenaReadBeforeInit, secret-arena state token 3 Partial, packed 148/150, readForeignWide*, native/linux-arena/arena-lock-probe,
 *Idempotency* flows, evidence/closure/*, the `linear type Lease` probe syntax) are proposals from the
 red-test author. A closing brief may rename an interface or adjust probe syntax, but it must not weaken
 an assertion, and it must list every rename in its reply.
