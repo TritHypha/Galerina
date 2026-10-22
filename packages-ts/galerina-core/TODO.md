@@ -195,6 +195,9 @@ Current syntax/target documentation additions:
 [ ] Define large-body streaming diagnostics
 [ ] Define route concurrency and connection pool alignment warnings
 [ ] Define API security, API memory and load-control report schemas
+    Existing schemas/memory-report.schema.json is a general prototype, not
+    these route-scoped API schemas; keep this row open until their fields and
+    corresponding parser/report behavior are specified and tested.
 [ ] Define API data boundary AI guide summaries
 [ ] Keep web frameworks, load balancers, API gateways, queue backends and rate-limit stores out of Galerina core
 [x] Add docs/api-duplicate-detection-and-idempotency.md
@@ -487,6 +490,14 @@ Reason for additions:
 ---
 
 ## Memory Safety TODO
+
+Status clarification (2026-10-09): the legacy `[x]` ownership/borrowing rows
+below record that design documentation exists; they do not establish owner
+adoption of `.fungi` semantics or compiler/runtime enforcement. The current
+`docs/memory-safety.md` explicitly labels the hybrid model a candidate, not an
+adopted language contract. The open “Commit the hybrid ownership memory-safety
+model” item above remains the adoption gate; memory-checker and memory-safety
+test rows remain open until their own criteria are met.
 
 ```text
 [x] Choose ownership model
@@ -1070,6 +1081,152 @@ Reason for additions:
 [ ] Define JSON validation tests
 [ ] Define security tests
 [ ] Define memory-safety tests
+    Proposal-only semantic case-catalogue work is unblocked. Mark unresolved
+    language outcomes explicitly; this does not adopt syntax, claim compiler/
+    runtime enforcement, or close the ownership-model and memory-checker rows.
+    Draft catalogue: docs/memory-safety-test-catalogue.md; this row remains open
+    until an owner-approved semantic oracle and enforcing test path exist.
+    Catalogue update (2026-10-09): MS-PROV-01 records an unresolved
+    pointer-provenance/extent test dimension. The compiler-package Q1 tests
+    currently reproduce both an in-range unstaged nested pointer and an
+    in-range unregistered root pointer that the TypeScript/WAT prototype does
+    not refuse. `allocRecord` is test/differential only, so this does not
+    establish a production or general Fungi security
+    break. SuperGrok review is pending; this is not an adopted language rule.
+    Astra independently adjudicated the pinned source: the bootstrap gap is
+    confirmed, while production reachability and RD-wide impact remain
+    NOT_VERIFIABLE. A base/extent ledger alone is insufficient without
+    complete mediation, protected metadata, reference-bound lifetime/authority,
+    and mutation control. Review thread 01a11642-55bd-7c23-9ccc-587f10444bf9,
+    turn 01a11f9d-99ff-7620-bae0-2224a02e5f0d. The regression now checks
+    raw-export and signed/admitted-helper behavior, refusal, and returned
+    result. The raw nested-pointer arm now captures the guest heap watermark
+    immediately after export, then checks after successful finalization that
+    the extent is non-empty, ends before the foreign pointer, and is zeroed;
+    it separately checks that the foreign sentinel survives. This proves only
+    the successful export/finalizer path; a trap before finalization still
+    bypasses that host cleanup call.
+    The admitted-path valid staged root/child positive control returns
+    `[2, 1, 0]`. Positive/negative cases use fresh instances with matching
+    staging histories and staged roots; the foreign child remains accepted.
+    The admitted nested and separate-root checks now require a non-empty
+    guest-owned range before `.every(...)`, so the cleanup assertions cannot
+    pass vacuously at `HEAP_BASE`. A separate in-range unstaged-root case
+    pointing to a valid staged child is also accepted; it checks guest-heap
+    cleanup and preservation of both
+    host-owned records. The tests assert exact host-staging bases and that
+    foreign 8-byte extents at 4096/8192 are in linear memory but outside staged
+    extents. The separate root case and the admitted nested-pointer arm also
+    check their post-call guest-heap extents. The nested raw arm now also checks
+    a non-empty pre-finalizer watermark, zeroing after finalization, and
+    sentinel preservation. The nested admitted case checks its staged root
+    and unused child slot remain unchanged. Source review (2026-10-09) confirms
+    the unresolved defect is architectural, not just a missing assertion:
+    `emitFlattenChecks` rejects only nonzero nested pointers below
+    `WAT_HEAP_BASE` before recursive loads, while `HostRuntime.allocRecord`
+    advances a cursor from that same base without retaining exact allocation,
+    schema, or generation metadata. Host-staged inputs and guest-owned output
+    therefore share the address space; bounding children only by the guest
+    heap cursor would reject the valid staged-child control. A remediation must
+    mediate exact live allocation identity, complete extent, alignment and
+    schema before the first nested load, with bounded cycle/depth handling and
+    no result publication on refusal; staging must not be wiped as guest-owned.
+    Separate arenas plus a protected ledger or schema-directed copy-in are
+    candidates, not selected ABI or adopted Fungi semantics. The distinct
+    SuperGrok architecture delta `codex-supergrok-galerina-wat-nested-pointer-provenance-20261009-05`
+    is OPEN; the existing -04 test-evidence request remains separate/open.
+    No code behavior or TODO disposition changes follow from this proposal.
+    Fresh WSL verification (2026-10-09)
+    rebuilt the runtime-WASM and compiler TypeScript outputs with their local
+    `tsc -p tsconfig.json` commands, then ran the Q1 file with `GIT_DIR` and
+    `GIT_WORK_TREE` unset: 36/38. The only failures remain the two expected
+    provenance refusals; the new raw cleanup assertions pass. No GitHub CI ran.
+    This exercises
+    `invokeAdmittedExport`; it does not prove the selected protected operation
+    is wired to this helper or establish hostile-host containment. SuperGrok
+    dispatch remains OPEN; delivery is not pickup or review. Astra's bounded
+    runtime-path follow-up is complete; no evidence grade or
+    semantic rule has been changed on its authority. Astra caught a test-oracle
+    mismatch: the helper reports `err.message`, not `RuntimeError`; the
+    corrected test now checks the callable export and `trap during 'echo': `
+    contract. The fresh Q1 rerun after adding non-empty extent checks remains
+    36/38 with only the two provenance refusals failing; all new cleanup
+    assertions pass. Current test SHA-256:
+    1DC2D88205646835D7A824A1594CA2944DA7054F651EA2EABAD07FB0F1618E2B.
+    Astra confirmed the preceding fresh-instance and separate invalid-root
+    probes distinguish two bounded bootstrap gaps; matching allocation
+    histories and root cleanup/foreign-record preservation were source-checked
+    by Astra. Grok.com response
+    `ace38a60-b611-4b85-9c79-a332d7ee120d` could not inspect the uncommitted
+    test revision and made overlap concerns conditional; the current test now
+    records/asserts the host and guest extents. Astra confirmed that concern is
+    addressed, but found a units error in two new memory-capacity checks:
+    `Int32Array.byteLength` is already bytes. Codex changed the checks to use
+    it directly. The focused WSL rerun remains 36/38 with only the two expected
+    provenance refusals failing. Astra's narrow source recheck passed in turn
+    `01a11fb3-d5b0-7cb1-959a-1ee2db1a1765`, message
+    `msg_0617df87b65142c5016ac8a0c04e4087d292c1e6e7faa440ea`; it verified the
+    latest test hash but did not rerun tests. This closes only the assertion
+    units issue; provenance remediation remains open.
+    Evidence check (2026-10-09): WSL, from the compiler-package directory,
+    `node --test tests/governed-memory.test.mjs` passes 15/15 against the
+    compiled TypeScript prototype. That test exercises a
+    JavaScript Map of metadata and owner-flow string equality; it does not test
+    `.fungi` ownership/aliasing, secret-byte custody, cleanup, or compiler,
+    runtime, FFI, or host enforcement. Keep this pass as bootstrap evidence;
+    this TODO remains open.
+    Evidence correction (2026-10-09): current test SHA-256
+    815E311779AE668683061509AD0E8453FBDD0D74BEB0D86D54E7EBB4D51BEB21 was
+    rerun in WSL with GIT_DIR/GIT_WORK_TREE unset and remains 36/38. Astra's
+    independent exact-source adjudication (thread 01a11642-55bd-7c23-9ccc-
+    587f10444bf9, turn 01a11fde-8412-7023-8e73-7ec481083f6d, message
+    msg_0617df87b65142c5016ac8abf5f3e087d2b01dc7c4bad36048) confirms the
+    4096 root fixture is outside staged [1024,1096) and reported guest-owned
+    output (post-call heap end <=4096); nested foreign [8192,8200) is outside
+    host staging. Correction: raw nested arm has no explicit guest heap-end or
+    zero assertion; admitted nested and separate root arms do check guest
+    cleanup. This corrects the earlier generic cleanup wording without changing
+    the TODO's open status. SuperGrok follow-up -04 is OPEN; no reply inferred.
+    Fresh exact-file WSL recheck (2026-10-09): test SHA-256
+    E94A319E4EEF02209729DE82454C4DE0767FB4E0D7787E4DC58A53DEF76E6DDE;
+    `wat-emitter.ts` SHA-256 A8CEA968C83356843F73AC96DDDEBC26A91CDD61310DA1E7DFCA3BE30B28D375;
+    `wasm-runtime.ts` SHA-256 B681D5BD0E7CDFF69801EDFD7C016251AFBF8CFD1D4153CC07EC711213C95295.
+    With `GIT_DIR` and `GIT_WORK_TREE` unset, `node --test
+    tests/q1-secret-return-value.test.mjs` reports 37/39. The only two failing
+    cases remain the unregistered nested pointer at 8192 (raw and admitted
+    paths return `[2,324508639,0]`) and unregistered root at 4096 (admitted
+    path returns `[2,1,0]`). No source behavior changed; no GitHub CI ran.
+    Fresh superseding WSL rerun (2026-10-09): rebuilt compiler and runtime-WASM
+    packages from the worktree with `GIT_DIR` and `GIT_WORK_TREE` unset, then
+    ran the same test file: 37/39. Current test SHA-256
+    `C4434830D1C922B07A40CC90AF39545515ED4F2B038021CF3C138A5018C7E57B`;
+    emitter `A8CEA968C83356843F73AC96DDDEBC26A91CDD61310DA1E7DFCA3BE30B28D375`;
+    runtime `125C7B087D620BB5C2DE4EECB48278EA5B02EC4C18A83EFF5DA9FD499DEF8411`.
+    The same two provenance refusals fail with `[2,324508639,0]` for raw and
+    admitted nested access and `[2,1,0]` for the admitted unregistered root;
+    all other 37 tests pass, including the revised empty-watermark oracle.
+    This remains bootstrap evidence; no Fungi ABI decision or TODO/RD closure
+    follows. No GitHub CI ran.
+    Independent Astra adjudication (thread
+    `01a11642-55bd-7c23-9ccc-587f10444bf9`, turn
+    `01a1207b-4140-7963-a672-c5656a1260a7`, message
+    `msg_0617df87b65142c5016ac8d3db97bc87d2ac444ae31948e8c1`) verified HEAD
+    `9a26c71e60e491766ef351d0efe0405b0739c1b6` and the supplied test/emitter/
+    runtime hashes. Astra's verdict: PASS only for the fixed, aligned,
+    nonzero-patterned final-memory predicate; no counterexample was found in
+    those cases. Terminology correction: the watermark is `HEAP_BASE` (1024),
+    not zero; the test now says “empty reported extent.” Same-value writes and
+    transient writes restored before observation remain undetectable, and a
+    wipe followed by cursor reset intentionally fails the predicate but is not
+    itself proof of a leak. The 37/39 result was supplied, not independently
+    rerun by Astra. Both missing-provenance cases remain source-supported,
+    execution-reported bootstrap findings; no production reachability, Fungi
+    semantic rule, or RD closure is established.
+    Post-review terminology-only test edit: replaced “zero watermark” with
+    “empty reported extent” per Astra. WSL rerun with GIT_DIR/GIT_WORK_TREE
+    unset remains 37/39 (the same two provenance failures); test SHA-256 is
+    `A3F5337F7250C65273888DC98FAF883ED764A1E73515A39414F6B042D5E807D9`.
+    No behavior, source enforcement, or disposition changed; no GitHub CI ran.
 [x] Define type checker tests
 [x] Define source-map tests
 [ ] Define compiler report tests

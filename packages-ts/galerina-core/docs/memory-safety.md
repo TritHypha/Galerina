@@ -127,7 +127,10 @@ count = count + 1
 
 ## Ownership Model
 
-Galerina uses a hybrid ownership model.
+The hybrid ownership model described here is a v1 candidate, not an adopted
+language contract. Memory-safety claims depend on the compiler actually
+enforcing ownership, borrow, move, bounds and unsafe-boundary checks; this
+document does not establish that those checks are implemented or complete.
 
 Normal values use safe automatic memory management. Resources, concurrent messages, accelerator buffers and secrets use stricter ownership rules.
 
