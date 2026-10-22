@@ -14384,10 +14384,10 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:90",
       "ref scripts/audit-examples-vs-declared.mjs:92",
       "ref scripts/audit-examples-vs-declared.mjs:102",
-      "ref galerina.mjs:1472",
-      "ref galerina.mjs:2338",
-      "ref galerina.mjs:1480",
-      "ref galerina.mjs:2344"
+      "ref galerina.mjs:1494",
+      "ref galerina.mjs:2362",
+      "ref galerina.mjs:1502",
+      "ref galerina.mjs:2368"
     ]
   },
   {
@@ -14709,10 +14709,10 @@
       "ref scripts/audit-twin-emit-parity.mjs:209",
       "ref scripts/component-health.mjs:419",
       "test scripts/tests/cg4-signing-boundary.test.mjs:80",
-      "ref galerina.mjs:1478",
-      "ref galerina.mjs:2342",
-      "ref galerina.mjs:1480",
-      "ref galerina.mjs:2344"
+      "ref galerina.mjs:1500",
+      "ref galerina.mjs:2366",
+      "ref galerina.mjs:1502",
+      "ref galerina.mjs:2368"
     ]
   },
   {
@@ -14889,8 +14889,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2421",
-      "galerina.mjs:2425"
+      "galerina.mjs:2445",
+      "galerina.mjs:2449"
     ],
     "tests": 0,
     "refs": 0,
@@ -14899,8 +14899,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2421",
-      "emit galerina.mjs:2425"
+      "emit galerina.mjs:2445",
+      "emit galerina.mjs:2449"
     ]
   },
   {
@@ -15819,7 +15819,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2485"
+      "galerina.mjs:2509"
     ],
     "tests": 0,
     "refs": 0,
@@ -15828,7 +15828,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2485"
+      "emit galerina.mjs:2509"
     ]
   },
   {
@@ -16024,7 +16024,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1237"
+      "galerina.mjs:1259"
     ],
     "tests": 0,
     "refs": 0,
@@ -16033,7 +16033,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1237"
+      "emit galerina.mjs:1259"
     ]
   },
   {
@@ -16389,7 +16389,7 @@
     "defs": [],
     "emits": [
       "packages-ts/galerina-framework-example-app/host/server.ts:94",
-      "galerina.mjs:1226"
+      "galerina.mjs:1248"
     ],
     "tests": 0,
     "refs": 0,
@@ -16399,7 +16399,7 @@
     "aliases": [],
     "allSites": [
       "emit packages-ts/galerina-framework-example-app/host/server.ts:94",
-      "emit galerina.mjs:1226"
+      "emit galerina.mjs:1248"
     ]
   },
   {
@@ -16643,7 +16643,7 @@
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "scripts/audit-signed-fixture-drift.mjs:80",
-      "galerina.mjs:2469"
+      "galerina.mjs:2493"
     ],
     "tests": 0,
     "refs": 0,
@@ -16655,7 +16655,7 @@
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "emit scripts/audit-signed-fixture-drift.mjs:80",
-      "emit galerina.mjs:2469"
+      "emit galerina.mjs:2493"
     ]
   },
   {
@@ -16688,7 +16688,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1202"
+      "galerina.mjs:1224"
     ],
     "tests": 0,
     "refs": 0,
@@ -16697,7 +16697,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1202"
+      "emit galerina.mjs:1224"
     ]
   },
   {
@@ -17046,7 +17046,7 @@
       "test scripts/tests/gate-admission-envelope.test.mjs:298",
       "test scripts/tests/helpers/gate-admission-fixture.mjs:83",
       "test scripts/tests/helpers/gate-admission-fixture.mjs:86",
-      "ref galerina.mjs:1271"
+      "ref galerina.mjs:1293"
     ]
   },
   {
@@ -21544,7 +21544,7 @@
     "allSites": [
       "ref governance/key-lifecycle.mjs:30",
       "emit governance/key-lifecycle.mjs:98",
-      "ref galerina.mjs:2597"
+      "ref galerina.mjs:2621"
     ]
   },
   {
@@ -22594,10 +22594,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1843",
-      "galerina.mjs:2008",
-      "galerina.mjs:2045",
-      "galerina.mjs:2181"
+      "galerina.mjs:1866",
+      "galerina.mjs:2031",
+      "galerina.mjs:2068",
+      "galerina.mjs:2204"
     ],
     "tests": 0,
     "refs": 0,
@@ -22606,10 +22606,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1843",
-      "emit galerina.mjs:2008",
-      "emit galerina.mjs:2045",
-      "emit galerina.mjs:2181"
+      "emit galerina.mjs:1866",
+      "emit galerina.mjs:2031",
+      "emit galerina.mjs:2068",
+      "emit galerina.mjs:2204"
     ]
   },
   {
@@ -22620,7 +22620,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2154"
+      "galerina.mjs:2177"
     ],
     "tests": 0,
     "refs": 0,
@@ -22629,7 +22629,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2154"
+      "emit galerina.mjs:2177"
     ]
   },
   {
@@ -22666,7 +22666,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1728"
+      "galerina.mjs:1751"
     ],
     "tests": 0,
     "refs": 0,
@@ -22675,7 +22675,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1728"
+      "emit galerina.mjs:1751"
     ]
   },
   {
@@ -22686,7 +22686,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1755"
+      "galerina.mjs:1778"
     ],
     "tests": 0,
     "refs": 0,
@@ -22695,7 +22695,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1755"
+      "emit galerina.mjs:1778"
     ]
   },
   {
@@ -22706,14 +22706,14 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1813",
-      "galerina.mjs:1875",
-      "galerina.mjs:2074",
-      "galerina.mjs:2116",
-      "galerina.mjs:2611",
-      "galerina.mjs:2631",
-      "galerina.mjs:2699",
-      "galerina.mjs:2741"
+      "galerina.mjs:1836",
+      "galerina.mjs:1898",
+      "galerina.mjs:2097",
+      "galerina.mjs:2139",
+      "galerina.mjs:2635",
+      "galerina.mjs:2655",
+      "galerina.mjs:2723",
+      "galerina.mjs:2765"
     ],
     "tests": 0,
     "refs": 0,
@@ -22722,14 +22722,14 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1813",
-      "emit galerina.mjs:1875",
-      "emit galerina.mjs:2074",
-      "emit galerina.mjs:2116",
-      "emit galerina.mjs:2611",
-      "emit galerina.mjs:2631",
-      "emit galerina.mjs:2699",
-      "emit galerina.mjs:2741"
+      "emit galerina.mjs:1836",
+      "emit galerina.mjs:1898",
+      "emit galerina.mjs:2097",
+      "emit galerina.mjs:2139",
+      "emit galerina.mjs:2635",
+      "emit galerina.mjs:2655",
+      "emit galerina.mjs:2723",
+      "emit galerina.mjs:2765"
     ]
   },
   {
@@ -22740,9 +22740,9 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1804",
-      "galerina.mjs:2065",
-      "galerina.mjs:2624"
+      "galerina.mjs:1827",
+      "galerina.mjs:2088",
+      "galerina.mjs:2648"
     ],
     "tests": 0,
     "refs": 0,
@@ -22751,9 +22751,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1804",
-      "emit galerina.mjs:2065",
-      "emit galerina.mjs:2624"
+      "emit galerina.mjs:1827",
+      "emit galerina.mjs:2088",
+      "emit galerina.mjs:2648"
     ]
   },
   {
@@ -22764,10 +22764,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1892",
-      "galerina.mjs:1986",
-      "galerina.mjs:2127",
-      "galerina.mjs:2166"
+      "galerina.mjs:1915",
+      "galerina.mjs:2009",
+      "galerina.mjs:2150",
+      "galerina.mjs:2189"
     ],
     "tests": 0,
     "refs": 0,
@@ -22776,10 +22776,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1892",
-      "emit galerina.mjs:1986",
-      "emit galerina.mjs:2127",
-      "emit galerina.mjs:2166"
+      "emit galerina.mjs:1915",
+      "emit galerina.mjs:2009",
+      "emit galerina.mjs:2150",
+      "emit galerina.mjs:2189"
     ]
   },
   {
@@ -22790,10 +22790,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1886",
-      "galerina.mjs:1943",
-      "galerina.mjs:2121",
-      "galerina.mjs:2160"
+      "galerina.mjs:1909",
+      "galerina.mjs:1966",
+      "galerina.mjs:2144",
+      "galerina.mjs:2183"
     ],
     "tests": 0,
     "refs": 0,
@@ -22802,10 +22802,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1886",
-      "emit galerina.mjs:1943",
-      "emit galerina.mjs:2121",
-      "emit galerina.mjs:2160"
+      "emit galerina.mjs:1909",
+      "emit galerina.mjs:1966",
+      "emit galerina.mjs:2144",
+      "emit galerina.mjs:2183"
     ]
   },
   {
@@ -22816,16 +22816,16 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1742",
-      "galerina.mjs:1906",
-      "galerina.mjs:1923",
-      "galerina.mjs:1927",
-      "galerina.mjs:1972",
-      "galerina.mjs:1980",
-      "galerina.mjs:2035",
-      "galerina.mjs:2137",
-      "galerina.mjs:2147",
-      "galerina.mjs:2173"
+      "galerina.mjs:1765",
+      "galerina.mjs:1929",
+      "galerina.mjs:1946",
+      "galerina.mjs:1950",
+      "galerina.mjs:1995",
+      "galerina.mjs:2003",
+      "galerina.mjs:2058",
+      "galerina.mjs:2160",
+      "galerina.mjs:2170",
+      "galerina.mjs:2196"
     ],
     "tests": 0,
     "refs": 0,
@@ -22834,16 +22834,16 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1742",
-      "emit galerina.mjs:1906",
-      "emit galerina.mjs:1923",
-      "emit galerina.mjs:1927",
-      "emit galerina.mjs:1972",
-      "emit galerina.mjs:1980",
-      "emit galerina.mjs:2035",
-      "emit galerina.mjs:2137",
-      "emit galerina.mjs:2147",
-      "emit galerina.mjs:2173"
+      "emit galerina.mjs:1765",
+      "emit galerina.mjs:1929",
+      "emit galerina.mjs:1946",
+      "emit galerina.mjs:1950",
+      "emit galerina.mjs:1995",
+      "emit galerina.mjs:2003",
+      "emit galerina.mjs:2058",
+      "emit galerina.mjs:2160",
+      "emit galerina.mjs:2170",
+      "emit galerina.mjs:2196"
     ]
   },
   {
@@ -22854,9 +22854,9 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1857",
-      "galerina.mjs:1993",
-      "galerina.mjs:2106"
+      "galerina.mjs:1880",
+      "galerina.mjs:2016",
+      "galerina.mjs:2129"
     ],
     "tests": 0,
     "refs": 0,
@@ -22865,9 +22865,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1857",
-      "emit galerina.mjs:1993",
-      "emit galerina.mjs:2106"
+      "emit galerina.mjs:1880",
+      "emit galerina.mjs:2016",
+      "emit galerina.mjs:2129"
     ]
   },
   {
@@ -22878,7 +22878,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1761"
+      "galerina.mjs:1784"
     ],
     "tests": 0,
     "refs": 0,
@@ -22887,7 +22887,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1761"
+      "emit galerina.mjs:1784"
     ]
   },
   {
@@ -23047,7 +23047,7 @@
     "code": "FUNGI-MB-06",
     "namespace": "FUNGI",
     "family": "MB",
-    "occurrences": 43,
+    "occurrences": 45,
     "docOnly": false,
     "defs": [],
     "emits": [],
@@ -23069,6 +23069,8 @@
       "doc packages/fungi/memory/evidence/38-signet-gate1/parity.md:39",
       "doc packages/fungi/memory/evidence/38-signet-gate1/parity.md:63",
       "doc packages/fungi/memory/evidence/38-signet-gate1/parity.md:73",
+      "fungi packages/fungi/memory/src/auth-verify-e2e.fungi:19",
+      "fungi packages/fungi/memory/src/auth-verify-e2e.fungi:20",
       "fungi packages/fungi/memory/src/auth-verify-route.fungi:31",
       "fungi packages/fungi/memory/src/cleanup-evidence.fungi:3",
       "fungi packages/fungi/memory/src/secret-arena.fungi:15",
@@ -23077,14 +23079,14 @@
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:35",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:39",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:1150",
-      "test packages/fungi/memory/tests/34-secret-gate/secret-gate.test.mjs:481",
+      "test packages/fungi/memory/tests/34-secret-gate/secret-gate.test.mjs:482",
       "test packages/fungi/memory/tests/35-auth-verify-route/ts-differential.test.mjs:253",
       "test packages/fungi/memory/tests/36-app-kernel/ts-differential.test.mjs:1683",
       "test packages/fungi/memory/tests/36-app-kernel/ts-differential.test.mjs:1713",
-      "test packages/fungi/memory/tests/38-signet-gate1/signet-gate1.test.mjs:729",
-      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:205",
-      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:244",
-      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:274",
+      "test packages/fungi/memory/tests/38-signet-gate1/signet-gate1.test.mjs:730",
+      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:206",
+      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:245",
+      "test packages/fungi/memory/tests/38-signet-gate1/ts-differential.test.mjs:275",
       "doc docs/superpowers/specs/2026-10-17-ts-scaffold-to-fungi-lowering-obligations-design.md:246",
       "ref scripts/lib/code-meanings.mjs:4",
       "test scripts/tests/crr-01.test.mjs:54",
@@ -23911,14 +23913,14 @@
     "code": "FUNGI-NAME-001",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 103,
+    "occurrences": 105,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/symbol-resolver.ts:404",
       "packages-ts/galerina-core-compiler/src/symbol-resolver.ts:612"
     ],
-    "tests": 59,
+    "tests": 60,
     "refs": 13,
     "docs": 19,
     "names": [],
@@ -24007,6 +24009,7 @@
       "doc packages/fungi/memory/evidence/44-adapter-profile/parity.md:68",
       "doc packages/fungi/memory/evidence/46-monotonic-time/mutants.md:4",
       "fungi packages/fungi/memory/src/adapter-profile.fungi:9",
+      "fungi packages/fungi/memory/src/auth-verify-e2e.fungi:6",
       "fungi packages/fungi/memory/src/auth-verify-route.fungi:7",
       "fungi packages/fungi/memory/src/body-reader.fungi:9",
       "fungi packages/fungi/memory/src/cleanup-evidence.fungi:10",
@@ -24015,12 +24018,13 @@
       "fungi packages/fungi/memory/src/secret-gate.fungi:6",
       "fungi packages/fungi/memory/src/serve-gate.fungi:18",
       "fungi packages/fungi/memory/src/signet-grant-seal.fungi:7",
-      "test packages/fungi/memory/tests/31-body-reader/body-reader.test.mjs:693",
-      "test packages/fungi/memory/tests/32-release-commit-point/release-commit-point.test.mjs:483",
-      "test packages/fungi/memory/tests/33-u2-serve-gate/serve-gate.test.mjs:216",
-      "test packages/fungi/memory/tests/33-u2-serve-gate/serve-gate.test.mjs:230",
-      "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:190",
-      "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:204",
+      "test packages/fungi/memory/tests/31-body-reader/body-reader.test.mjs:694",
+      "test packages/fungi/memory/tests/32-release-commit-point/release-commit-point.test.mjs:484",
+      "test packages/fungi/memory/tests/33-u2-serve-gate/serve-gate.test.mjs:217",
+      "test packages/fungi/memory/tests/33-u2-serve-gate/serve-gate.test.mjs:231",
+      "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:191",
+      "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:205",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:167",
       "doc docs/TODO.md:14989",
       "doc docs/TODO.md:15087",
       "doc docs/architecture/self-hosting-readiness-2026-07-09.md:135",
@@ -24034,7 +24038,7 @@
     "code": "FUNGI-NAME-002",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 97,
+    "occurrences": 109,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -24046,13 +24050,17 @@
       "packages-ts/galerina-core-compiler/src/type-checker.ts:1029",
       "packages-ts/galerina-core-compiler/src/type-checker.ts:1064",
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2327",
-      "packages-ts/galerina-core-compiler/src/type-checker.ts:2882"
+      "packages-ts/galerina-core-compiler/src/type-checker.ts:2882",
+      "galerina.mjs:227",
+      "galerina.mjs:231"
     ],
-    "tests": 62,
-    "refs": 14,
+    "tests": 71,
+    "refs": 15,
     "docs": 5,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "aliases": [],
     "allSites": [
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:407",
@@ -24143,6 +24151,15 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:407",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:418",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:584",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:6",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:192",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:203",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:208",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:170",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:178",
+      "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:186",
+      "test packages/fungi/memory/tests/s2-harness/s2-guards.test.mjs:26",
+      "test packages/fungi/memory/tests/s2-harness/s2-guards.test.mjs:31",
       "doc docs/DECISIONS.md:120",
       "doc docs/TODO.md:20",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:39",
@@ -24151,7 +24168,10 @@
       "ref scripts/audit-silent-overwrite.mjs:11",
       "ref scripts/audit-silent-overwrite.mjs:39",
       "ref scripts/audit-silent-overwrite.mjs:164",
-      "ref scripts/audit-silent-overwrite.mjs:172"
+      "ref scripts/audit-silent-overwrite.mjs:172",
+      "ref galerina.mjs:216",
+      "emit galerina.mjs:227",
+      "emit galerina.mjs:231"
     ]
   },
   {
@@ -25165,9 +25185,9 @@
       "test packages-ts/galerina-core-compiler/tests/wat-i64-lift-readiness.test.mjs:25",
       "test packages-ts/galerina-core-compiler/tests/wat-i64-milestone.test.mjs:9",
       "ref packages-ts/galerina-devtools-hypha/src/extract.mjs:374",
-      "ref galerina.mjs:1491",
-      "ref galerina.mjs:1589",
-      "ref galerina.mjs:2352"
+      "ref galerina.mjs:1513",
+      "ref galerina.mjs:1612",
+      "ref galerina.mjs:2376"
     ]
   },
   {
@@ -25785,7 +25805,7 @@
       "test scripts/tests/logic-aig-source-origin-project-decoder.test.mjs:254",
       "test scripts/tests/logic-aig-source-origin-project-decoder.test.mjs:580",
       "test scripts/tests/logic-aig-source-origin-project-decoder.test.mjs:659",
-      "ref galerina.mjs:1267"
+      "ref galerina.mjs:1289"
     ]
   },
   {
@@ -30396,7 +30416,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1947"
+      "galerina.mjs:1970"
     ],
     "tests": 0,
     "refs": 0,
@@ -30405,7 +30425,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1947"
+      "emit galerina.mjs:1970"
     ]
   },
   {
@@ -30416,8 +30436,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1883",
-      "galerina.mjs:1940"
+      "galerina.mjs:1906",
+      "galerina.mjs:1963"
     ],
     "tests": 0,
     "refs": 0,
@@ -30426,8 +30446,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1883",
-      "emit galerina.mjs:1940"
+      "emit galerina.mjs:1906",
+      "emit galerina.mjs:1963"
     ]
   },
   {
@@ -30980,7 +31000,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:496"
+      "galerina.mjs:518"
     ],
     "tests": 0,
     "refs": 0,
@@ -30989,7 +31009,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:496"
+      "emit galerina.mjs:518"
     ]
   },
   {
@@ -32928,10 +32948,10 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:86",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:88",
-      "ref galerina.mjs:1473",
-      "ref galerina.mjs:2339",
-      "ref galerina.mjs:1480",
-      "ref galerina.mjs:2344"
+      "ref galerina.mjs:1495",
+      "ref galerina.mjs:2363",
+      "ref galerina.mjs:1502",
+      "ref galerina.mjs:2368"
     ]
   },
   {
@@ -33349,7 +33369,7 @@
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:16",
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:293",
       "ref scripts/rd-0157-0159-virtual-wavefront-silicon-proof.mjs:514",
-      "ref galerina.mjs:1511"
+      "ref galerina.mjs:1533"
     ]
   },
   {
@@ -34048,7 +34068,7 @@
       "doc docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md:88",
       "doc docs/language/fungi/01-flows-and-functions.md:34",
       "doc docs/language/fungi/README.md:53",
-      "ref galerina.mjs:1265"
+      "ref galerina.mjs:1287"
     ]
   },
   {
@@ -34874,12 +34894,12 @@
       "ref scripts/audit-twin-differential.mjs:143",
       "ref scripts/audit-twin-differential.mjs:145",
       "ref scripts/audit-twin-emit-parity.mjs:115",
-      "ref galerina.mjs:1466",
-      "ref galerina.mjs:1474",
-      "ref galerina.mjs:2310",
-      "ref galerina.mjs:2314",
-      "ref galerina.mjs:2324",
-      "ref galerina.mjs:1471"
+      "ref galerina.mjs:1488",
+      "ref galerina.mjs:1496",
+      "ref galerina.mjs:2333",
+      "ref galerina.mjs:2337",
+      "ref galerina.mjs:2348",
+      "ref galerina.mjs:1493"
     ]
   },
   {
@@ -38998,12 +39018,12 @@
       "doc docs/reports/rd-0873-native-fungi-assurance.md:66",
       "ref scripts/audit-codes-full.mjs:53",
       "ref scripts/audit-muted-diagnostics.mjs:55",
-      "ref galerina.mjs:1466",
-      "ref galerina.mjs:1490",
-      "ref galerina.mjs:2314",
-      "ref galerina.mjs:2325",
-      "ref galerina.mjs:2357",
-      "ref galerina.mjs:1499"
+      "ref galerina.mjs:1488",
+      "ref galerina.mjs:1512",
+      "ref galerina.mjs:2337",
+      "ref galerina.mjs:2349",
+      "ref galerina.mjs:2381",
+      "ref galerina.mjs:1521"
     ]
   },
   {
