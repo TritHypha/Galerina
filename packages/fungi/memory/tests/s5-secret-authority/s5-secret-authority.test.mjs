@@ -202,7 +202,9 @@ function invokePort(args) {
   try {
     const r = spawnSync(process.execPath, [GALERINA, "run", file, "--invoke", "portAccess", ...args.map(String)], { encoding: "utf8", cwd: REPO, timeout: 120000 });
     const text = (r.stdout || "") + (r.stderr || "");
-    const m = text.match(/=>\s*(-?\d+)\s*$/m);
+    assert.equal(r.status, 0, "invoke failed: " + text);
+    // Same value parse as suite 34 invoke(): "=> N" or a bare trailing integer.
+    const m = text.match(/=>\s*(-?\d+)\s*$/m) || text.match(/(-?\d+)\s*$/);
     assert.notEqual(m, null, "no value: " + text);
     return Number(m[1]);
   } finally {
@@ -215,6 +217,9 @@ test("S5-R5 per-secret port: only a declared name with a present provider is rea
   assert.equal(invokePort([0, 1, 0, 1]), 100, "declared + provider");
   assert.equal(invokePort([0, 0, 0, 1]), 112, "undeclared name refuses (12 Undeclared)");
   assert.equal(invokePort([0, 1, 0, 0]), 119, "provider absent refuses (19 ProviderAbsent)");
+  assert.equal(invokePort([0, 0, 0, 0]), 112, "undeclared is decided before provider presence (no presence leak)");
+  assert.equal(invokePort([0, 0, 0, 7]), 111, "unlisted provider token is Unlisted even for an undeclared name");
+  assert.equal(invokePort([0, 2, 0, 0]), 111, "unlisted declared token is Unlisted even when the provider is absent");
   assert.equal(invokePort([0, 2, 0, 1]), 111, "unlisted declared token");
   assert.equal(invokePort([0, 1, 0, 7]), 111, "unlisted provider token");
   assert.equal(invokePort([3, 1, 0, 1]), 110, "foreign class (NaN) on declared");
