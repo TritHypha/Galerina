@@ -10,7 +10,7 @@
 
 | Section | Documents |
 |---|---|
-| [`wsl-round2-2026-09-12-cdfebd5b77bb/`](wsl-round2-2026-09-12-cdfebd5b77bb/) | — (no documents; browse the directory) |
+| `wsl-round2-2026-09-12-cdfebd5b77bb/` | Transfer payload is absent from this checkout; restore it before adding a navigable link. |
 
 ---
 

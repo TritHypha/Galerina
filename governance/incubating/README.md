@@ -1,6 +1,6 @@
 # `governance/incubating/` — plugin drafts (NOT scanned by the border gate)
 
-`galerina border-check` scans only [`../plugins/`](../plugins/). This directory holds
+`galerina border-check` scans the configured `governance/plugins/` path when present. This directory holds
 **unfinished plugin drafts** that are deliberately kept out of the admission path so
 the gate stays silent (a zero-trust gateway should raise nothing until there is a
 real breach — see the alert-fatigue rationale in the 2026-06-17 audit follow-up).
