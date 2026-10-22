@@ -326,3 +326,88 @@ test("S5-R6c MB-06: a successful delivery is DELIVERY_UNKNOWN and can never be a
   assert.notEqual(ack, 101, "ACK after a delivery-unknown handoff must never reach acknowledged");
   assert.ok(Number.isInteger(ack) && ack >= 100 && ack <= 199, "ACK refusal is a listed typed code: " + String(ack));
 });
+// ---------------- S5-R7: getSecret/noteUnknown decided by the WebAssembly (gcw-s5f, RED FIRST) ----------------
+// Routing round plan: TS keeps IO only (provider.use, staging copy, wipe); every lease decision on the
+// getSecret/noteUnknown path is a verdict of the pinned secret-gate WebAssembly (deliverPreHandoff,
+// gateNoteUnknown) reached through the loader. kernel.ts builds createSecretReleaseShell(provider,
+// { decider: fungiGate }) and stops importing createSecretGate (S5-R1b goes green).
+// Zero-trust choices: the shell has NO default decider (construction without one throws); an unlisted
+// noteUnknown verdict fails toward delivery-unknown (never leaves a released lease open); an unlisted
+// pre verdict refuses before provider.use. Rejected: wrapping createSecretGate behind a new name (games
+// R1b, TS still decides); a TS fallback decider when the WebAssembly refuses (two deciders = bypass);
+// leaving the lease released on an unlisted noteUnknown verdict (keeps a window open after bytes left).
+const SECRET_GATE_JS = join(AK, "dist", "secret-gate.js");
+const SYN_PRE_OK = Object.freeze({ declared: true, providerPresent: true, epochPresent: true, epochMint: 3, epochUse: 3, epochMoved: false, revoked: false, currentlyValid: true });
+
+test("S5-R7a loader noteUnknownVerdict is the WebAssembly gateNoteUnknown verdict", async () => {
+  const L = await loader();
+  const res = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)), expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, true, "load: " + res.code);
+  assert.equal(typeof res.gate.noteUnknownVerdict, "function", "gate.noteUnknownVerdict");
+  const want = ["no-op", "delivery-unknown", "no-op", "no-op", "no-op"];
+  for (let s = 0; s < want.length; s += 1) assert.equal(res.gate.noteUnknownVerdict(s), want[s], LEASE[s]);
+  for (const bad of [9, -1, 1.5, "1", undefined, Number.NaN, 2 ** 40]) {
+    assert.equal(res.gate.noteUnknownVerdict(bad), "UNKNOWN", "unlisted lease " + String(bad));
+  }
+});
+
+test("S5-R7b loader preHandoffVerdict is the WebAssembly deliverPreHandoff verdict", async () => {
+  const L = await loader();
+  const res = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)), expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, true, "load: " + res.code);
+  assert.equal(typeof res.gate.preHandoffVerdict, "function", "gate.preHandoffVerdict");
+  assert.equal(res.gate.preHandoffVerdict(SYN_PRE_OK), "admit", "declared, present, epoch-stable, valid");
+  const refusals = [
+    ["undeclared", { declared: false }],
+    ["provider absent", { providerPresent: false }],
+    ["epoch absent", { epochPresent: false }],
+    ["mint != use", { epochUse: 4 }],
+    ["epoch moved", { epochMoved: true }],
+    ["revoked", { revoked: true }],
+    ["no longer valid", { currentlyValid: false }],
+    ["NaN epoch", { epochUse: Number.NaN }],
+    ["string epoch", { epochMint: "3" }],
+    ["huge epoch", { epochMint: 2 ** 40, epochUse: 2 ** 40 }],
+    ["truthy non-boolean declared", { declared: "yes" }],
+    ["numeric provider token", { providerPresent: 1 }],
+    ["truthy revoked flag is not false", { revoked: "no" }],
+  ];
+  for (const [label, patch] of refusals) {
+    assert.notEqual(res.gate.preHandoffVerdict({ ...SYN_PRE_OK, ...patch }), "admit", label);
+  }
+  assert.notEqual(res.gate.preHandoffVerdict(undefined), "admit", "missing facts never admit");
+});
+
+test("S5-R7c createSecretReleaseShell obeys the decider and has no default decider", async () => {
+  assert.equal(existsSync(SECRET_GATE_JS), true, "app-kernel not built: " + SECRET_GATE_JS);
+  const G = await import(pathToFileURL(SECRET_GATE_JS).href);
+  assert.equal(typeof G.createSecretReleaseShell, "function", "createSecretReleaseShell export");
+  let uses = 0;
+  const provider = { has: (n) => n === "SYN_A", use: (n, fn) => { uses += 1; fn(new Uint8Array([7, 7, 7])); }, revocationEpoch: () => 3 };
+  assert.throws(() => G.createSecretReleaseShell(provider, {}), "no decider = refuse construction");
+  // A refusing pre verdict: provider.use is never reached and no lease is released.
+  const refuseAll = { preHandoffVerdict: () => "refuse", noteUnknownVerdict: () => "no-op" };
+  const s1 = G.createSecretReleaseShell(provider, { decider: refuseAll, requireBoundOperationId: true, requireRevocationEpoch: true });
+  assert.throws(() => s1.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-op-1"));
+  assert.equal(uses, 0, "provider.use not reached after a refusing pre verdict");
+  assert.notEqual(s1.status("syn-op-1").state, "released");
+  // Admit, then a listed no-op noteUnknown verdict is obeyed (TS does not decide on its own).
+  const admitNoop = { preHandoffVerdict: () => "admit", noteUnknownVerdict: () => "no-op" };
+  const s2 = G.createSecretReleaseShell(provider, { decider: admitNoop, requireBoundOperationId: true, requireRevocationEpoch: true });
+  s2.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-op-2");
+  assert.equal(s2.status("syn-op-2").state, "released");
+  s2.noteUnknown("syn-op-2");
+  assert.equal(s2.status("syn-op-2").state, "released", "listed no-op verdict obeyed");
+  // An unlisted noteUnknown verdict fails toward delivery-unknown, never leaves the lease released.
+  const admitBogus = { preHandoffVerdict: () => "admit", noteUnknownVerdict: () => "BOGUS" };
+  const s3 = G.createSecretReleaseShell(provider, { decider: admitBogus, requireBoundOperationId: true, requireRevocationEpoch: true });
+  s3.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-op-3");
+  s3.noteUnknown("syn-op-3");
+  assert.equal(s3.status("syn-op-3").state, "delivery-unknown", "unlisted verdict fails toward UNKNOWN");
+  // An unlisted pre verdict refuses (never admits).
+  const preBogus = { preHandoffVerdict: () => 100, noteUnknownVerdict: () => "no-op" };
+  const s4 = G.createSecretReleaseShell(provider, { decider: preBogus, requireBoundOperationId: true, requireRevocationEpoch: true });
+  const before = uses;
+  assert.throws(() => s4.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-op-4"));
+  assert.equal(uses, before, "unlisted pre verdict refuses before provider.use");
+});

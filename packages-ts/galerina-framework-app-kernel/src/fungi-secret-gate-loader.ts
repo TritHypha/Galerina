@@ -41,6 +41,22 @@ export interface ObservedSecretsProvider {
 export interface FungiSecretGate {
   /** null = the WebAssembly returned packed 100 for every required name; else refuse. */
   admit(provider: unknown, required: unknown): "secret_unavailable" | null;
+  /** gateNoteUnknown verdict: 106 -> "delivery-unknown", 108 -> "no-op", anything else (trap, unlisted) -> "UNKNOWN". */
+  noteUnknownVerdict(leaseState: unknown): "delivery-unknown" | "no-op" | "UNKNOWN";
+  /** deliverPreHandoff verdict: packed 100 -> "admit"; every other code, a trap or unreadable facts -> "refuse". */
+  preHandoffVerdict(facts: unknown): "admit" | "refuse";
+}
+
+/** Host observations for deliverPreHandoff. TS only maps them onto Int tags; the WebAssembly decides. */
+export interface PreHandoffFacts {
+  readonly declared: boolean;
+  readonly providerPresent: boolean;
+  readonly epochPresent: boolean;
+  readonly epochMint: number;
+  readonly epochUse: number;
+  readonly epochMoved: boolean;
+  readonly revoked: boolean;
+  readonly currentlyValid: boolean;
 }
 
 export type FungiSecretGateLoad =
@@ -69,7 +85,58 @@ function classifyInteger(value: unknown): readonly [number, number] {
   return [0, value];
 }
 
-function makeGate(admitExport: AdmitExport): FungiSecretGate {
+const DELIVERY_UNKNOWN_PACKED = 106;
+const NO_OP_PACKED = 108;
+
+/** c-boundary classTag for a host value claimed to be a 0/1 token. Returns [classTag, token]. */
+function classifyToken(value: unknown): readonly [number, number] {
+  if (value === true) return [0, 1];
+  if (value === false) return [0, 0];
+  return [10, 0];
+}
+
+function makeGate(admitExport: AdmitExport, noteUnknownExport: AdmitExport, preExport: AdmitExport): FungiSecretGate {
+  function noteUnknownVerdict(leaseState: unknown): "delivery-unknown" | "no-op" | "UNKNOWN" {
+    const [leaseClass, lease] = classifyInteger(leaseState);
+    let packed: unknown;
+    try {
+      packed = noteUnknownExport(leaseClass, lease);
+    } catch {
+      return "UNKNOWN"; // trap = typed UNKNOWN
+    }
+    if (packed === DELIVERY_UNKNOWN_PACKED) return "delivery-unknown";
+    if (packed === NO_OP_PACKED) return "no-op";
+    return "UNKNOWN";
+  }
+
+  function preHandoffVerdict(facts: unknown): "admit" | "refuse" {
+    if (facts === null || typeof facts !== "object") return "refuse";
+    // Read every field exactly once; a throwing getter refuses.
+    let f: Record<string, unknown>;
+    try {
+      const src = facts as Record<string, unknown>;
+      f = {
+        declared: src["declared"], providerPresent: src["providerPresent"], epochPresent: src["epochPresent"],
+        epochMint: src["epochMint"], epochUse: src["epochUse"], epochMoved: src["epochMoved"],
+        revoked: src["revoked"], currentlyValid: src["currentlyValid"],
+      };
+    } catch {
+      return "refuse";
+    }
+    const args = [
+      ...classifyToken(f["declared"]), ...classifyToken(f["providerPresent"]), ...classifyToken(f["epochPresent"]),
+      ...classifyInteger(f["epochMint"]), ...classifyInteger(f["epochUse"]), ...classifyToken(f["epochMoved"]),
+      ...classifyToken(f["revoked"]), ...classifyToken(f["currentlyValid"]),
+    ];
+    let packed: unknown;
+    try {
+      packed = preExport(...args);
+    } catch {
+      return "refuse";
+    }
+    return packed === ADMIT_PACKED ? "admit" : "refuse";
+  }
+
   function call(args: readonly number[]): boolean {
     let packed: unknown;
     try {
@@ -173,7 +240,7 @@ function makeGate(admitExport: AdmitExport): FungiSecretGate {
     return null;
   }
 
-  return Object.freeze({ admit });
+  return Object.freeze({ admit, noteUnknownVerdict, preHandoffVerdict });
 }
 
 /** Load a secret-gate WebAssembly artifact. Refuses (typed) unless it hashes to the pin. */
@@ -186,18 +253,31 @@ export function loadFungiSecretGate(input: { readonly wasmBytes?: unknown; reado
   const actual = createHash("sha256").update(bytes).digest("hex");
   if (actual !== pin) return refused("APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH");
   let admitExport: unknown;
+  let noteUnknownExport: unknown;
+  let preExport: unknown;
   try {
     const mod = new WebAssembly.Module(bytes);
     if (WebAssembly.Module.imports(mod).length !== 0) return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
     const instance = new WebAssembly.Instance(mod, {});
     admitExport = (instance.exports as Record<string, unknown>)["admit"];
+    noteUnknownExport = (instance.exports as Record<string, unknown>)["gateNoteUnknown"];
+    preExport = (instance.exports as Record<string, unknown>)["deliverPreHandoff"];
   } catch {
     return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
   }
   if (typeof admitExport !== "function" || (admitExport as AdmitExport).length !== 10) {
     return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
   }
-  return Object.freeze({ ok: true as const, gate: makeGate(admitExport as AdmitExport) });
+  if (typeof noteUnknownExport !== "function" || (noteUnknownExport as AdmitExport).length !== 2) {
+    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+  }
+  if (typeof preExport !== "function" || (preExport as AdmitExport).length !== 16) {
+    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+  }
+  return Object.freeze({
+    ok: true as const,
+    gate: makeGate(admitExport as AdmitExport, noteUnknownExport as AdmitExport, preExport as AdmitExport),
+  });
 }
 
 /** The only kernel entry point: the shipped asset against the compiled-in pin. No byte injection. */
