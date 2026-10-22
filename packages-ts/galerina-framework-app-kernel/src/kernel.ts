@@ -636,7 +636,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // S5: the gate-9.5 VERDICT is the Fungi secret-gate WebAssembly `admit` export, loaded ONCE at
   // boot from the pinned asset (no option can inject bytes). A missing or tampered artifact is a
   // typed BOOT refusal (APPK_SECRET_GATE_ARTIFACT_UNKNOWN / _HASH_MISMATCH), never a silent dark
-  // kernel and never admit-without-decider. The TS gate above still serves getSecret/ack only.
+  // kernel and never admit-without-decider. The TS gate above still serves getSecret/noteUnknown only (MB-06: no ACK).
   const fungiGateLoad = loadPinnedFungiSecretGate();
   if (!fungiGateLoad.ok) {
     throw Object.assign(new Error(`${fungiGateLoad.code}: the pinned Fungi secret-gate WebAssembly refused to load.`), {
@@ -1019,9 +1019,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (secretReleaseFinalized) return;
         secretReleaseFinalized = true;
         if (!secretAccessSpent) return;
+        // MB-06 (Phillip 2026-10-22, option a): a successful handoff is DELIVERY_UNKNOWN (106),
+        // matching the Fungi deliverPostHandoff verdict. The kernel never acknowledges a delivery,
+        // so `ok` (the chosen HTTP outcome) no longer selects an ACK; every spent lease ends
+        // delivery-unknown. Rejected: a released-pending-ack verdict (keeps an ACK window open).
+        void ok;
         try {
-          if (ok) secretGate.acknowledge(releaseOperationId);
-          else secretGate.noteUnknown(releaseOperationId);
+          secretGate.noteUnknown(releaseOperationId);
         } catch {
           try {
             secretGate.noteUnknown(releaseOperationId);

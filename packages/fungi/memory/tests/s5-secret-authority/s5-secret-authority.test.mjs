@@ -312,16 +312,17 @@ test("S5-R6b WebAssembly ack verdict reproduces the kernel acknowledgeMinted out
   assert.notEqual(e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, 1, 0, 0), 101, "never acknowledged before audit commit");
 });
 
-test("S5-R6c WebAssembly delivery verdict lets a successful kernel delivery be acknowledged", () => {
-  // Kernel today: a successful getSecret leaves the lease released, and the kernel ACKs it after
-  // publication (status acknowledged). The Fungi post-handoff verdict must allow that sequence.
+test("S5-R6c MB-06: a successful delivery is DELIVERY_UNKNOWN and can never be acknowledged", () => {
+  // Phillip 2026-10-22 option (a): the kernel adopts MB-06. A successful handoff maps to 106
+  // DELIVERY_UNKNOWN (lease delivery-unknown); there is no released-pending-ack verdict, and a
+  // later ACK is refused, never 101 acknowledged.
   const e = shippedExports();
   const pre = e.deliverPreHandoff(0, 1, 0, 1, 0, 1, 0, 3, 0, 3, 0, 0, 0, 0, 0, 1);
   assert.equal(pre, 100, "pre-handoff admits a declared, present, epoch-stable secret");
   // callback once-void, wipe ok, cleanup NotRequired, guard tokens 1, lease unused, no revoke, valid.
   const post = e.deliverPostHandoff(0, pre, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1);
-  const leaseAfter = post === 100 ? 1 : post === 106 ? 4 : -1;
-  assert.notEqual(leaseAfter, -1, "post-handoff verdict is listed: " + String(post));
-  assert.equal(e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, leaseAfter, 0, 1), 101,
-    "success path then ack must reach acknowledged (post=" + String(post) + ")");
+  assert.equal(post, 106, "successful handoff is DELIVERY_UNKNOWN (MB-06), got " + String(post));
+  const ack = e.gateAcknowledge(0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0, 4, 0, 1);
+  assert.notEqual(ack, 101, "ACK after a delivery-unknown handoff must never reach acknowledged");
+  assert.ok(Number.isInteger(ack) && ack >= 100 && ack <= 199, "ACK refusal is a listed typed code: " + String(ack));
 });

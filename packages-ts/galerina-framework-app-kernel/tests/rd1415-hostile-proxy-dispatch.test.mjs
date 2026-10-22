@@ -189,11 +189,11 @@ test("concurrent hostile A during in-flight B does not touch B's lease", async (
   const responseB = await pendingB;
   await waitMacrotask();
   assert.equal(responseB.status, 200);
-  assert.equal(authority.status(operationB).state, "acknowledged");
+  assert.equal(authority.status(operationB).state, "delivery-unknown");
   assert.notEqual(authority.status(`rq-A\u0000${2}`).state, "acknowledged");
 });
 
-test("spent A throw while B waits is A delivery-unknown and B acknowledged", async () => {
+test("spent A throw while B waits is A delivery-unknown and B delivery-unknown after success (MB-06)", async () => {
   const authority = new ReleaseCommitAuthority();
   let releaseB;
   const gate = new Promise((resolve) => {
@@ -237,7 +237,7 @@ test("spent A throw while B waits is A delivery-unknown and B acknowledged", asy
   const responseB = await pendingB;
   await waitMacrotask();
   assert.equal(responseB.status, 200);
-  assert.equal(authority.status(operationB).state, "acknowledged");
+  assert.equal(authority.status(operationB).state, "delivery-unknown");
   assert.equal(authority.status(operationA).state, "delivery-unknown");
 });
 
