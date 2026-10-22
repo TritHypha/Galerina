@@ -224,11 +224,11 @@ function duplicateFlowDiagnostics(flows) {
   for (const f of flows ?? []) {
     const n = f?.name;
     if (typeof n !== "string" || n === "") {
-      out.push({ code: "FUNGI-NAME-002", severity: "error", message: "a top-level flow has no readable name � refusing (fail-closed)" });
+      out.push({ code: "FUNGI-NAME-002", severity: "error", message: "a top-level flow has no readable name — refusing (fail-closed)" });
       continue;
     }
     if (seen.has(n)) {
-      out.push({ code: "FUNGI-NAME-002", severity: "error", message: `flow '${n}' is declared more than once at top level � refusing (fail-closed), never last-wins`, location: f.location });
+      out.push({ code: "FUNGI-NAME-002", severity: "error", message: `flow '${n}' is declared more than once at top level — refusing (fail-closed), never last-wins`, location: f.location });
       continue;
     }
     seen.add(n);
