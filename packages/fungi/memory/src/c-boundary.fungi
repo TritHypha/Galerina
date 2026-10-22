@@ -69,10 +69,21 @@ contract {
 
 pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int
 contract {
-  intent { "Admit a foreign observation on the physical i32 domain or return a typed refusal reason." }
+  intent { "Admit classTag 0 inside conservative i32 excluding i32 min, else typed refusal." }
 }
 {
   return readForeignBoundedInteger(classTag, integer, -2147483647, 2147483647)
+}
+
+pure flow readForeignI32Integer(classTag: Int, integer: Int) -> Int
+contract {
+  intent { "Admit classTag 0 on the full physical i32 domain including i32 min; listed tags refuse as themselves; unlisted is 11." }
+}
+{
+  if classTag == 0 {
+    return 0
+  }
+  return readForeignBoundedInteger(classTag, integer, 0, 0)
 }
 
 pure flow readForeignLength(classTag: Int, integer: Int, hi: Int) -> Int

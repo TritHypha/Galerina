@@ -25,7 +25,7 @@ const IMPORT_LINE = "\nimport \"./c-boundary.fungi\"\n";
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
-  const r = spawnSync(process.execPath, argv, { encoding: "utf8", cwd: REPO });
+  const r = spawnSync(process.execPath, argv, { encoding: "utf8", cwd: dirname(file) });
   const text = (r.stdout || "") + (r.stderr || "");
   const m = text.match(/=>\s*(-?\d+)\s*$/m) || text.match(/(-?\d+)\s*$/);
   if (!m) {

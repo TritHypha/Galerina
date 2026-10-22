@@ -3,13 +3,22 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
 const BOUNDARY = join(MEM, "src", "c-boundary.fungi");
+const ARENA = join(MEM, "src", "secret-arena.fungi");
+const RCP = join(MEM, "src", "release-commit-point.fungi");
+const PORT = join(MEM, "src", "secret-arena-custodian-port.fungi");
+const PROFILE = join(MEM, "src", "adapter-profile.fungi");
 const GALERINA = join(REPO, "galerina.mjs");
+const CB_IMPORT = "\nimport \"./c-boundary.fungi\"\n";
+const RCP_IMPORT = "\nimport \"./release-commit-point.fungi\"\n";
+const PORT_IMPORT = "\nimport \"./secret-arena-custodian-port.fungi\"\n";
+const PROFILE_IMPORT = "import \"./c-boundary.fungi\"";
 
 function invoke(file, flow, args) {
   const argv = [GALERINA, "run", file, "--invoke", flow, ...args.map(String)];
@@ -32,15 +41,82 @@ function expectPacked(r, expected, label) {
   assert.equal(r.value, expected, label + " " + r.text);
 }
 
-function withMutant(from, to, label, fn) {
-  const orig = readFileSync(BOUNDARY, "utf8");
+function withFileMutant(path, from, to, label, fn) {
+  const orig = readFileSync(path, "utf8");
   const mutant = orig.replace(from, to);
   assert.notEqual(mutant, orig, label + " needle");
-  writeFileSync(BOUNDARY, mutant);
+  writeFileSync(path, mutant);
   try {
     fn();
   } finally {
-    writeFileSync(BOUNDARY, orig);
+    writeFileSync(path, orig);
+  }
+}
+
+function withMutant(from, to, label, fn) {
+  withFileMutant(BOUNDARY, from, to, label, fn);
+}
+
+function stripVersion(src) {
+  const marker = "@version 1";
+  const first = src.indexOf(marker);
+  assert.notEqual(first, -1, "version marker");
+  return src.slice(first + marker.length);
+}
+
+function splitOnce(src, needle, label) {
+  const parts = src.split(needle);
+  assert.equal(parts.length, 2, label + " import line must occur once");
+  return parts[0] + "\n" + parts[1];
+}
+
+function flattenArena() {
+  const boundary = readFileSync(BOUNDARY, "utf8");
+  const rcp = readFileSync(RCP, "utf8");
+  const port = readFileSync(PORT, "utf8");
+  const unit = readFileSync(ARENA, "utf8");
+  let rest = unit;
+  rest = splitOnce(rest, CB_IMPORT, "c-boundary");
+  rest = splitOnce(rest, RCP_IMPORT, "release-commit-point");
+  rest = splitOnce(rest, PORT_IMPORT, "custodian-port");
+  rest = stripVersion(rest);
+  let portRest = splitOnce(port, CB_IMPORT, "port c-boundary");
+  portRest = stripVersion(portRest);
+  const dir = mkdtempSync(join(tmpdir(), "kg06-arena-"));
+  const file = join(dir, "flat.fungi");
+  writeFileSync(file, boundary + "\n" + stripVersion(rcp) + "\n" + portRest + "\n" + rest);
+  return { dir, file };
+}
+
+function flattenProfile() {
+  const boundary = readFileSync(BOUNDARY, "utf8");
+  const profile = readFileSync(PROFILE, "utf8");
+  assert.equal(profile.includes(PROFILE_IMPORT), true, "profile import");
+  const parts = profile.split(PROFILE_IMPORT);
+  assert.equal(parts.length, 2, "profile import once");
+  let rest = parts[0] + parts[1];
+  rest = stripVersion(rest);
+  const dir = mkdtempSync(join(tmpdir(), "kg06-profile-"));
+  const file = join(dir, "flat.fungi");
+  writeFileSync(file, boundary + "\n" + rest);
+  return { dir, file };
+}
+
+function invokeArenaEpoch(lastEpoch, fenceEpoch) {
+  const flat = flattenArena();
+  try {
+    return invoke(flat.file, "arenaEpoch", [0, 0, 0, 0, 0, 8, 0, 1, 0, lastEpoch, 0, fenceEpoch]);
+  } finally {
+    rmSync(flat.dir, { recursive: true, force: true });
+  }
+}
+
+function invokeClassify(kind, audit) {
+  const flat = flattenProfile();
+  try {
+    return invoke(flat.file, "classifyAdapter", [0, kind, 0, audit]);
+  } finally {
+    rmSync(flat.dir, { recursive: true, force: true });
   }
 }
 
@@ -175,4 +251,70 @@ test("KG-06 byte domain 0..255", () => {
   expectPacked(invoke(BOUNDARY, "readForeignByte", [0, 255]), 0, "byte 255");
   expectPacked(invoke(BOUNDARY, "readForeignByte", [0, 256]), 8, "byte 256");
   expectPacked(invoke(BOUNDARY, "readForeignByte", [0, -1]), 8, "byte -1");
+});
+
+test("KG-06 i32 min is 8 on SafeInteger and 0 on I32Integer", () => {
+  expectPacked(invoke(BOUNDARY, "readForeignSafeInteger", [0, -2147483648]), 8, "safe i32 min");
+  expectPacked(invoke(BOUNDARY, "readForeignI32Integer", [0, -2147483648]), 0, "i32 min admitted");
+  expectPacked(invoke(BOUNDARY, "readForeignI32Integer", [0, 2147483647]), 0, "i32 max admitted");
+  expectPacked(invoke(BOUNDARY, "readForeignI32Integer", [3, -2147483648]), 3, "NaN tag");
+  expectPacked(invoke(BOUNDARY, "readForeignI32Integer", [11, 0]), 11, "unlisted tag");
+});
+
+test("KG-06 suite 37 lastEpoch i32 min and wrap 2^31 are 140", () => {
+  expectPacked(invokeArenaEpoch(-2147483648, 0), 140, "lastEpoch i32 min");
+  expectPacked(invokeArenaEpoch(2147483648, 0), 140, "lastEpoch 2^31 wrap");
+  expectPacked(invokeArenaEpoch(1, 2147483648), 140, "fenceEpoch 2^31 wrap");
+});
+
+test("KG-06 suite 44 kind i32 min is 3 and audit i32 min is 11", () => {
+  expectPacked(invokeClassify(-2147483648, 0), 3, "kind i32 min");
+  expectPacked(invokeClassify(0, -2147483648), 11, "audit i32 min");
+  expectPacked(invokeClassify(7, -2147483648), 11, "kind 7 audit i32 min");
+});
+
+test("mutant m6f I32Integer reverts to SafeInteger goes RED then restore", () => {
+  withMutant(
+    "  if classTag == 0 {\n    return 0\n  }\n  return readForeignBoundedInteger(classTag, integer, 0, 0)",
+    "  return readForeignSafeInteger(classTag, integer)",
+    "m6f",
+    () => {
+      const r = invoke(BOUNDARY, "readForeignI32Integer", [0, -2147483648]);
+      assert.notEqual(r.value, 0, "m6f must refuse i32 min");
+      assert.equal(r.value, 8, "m6f SafeInteger domain");
+    },
+  );
+  expectPacked(invoke(BOUNDARY, "readForeignI32Integer", [0, -2147483648]), 0, "restore m6f");
+});
+
+test("mutant m6g lastEpoch call reverts to SafeInteger goes RED then restore", () => {
+  expectPacked(invokeArenaEpoch(2147483648, 0), 140, "landed wide lastEpoch");
+  withFileMutant(
+    ARENA,
+    "  let lastReason: Int = readForeignI32Integer(lastClass, lastEpoch)",
+    "  let lastReason: Int = readForeignSafeInteger(lastClass, lastEpoch)",
+    "m6g",
+    () => {
+      const r = invokeArenaEpoch(2147483648, 0);
+      assert.notEqual(r.value, 140, "m6g must lose 140");
+      assert.equal(r.value, 110, "m6g helper 8 maps to 110");
+    },
+  );
+  expectPacked(invokeArenaEpoch(2147483648, 0), 140, "restore m6g");
+});
+
+test("mutant m6h kind call reverts to SafeInteger goes RED then restore", () => {
+  expectPacked(invokeClassify(-2147483648, 0), 3, "landed kind i32 min");
+  withFileMutant(
+    PROFILE,
+    "  let kindReason: Int = readForeignI32Integer(kindClass, kind)",
+    "  let kindReason: Int = readForeignSafeInteger(kindClass, kind)",
+    "m6h",
+    () => {
+      const r = invokeClassify(-2147483648, 0);
+      assert.notEqual(r.value, 3, "m6h must lose UNKNOWN_ADAPTER_KIND");
+      assert.equal(r.value, 4, "m6h helper 8 maps to RAW_VALUE_REFUSED");
+    },
+  );
+  expectPacked(invokeClassify(-2147483648, 0), 3, "restore m6h");
 });
