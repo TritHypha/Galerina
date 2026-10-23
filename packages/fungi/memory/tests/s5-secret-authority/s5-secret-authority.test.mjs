@@ -509,6 +509,60 @@ test("S5-R8c kernel getSecret refuses when the epoch moves inside the domain aft
   }
 });
 
+// S5-R8d (gcw-s5l): an in-domain epoch move AFTER the pre-handoff verdict but BEFORE mint never
+// delivers. Found by round check s5r2 at f57250f1 (probe P2): the two pre-handoff reads saw 3, the
+// mint and use reads saw 5, and mint was compared only to use, so a revocation landing in that gap
+// delivered (200, provider.use once). Zero-trust choice: the mint epoch must equal the ADMITTED epoch
+// (and use must equal mint, already enforced by consume), so every epoch read after admission is
+// pinned to the admitted fact. Rejected: comparing mint vs use only (blind to a move before mint);
+// re-running the pre-handoff decider after mint (a lease would already exist for a refused request).
+test("S5-R8d kernel getSecret refuses when the epoch moves after the pre-handoff verdict but before mint", async () => {
+  assert.equal(existsSync(APP_KERNEL_INDEX_JS), true, "app-kernel not built: " + APP_KERNEL_INDEX_JS);
+  const { createAppKernel } = await import(pathToFileURL(APP_KERNEL_INDEX_JS).href);
+  // Epoch reads seen inside the handler, in order: 2 pre-handoff reads, the mint read, the use read.
+  const cases = [
+    ["3,3 then 5,5 (P2)", [3, 3, 5, 5], false],
+    ["3,3 then 5 at mint, back to 3 at use", [3, 3, 5, 3], false],
+    ["3,3 then 0,0 (move down)", [3, 3, 0, 0], false],
+    ["control: 3,3,3,3", [3, 3, 3, 3], true],
+  ];
+  for (const [label, seq, expectDelivery] of cases) {
+    let consumerCalled = false;
+    let uses = 0;
+    let inHandler = false;
+    let reads = 0;
+    const kernel = createAppKernel({
+      routes: [{ method: "GET", path: "/syn", handler: "syn", auth: { mode: "public" }, secrets: { require: ["SYN_A"] } }],
+      dispatch: {
+        syn: ({ getSecret }) => {
+          inHandler = true;
+          getSecret("SYN_A", () => { consumerCalled = true; });
+          return { body: { ok: true } };
+        },
+      },
+      secretsProvider: {
+        has: (n) => n === "SYN_A",
+        use: (_n, fn) => { uses += 1; fn(new Uint8Array([8, 8])); },
+        revocationEpoch: () => {
+          if (!inHandler) return 3;
+          const v = seq[Math.min(reads, seq.length - 1)];
+          reads += 1;
+          return v;
+        },
+      },
+    });
+    const res = await kernel.handle({ method: "GET", path: "/syn", headers: {}, body: new Uint8Array(0), query: {}, requestId: "rq-s5-r8d", receivedAt: 0 });
+    assert.equal(inHandler, true, label + ": admission passed and the handler ran");
+    assert.equal(consumerCalled, expectDelivery, label + ": consumer delivery");
+    if (expectDelivery) {
+      assert.equal(uses, 1, label + ": provider.use once");
+      assert.equal(res.status, 200, label + ": control succeeds");
+    } else {
+      assert.equal(uses, 0, label + ": provider.use never reached (refused at mint)");
+      assert.notEqual(res.status, 200, label + ": request does not succeed");
+    }
+  }
+});
 // ---------------- S5-R9: every loader refusal code is a registered FUNGI-* code (gcw-s5j) ----------------
 // Owner ruling 2026-10-22 22:38: the two artifact codes join the FUNGI-SECRET family.
 // Zero-trust choice: assert against the GENERATED registry and the append-only code history, not a

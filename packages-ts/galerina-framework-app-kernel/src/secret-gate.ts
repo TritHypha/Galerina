@@ -287,6 +287,14 @@ function buildSecretGate(
       }
     }
     const epochAtMint = readEpoch(provider, requireRevocationEpoch);
+    // S5-R8d: with bindAdmittedEpoch the mint epoch must BE the admitted epoch (use == mint is already
+    // enforced by consume), so a revocation landing after the pre-handoff verdict but before mint is a
+    // refusal, never a delivery. A missing or non-identical admitted fact refuses (no fallback).
+    // Rejected: comparing mint against use only (blind to a move before mint); re-running the decider
+    // after mint (a lease would already exist for a refused request).
+    if (bindAdmittedEpoch && !Object.is(epochAtMint, admittedEpoch)) {
+      throw new SecretReleaseRefused("fenced", "SecretGate: revocation epoch moved after admission");
+    }
     const lease = authority.mint(opId, epochAtMint);
     const prior = authority.stateOf(lease.leaseId);
     if (prior !== "unused") {
