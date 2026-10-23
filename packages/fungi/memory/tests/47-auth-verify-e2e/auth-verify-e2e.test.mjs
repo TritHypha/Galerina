@@ -819,3 +819,21 @@ test("mutant G8 re-open host postSpent pass-through goes red", () => {
     },
   );
 });
+
+// S7 round c (S7-R3): arena listing states reach the route exit as UNKNOWN 106, never as a raw listing token.
+// Zero-trust: Partial (3), Quarantined (1) and Disposed (2) all exit 106 (quarantine); unlisted stays 111.
+test("S7-R3a e2e: Partial arena (state token 3) exits UNKNOWN 106, not raw listing 103", () => {
+  expect(e2e({ arenaState: 3 }), 106, "partial arena");
+});
+
+test("S7-R3b e2e: Quarantined arena (state token 1) exits UNKNOWN 106, not raw listing 101", () => {
+  expect(e2e({ arenaState: 1 }), 106, "quarantined arena");
+});
+
+test("S7-R3c e2e: Disposed arena (state token 2) exits UNKNOWN 106, not raw listing 102", () => {
+  expect(e2e({ arenaState: 2 }), 106, "disposed arena");
+});
+
+test("S7-R3d e2e control: unlisted arena state token 7 stays Unlisted 111", () => {
+  expect(e2e({ arenaState: 7 }), 111, "unlisted arena");
+});
