@@ -88,17 +88,19 @@ describe("emitWATExpr: identifier", () => {
 });
 
 describe("emitWATExpr: unsupported method calls", () => {
-  it("fails closed instead of emitting an undefined WAT callee", () => {
-    const result = emitWATExpr({
+  it("throws FUNGI-WAT-METHOD-001 instead of emitting an undefined WAT callee", () => {
+    assert.throws(() => emitWATExpr({
       kind: "callExpr",
       value: "notAStdlibMethod",
       callStyle: "method",
       children: [
         { kind: "identifier", value: "receiver" },
       ],
-    }, new Map([["receiver", "$p0"]]));
-    assert.match(result, /unreachable/);
-    assert.doesNotMatch(result, /call \$notAStdlibMethod/);
+    }, new Map([["receiver", "$p0"]])), (error) =>
+      error instanceof Error &&
+      error.message.includes("FUNGI-WAT-METHOD-001") &&
+      error.message.includes("notAStdlibMethod"),
+    );
   });
 });
 

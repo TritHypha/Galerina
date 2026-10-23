@@ -3,6 +3,7 @@
 // that are referenced in global scope.
 
 declare const Buffer: {
+  alloc(size: number): Uint8Array;
   from(data: string, encoding?: string): Uint8Array & { toString(encoding: string): string };
   from(data: ArrayBuffer | Uint8Array): Uint8Array & { toString(encoding: string): string };
   isBuffer(obj: unknown): boolean;
@@ -16,10 +17,12 @@ interface ImportMeta {
 }
 
 declare const process: {
+  readonly platform: string;
   readonly argv: readonly string[];
   readonly env: Readonly<Record<string, string | undefined>>;
   readonly stdout: { write(data: string): boolean };
   readonly stderr: { write(data: string): boolean };
   cwd(): string;
+  chdir(directory: string): void;
   exit(code?: number): never;
 };

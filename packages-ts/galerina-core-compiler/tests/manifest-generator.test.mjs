@@ -121,6 +121,7 @@ describe("manifest-generator: compiler-version provenance", () => {
       cpSync(join(import.meta.dirname, "..", "dist", "manifest-generator.js"), join(dist, "manifest-generator.js"));
       cpSync(join(import.meta.dirname, "..", "dist", "flow-name.js"), join(dist, "flow-name.js"));
       cpSync(join(import.meta.dirname, "..", "dist", "parser.js"), join(dist, "parser.js"));
+      cpSync(join(import.meta.dirname, "..", "dist", "generic-argument-kinds.js"), join(dist, "generic-argument-kinds.js"));
       cpSync(join(import.meta.dirname, "..", "dist", "lexer.js"), join(dist, "lexer.js"));
       cpSync(join(import.meta.dirname, "..", "dist", "requirement-diagnostics.js"), join(dist, "requirement-diagnostics.js"));
       cpSync(join(import.meta.dirname, "..", "dist", "capability-types.js"), join(dist, "capability-types.js"));

@@ -215,6 +215,65 @@ describe("Stage B widening — full language coverage (Stage A == Stage B)", () 
     return runResult;
   }
 
+  it("self-hosted environment bindings retain local array semantics without granting secret reads", async () => {
+    const first = await executeFlow("envBind", new Map([
+      ["bindings", vList([])],
+      ["name", vStr("credential")],
+      ["v", rtInt(41)],
+    ]), rt.ast);
+    assert.equal(first.value.__tag, "list", "envBind must return the appended local binding list");
+    assert.deepEqual(first.value, vList([vRec({ name: vStr("credential"), val: rtInt(41) })]),
+      "the first result must be a correctly shaped Binding containing the nonzero Int value");
+
+    const shadowed = await executeFlow("envBind", new Map([
+      ["bindings", first.value],
+      ["name", vStr("credential")],
+      ["v", rtInt(97)],
+    ]), rt.ast);
+    const latest = await executeFlow("envLookup", new Map([
+      ["bindings", shadowed.value],
+      ["name", vStr("credential")],
+    ]), rt.ast);
+    assert.deepEqual(shadowed.value, vList([
+      vRec({ name: vStr("credential"), val: rtInt(41) }),
+      vRec({ name: vStr("credential"), val: rtInt(97) }),
+    ]), "a later binding must append without discarding the earlier binding");
+    assert.deepEqual(latest.value, rtInt(97),
+      "the most recent duplicate binding must shadow the earlier value with a valid Int representation");
+    const unrelated = await executeFlow("envLookup", new Map([
+      ["bindings", shadowed.value],
+      ["name", vStr("not-present")],
+    ]), rt.ast);
+    assert.deepEqual(unrelated.value, rtInt(0),
+      "lookup must not return the latest value for a different name");
+
+    const secretProgram = parseProgram(`secure flow readSecret() -> String
+contract { intent { "negative capability control" } effects { secret.read } }
+{
+  return Env.get("TOKEN")
+}`);
+    assert.deepEqual((secretProgram.diagnostics ?? []).filter((d) => d.severity === "error"), []);
+    const refused = await executeFlow("readSecret", new Map(), secretProgram.ast);
+    assert.deepEqual(refused.value, {
+      __tag: "err",
+      error: { __tag: "string", value: "CapabilityError: environment reads require a capability host" },
+    }, "declaring the effect must not substitute for an actual capability host");
+  });
+
+  it("nested positional flow calls bind both asymmetric arguments", async () => {
+    const src = `pure flow combine(tens: Int, ones: Int) -> Int
+contract { intent { "encode argument order into the result" } }
+{
+  return tens * 10 + ones
+}
+pure flow caller() -> Int
+contract { intent { "forward distinct positional arguments" } }
+{
+  return combine(4, 7)
+}`;
+    assert.equal(await runB(src, "caller", []), "47");
+  });
+
   it("list.append + count — Array grows correctly", async () => {
     const src = `pure flow f() -> Int\ncontract{intent{"x"}}\n{let xs: Array<Int> = [1,2]\nlet ys = xs.append(3)\nreturn ys.count()}`;
     const a = await stageA(src, "f", {}); const b = await runB(src, "f", []);

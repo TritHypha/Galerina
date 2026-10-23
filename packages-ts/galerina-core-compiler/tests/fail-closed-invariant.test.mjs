@@ -34,6 +34,22 @@ test("fail-closed: division-by-zero on the return path traps", async () => {
   assert.ok(trapsClosed(await runFlow("mut z: Int = 0  return 10 / z")), "div-by-zero on return must fail closed");
 });
 
+test("fail-closed: a nested body-local invariant failure cannot be discarded by the caller", async () => {
+  const src = `flow inner(a: Int) -> Int
+contract { effects {} invariant { ensure x > 100 } }
+{ let x = a + 1; return x }
+flow main() -> Int
+contract { effects {} }
+{ let ignored = inner(4); return 99 }`;
+  const parsed = parseProgram(src, "nested-invariant.fungi");
+  const errors = parsed.diagnostics.filter((d) => d.severity === "error");
+  assert.equal(errors.length, 0, errors.map((d) => d.message).join("; "));
+  const result = await executeFlow("main", new Map(), parsed.ast, parsed.flows);
+  const value = result.value ?? result;
+  assert.equal(value.__tag, "runtimeError", "caller must not continue with success after inner invariant refusal");
+  assert.match(value.message, /FUNGI-INV-001/);
+});
+
 // ── A trap whose result is DISCARDED must STILL fail closed (the fail-OPEN class — R&D 0038) ─────────
 // `todo`: expected-fail until 0038 lands. Removing the `todo` option turns these into permanent guards.
 test("fail-closed: i32 overflow assigned to a NON-returned binding must still trap",async () => {

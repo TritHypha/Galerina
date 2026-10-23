@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import * as L from "../dist/index.js";
+import { WAT_HEAP_BASE } from "@galerina/core-runtime-wasm";
 
 const GRANT = "FUNGI-WASM-GRANT-001";
 
@@ -70,7 +71,14 @@ function assertObservedLink(observation, options) {
   const attempt = observation.attempts[0];
   assert.equal(attempt.args.length, 2);
   assert.equal(attempt.args[0], module, "instantiate the exact compiled module");
-  assert.equal(attempt.args[1], options.host.imports, "use the exact factory imports");
+  assert.notEqual(attempt.args[1], options.host.imports, "instantiate through the admission-scoped import view");
+  const importedHost = attempt.args[1]?.host;
+  assert.ok(importedHost && typeof importedHost === "object", "provide the host namespace through the admission view");
+  assert.notEqual(
+    importedHost["audit.write"],
+    options.host.imports.host["audit.write"],
+    "the effect handler is wrapped by the per-instantiation gate",
+  );
   return attempt;
 }
 
@@ -89,8 +97,10 @@ function startGrantModule(signature, a, b) {
   return `(module
     (import "host" "audit.write" (func $write ${signature}))
     (import "host" "audit.log" (func $log (param i32 i32) (result i32)))
-    (func $start (drop (call $log (i32.const ${a}) (i32.const ${b}))))
-    (start $start))`;
+    (func $start)
+    (start $start)
+    (func $call (result i32) (call $log (i32.const ${a}) (i32.const ${b})))
+    (export "call" (func $call)))`;
 }
 
 async function assertSignatureTwins(t, signature, a = 1, b = 2) {
@@ -105,16 +115,24 @@ async function assertSignatureTwins(t, signature, a = 1, b = 2) {
   const options = await admissionOptions(startGrantModule(signature, a, b), host);
   const refused = await observeAdmission(t, options);
   assertSignatureRefusal(refused, options, calls, callbackCount);
-  const acceptedOptions = await admissionOptions(startGrantModule("(param i32 i32) (result i32)", a, b), host);
+  const acceptedHost = L.createHostRuntime(undefined, {
+    effectHandlers: {
+      "audit.write": (x, y) => { callbackCount++; calls.push(["write", x, y]); return 7; },
+      "audit.log": (x, y) => { callbackCount++; calls.push(["log", x, y]); return 8; },
+    },
+  });
+  const acceptedOptions = await admissionOptions(startGrantModule("(param i32 i32) (result i32)", a, b), acceptedHost);
   const accepted = await observeAdmission(t, acceptedOptions);
   const attempt = assertObservedLink(accepted, acceptedOptions);
   assert.equal(attempt.error, undefined);
   assert.ok(attempt.result instanceof WebAssembly.Instance);
   assert.equal(accepted.error, undefined);
   assert.ok(accepted.result.instance instanceof WebAssembly.Instance);
-  assert.equal(accepted.result.host, host);
+  assert.equal(accepted.result.host, acceptedHost);
   assert.deepEqual(WebAssembly.Module.imports(refused.compiled[0].module), WebAssembly.Module.imports(accepted.compiled[0].module), "twins have the same import roster");
-  assert.equal(callbackCount, 1, "exactly one independently counted start callback");
+  assert.equal(callbackCount, 0, "initialization performs no granted effect");
+  assert.equal(accepted.result.instance.exports.call(), 8, "an explicit post-admission call can use the grant");
+  assert.equal(callbackCount, 1);
   assert.deepEqual(calls, [["log", a, b]]);
   return { refused, options };
 }
@@ -177,7 +195,7 @@ describe("closed non-secret WASM effect-grant ABI", () => {
     assert.throws(() => assertSignatureRefusal(refused, options, [["log", 1, 2]], 1), { code: "ERR_ASSERTION" });
   });
 
-  it("refuses an allow-listed effect name imported as a non-function before instantiation", async () => {
+  it("refuses an allow-listed effect name imported as a non-function before instantiation", async (t) => {
     const calls = [];
     const host = L.createHostRuntime(undefined, {
       effectHandlers: { "audit.write": (a, b) => { calls.push([a, b]); return 7; } },
@@ -187,9 +205,12 @@ describe("closed non-secret WASM effect-grant ABI", () => {
       (func (export "call") (result i32) (i32.const 0))
     )`;
 
-    await assert.rejects(
-      admit(wrongKind, host),
-      /effect grant import kind mismatch: host\.audit\.write is declared global, expected function/i,
+    const observation = await observeAdmission(t, await admissionOptions(wrongKind, host));
+    assert.equal(observation.compiled.length, 1, "the signed module is compiled for import inspection");
+    assert.equal(observation.attempts.length, 0, "refusal occurs before WebAssembly.instantiate");
+    assert.match(
+      observation.error?.message ?? "",
+      /CRITICAL_SECURITY_VIOLATION: module import\/link failed: unsupported host import kind: host\.audit\.write is global, expected function/i,
     );
     assert.deepEqual(calls, []);
   });
@@ -270,7 +291,107 @@ describe("closed non-secret WASM effect-grant ABI", () => {
     assert.deepEqual(calls, [["original", 3, 4]]);
   });
 
-  it("observes a positive start control and refuses mismatched imports before start", async (t) => {
+  it("does not let two admitted modules share one mutable host registry", async () => {
+    const host = L.createHostRuntime();
+    const handle = host.internArray([12345]);
+    const reader = `(module
+      (import "host" "__array_get" (func $get (param i32 i32) (result i32)))
+      (func (export "read") (param $id i32) (result i32)
+        (call $get (local.get $id) (i32.const 0)))
+    )`;
+    const first = await admit(reader, host);
+    assert.equal(first.instance.exports.read(handle), 12345);
+
+    await assert.rejects(admit(reader, host), /host runtime is already claimed or consumed/i);
+
+    const isolated = await admit(reader, L.createHostRuntime());
+    assert.equal(isolated.instance.exports.read(handle), -1, "a distinct admission cannot read the first host's array handle");
+  });
+
+  it("quarantines guest-memory access when export finalization fails after instantiation", async (t) => {
+    const host = L.createHostRuntime();
+    assert.equal(host.snapshotMemory(), null, "the host begins without a guest-memory binding");
+    const options = await admissionOptions(`(module
+      (memory (export "memory") 1)
+      (func (export "ready") (result i32) (i32.const 1))
+    )`, host);
+
+    const instantiate = WebAssembly.instantiate;
+    const entries = Object.entries;
+    let genuineInstance;
+    let entriesMock;
+    let observedFinalization = false;
+    const instantiateMock = t.mock.method(WebAssembly, "instantiate", async (...args) => {
+      const instance = await Reflect.apply(instantiate, WebAssembly, args);
+      genuineInstance = instance;
+      entriesMock = t.mock.method(Object, "entries", (value) => {
+        if (value === instance.exports) {
+          observedFinalization = true;
+          assert.equal(host.snapshotMemory(), null, "guest memory is not bound until export finalization succeeds");
+          throw new Error("controlled export-finalization failure");
+        }
+        return Reflect.apply(entries, Object, [value]);
+      });
+      return instance;
+    });
+    try {
+      await assert.rejects(
+        L.admitAndInstantiate(options),
+        /CRITICAL_SECURITY_VIOLATION: admission finalization failed: controlled export-finalization failure/i,
+      );
+    } finally {
+      entriesMock?.mock.restore();
+      instantiateMock.mock.restore();
+    }
+    assert.ok(genuineInstance instanceof WebAssembly.Instance, "fault injection follows real engine instantiation");
+    assert.equal(observedFinalization, true, "the failure occurs while export wrappers are being finalized");
+    assert.throws(
+      () => host.snapshotMemory(),
+      /FUNGI-WASM-QUARANTINED-001:.*snapshotMemory refused.*quarantin/i,
+      "a rejected instance leaves the host quarantined rather than exposing memory for inspection",
+    );
+    await assert.rejects(admit(`(module (func (export "ready")))`, host), /host runtime is already claimed or consumed/i);
+  });
+
+  it("does not allow callers to attach or replace memory after admission", async () => {
+    const emptyHost = L.createHostRuntime();
+    await admit(`(module (func (export "ready")))`, emptyHost);
+    assert.throws(
+      () => emptyHost.bindMemory(new WebAssembly.Memory({ initial: 1 })),
+      /cannot add memory after host admission/i,
+    );
+
+    const memoryHost = L.createHostRuntime();
+    const admitted = await admit(
+      `(module (memory (export "memory") 1) (data (i32.const 0) "\\2a\\00\\00\\00"))`,
+      memoryHost,
+    );
+    const initialSnapshot = memoryHost.snapshotMemory();
+    assert.ok(initialSnapshot instanceof Uint8Array, "successful admission binds snapshot-visible guest memory");
+    assert.equal(initialSnapshot[0], 0x2a, "snapshot reads the admitted guest's initialized memory, not a detached replacement");
+    initialSnapshot[0] = 0;
+    assert.equal(memoryHost.snapshotMemory()?.[0], 0x2a, "snapshot mutation cannot alter guest memory");
+    assert.throws(
+      () => memoryHost.bindMemory(admitted.instance.exports.memory),
+      /cannot change memory after host admission/i,
+      "the public export wrapper cannot replace the internally bound guest memory",
+    );
+    assert.throws(
+      () => memoryHost.bindMemory(new WebAssembly.Memory({ initial: 1 })),
+      /cannot change memory after host admission/i,
+    );
+  });
+
+  it("refuses admission of a host whose memory was bound outside the gate", async () => {
+    const host = L.createHostRuntime();
+    host.bindMemory(new WebAssembly.Memory({ initial: 1 }));
+    await assert.rejects(
+      admit(`(module (func (export "ready")))`, host),
+      /pre-bound outside admission/i,
+    );
+  });
+
+  it("observes signature refusal before start and preserves explicit post-admission calls", async (t) => {
     const compile = WebAssembly.compile;
     const instantiate = WebAssembly.instantiate;
     await assertSignatureTwins(t, "(param i64 i64) (result i32)", 3, 4);
@@ -281,6 +402,22 @@ describe("closed non-secret WASM effect-grant ABI", () => {
     assert.equal(instance.exports.f(), 5);
   });
 
+  it("refuses a granted effect invoked by the module start function", async (t) => {
+    const calls = [];
+    const host = L.createHostRuntime(undefined, {
+      effectHandlers: { "audit.write": (a, b) => { calls.push([a, b]); return 7; } },
+    });
+    const options = await admissionOptions(startGrantModule(
+      "(param i32 i32) (result i32)", 3, 4,
+    ).replace("(func $start)", "(func $start (drop (call $log (i32.const 3) (i32.const 4))))"), host);
+    const observed = await observeAdmission(t, options);
+    assertObservedLink(observed, options);
+    assert.ok(observed.error instanceof Error);
+    assert.match(observed.error.message, /instantiation failed: host effect host\.audit\.log invoked before module admission completed/);
+    assert.equal(observed.result, undefined);
+    assert.deepEqual(calls, [], "the start function cannot escape a granted callback");
+  });
+
   it("refuses secret and unknown grants before host creation", () => {
     for (const name of ["secret.read", "env.get", "vault.read", "crypto.sign", "random.bytes", "unknown.effect"]) {
       assert.throws(() => L.createHostRuntime(undefined, { effectHandlers: { [name]: () => 0 } }), new RegExp(GRANT));
@@ -289,10 +426,9 @@ describe("closed non-secret WASM effect-grant ABI", () => {
   });
 
   it("refuses ungranted/unknown-module imports but admits a pure module", async () => {
-    const host = L.createHostRuntime();
-    await assert.rejects(admit(moduleImporting("host", "audit.write"), host), /import host\.audit\.write \(function\) is not provided/);
-    await assert.rejects(admit(moduleImporting("evil", "audit.write"), host), /import evil\.audit\.write \(function\) is not provided/);
-    const { instance } = await admit(`(module (func $f (result i32) (i32.const 5)) (export "f" (func $f)))`, host);
+    await assert.rejects(admit(moduleImporting("host", "audit.write"), L.createHostRuntime()), /import host\.audit\.write \(function\) is not provided/);
+    await assert.rejects(admit(moduleImporting("evil", "audit.write"), L.createHostRuntime()), /import evil\.audit\.write \(function\) is not provided/);
+    const { instance } = await admit(`(module (func $f (result i32) (i32.const 5)) (export "f" (func $f)))`, L.createHostRuntime());
     assert.equal(instance.exports.f(), 5);
   });
 
@@ -313,5 +449,75 @@ contract { effects { audit.write } }
       () => L.renderWAT(L.buildWATModuleFromGIR({ ...gir, entryPoints: ["fx"] }, undefined, "d8t5", parsed.ast, false)),
       /FUNGI-WAT-EFFECT-001/,
     );
+  });
+
+  it("refuses an accessor-backed profile that changes between policy and signature checks", () => {
+    const wasm = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]);
+    const keys = L.generateRunnerKeypair();
+    const signedDev = L.signWasm(wasm, keys.privateKeyPem, "dev");
+    let profileReads = 0;
+    const changingAttestation = Object.create(null, {
+      sha256: { value: signedDev.sha256, enumerable: true },
+      signature: { value: signedDev.signature, enumerable: true },
+      profile: {
+        enumerable: true,
+        get() {
+          profileReads += 1;
+          return profileReads === 1 ? "certified" : "dev";
+        },
+      },
+    });
+
+    const verdict = L.verifyWasm(wasm, changingAttestation, {
+      requireSigned: true,
+      publicKeyPem: keys.publicKeyPem,
+      requireCertifiedProfile: true,
+    });
+
+    assert.equal(verdict.ok, false, "the signed dev claim must not satisfy certified admission");
+    assert.equal(profileReads, 0, "accessor-backed authority is refused without executing it");
+  });
+
+  it("quarantines an admitted instance after owned-memory cleanup fails", async () => {
+    const calls = [];
+    const host = L.createHostRuntime(undefined, {
+      effectHandlers: { "audit.log": (a, b) => { calls.push([a, b]); return 1; } },
+    });
+    const heapBase = WAT_HEAP_BASE;
+    const { instance } = await admit(`(module
+      (import "host" "audit.log" (func $log (param i32 i32) (result i32)))
+      (memory (export "memory") 1)
+      (global $__fungi_heap (mut i32) (i32.const ${heapBase + 4}))
+      (global $__fungi_ret_is_heap (mut i32) (i32.const 1))
+      (global $__fungi_ret_words (mut i32) (i32.const 1))
+      (func (export "__fungi_ret_is_heap_get") (result i32) (global.get $__fungi_ret_is_heap))
+      (func (export "__fungi_ret_words_get") (result i32) (global.get $__fungi_ret_words))
+      (func (export "__fungi_wipe_owned") (unreachable))
+      (func (export "first") (result i32)
+        (drop (call $log (i32.const 1) (i32.const 2)))
+        (i32.const ${heapBase}))
+      (func (export "second") (result i32)
+        (drop (call $log (i32.const 3) (i32.const 4)))
+        (i32.const ${heapBase}))
+    )`, host);
+
+    assert.throws(() => instance.exports.first(), /FUNGI-WASM-CLEANUP-001/);
+    assert.throws(() => instance.exports.second(), /quarantin/i);
+    assert.deepEqual(calls, [[1, 2]], "no later granted effect runs after cleanup failure");
+  });
+
+  it("does not invoke exports from an unadmitted raw WebAssembly instance", async () => {
+    const calls = [];
+    const assembled = await L.assembleWAT(moduleImporting("host", "audit.log"));
+    assert.equal(assembled.valid, true, JSON.stringify(assembled.diagnostics));
+    const raw = new WebAssembly.Instance(new WebAssembly.Module(assembled.wasm), {
+      host: { "audit.log": (a, b) => { calls.push([a, b]); return 1; } },
+    });
+
+    const result = L.invokeAdmittedExport(raw, "call", [5, 6]);
+
+    assert.equal(result.ok, false, "raw engine instances have no admission receipt");
+    assert.match(result.reason, /admission/i);
+    assert.deepEqual(calls, [], "the helper refuses before executing the export");
   });
 });

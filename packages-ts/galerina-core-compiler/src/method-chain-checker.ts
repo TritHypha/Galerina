@@ -43,6 +43,7 @@ export interface MethodChainInput {
 const RESULT_CONSUMERS = new Set(["map", "mapErr", "flatMap", "unwrapOr", "isOk", "isErr", "isSome", "isNone"]);
 const PERSISTENT_TRANSFORMS = new Set(["push", "append"]);
 const IN_PLACE_MUTATORS = new Set(["set", "clear", "insert"]);
+const ARRAY_METHODS = new Set(["empty", "of", "range", "length", "count", "isEmpty", "first", "last", "get", "push", "append", "filter", "map", "reduce", "contains", "includes", "reverse", "slice", "join", "sort", "find", "partition", "zip"]);
 
 const VALIDATE_GATES = new Set([
   "email", "emails", "patientId", "nhsNumber", "userId", "orderId", "merchantId",
@@ -51,7 +52,8 @@ const VALIDATE_GATES = new Set([
 ]);
 
 const METHODS_BY_RECEIVER: Readonly<Record<string, ReadonlySet<string>>> = {
-  Array: new Set(["empty", "of", "range", "length", "count", "isEmpty", "first", "last", "get", "push", "append", "filter", "map", "reduce", "contains", "includes", "reverse", "slice", "join", "sort", "find", "partition", "zip"]),
+  Array: ARRAY_METHODS,
+  List: ARRAY_METHODS,
   Option: new Set(["sequence", "fromNullable", "isSome", "isNone", "unwrapOr", "map", "flatMap", "zip"]),
   Result: new Set(["sequence", "fromNullable", "all", "ok", "isOk", "isErr", "unwrapOr", "map", "mapErr", "flatMap"]),
   String: new Set(["length", "charCount", "concat", "trim", "slice", "split", "startsWith", "endsWith", "contains", "includes", "indexOf", "toString", "toStr", "toLower", "toUpper", "charAt", "encode", "toInt", "parse"]),
@@ -132,7 +134,9 @@ function diag(
 
 function receiverBase(type: string | undefined): string | undefined {
   if (type === undefined || type === "") return undefined;
-  const trimmed = type.trim();
+  // Confidentiality qualifiers affect value-state rules, not the underlying
+  // collection's method catalog. Preserve the original type elsewhere.
+  const trimmed = type.trim().replace(/^(?:protected|redacted)\s+/u, "");
   const lt = trimmed.indexOf("<");
   return (lt === -1 ? trimmed : trimmed.slice(0, lt)).trim();
 }

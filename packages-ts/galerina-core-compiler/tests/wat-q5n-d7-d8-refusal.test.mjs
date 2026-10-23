@@ -1,6 +1,7 @@
 /**
  * Q5n BUILD — D7 requireStmt/fnDecl STMT-001 + D8-1 marker + D8-2 EFFECT-001.
- * DESIGN-06N with Q5n-DR APPROVE_WITH_CHANGES retargets (T12 L1 200/200; T2 readonlydecl).
+ * DESIGN-06N with Q5n-DR APPROVE_WITH_CHANGES recorded the historical T12 L1 200/200 result;
+ * the live corpus assertion below tracks the current 203-flow checkout separately.
  * Replay: node --test --test-reporter=tap tests/wat-q5n-d7-d8-refusal.test.mjs
  */
 import assert from "node:assert/strict";
@@ -245,11 +246,11 @@ describe("T11 generic default / dedicated other kinds stay", () => {
   });
 });
 
-describe("T12 L1 200/200 plus 7-stage hashes unchanged", () => {
-  it("live ladder is 200/200 = 100 and reports refused separately", async () => {
+describe("T12 current live L1 corpus plus historical 7-stage hashes", () => {
+  it("live ladder measures all 203 current flows and reports refused separately", async () => {
     const live = await watLoweringLadderAsync();
-    assert.equal(live.total, 200);
-    assert.equal(live.done, 200);
+    assert.equal(live.total, 203);
+    assert.equal(live.done, 203);
     assert.equal(live.pct, 100);
     assert.equal(typeof live.refused, "number");
     assert.equal(live.refused, 0);

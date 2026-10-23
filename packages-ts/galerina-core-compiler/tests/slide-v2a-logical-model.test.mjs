@@ -44,7 +44,7 @@ function stringValue(value) {
 }
 
 function arrayValue(items) {
-  return { __tag: "array", items };
+  return { __tag: "list", items };
 }
 
 function clone(value) {
@@ -169,6 +169,193 @@ before(async () => {
 });
 
 describe("SLIDE executable GIR V2-A logical model", () => {
+  it("represents missing runtime values without an out-of-range Int sentinel", async () => {
+    const empty = await runOn(importer, "emptySLIDEV2AValueStore");
+    const missing = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(missing.audit.result, "ok", JSON.stringify(missing.audit));
+    assert.equal(field(missing.value, "present").value, false);
+    assert.equal(field(missing.value, "value").value, 0);
+
+    const stored = await runOn(
+      importer,
+      "slideV2AStoreValue",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(0)],
+        ["value", intValue(-2147483648)],
+      ]),
+    );
+    const minimum = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(minimum.audit.result, "ok", JSON.stringify(minimum.audit));
+    assert.equal(field(minimum.value, "present").value, true);
+    assert.equal(field(minimum.value, "value").value, -2147483648);
+
+    const outside = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(48)],
+      ]),
+    );
+    assert.equal(outside.audit.result, "ok", JSON.stringify(outside.audit));
+    assert.equal(field(outside.value, "present").value, false);
+    assert.equal(field(outside.value, "value").value, 0);
+
+    const negative = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(-1)],
+      ]),
+    );
+    assert.equal(negative.audit.result, "ok", JSON.stringify(negative.audit));
+    assert.equal(field(negative.value, "present").value, false);
+
+    const lastStored = await runOn(
+      importer,
+      "slideV2AStoreValue",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(47)],
+        ["value", intValue(-2147483648)],
+      ]),
+    );
+    const lastSlot = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", lastStored.value],
+        ["resultId", intValue(47)],
+      ]),
+    );
+    assert.equal(lastSlot.audit.result, "ok", JSON.stringify(lastSlot.audit));
+    assert.equal(field(lastSlot.value, "present").value, true);
+    assert.equal(field(lastSlot.value, "value").value, -2147483648);
+
+    const malformedStore = structuredClone(stored.value);
+    malformedStore.fields.set("values", { __tag: "list", items: [] });
+    const malformed = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", malformedStore],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(malformed.audit.result, "ok", JSON.stringify(malformed.audit));
+    assert.equal(field(malformed.value, "present").value, false);
+
+    const malformedBase = {
+      __tag: "record",
+      fields: new Map([
+        ["values", { __tag: "list", items: [] }],
+        ["defined", { __tag: "list", items: [intValue(1)] }],
+      ]),
+    };
+    const rewritten = await runOn(
+      importer,
+      "slideV2AStoreValue",
+      new Map([
+        ["store", malformedBase],
+        ["resultId", intValue(1)],
+        ["value", intValue(17)],
+      ]),
+    );
+    const afterWrite = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", rewritten.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(afterWrite.audit.result, "ok", JSON.stringify(afterWrite.audit));
+    assert.equal(field(afterWrite.value, "present").value, false);
+
+    const newlyWritten = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", rewritten.value],
+        ["resultId", intValue(1)],
+      ]),
+    );
+    assert.equal(newlyWritten.audit.result, "ok", JSON.stringify(newlyWritten.audit));
+    assert.equal(field(newlyWritten.value, "present").value, true);
+    assert.equal(field(newlyWritten.value, "value").value, 17);
+
+    const truncatedDefined = {
+      __tag: "record",
+      fields: new Map([
+        ["values", { __tag: "list", items: [intValue(23)] }],
+        ["defined", { __tag: "list", items: [] }],
+      ]),
+    };
+    const rewrittenDefined = await runOn(
+      importer,
+      "slideV2AStoreValue",
+      new Map([
+        ["store", truncatedDefined],
+        ["resultId", intValue(1)],
+        ["value", intValue(17)],
+      ]),
+    );
+    const stillUndefined = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", rewrittenDefined.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(stillUndefined.audit.result, "ok", JSON.stringify(stillUndefined.audit));
+    assert.equal(field(stillUndefined.value, "present").value, false);
+    const writtenDespiteTruncatedDefined = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", rewrittenDefined.value],
+        ["resultId", intValue(1)],
+      ]),
+    );
+    assert.equal(
+      writtenDespiteTruncatedDefined.audit.result,
+      "ok",
+      JSON.stringify(writtenDespiteTruncatedDefined.audit),
+    );
+    assert.equal(field(writtenDespiteTruncatedDefined.value, "present").value, true);
+    assert.equal(field(writtenDespiteTruncatedDefined.value, "value").value, 17);
+
+    const missingDefined = structuredClone(stored.value);
+    missingDefined.fields.set("defined", { __tag: "list", items: [] });
+    const missingMarker = await runOn(
+      importer,
+      "slideV2AStoreRead",
+      new Map([
+        ["store", missingDefined],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(missingMarker.audit.result, "ok", JSON.stringify(missingMarker.audit));
+    assert.equal(field(missingMarker.value, "present").value, false);
+  });
+
   it("uses a new frontend-neutral major without changing R1", () => {
     assert.equal(field(program, "formatMajor").value, 2);
     assert.equal(

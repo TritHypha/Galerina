@@ -31,6 +31,38 @@ export function isI32Trap(r: I32Result): r is I32TrapKind {
   return typeof r === "string";
 }
 
+/**
+ * Lower a source integer literal into the i32 bit-pattern lane exactly.
+ * This is distinct from checked i32 arithmetic: FUNGI-TYPE-024 warns when a
+ * decimal literal is outside the signed Int range, while WASM's i32.const
+ * accepts the corresponding 32-bit bit pattern. BigInt preserves source digits
+ * above 2^53 before that specified i32 lowering; malformed text refuses.
+ */
+export function i32FromLiteralText(raw: string): I32Result {
+  // Match a complete lexer-supported integer spelling before BigInt: it would
+  // otherwise treat empty/whitespace text as zero. Signs are supplied separately
+  // by unary-expression callers. Retain the lexer's decimal underscore grammar.
+  if (!/^[+-]?(?:[0-9][0-9_]*|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+)(?![\s\S])/.test(raw)) {
+    return "IntegerOverflow";
+  }
+  try {
+    const cleaned = raw.replaceAll("_", "");
+    // BigInt accepts non-decimal prefixes only without a leading sign (for example,
+    // BigInt("0x10") works but BigInt("-0x10") throws). The lexer represents unary
+    // minus as a separate expression, so preserve that sign while parsing the exact
+    // radix magnitude before applying the language's i32 literal lowering.
+    const negative = cleaned.startsWith("-");
+    const magnitudeText = cleaned.startsWith("-") || cleaned.startsWith("+")
+      ? cleaned.slice(1)
+      : cleaned;
+    const magnitude = BigInt(magnitudeText);
+    const exact = negative ? -magnitude : magnitude;
+    return Number(BigInt.asIntN(32, exact));
+  } catch {
+    return "IntegerOverflow";
+  }
+}
+
 // Every value return is normalized with `| 0` to canonical i32: identity for an in-range integer,
 // but it maps JS `-0` (which `Math.trunc(-0.5)` and `-2^31 % -1` produce) to `0` — matching WASM's
 // i32, which has no negative zero. Without it the walker would carry a `-0` that Object.is-diverges

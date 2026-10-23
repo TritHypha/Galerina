@@ -6,7 +6,7 @@
 // governance tests.
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parseProgram, checkEffects, verifyGovernance } from "../dist/index.js";
+import { parseProgram, checkTypes, checkEffects, verifyGovernance } from "../dist/index.js";
 
 function gov(source, profile = "dev") {
   const parsed = parseProgram(source, "test.fungi");
@@ -18,6 +18,16 @@ function gov(source, profile = "dev") {
 const hardenCodes = (g) => g.diagnostics.filter((d) => d.code.startsWith("FUNGI-HARDEN-")).map((d) => d.code);
 
 describe("RD-0358: explicit hardening {} block — parse + fail-closed enforcement", () => {
+  it("a Secret<T> parameter cannot opt out of erase-on-exit without audited_loosen", () => {
+    const src = `secure flow handleKey(value: Secret<String>) -> Int
+contract { intent { "Handle a secret." } hardening { erase none } }
+{ return 1 }`;
+    const parsed = parseProgram(src, "test.fungi");
+    assert.deepEqual(parsed.diagnostics.filter((d) => d.severity === "error"), []);
+    assert.deepEqual(checkTypes(parsed.ast).diagnostics, []);
+    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-004"]);
+  });
+
   it("a secret flow with NO hardening block emits ZERO FUNGI-HARDEN codes (auto-derivation is record-only)", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII } }

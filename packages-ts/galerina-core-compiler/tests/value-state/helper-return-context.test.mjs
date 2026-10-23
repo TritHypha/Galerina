@@ -16,6 +16,14 @@ test("secret-preserving helper uses its own result type inside a public flow", (
   }`).length, 0);
 });
 
+test("same-name shadowing does not make a structured secret return unknown after a loop", () => {
+  assert.equal(secretReturns(`secure flow wrap(x: SecureString) -> Option<SecureString> {
+    let x = Some(x)
+    while false {}
+    return x
+  }`).length, 0);
+});
+
 test("secret-to-public helper refuses even inside a secret-preserving flow", () => {
   assert.equal(secretReturns(`secure flow outer(value: SecureString) -> SecureString {
     fn leak(payload: SecureString) -> String { return payload }
@@ -214,7 +222,13 @@ const cases = [
 ];
 
 function parseReturn(type) {
-  const source = `@version 1\nsecure flow outer(value: SecureString) -> Bool contract { intent { "Synthetic classification regression" } } { fn helper(payload: SecureString) -> ${type} { return payload } return true }`;
+  const returned = new Map([
+    ['Option<SecureString>', 'Some(payload)'],
+    ['Result<String,SecureString>', 'Err(payload)'],
+    ['Array<SecureString>', '[payload]'],
+    ['Result<Option<SecureString>,String>', 'Ok(Some(payload))'],
+  ]).get(type) ?? 'payload';
+  const source = `@version 1\nsecure flow outer(value: SecureString) -> Bool contract { intent { "Synthetic classification regression" } } { fn helper(payload: SecureString) -> ${type} { return ${returned} } return true }`;
   const parsed = parseProgram(source, "secret-return-metadata.fungi");
   assert.deepEqual(parsed.diagnostics.filter(d => d.severity === "error"), [], "fixture must parse");
   return parsed.ast;

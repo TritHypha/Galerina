@@ -37,6 +37,12 @@ record TypeCheckResult {
   checkedAt: String
 }
 
+// Typed row retained by the qualifier-only scope side table.
+record QualifiedBinding {
+  name: String
+  typeName: String
+}
+
 // ── Helpers ───────────────────────────────────────────────────
 
 // True when t names a type the Stage B checker knows (Int/Bool/String/Array).
@@ -370,6 +376,27 @@ contract {
   return out
 }
 
+// Diagnostic lists retain their declared record layout while being combined.
+// Do not erase these rows to Auto and cast them back at the naming boundary.
+pure flow appendDiagnostics(dst: Array<TypeDiagnostic>, src: Array<TypeDiagnostic>) -> Array<TypeDiagnostic>
+contract {
+  intent { "Concatenate typed raw diagnostic rows without erasing their record layout." }
+}
+{
+  mut out: Array<TypeDiagnostic> = dst
+  mut i: Int = 0
+  while i < src.count() {
+    let item = src.get(i)
+    match item {
+      Some(diagnostic) => { out = out.append(diagnostic) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
 // ── Per-flow checks ───────────────────────────────────────────
 
 // The canonical Stage-A diagnostic NAME for each code the twin emits — kept in ONE place so every
@@ -451,7 +478,7 @@ contract { intent { "The canonical Stage-A severity for a code the twin emits (e
 // faithful {code, name, severity, message, flowName} shape Stage-A uses (not {code, message, flowName}).
 // Applied once at each top-level return, so the ~21 emit sites stay terse and name+severity live in
 // exactly one table each.
-pure flow withNames(diags: Array<Auto>) -> Array<Auto>
+pure flow withNames(diags: Array<TypeDiagnostic>) -> Array<Auto>
 contract { intent { "Return the diagnostics with the canonical Stage-A name + severity attached to each." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -460,10 +487,7 @@ contract { intent { "Return the diagnostics with the canonical Stage-A name + se
     let dOpt = diags.get(i)
     match dOpt {
       Some(d) => {
-        // Typed-local hoist: d is Auto (diagnostic record from heterogeneous accumulator).
-        // Cast to TypeDiagnostic so the WAT emitter can resolve .code/.message/.flowName.
-        let td: TypeDiagnostic = d
-        out = out.append({ code: td.code, name: diagName(td.code), severity: diagSeverity(td.code), message: td.message, flowName: td.flowName })
+        out = out.append({ code: d.code, name: diagName(d.code), severity: diagSeverity(d.code), message: d.message, flowName: d.flowName })
       }
       None => {}
       _ => {}
@@ -474,12 +498,12 @@ contract { intent { "Return the diagnostics with the canonical Stage-A name + se
 }
 
 // FUNGI-TYPE-001: every parameter must name a known type.
-pure flow checkParams(flowName: String, params: Array<FlowParam>) -> Array<Auto>
+pure flow checkParams(flowName: String, params: Array<FlowParam>) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-001: every parameter must name a known type." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut i: Int = 0
   while i < params.count() {
     let pOpt = params.get(i)
@@ -516,7 +540,7 @@ contract {
   intent { "Run Stage B type checks across all flows from the ParseResult." }
 }
 {
-  mut allDiags: Array<Auto> = Array.empty()
+  mut allDiags: Array<TypeDiagnostic> = Array.empty()
   mut flowCount: Int = 0
   mut i: Int = 0
   while i < flows.count() {
@@ -525,7 +549,7 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let retType: String = fd.returnType
-        mut flowDiags: Array<Auto> = Array.empty()
+        mut flowDiags: Array<TypeDiagnostic> = Array.empty()
 
         let retKnown: Bool = isKnownType(retType)
 
@@ -559,7 +583,7 @@ contract {
         }
 
         // FUNGI-TYPE-001: parameter types must be known.
-        flowDiags = appendAll(flowDiags, checkParams(name, fd.params))
+        flowDiags = appendDiagnostics(flowDiags, checkParams(name, fd.params))
 
         // Infer the return expression's type.
         let re = fd.returnExpr
@@ -590,7 +614,7 @@ contract {
           }
         }
 
-        allDiags = appendAll(allDiags, flowDiags)
+        allDiags = appendDiagnostics(allDiags, flowDiags)
         flowCount = flowCount + 1
       }
       None => {}
@@ -634,12 +658,12 @@ contract {
 // (conservative). The twin mirrors that exactly: only a KNOWN inferred type (isKnownType) that is not
 // Bool emits; "" / "Unknown" / "ERROR" all mean can't-infer -> NO emit (the "ERROR" case matters: a bad
 // arith condition must stay silent here, as Stage-A's inferType yields undefined for it).
-pure flow checkCondNotBool(flowName: String, kw: String, cond: Expr) -> Array<Auto>
+pure flow checkCondNotBool(flowName: String, kw: String, cond: Expr) -> Array<TypeDiagnostic>
 contract {
   intent { "Emit FUNGI-TYPE-033 when an if/while condition has a KNOWN non-Bool type; silent when Bool or uninferable." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut leftT: String = ""
   mut rightT: String = ""
   let kids: Array<Expr> = cond.children
@@ -678,7 +702,7 @@ contract {
 // This side table is intentionally separate from the name-only scope used by the older
 // binding checks: it adds only the evidence needed for the governance-label boundary and
 // cannot change the existing unknown-symbol decisions.
-pure flow lookupQualifiedType(scope: Array<Auto>, name: String) -> String
+pure flow lookupQualifiedType(scope: Array<QualifiedBinding>, name: String) -> String
 contract { intent { "Return the full qualified type for a visible name, or empty when it has no governance label." } }
 {
   mut i: Int = 0
@@ -696,7 +720,7 @@ contract { intent { "Return the full qualified type for a visible name, or empty
   return ""
 }
 
-pure flow qualifierForExpr(expr: Expr, scope: Array<Auto>) -> String
+pure flow qualifierForExpr(expr: Expr, scope: Array<QualifiedBinding>) -> String
 contract { intent { "Infer only the protected/redacted qualifier needed by FUNGI-TYPE-034." } }
 {
   if expr.kind == "name" {
@@ -711,10 +735,10 @@ contract { intent { "Infer only the protected/redacted qualifier needed by FUNGI
   return ""
 }
 
-pure flow checkQualifierBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
+pure flow checkQualifierBinding(flowName: String, stmt: Stmt, scope: Array<QualifiedBinding>) -> Array<TypeDiagnostic>
 contract { intent { "FUNGI-TYPE-034: reject a direct protected/redacted qualifier change without redact()." } }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let declared: String = governanceQualifier(stmt.typeName)
   if declared == "" { return diags }
   let rhsOpt = firstExpr(stmt)
@@ -735,29 +759,46 @@ contract { intent { "FUNGI-TYPE-034: reject a direct protected/redacted qualifie
   return diags
 }
 
-pure flow qualifierStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>
+pure flow appendQualifiedBindings(dst: Array<QualifiedBinding>, src: Array<QualifiedBinding>) -> Array<QualifiedBinding>
+contract { intent { "Append typed qualifier scope entries without erasing their record layout." } }
+{
+  mut out: Array<QualifiedBinding> = dst
+  mut i: Int = 0
+  while i < src.count() {
+    let opt = src.get(i)
+    match opt {
+      Some(entry) => { out = out.append(entry) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+pure flow qualifierStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<QualifiedBinding>) -> Array<TypeDiagnostic>
 contract { intent { "Walk bindings and nested blocks while retaining qualified value types for label checks." } }
 {
-  mut diags: Array<Auto> = Array.empty()
-  mut localScope: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
+  mut localScope: Array<QualifiedBinding> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
     match sOpt {
       Some(s) => {
-        let currentScope: Array<Auto> = appendAll(outerScope, localScope)
+        let currentScope: Array<QualifiedBinding> = appendQualifiedBindings(outerScope, localScope)
         if s.kind == "let" or s.kind == "mut" {
-          diags = appendAll(diags, checkQualifierBinding(flowName, s, currentScope))
+          diags = appendDiagnostics(diags, checkQualifierBinding(flowName, s, currentScope))
         }
         if s.kind == "if" {
-          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
-          diags = appendAll(diags, qualifierStmtList(flowName, s.elseBody, currentScope))
+          diags = appendDiagnostics(diags, qualifierStmtList(flowName, s.body, currentScope))
+          diags = appendDiagnostics(diags, qualifierStmtList(flowName, s.elseBody, currentScope))
         }
         if s.kind == "while" {
-          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
+          diags = appendDiagnostics(diags, qualifierStmtList(flowName, s.body, currentScope))
         }
         if s.kind == "match" {
-          diags = appendAll(diags, qualifierStmtList(flowName, s.body, currentScope))
+          diags = appendDiagnostics(diags, qualifierStmtList(flowName, s.body, currentScope))
         }
         if s.kind == "let" or s.kind == "mut" {
           if s.typeName != "" {
@@ -773,10 +814,10 @@ contract { intent { "Walk bindings and nested blocks while retaining qualified v
   return diags
 }
 
-pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<Auto>
+pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<QualifiedBinding>
 contract { intent { "Build the qualified-name side table from flow parameters." } }
 {
-  mut out: Array<Auto> = Array.empty()
+  mut out: Array<QualifiedBinding> = Array.empty()
   mut i: Int = 0
   while i < params.count() {
     let pOpt = params.get(i)
@@ -791,19 +832,19 @@ contract { intent { "Build the qualified-name side table from flow parameters." 
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
-pure flow checkStmt(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
+pure flow checkStmt(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<TypeDiagnostic>
 contract {
   intent { "Type-check one body statement (let/mut binding + nested if/while); the initializer and nested blocks both see `scope` (params + prior bindings)." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let kind: String = stmt.kind
 
   if kind == "let" {
-    diags = appendAll(diags, checkBinding(flowName, stmt, scope))
+    diags = appendDiagnostics(diags, checkBinding(flowName, stmt, scope))
   }
   if kind == "mut" {
-    diags = appendAll(diags, checkBinding(flowName, stmt, scope))
+    diags = appendDiagnostics(diags, checkBinding(flowName, stmt, scope))
   }
   if kind == "exprStmt" {
     let exprOpt = firstExpr(stmt)
@@ -823,31 +864,32 @@ contract {
   if kind == "if" {
     let condOptIf = firstExpr(stmt)
     match condOptIf {
-      Some(condIf) => { diags = appendAll(diags, checkCondNotBool(flowName, "if", condIf)) }
+      Some(condIf) => { diags = appendDiagnostics(diags, checkCondNotBool(flowName, "if", condIf)) }
       None => {}
       _ => {}
     }
     let stmtBody: Array<Stmt> = stmt.body
     let stmtElse: Array<Stmt> = stmt.elseBody
-    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
-    diags = appendAll(diags, checkStmtList(flowName, stmtElse, scope))
+    diags = appendDiagnostics(diags, checkStmtList(flowName, stmtBody, scope))
+    diags = appendDiagnostics(diags, checkStmtList(flowName, stmtElse, scope))
   }
   if kind == "while" {
     let condOptWhile = firstExpr(stmt)
     match condOptWhile {
-      Some(condWhile) => { diags = appendAll(diags, checkCondNotBool(flowName, "while", condWhile)) }
+      Some(condWhile) => { diags = appendDiagnostics(diags, checkCondNotBool(flowName, "while", condWhile)) }
       None => {}
       _ => {}
     }
     let stmtBody: Array<Stmt> = stmt.body
-    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
+    diags = appendDiagnostics(diags, checkStmtList(flowName, stmtBody, scope))
   }
   if kind == "match" {
     // FUNGI-TYPE-022/023: check the match arm SET for a mandatory wildcard + arm reachability.
-    diags = appendAll(diags, checkMatchArms(flowName, stmt.arms))
-    // Each arm body is a child scope over the same visible `scope`; check nested statements too.
-    let stmtBody: Array<Stmt> = stmt.body
-    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
+    diags = appendDiagnostics(diags, checkMatchArms(flowName, stmt.arms))
+    // Parser arms are `if`-shaped Stmt records whose expression stores the pattern,
+    // not a Boolean condition. Walk only their bodies to avoid diagnosing patterns
+    // as conditions while still checking every nested statement in its child scope.
+    diags = appendDiagnostics(diags, checkMatchArmBodies(flowName, stmt.arms, scope))
   }
   return diags
 }
@@ -875,12 +917,12 @@ contract {
 // FUNGI-TYPE-021 (NonExhaustiveMatch) is SUPERSEDED by the mandatory wildcard in Stage-A and has NO
 // emit site there — so the twin deliberately does NOT emit it (mirroring it would be a false
 // differential). Verified against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
-pure flow checkMatchArms(flowName: String, arms: Array<Stmt>) -> Array<Auto>
+pure flow checkMatchArms(flowName: String, arms: Array<Stmt>) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-022/023 for a match arm set: a missing mandatory wildcard, or an unreachable arm after the first wildcard." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
 
   // Locate the FIRST wildcard arm (if any) — its index bounds the reachable arms.
   // Pattern text lives in Stmt.name (parser parseMatchArms stores mpat there). Empty name is not a wildcard.
@@ -930,6 +972,29 @@ contract {
   return diags
 }
 
+// Check each parsed match arm's statements without treating its pattern expression as an `if` condition.
+pure flow checkMatchArmBodies(flowName: String, arms: Array<Stmt>, scope: Array<Auto>) -> Array<TypeDiagnostic>
+contract {
+  intent { "Type-check nested statements in parsed match arms, preserving the arm-body child scopes." }
+}
+{
+  mut diags: Array<TypeDiagnostic> = Array.empty()
+  mut i: Int = 0
+  while i < arms.count() {
+    let armOpt = arms.get(i)
+    match armOpt {
+      Some(arm) => {
+        let armBody: Array<Stmt> = arm.body
+        diags = appendDiagnostics(diags, checkStmtList(flowName, armBody, scope))
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
 // Expected type-argument count for a known generic base (Stage-A `GENERIC_ARITY`, type-checker.ts),
 // or -1 when the base is not a known generic (Stage-A skips the arity check for unknown bases).
 pure flow genericArity(base: String) -> Int
@@ -966,12 +1031,12 @@ contract {
 //   Result<Int> = 5        -> 009, 002        Result<Int,Widget> = 5 -> 001(Widget), 002
 //   Map<Int> = 5           -> 009, 002        Array<Int> = [1,2,3]   -> clean
 //   Array<Widget> = [1,2,3] -> 001(Widget), 011 per element
-pure flow checkGenericBinding(flowName: String, stmt: Auto) -> Array<Auto>
+pure flow checkGenericBinding(flowName: String, stmt: Auto) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-009/001/002/011 for a generic Base<args> binding: wrong arity, an unknown type argument, a base-vs-literal mismatch, and Array element mismatches." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let base: String = stmt.typeBase
   let arity: Int = genericArity(base)
 
@@ -1101,12 +1166,12 @@ contract { intent { "True for the Float32/Int8 quantized-precision element pair 
 //   Tensor<Float64,[2,2]> = p:Tensor<Float32,[2,2]> -> 030          (non-quantized element mismatch)
 //   Tensor<Float32,[2,2]> = p:Tensor<Float32,[3,3]> -> 016          (shape only; also rank [2,2] vs [2,2,2])
 //   Tensor<Float32,[2,2]> = p:Tensor<Int8,[3,3]>    -> 016, 017, 030
-pure flow checkTensorBinding(flowName: String, stmt: Auto) -> Array<Auto>
+pure flow checkTensorBinding(flowName: String, stmt: Auto) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-030/017/016 for a Tensor binding vs a tensor-typed initializer: element mismatch, quantized-precision mix, and shape mismatch." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   // Only fires when the initializer's inferred type is ALSO a tensor (Stage-A's both-Tensor gate).
   if stmt.initTensorElem == "" {
     return diags
@@ -1133,12 +1198,12 @@ contract {
 
 // Validate a let/mut binding: declared type, a literal initializer's type, and a name-reference
 // initializer against the visible `scope` (params + bindings declared before it).
-pure flow checkBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
+pure flow checkBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-001/002/019 for a let/mut binding: unknown declared type, literal-type mismatch, or a name initializer referencing an undeclared symbol." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let typeName: String = stmt.typeName
   if typeName == "" {
     return diags
@@ -1183,7 +1248,7 @@ contract {
   // malformed Tensor (wrong arity) is not marked and falls through to checkGenericBinding, which emits 009 as
   // Stage-A does. Verified vs `galerina check --strict-types` + raw diagnostics (Tranche B, RD-0412 §4).
   if stmt.isTensor {
-    diags = appendAll(diags, checkTensorBinding(flowName, stmt))
+    diags = appendDiagnostics(diags, checkTensorBinding(flowName, stmt))
     return diags
   }
 
@@ -1193,7 +1258,7 @@ contract {
   // non-generic type); its presence marks a generic, so the scalar TYPE-001/002 gate below only sees
   // non-generic types. Verified against `galerina check --strict-types` (Tranche B, RD-0412 §4).
   if stmt.typeArgs.count() > 0 {
-    diags = appendAll(diags, checkGenericBinding(flowName, stmt))
+    diags = appendDiagnostics(diags, checkGenericBinding(flowName, stmt))
     return diags
   }
 
@@ -1315,12 +1380,12 @@ contract {
 // Emits FUNGI-NAME-002 for a duplicate binding name within THIS scope (matching Stage A's
 // same-scope DuplicateName). A nested if/while body is a child scope (its own checkStmtList
 // call with a fresh `seen`), so re-declaring a name in a nested block is NOT a duplicate here.
-pure flow checkStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>
+pure flow checkStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<TypeDiagnostic>
 contract {
   intent { "Walk a block scope: flag a duplicate binding (FUNGI-NAME-002) and a binding that shadows an outer scope (FUNGI-TYPE-020)." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut localScope: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
@@ -1330,7 +1395,7 @@ contract {
         // Scope VISIBLE to s = the enclosing scope + everything declared BEFORE s in this block.
         // Computed before the current binding is added, so a name initializer cannot see itself.
         let currentScope: Array<Auto> = appendAll(outerScope, localScope)
-        diags = appendAll(diags, checkStmt(flowName, s, currentScope))
+        diags = appendDiagnostics(diags, checkStmt(flowName, s, currentScope))
         if isBinding(s.kind) {
           let nm: String = s.name
           if containsName(localScope, nm) {
@@ -1554,10 +1619,10 @@ contract { intent { "The declared name of the index-th parameter of this flow (e
 // (`kind == "lit"` is normalized to "literal" — the same parser vocabulary mismatch documented at the
 // cond check; un-normalized it would silently fall through to "Unknown" and check NOTHING.)
 // Diagnostic messages are String-only: interpolating an Int also failed to lower (same 2026-07-25 run).
-pure flow checkArgsOfCallExpr(flowName: String, e: Expr, flows: Array<FlowDecl>) -> Array<Auto>
+pure flow checkArgsOfCallExpr(flowName: String, e: Expr, flows: Array<FlowDecl>) -> Array<TypeDiagnostic>
 contract { intent { "FUNGI-TYPE-005/007 for one expression tree: argument count and literal argument types must match the callee's declaration." } }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let eChildren: Array<Expr> = e.children
   if e.kind == "call" {
     if flowExists(flows, e.value) {
@@ -1602,7 +1667,7 @@ contract { intent { "FUNGI-TYPE-005/007 for one expression tree: argument count 
   while i < eChildren.count() {
     let cOpt = eChildren.get(i)
     match cOpt {
-      Some(c) => { diags = appendAll(diags, checkArgsOfCallExpr(flowName, c, flows)) }
+      Some(c) => { diags = appendDiagnostics(diags, checkArgsOfCallExpr(flowName, c, flows)) }
       None => {}
       _ => {}
     }
@@ -1628,10 +1693,10 @@ contract { intent { "True when an Int literal is passed to a wider numeric param
 // Walk a flow body's statements, checking every call's arguments (FUNGI-TYPE-005 + FUNGI-TYPE-007 —
 // see checkArgsOfCallExpr). The block recursion is kind-gated exactly like collectCallNames, so
 // `body`/`elseBody` are only read where they exist.
-pure flow checkCallArgs(flowName: String, stmts: Array<Stmt>, flows: Array<FlowDecl>) -> Array<Auto>
+pure flow checkCallArgs(flowName: String, stmts: Array<Stmt>, flows: Array<FlowDecl>) -> Array<TypeDiagnostic>
 contract { intent { "FUNGI-TYPE-005/007: every call in this body must match its callee's declared parameters." } }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
@@ -1642,7 +1707,7 @@ contract { intent { "FUNGI-TYPE-005/007: every call in this body must match its 
         while j < sExpr.count() {
           let eOpt = sExpr.get(j)
           match eOpt {
-            Some(e) => { diags = appendAll(diags, checkArgsOfCallExpr(flowName, e, flows)) }
+            Some(e) => { diags = appendDiagnostics(diags, checkArgsOfCallExpr(flowName, e, flows)) }
             None => {}
             _ => {}
           }
@@ -1651,16 +1716,16 @@ contract { intent { "FUNGI-TYPE-005/007: every call in this body must match its 
         if s.kind == "if" {
           let sBody: Array<Stmt> = s.body
           let sElse: Array<Stmt> = s.elseBody
-          diags = appendAll(diags, checkCallArgs(flowName, sBody, flows))
-          diags = appendAll(diags, checkCallArgs(flowName, sElse, flows))
+          diags = appendDiagnostics(diags, checkCallArgs(flowName, sBody, flows))
+          diags = appendDiagnostics(diags, checkCallArgs(flowName, sElse, flows))
         }
         if s.kind == "while" {
           let sBody: Array<Stmt> = s.body
-          diags = appendAll(diags, checkCallArgs(flowName, sBody, flows))
+          diags = appendDiagnostics(diags, checkCallArgs(flowName, sBody, flows))
         }
         if s.kind == "match" {
           let sBody: Array<Stmt> = s.body
-          diags = appendAll(diags, checkCallArgs(flowName, sBody, flows))
+          diags = appendDiagnostics(diags, checkCallArgs(flowName, sBody, flows))
         }
       }
       None => {}
@@ -1679,10 +1744,10 @@ contract { intent { "FUNGI-TYPE-005/007: every call in this body must match its 
 // effect INFERENCE (a flow that USES an undeclared effect is FUNGI-EFFECT-001, the effect-checker's
 // job, not 014). Verified vs raw diagnostics: caller `effects {}` calling `writer effects
 // { network.outbound }` -> 014; caller declaring the effect -> clean. (Tranche B, RD-0412 §4.)
-pure flow checkCallEffects(flowName: String, fd: FlowDecl, flows: Array<FlowDecl>) -> Array<Auto>
+pure flow checkCallEffects(flowName: String, fd: FlowDecl, flows: Array<FlowDecl>) -> Array<TypeDiagnostic>
 contract { intent { "FUNGI-TYPE-014: a call whose callee declares an effect the current flow does not declare." } }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let currentEffects: Array<Auto> = fd.effects
   let callNames: Array<Auto> = collectCallNames(fd.body)
   mut i: Int = 0
@@ -1761,10 +1826,10 @@ contract { intent { "Every statement.name for statements of the given kind, recu
 // name that is ever `mut` is conservatively left alone (an under-report on shadowing, never a false
 // positive; scope-aware mutability is the honest follow-up). `readonly` is not in the twin's model — a
 // documented gap. Verified vs raw diagnostics: `let x = 1; x = 2` -> 005; `mut y; y = 2` -> clean.
-pure flow checkImmutableReassign(flowName: String, body: Array<Stmt>) -> Array<Auto>
+pure flow checkImmutableReassign(flowName: String, body: Array<Stmt>) -> Array<TypeDiagnostic>
 contract { intent { "FUNGI-BINDING-005: an assignment whose target was declared immutable (let, never mut)." } }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   let letNames: Array<Auto> = collectNamesByKind(body, "let")
   let mutNames: Array<Auto> = collectNamesByKind(body, "mut")
   let targets: Array<Auto> = collectNamesByKind(body, "assign")
@@ -1794,7 +1859,7 @@ contract {
   intent { "Stage B body-level type checks: validate each flow's statement body AST." }
 }
 {
-  mut allDiags: Array<Auto> = Array.empty()
+  mut allDiags: Array<TypeDiagnostic> = Array.empty()
   mut flowCount: Int = 0
   mut i: Int = 0
   while i < flows.count() {
@@ -1803,18 +1868,18 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let scope0: Array<Auto> = paramNames(fd.params)
-        allDiags = appendAll(allDiags, checkStmtList(name, fd.body, scope0))
-        let qualifierScope0: Array<Auto> = qualifierParamScope(fd.params)
-        allDiags = appendAll(allDiags, qualifierStmtList(name, fd.body, qualifierScope0))
+        allDiags = appendDiagnostics(allDiags, checkStmtList(name, fd.body, scope0))
+        let qualifierScope0: Array<QualifiedBinding> = qualifierParamScope(fd.params)
+        allDiags = appendDiagnostics(allDiags, qualifierStmtList(name, fd.body, qualifierScope0))
         // FUNGI-TYPE-014: the joint effect/type pass — every callee's declared effects must be
         // declared by this flow. Needs the whole `flows` set (cross-flow callee lookup).
-        allDiags = appendAll(allDiags, checkCallEffects(name, fd, flows))
+        allDiags = appendDiagnostics(allDiags, checkCallEffects(name, fd, flows))
         // FUNGI-TYPE-005 + FUNGI-TYPE-007: every call's argument count and literal argument types must
         // match the callee's declaration. Same cross-flow `flows` lookup as 014; closes the measured
         // call-arg fail-open (bridges 0327/0329, R&D-confirmed 0326) on BOTH backends (0333/0334).
-        allDiags = appendAll(allDiags, checkCallArgs(name, fd.body, flows))
+        allDiags = appendDiagnostics(allDiags, checkCallArgs(name, fd.body, flows))
         // FUNGI-BINDING-005: reassigning an immutable (`let`, never `mut`) binding in this flow's body.
-        allDiags = appendAll(allDiags, checkImmutableReassign(name, fd.body))
+        allDiags = appendDiagnostics(allDiags, checkImmutableReassign(name, fd.body))
         flowCount = flowCount + 1
       }
       None => {}
@@ -1835,28 +1900,33 @@ contract {
 
 // ── 1. Static Constants ───────────────────────────────────────
 
+record StaticEnvEntry {
+  name: String
+  value: String
+  typeName: String
+}
+
 record StaticEnv {
-  entries: Array<Auto>
+  entries: Array<StaticEnvEntry>
 }
 
 // entries element shape: { name: String, value: String, typeName: String }
 
-// Build a StaticEnv from an array of StaticDecl AST nodes.
-// Each StaticDecl: { kind: "static", name: String, typeName: String, value: String }
-pure flow buildStaticEnv(decls: Array<Auto>) -> StaticEnv
+// Build a StaticEnv from the parser's declared StaticDecl record.
+// StaticDecl carries { name, valueExpr, inferredType }; the environment keeps
+// the same values under its public { name, value, typeName } entry shape.
+pure flow buildStaticEnv(decls: Array<StaticDecl>) -> StaticEnv
 contract {
   intent { "Collect StaticDecl nodes into a name→value lookup table (StaticEnv)." }
 }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<StaticEnvEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
     match dOpt {
       Some(d) => {
-        if d.kind == "static" {
-          entries = entries.append({ name: d.name, value: d.value, typeName: d.typeName })
-        }
+        entries = entries.append({ name: d.name, value: d.valueExpr, typeName: d.inferredType })
       }
       None => {}
       _ => {}
@@ -1888,23 +1958,21 @@ contract {
 }
 
 // Type-check all StaticDecl nodes: declared type must be a known type.
-pure flow checkStaticDecls(decls: Array<Auto>) -> Array<Auto>
+pure flow checkStaticDecls(decls: Array<StaticDecl>) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-001: static constant declarations must name a known type." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
     match dOpt {
       Some(d) => {
-        if d.kind == "static" {
-          let known: Bool = isKnownType(d.typeName)
-          if known == false {
-            let msg: String = "unknown type '" + d.typeName + "' on static constant '" + d.name + "' (FUNGI-TYPE-001)"
-            diags = diags.append({ code: "FUNGI-TYPE-001", message: msg, flowName: d.name })
-          }
+        let known: Bool = isKnownType(d.inferredType)
+        if known == false {
+          let msg: String = "unknown type '" + d.inferredType + "' on static constant '" + d.name + "' (FUNGI-TYPE-001)"
+          diags = diags.append({ code: "FUNGI-TYPE-001", message: msg, flowName: d.name })
         }
       }
       None => {}
@@ -1917,21 +1985,38 @@ contract {
 
 // ── 2. Bitfield Registers ─────────────────────────────────────
 
-record BitfieldEnv {
-  entries: Array<Auto>
+// Explicit normalized rows used by the dormant Stage-B bitfield helper.
+// These are not the parser's raw BitfieldDecl representation; no parser-to-helper
+// producer is currently wired. Keeping the intermediate ABI typed prevents WAT
+// from borrowing a coincidental module-wide Auto layout.
+record BitfieldFieldInput {
+  name: String
+  mask: Int
 }
 
-// entries element shape: { register: String, field: String, mask: Int }
+record BitfieldBuildInput {
+  kind: String
+  register: String
+  fields: Array<BitfieldFieldInput>
+}
 
-// Build a BitfieldEnv from an array of BitfieldDecl AST nodes.
-// Each BitfieldDecl: { kind: "bitfield", register: String,
-//                      fields: Array<{ name: String, mask: Int }> }
-pure flow buildBitfieldEnv(decls: Array<Auto>) -> BitfieldEnv
+record BitfieldEnvEntry {
+  register: String
+  field: String
+  mask: Int
+}
+
+record BitfieldEnv {
+  entries: Array<BitfieldEnvEntry>
+}
+
+// Build a BitfieldEnv from explicitly normalized bitfield rows.
+pure flow buildBitfieldEnv(decls: Array<BitfieldBuildInput>) -> BitfieldEnv
 contract {
   intent { "Collect BitfieldDecl nodes into a REGISTER.field→mask lookup table (BitfieldEnv)." }
 }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<BitfieldEnvEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -1992,12 +2077,12 @@ contract {
 
 // Type-check a view(cap) type annotation; returns diagnostics on the binding name.
 // capSpec is the raw capability list string — e.g. "CAP_A|CAP_B".
-pure flow checkViewType(bindingName: String, capSpec: String) -> Array<Auto>
+pure flow checkViewType(bindingName: String, capSpec: String) -> Array<TypeDiagnostic>
 contract {
   intent { "Validate that a view(cap) annotation contains well-formed capability names." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   if capSpec == "" {
     let msg: String = "view() annotation on '" + bindingName + "' is empty — at least one capability name is required (FUNGI-TYPE-005)"
     diags = diags.append({ code: "FUNGI-TYPE-005", message: msg, flowName: bindingName })
@@ -2009,12 +2094,12 @@ contract {
 // Walk a list of binding declarations and type-check any view(cap) annotations.
 // Each binding: { kind: String, name: String, typeName: String }
 // typeName may be "view(CAP_A|CAP_B)" — extract the inner spec and validate it.
-pure flow checkViewBindings(flowName: String, bindings: Array<Auto>) -> Array<Auto>
+pure flow checkViewBindings(flowName: String, bindings: Array<Stmt>) -> Array<TypeDiagnostic>
 contract {
   intent { "FUNGI-TYPE-005: every view(cap) binding must carry at least one named capability." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
+  mut diags: Array<TypeDiagnostic> = Array.empty()
   mut i: Int = 0
   while i < bindings.count() {
     let bOpt = bindings.get(i)
@@ -2023,7 +2108,7 @@ contract {
         let tn: String = b.typeName
         if tn.startsWith("view(") {
           let inner: String = tn.slice(5, tn.length() - 1)
-          diags = appendAll(diags, checkViewType(b.name, inner))
+          diags = appendDiagnostics(diags, checkViewType(b.name, inner))
         }
       }
       None => {}
@@ -2042,5 +2127,3 @@ contract {
 // compile time (traps are a runtime fail-closed mechanism). FUNGI-TYPE-027 has NO emit site in the
 // compiler (registry emits=0, no def). The former `checkTrapDecl` (never wired into any check path)
 // emitted 027 — a FALSE DIFFERENTIAL — and was removed.
-
-

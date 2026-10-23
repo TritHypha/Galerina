@@ -222,8 +222,12 @@ describe("RD-0858 Unit 4 causal in-process process-root controls", () => {
       const result = runPreBootstrapAttack(mode);
       assert.equal(result.detectorRestored, true);
       assert.equal(result.descriptorRestored, true);
-      if (mode.startsWith("detector-")) assert.equal(result.descriptorReads, 2);
-      if (mode.startsWith("descriptor-")) assert.equal(result.forgedReads, 2);
+      // Runtime-error snapshotting also probes the input tag before the
+      // require decision reads its tag and payload. The attack control is
+      // about proving the forged discriminator path executes, not freezing
+      // that legitimate third descriptor observation.
+      if (mode.startsWith("detector-")) assert.ok(result.descriptorReads >= 2);
+      if (mode.startsWith("descriptor-")) assert.ok(result.forgedReads >= 2);
       assert.equal(result.value, "allow", "control must prove the in-process root attack is live");
       assert.equal(result.audit, "ok", "control must reach the unsafe in-process allow path");
       const cleanAfter = await cleanScalarWorkerFrame();

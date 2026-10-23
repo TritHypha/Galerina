@@ -173,12 +173,13 @@ describe("ZipPair WASM lowering", () => {
     }
   });
 
-  it("T6 repeated invocations stay exact; the pre-existing host Option bound fails closed", async () => {
+  it("T6 repeated invocations stay exact without exhausting canonical immutable Options", async () => {
     const ctx = await instantiate(SRC, "zip-t6.fungi");
-    // At most 3 host Option handles per call, so 1000 calls stay below MAX_WASM_HOST_RECORDS (4096).
+    // Reuse one admitted instance and host runtime through more calls than the old lifetime cap.
     for (let k = 0; k < 1000; k++) assert.equal(ctx.instance.exports.mzip(k % 7, 3), k % 7 > 0 ? (k % 7) * 1000 + 3 : -7);
-    // The host Option store is bounded per host runtime (not per invocation): exhausting it throws, never a wrong value.
-    assert.throws(() => { for (let k = 0; k < 5000; k++) ctx.instance.exports.mzip(1, 1); }, /Option store exceeds the host bound/);
+    for (let k = 0; k < 5000; k++) {
+      assert.equal(ctx.instance.exports.mzip(1, 1), 1001, `repeated call ${k} retains exact Option payloads`);
+    }
   });
 
   for (const [ty, lit] of [["Float", "1.5"], ["Int64", "5"], ["Decimal", "Decimal(\"1.5\")"]]) {

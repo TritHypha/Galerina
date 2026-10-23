@@ -222,13 +222,13 @@ contract { intent { "Read a named field from a record runtime value." } }
 }
 
 // Look up the most-recent binding of `name`; rtInt(0) when unbound.
-pure flow envLookup(env: Array<Binding>, name: String) -> RtValue
+pure flow envLookup(bindings: Array<Binding>, name: String) -> RtValue
 contract { intent { "Return the most-recently-bound value for name, or Int 0 if unbound." } }
 {
   mut result: RtValue = rtInt(0)
   mut i: Int = 0
-  while i < env.count() {
-    let bOpt = env.get(i)
+  while i < bindings.count() {
+    let bOpt = bindings.get(i)
     match bOpt {
       Some(b) => {
         if b.name == name { result = b.val }
@@ -242,10 +242,10 @@ contract { intent { "Return the most-recently-bound value for name, or Int 0 if 
 }
 
 // Bind name → value (append; later bindings shadow earlier ones on lookup).
-pure flow envBind(env: Array<Binding>, name: String, v: RtValue) -> Array<Binding>
+pure flow envBind(bindings: Array<Binding>, name: String, v: RtValue) -> Array<Binding>
 contract { intent { "Append a name→value binding to the environment." } }
 {
-  return env.append(Binding { name: name, val: v })
+  return bindings.append(Binding { name: name, val: v })
 }
 
 // Apply a binary opcode to two runtime values.
@@ -727,7 +727,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
     // A missing nested callee used to execute the empty lookup sentinel and return
     // the evaluator's default Int(0). That is a plausible-value fail-open.
     trap entry.name == "" : ERR_MISSING_FLOW
-    let params: Array<Auto> = entry.params
+    let params: Array<String> = entry.params
     // Positional calls are exact: neither absent parameters nor ignored surplus
     // arguments may be converted into an executable environment.
     trap params.count() != argVals.count() : ERR_ARGUMENT_COUNT
@@ -1047,7 +1047,7 @@ contract { intent { "Execute a GIR statement body; thread the env, short-circuit
                 if armFires {
                   matched = true
                   // If a binding name exists, inject payload[0] into the arm env
-                  mut armEnv: Array<Auto> = curEnv
+                  mut armEnv = curEnv
                   if bindName != "" {
                     if subjVal.ty == "tag" {
                       let plItems: Array<Auto> = subjVal.payload
@@ -1108,7 +1108,8 @@ contract { intent { "Execute a GIR statement body; thread the env, short-circuit
 pure flow runGIRBody(stmts: Array<GIRStmt>, env: Array<Binding>) -> RtValue
 contract { intent { "Execute a GIR flow body with an initial environment; return its return value." } }
 {
-  let res: ExecResult = execGIRBody(stmts, env, Array.empty())
+  let emptyFlows: Array<FlowEntry> = Array.empty()
+  let res: ExecResult = execGIRBody(stmts, env, emptyFlows)
   return res.retVal
 }
 
@@ -1116,7 +1117,8 @@ contract { intent { "Execute a GIR flow body with an initial environment; return
 pure flow runGIR(stmts: Array<GIRStmt>) -> RtValue
 contract { intent { "Execute a GIR flow body with an empty environment." } }
 {
-  return runGIRBody(stmts, Array.empty())
+  let emptyEnv: Array<Binding> = Array.empty()
+  return runGIRBody(stmts, emptyEnv)
 }
 
 // Public entry: run a multi-flow program. Look up `entryName` in the flow
@@ -1140,7 +1142,7 @@ contract { intent { "Run a flow-table program from an entry flow with positional
   if entry.name == "" {
     return { retVal: rtTag("Err", rtStr("no such flow")), auditLog: Array.empty() }
   }
-  let params: Array<Auto> = entry.params
+  let params: Array<String> = entry.params
   // Entry invocation follows the same exact-arity rule as nested calls. Without
   // this guard, a missing binding could later resolve through the legacy Int(0)
   // sentinel and surplus evidence would be silently discarded.

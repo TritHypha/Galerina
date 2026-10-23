@@ -59,4 +59,11 @@ describe("Float non-finite: BOTH tiers fail closed (#55 0014 parity)", () => {
       assert.equal(Number(thunk()), expected, `WASM finite value: ${expected}`);
     }
   });
+
+  it("underscore-separated exponent literals preserve value across walker and WASM", async () => {
+    const src = F("return 1_0e2");
+    assert.equal(await walkerTraps(src, "f"), false, "finite exponent literal must not trap in the walker");
+    const thunk = await runWasm(src, "f");
+    assert.equal(Number(thunk()), 1000, "WASM must evaluate separators in the exponent literal");
+  });
 });

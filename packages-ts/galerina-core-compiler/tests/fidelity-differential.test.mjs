@@ -28,6 +28,508 @@ const MAX = 2147483647;
 const int = (v) => ({ __tag: "int", value: v });
 const argMap = (names, vals) => new Map(names.map((n, i) => [n, int(vals[i])]));
 
+function invokeWasmInWorker(workerData, watchdogMs = 5000) {
+  const workerUrl = new URL("./helpers/wasm-invoke-worker.mjs", import.meta.url);
+  return new Promise((resolve) => {
+    const worker = new Worker(fileURLToPath(workerUrl), { workerData });
+    let done = false;
+    let timedOut = false;
+    let receivedMessage = false;
+    let message;
+    let workerError;
+    const finish = (result) => {
+      if (done) return;
+      done = true;
+      clearTimeout(watchdog);
+      resolve(result);
+    };
+    const watchdog = setTimeout(() => {
+      timedOut = true;
+      void worker.terminate().then(
+        (exitCode) => finish({ hang: true, workerExited: true, exitCode }),
+        (error) => finish({ hang: true, workerExited: false, error: String(error) }),
+      );
+    }, watchdogMs);
+    worker.once("message", (result) => { receivedMessage = true; message = result; });
+    worker.once("error", (error) => { workerError = String(error); });
+    worker.once("exit", (exitCode) => {
+      if (timedOut) {
+        finish({ hang: true, workerExited: true, exitCode });
+      } else if (workerError !== undefined) {
+        finish({ ok: false, error: workerError, workerExited: true, exitCode });
+      } else if (!receivedMessage) {
+        finish({ ok: false, error: `worker exited (${exitCode}) before posting a result`, workerExited: true, exitCode });
+      } else {
+        finish({ ...message, workerExited: true, exitCode });
+      }
+    });
+  });
+}
+
+function skipWATTrivia(wat, start) {
+  let i = start;
+  while (i < wat.length) {
+    if (/\s/u.test(wat[i])) { i++; continue; }
+    if (wat.startsWith(";;", i)) {
+      while (i < wat.length && wat[i] !== "\n") i++;
+      continue;
+    }
+    if (wat.startsWith("(;", i)) {
+      let depth = 1;
+      i += 2;
+      while (i < wat.length && depth > 0) {
+        if (wat.startsWith("(;", i)) { depth++; i += 2; }
+        else if (wat.startsWith(";)", i)) { depth--; i += 2; }
+        else i++;
+      }
+      if (depth > 0) return wat.length;
+      continue;
+    }
+    break;
+  }
+  return i;
+}
+
+function readWATToken(wat, start) {
+  let end = start;
+  while (end < wat.length && !/[\s()"]/.test(wat[end])
+    && !wat.startsWith(";;", end) && !wat.startsWith("(;", end)) end++;
+  return wat.slice(start, end);
+}
+
+function findWATFunctionStart(wat, name) {
+  let inString = false, escaped = false, lineComment = false, blockCommentDepth = 0, parenDepth = 0;
+  for (let i = 0; i < wat.length; i++) {
+    const char = wat[i], next = wat[i + 1];
+    if (lineComment) {
+      if (char === "\n") lineComment = false;
+      continue;
+    }
+    if (blockCommentDepth > 0) {
+      if (char === "(" && next === ";") { blockCommentDepth++; i++; }
+      else if (char === ";" && next === ")") { blockCommentDepth--; i++; }
+      continue;
+    }
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === ";" && next === ";") { lineComment = true; i++; continue; }
+    if (char === "(" && next === ";") { blockCommentDepth = 1; i++; continue; }
+    if (char === '"') { inString = true; continue; }
+    if (char === "(" && parenDepth === 1) {
+      const kindStart = skipWATTrivia(wat, i + 1);
+      const kindEnd = kindStart + readWATToken(wat, kindStart).length;
+      if (wat.slice(kindStart, kindEnd) === "func") {
+        const nameStart = skipWATTrivia(wat, kindEnd);
+        if (readWATToken(wat, nameStart) === `$${name}`) return i;
+      }
+    }
+    if (char === "(") parenDepth++;
+    else if (char === ")") parenDepth--;
+  }
+  return -1;
+}
+
+function extractWATFunction(wat, name) {
+  const start = findWATFunctionStart(wat, name);
+  assert.ok(start >= 0, `missing emitted function ${name}`);
+  let depth = 0, inString = false, lineComment = false, blockCommentDepth = 0;
+  for (let i = start; i < wat.length; i++) {
+    const char = wat[i], next = wat[i + 1];
+    if (lineComment) {
+      if (char === "\n") lineComment = false;
+      continue;
+    }
+    if (blockCommentDepth > 0) {
+      if (char === "(" && next === ";") { blockCommentDepth++; i++; }
+      else if (char === ";" && next === ")") { blockCommentDepth--; i++; }
+      continue;
+    }
+    if (inString) {
+      if (char === "\\") i++;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === ";" && next === ";") { lineComment = true; i++; continue; }
+    if (char === "(" && next === ";") { blockCommentDepth = 1; i++; continue; }
+    if (char === '"') { inString = true; continue; }
+    if (char === "(") depth++;
+    else if (char === ")" && --depth === 0) return wat.slice(start, i + 1);
+  }
+  assert.fail(`unterminated emitted function ${name}`);
+}
+
+function stripWATCommentsAndStrings(wat) {
+  let code = "", inString = false, lineComment = false, blockCommentDepth = 0;
+  for (let i = 0; i < wat.length; i++) {
+    const char = wat[i], next = wat[i + 1];
+    if (lineComment) {
+      if (char === "\n") { lineComment = false; code += "\n"; }
+      continue;
+    }
+    if (blockCommentDepth > 0) {
+      if (char === "(" && next === ";") { blockCommentDepth++; i++; }
+      else if (char === ";" && next === ")") { blockCommentDepth--; code += " "; i++; }
+      else if (char === "\n") code += "\n";
+      continue;
+    }
+    if (inString) {
+      if (char === "\\") i++;
+      else if (char === '"') { inString = false; code += " "; }
+      continue;
+    }
+    if (char === ";" && next === ";") { lineComment = true; code += " "; i++; continue; }
+    if (char === "(" && next === ";") { blockCommentDepth = 1; code += " "; i++; continue; }
+    if (char === '"') { inString = true; code += " "; continue; }
+    code += char;
+  }
+  return code;
+}
+
+function countWATUnreachableOpcodes(wat) {
+  const code = stripWATCommentsAndStrings(wat);
+  return [...code.matchAll(/(?:^|[\s()])unreachable(?=$|[\s()])/gu)].length;
+}
+
+function assertFuelGuardIsTheOnlyUnreachable(functionWat, label) {
+  const opcodes = countWATUnreachableOpcodes(functionWat);
+  assert.equal(opcodes, 1, `${label} must have exactly one unreachable opcode, the fuel guard`);
+  assert.match(stripWATCommentsAndStrings(functionWat),
+    /\(if \(i32\.gt_u \(local\.get \$__while_fuel_0\) \(i32\.const 100000\)\) \(then unreachable\)\)/u,
+    `${label} must place its sole trap at the exact fuel guard`);
+}
+
+function readWasmU32(bytes, cursor, label) {
+  let value = 0;
+  let shift = 0;
+  for (let count = 0; count < 5; count++) {
+    assert.ok(cursor.offset < bytes.length, `${label}: truncated unsigned LEB128`);
+    const byte = bytes[cursor.offset++];
+    if (count === 4) assert.ok((byte & 0xf0) === 0, `${label}: unsigned LEB128 exceeds u32`);
+    value |= (byte & 0x7f) << shift;
+    if ((byte & 0x80) === 0) return value >>> 0;
+    shift += 7;
+  }
+  assert.fail(`${label}: unsigned LEB128 exceeds five bytes`);
+}
+
+function skipWasmName(bytes, cursor, label) {
+  const length = readWasmU32(bytes, cursor, `${label} length`);
+  assert.ok(length <= bytes.length - cursor.offset, `${label}: truncated UTF-8 name`);
+  const name = new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(cursor.offset, cursor.offset + length));
+  cursor.offset += length;
+  return name;
+}
+
+function skipWasmLimits(bytes, cursor, label) {
+  const flags = readWasmU32(bytes, cursor, `${label} flags`);
+  assert.ok((flags & ~0x07) === 0, `${label}: unsupported limits flags`);
+  const memory64 = (flags & 0x04) !== 0;
+  const readLimit = (part) => {
+    if (!memory64) return readWasmU32(bytes, cursor, `${label} ${part}`);
+    let value = 0n;
+    let shift = 0n;
+    for (let count = 0; count < 10; count++) {
+      assert.ok(cursor.offset < bytes.length, `${label}: truncated u64 limit`);
+      const byte = bytes[cursor.offset++];
+      if (count === 9) assert.ok((byte & 0xfe) === 0, `${label}: u64 limit exceeds ten bytes`);
+      value |= BigInt(byte & 0x7f) << shift;
+      if ((byte & 0x80) === 0) return value;
+      shift += 7n;
+    }
+    assert.fail(`${label}: u64 limit exceeds ten bytes`);
+  };
+  readLimit("minimum");
+  if ((flags & 0x01) !== 0) readLimit("maximum");
+}
+
+function skipWasmValueType(bytes, cursor, label) {
+  assert.ok(cursor.offset < bytes.length, `${label}: missing value type`);
+  const type = bytes[cursor.offset++];
+  if (type === 0x63 || type === 0x64) {
+    for (let count = 0; count < 5; count++) {
+      assert.ok(cursor.offset < bytes.length, `${label}: truncated heap type`);
+      if ((bytes[cursor.offset++] & 0x80) === 0) return;
+    }
+    assert.fail(`${label}: heap type exceeds five bytes`);
+  }
+  assert.ok([0x7b, 0x70, 0x6f, 0x7f, 0x7e, 0x7d, 0x7c].includes(type),
+    `${label}: unsupported value type 0x${type.toString(16)}`);
+}
+
+function locateWasmFunctionBody(wasmBytes, functionIndex, functionName) {
+  const bytes = Buffer.from(wasmBytes);
+  assert.ok(bytes.length >= 8 && bytes.length <= 16 * 1024 * 1024, "signed WASM module size is bounded");
+  assert.deepEqual([...bytes.subarray(0, 8)], [0, 0x61, 0x73, 0x6d, 1, 0, 0, 0],
+    "trap attribution requires a core WebAssembly v1 module");
+
+  let importedFunctions = 0;
+  let functionExports = new Map();
+  let codeBodies;
+  const cursor = { offset: 8 };
+  let sectionCount = 0;
+  while (cursor.offset < bytes.length) {
+    assert.ok(++sectionCount <= 128, "WASM section count is bounded");
+    const sectionId = bytes[cursor.offset++];
+    const sectionSize = readWasmU32(bytes, cursor, "section size");
+    const sectionStart = cursor.offset;
+    const sectionEnd = sectionStart + sectionSize;
+    assert.ok(sectionEnd <= bytes.length, `WASM section ${sectionId} exceeds module bounds`);
+    const section = { offset: sectionStart };
+
+    if (sectionId === 2) {
+      const imports = readWasmU32(bytes, section, "import count");
+      assert.ok(imports <= 100_000, "WASM import count is bounded");
+      for (let i = 0; i < imports; i++) {
+        skipWasmName(bytes, section, `import ${i} module`);
+        skipWasmName(bytes, section, `import ${i} field`);
+        assert.ok(section.offset < sectionEnd, `import ${i}: missing external kind`);
+        const kind = bytes[section.offset++];
+        if (kind === 0) {
+          importedFunctions++;
+          readWasmU32(bytes, section, `import ${i} function type index`);
+        } else if (kind === 1) {
+          skipWasmValueType(bytes, section, `import ${i} table element type`);
+          skipWasmLimits(bytes, section, `import ${i} table limits`);
+        } else if (kind === 2) {
+          skipWasmLimits(bytes, section, `import ${i} memory limits`);
+        } else if (kind === 3) {
+          skipWasmValueType(bytes, section, `import ${i} global type`);
+          assert.ok(section.offset < sectionEnd, `import ${i}: missing global mutability`);
+          section.offset++;
+        } else if (kind === 4) {
+          readWasmU32(bytes, section, `import ${i} tag attribute`);
+          readWasmU32(bytes, section, `import ${i} tag type index`);
+        } else {
+          assert.fail(`import ${i}: unsupported external kind ${kind}`);
+        }
+        assert.ok(section.offset <= sectionEnd, `import ${i}: descriptor exceeds import section`);
+      }
+    } else if (sectionId === 7) {
+      const exports = readWasmU32(bytes, section, "export count");
+      assert.ok(exports <= 100_000, "WASM export count is bounded");
+      for (let i = 0; i < exports; i++) {
+        const name = skipWasmName(bytes, section, `export ${i} name`);
+        assert.ok(section.offset < sectionEnd, `export ${i}: missing external kind`);
+        const kind = bytes[section.offset++];
+        const index = readWasmU32(bytes, section, `export ${i} index`);
+        if (kind === 0) functionExports.set(name, index);
+      }
+    } else if (sectionId === 10) {
+      const count = readWasmU32(bytes, section, "code body count");
+      assert.ok(count <= 100_000, "WASM code body count is bounded");
+      codeBodies = [];
+      for (let i = 0; i < count; i++) {
+        const bodySize = readWasmU32(bytes, section, `function body ${i} size`);
+        const bodyEnd = section.offset + bodySize;
+        assert.ok(bodyEnd <= sectionEnd, `function body ${i} exceeds code section`);
+        const localGroups = readWasmU32(bytes, section, `function body ${i} local group count`);
+        assert.ok(localGroups <= 100_000, `function body ${i} local group count is bounded`);
+        for (let group = 0; group < localGroups; group++) {
+          readWasmU32(bytes, section, `function body ${i} local group ${group} count`);
+          skipWasmValueType(bytes, section, `function body ${i} local group ${group} type`);
+        }
+        assert.ok(section.offset <= bodyEnd, `function body ${i} local declarations exceed its body`);
+        codeBodies.push({ instructionStart: section.offset, bodyEnd });
+        section.offset = bodyEnd;
+      }
+    }
+
+    if ([2, 7, 10].includes(sectionId)) {
+      assert.ok(section.offset === sectionEnd, `WASM section ${sectionId} has unparsed bytes`);
+    }
+    cursor.offset = sectionEnd;
+  }
+
+  assert.ok(codeBodies, "WASM module must contain a code section");
+  assert.equal(functionExports.get(functionName), functionIndex,
+    `runtime function index must identify exported ${functionName}`);
+  const codeIndex = functionIndex - importedFunctions;
+  assert.ok(Number.isInteger(codeIndex) && codeIndex >= 0 && codeIndex < codeBodies.length,
+    `runtime function index ${functionIndex} must map to a defined function body`);
+  return { ...codeBodies[codeIndex], bytes };
+}
+
+function skipWasmLeb(bytes, cursor, maxBytes, label) {
+  for (let count = 0; count < maxBytes; count++) {
+    assert.ok(cursor.offset < bytes.length, `${label}: truncated LEB128 immediate`);
+    if ((bytes[cursor.offset++] & 0x80) === 0) return;
+  }
+  assert.fail(`${label}: LEB128 immediate exceeds ${maxBytes} bytes`);
+}
+
+function wasmInstructionStarts(bytes, start, end, functionName) {
+  const cursor = { offset: start };
+  const starts = new Set();
+  const readU32 = (label) => readWasmU32(bytes, cursor, `${functionName} ${label}`);
+  const skipBytes = (count, label) => {
+    assert.ok(count <= end - cursor.offset, `${functionName}: truncated ${label} immediate`);
+    cursor.offset += count;
+  };
+  const skipBlockType = () => {
+    assert.ok(cursor.offset < end, `${functionName}: missing block type`);
+    const first = bytes[cursor.offset];
+    if (first === 0x40 || [0x7b, 0x70, 0x6f, 0x7f, 0x7e, 0x7d, 0x7c].includes(first)) {
+      cursor.offset++;
+      return;
+    }
+    if (first === 0x63 || first === 0x64) {
+      cursor.offset++;
+      skipWasmLeb(bytes, cursor, 5, `${functionName} block heap type`);
+      return;
+    }
+    skipWasmLeb(bytes, cursor, 5, `${functionName} block type index`);
+  };
+  const skipMemArg = () => {
+    readU32("memory alignment");
+    readU32("memory offset");
+  };
+
+  while (cursor.offset < end) {
+    const instructionOffset = cursor.offset;
+    const opcode = bytes[cursor.offset++];
+    starts.add(instructionOffset);
+    if ([0x00, 0x01, 0x05, 0x0b, 0x0f, 0x1a, 0x1b, 0xd1, 0xd3, 0xd4].includes(opcode)
+        || (opcode >= 0x45 && opcode <= 0xc4)) {
+      continue;
+    }
+    if (opcode >= 0x02 && opcode <= 0x04) {
+      skipBlockType();
+    } else if ([0x0c, 0x0d, 0x10, 0x12, 0x14, 0x15, 0x20, 0x21, 0x22, 0x23, 0x24,
+      0x25, 0x26, 0xd2, 0xd5, 0xd6].includes(opcode)) {
+      readU32(`opcode 0x${opcode.toString(16)} index`);
+    } else if (opcode === 0x0e) {
+      const count = readU32("branch table count");
+      assert.ok(count <= 100_000, `${functionName}: branch table count is bounded`);
+      for (let i = 0; i <= count; i++) readU32("branch table target");
+    } else if (opcode === 0x11 || opcode === 0x13) {
+      readU32("indirect call type index");
+      readU32("indirect call table index");
+    } else if (opcode === 0x1c) {
+      const count = readU32("typed select result count");
+      assert.ok(count <= 16, `${functionName}: typed select result count is bounded`);
+      for (let i = 0; i < count; i++) skipWasmValueType(bytes, cursor, `${functionName} typed select type`);
+    } else if (opcode >= 0x28 && opcode <= 0x3e) {
+      skipMemArg();
+    } else if (opcode === 0x3f || opcode === 0x40) {
+      readU32("memory index");
+    } else if (opcode === 0x41) {
+      skipWasmLeb(bytes, cursor, 5, `${functionName} i32.const`);
+    } else if (opcode === 0x42) {
+      skipWasmLeb(bytes, cursor, 10, `${functionName} i64.const`);
+    } else if (opcode === 0x43) {
+      skipBytes(4, "f32.const");
+    } else if (opcode === 0x44) {
+      skipBytes(8, "f64.const");
+    } else if (opcode === 0xd0) {
+      skipWasmLeb(bytes, cursor, 5, `${functionName} ref.null heap type`);
+    } else if (opcode === 0xfc) {
+      const subopcode = readU32("0xfc subopcode");
+      if (subopcode <= 7) continue;
+      if (subopcode === 8 || subopcode === 10 || subopcode === 12 || subopcode === 14) {
+        readU32("0xfc first index");
+        readU32("0xfc second index");
+      } else if ([9, 11, 13, 15, 16, 17].includes(subopcode)) {
+        readU32("0xfc index");
+      } else {
+        assert.fail(`${functionName}: unsupported 0xfc subopcode ${subopcode}`);
+      }
+    } else {
+      assert.fail(`${functionName}: unsupported WASM opcode 0x${opcode.toString(16)} in test-only trap decoder`);
+    }
+    assert.ok(cursor.offset <= end, `${functionName}: instruction immediate exceeds function body`);
+  }
+  assert.equal(cursor.offset, end, `${functionName}: instructions must end at the function body boundary`);
+  return starts;
+}
+
+function assertWasmTrapOffsetMapsToOpcode(trapStack, wasmBytes, functionName, expectedOpcode) {
+  const frame = /wasm-function\[(\d+)\]:0x([\da-f]+)/iu.exec(trapStack ?? "");
+  assert.ok(frame, "the admitted-module trap stack must expose a function index and code offset");
+  const functionIndex = Number.parseInt(frame[1], 10);
+  const trapOffset = Number.parseInt(frame[2], 16);
+  const body = locateWasmFunctionBody(wasmBytes, functionIndex, functionName);
+  assert.ok(trapOffset >= body.instructionStart && trapOffset < body.bodyEnd,
+    `original signed-module offset 0x${trapOffset.toString(16)} must lie in ${functionName}'s instructions`);
+  assert.ok(wasmInstructionStarts(body.bytes, body.instructionStart, body.bodyEnd, functionName).has(trapOffset),
+    `original signed-module offset 0x${trapOffset.toString(16)} must be a ${functionName} instruction boundary`);
+  const expectedByte = expectedOpcode === "unreachable" ? 0x00 : undefined;
+  assert.notEqual(expectedByte, undefined, `unsupported expected WASM opcode ${expectedOpcode}`);
+  assert.equal(body.bytes[trapOffset], expectedByte,
+    `original signed-module offset 0x${trapOffset.toString(16)} in ${functionName} must encode ${expectedOpcode}`);
+}
+
+test("trap attribution rejects a zero byte inside a WASM instruction immediate", () => {
+  // i32.const 0; drop; unreachable; end. The first 0x00 is an immediate,
+  // not an executable opcode, but the module also has a real unreachable.
+  const wasm = Uint8Array.from([
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    0x07, 0x05, 0x01, 0x01, 0x66, 0x00, 0x00,
+    0x0a, 0x08, 0x01, 0x06, 0x00, 0x41, 0x00, 0x1a, 0x00, 0x0b,
+  ]);
+  assert.throws(
+    () => assertWasmTrapOffsetMapsToOpcode("wasm-function[0]:0x15", wasm, "f", "unreachable"),
+    /instruction boundary/u,
+    "a matching zero immediate must not be accepted as the trap opcode",
+  );
+});
+
+test("WAT function extraction ignores fake function headers inside comments", () => {
+  const wat = `;; (func $runawayLoop (result i32) unreachable)
+(module
+  (data (i32.const 0) "(func $runawayLoop (result i32) unreachable)")
+  (func $runawayLoop (result i32) (i32.const 7))
+  (export "runawayLoop" (func $runawayLoop)))`;
+  assert.equal(extractWATFunction(wat, "runawayLoop"),
+    '(func $runawayLoop (result i32) (i32.const 7))');
+});
+
+test("WAT function extraction skips export references before the function definition", () => {
+  const wat = `(module
+  (export "runawayLoop" (func $runawayLoop))
+  (func $runawayLoop (result i32) (i32.const 7)))`;
+  assert.equal(extractWATFunction(wat, "runawayLoop"),
+    '(func $runawayLoop (result i32) (i32.const 7))');
+});
+
+test("WAT function extraction accepts a newline and comment between func and its name", async () => {
+  const wat = `(module
+  (func
+    ;; legal trivia between the function keyword and identifier
+    $runawayLoop (result i32) (i32.const 7)))`;
+  const assembled = await L.assembleWAT(wat);
+  assert.ok(assembled.valid && assembled.diagnostics.length === 0,
+    `split-header WAT must be valid: ${JSON.stringify(assembled.diagnostics)}`);
+  assert.match(extractWATFunction(wat, "runawayLoop"), /\(i32\.const 7\)/u);
+});
+
+test("WAT function extraction accepts a signature immediately after its name delimiter", async () => {
+  const wat = `(module (func $runawayLoop(result i32) (i32.const 7)))`;
+  const assembled = await L.assembleWAT(wat);
+  assert.ok(assembled.valid && assembled.diagnostics.length === 0,
+    `parenthesis-delimited function header must be valid: ${JSON.stringify(assembled.diagnostics)}`);
+  assert.match(extractWATFunction(wat, "runawayLoop"), /\(i32\.const 7\)/u);
+});
+
+test("WAT opcode counting keeps token boundaries across block comments", () => {
+  const wat = '(func $f (result i32) (nop(; comment separates tokens ;)unreachable) (data (i32.const 0) "unreachable"))';
+  assert.equal(countWATUnreachableOpcodes(wat), 1);
+});
+
+test("WAT opcode counting recognizes an instruction after a folded expression", () => {
+  assert.equal(countWATUnreachableOpcodes('(func $f (result i32) (nop)unreachable)'), 1);
+});
+
+test("fuel-guard recognition ignores a commented guard beside a real unrelated trap", () => {
+  const wat = `(func $f (result i32)
+    ;; (if (i32.gt_u (local.get $__while_fuel_0) (i32.const 100000)) (then unreachable))
+    unreachable)`;
+  assert.throws(() => assertFuelGuardIsTheOnlyUnreachable(wat, "comment-decoy"), /exact fuel guard/u);
+});
+
 // Reference tier = tree-walker (no pureFastPath). Candidate tier = bytecode/sync fast-path.
 const reference = (prog, flow, args) => executeFlow(flow, args, prog.ast, prog.flows);
 const candidate = (prog, flow, args) =>
@@ -98,6 +600,14 @@ test("0014 slice-1: tree-walker ≡ bytecode/fast tier, byte-exact (value + trap
       if (ref.__tag === "runtimeError") {
         assert.equal(ref.message, cand.message, `tier TRAP divergence — ${ctx}`);
       }
+      if (flow === "fUNeg") {
+        if (vals[0] === MIN) {
+          assert.equal(ref.__tag, "runtimeError", "negating INT32_MIN must fail closed on the reference walker");
+        } else {
+          const expected = vals[0] === 0 ? 0 : -vals[0]; // Int canonicalizes both signed zeros to 0.
+          assert.deepEqual(ref, int(expected), `unary negation known answer for ${vals[0]}`);
+        }
+      }
     }
   }
 });
@@ -145,6 +655,14 @@ test("0014 slice-2: WASM tier ≡ reference walker, byte-exact (value; trap⟺tr
       const ctx = `flow=${flow} args=[${vals}] : walker=${refTrap ? "trap" : "int:" + ref.value} wasm=${wasmTrap ? "trap" : "int:" + wasmVal}`;
       // 1. trap ⟺ trap (a value-vs-trap split is a fidelity failure)
       assert.equal(refTrap, wasmTrap, `tier TRAP/VALUE divergence — ${ctx}`);
+      if (flow === "fUNeg") {
+        if (vals[0] === MIN) {
+          assert.equal(wasmTrap, true, "negating INT32_MIN must trap in assembled WASM");
+        } else {
+          const expected = vals[0] === 0 ? 0 : -vals[0];
+          assert.equal(wasmVal, expected, `assembled-WASM unary negation known answer for ${vals[0]}`);
+        }
+      }
       // 2. when both produce a value, byte-exact via Object.is (catches a -0 that === would hide)
       if (!refTrap) {
         assert.equal(ref.__tag, "int", `reference produced a non-int value — ${ctx}`);
@@ -376,8 +894,11 @@ test("0014 slice-6b: SHAPE FUZZ REAL WASM ≡ reference walker over generated lo
 // proves exactly that — through a worker_threads-isolated invoke with a wall-clock watchdog, so if a
 // future emitter change DROPS the fuel cap, the watchdog reclaims the hang and reports the RD-0314
 // class as a test failure instead of freezing CI.
-test("0014 slice-6c: runaway `while true` through REAL WASM traps at the fuel cap (watchdogged — a hang is a finding)", async () => {
-  const src = "pure flow runawayLoop(a: Int) -> Int contract { effects {} } { mut i = 0 while true { i = i + 1 } return i }";
+test("0014 slice-6c: REAL WASM loop fuel traps only after the exact cap and worker exits (watchdogged)", async () => {
+  const src = [
+    "pure flow runawayLoop(a: Int) -> Int contract { effects {} } { mut i = 0 while a == 1 { i = i + 1 } return i }",
+    "pure flow boundedLoop(limit: Int) -> Int contract { effects {} } { mut i = 0 while i < limit { i = i + 1 } return i }",
+  ].join("\n");
   const prog = parseProgram(src, "fid-runaway.fungi");
   const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
   assert.equal(errs.length, 0, `parse error: ${errs.map((d) => d.message).join("; ")}`);
@@ -385,6 +906,15 @@ test("0014 slice-6c: runaway `while true` through REAL WASM traps at the fuel ca
   const fx = L.checkEffects(prog.flows, prog.ast);
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
   const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "fidrun", prog.ast, true));
+  assert.match(wat, /__while_fuel_/u, "the compiled runaway flow must contain the loop-fuel counter");
+  const runawayWat = extractWATFunction(wat, "runawayLoop");
+  const boundedWat = extractWATFunction(wat, "boundedLoop");
+  assert.match(runawayWat, /\(if \(i32\.gt_u \(local\.get \$__while_fuel_0\) \(i32\.const 100000\)\) \(then unreachable\)\)/u,
+    "the runaway function must contain its per-loop 100000-iteration guard");
+  assert.match(boundedWat, /\(if \(i32\.gt_u \(local\.get \$__while_fuel_0\) \(i32\.const 100000\)\) \(then unreachable\)\)/u,
+    "the finite boundary-control function must contain its independent 100000-iteration guard");
+  assertFuelGuardIsTheOnlyUnreachable(runawayWat, "runawayLoop");
+  assertFuelGuardIsTheOnlyUnreachable(boundedWat, "boundedLoop");
   const asm = await L.assembleWAT(wat);
   assert.ok(asm.valid && asm.diagnostics.length === 0, `runaway module assembles: ${JSON.stringify(asm.diagnostics)}`);
   const kp = L.generateRunnerKeypair();
@@ -394,31 +924,133 @@ test("0014 slice-6c: runaway `while true` through REAL WASM traps at the fuel ca
   const walkerRes = await executeFlow("runawayLoop", argMap(["a"], [1]), prog.ast, prog.flows, undefined, undefined, { maxIterations: 50 });
   assert.equal(walkerRes.value.__tag, "runtimeError", "walker: runaway loop must trap at the iteration cap");
 
-  // The WASM side, isolated + watchdogged (5s wall-clock — the fuel-cap trap lands in milliseconds).
-  const workerUrl = new URL("./helpers/wasm-invoke-worker.mjs", import.meta.url);
-  const outcome = await new Promise((resolve) => {
-    const w = new Worker(fileURLToPath(workerUrl), {
-      workerData: {
-        wasmB64: Buffer.from(asm.wasm).toString("base64"),
-        attestation: att,
-        publicKeyPem: kp.publicKeyPem,
-        flow: "runawayLoop",
-        args: [1],
-      },
-    });
-    const dog = setTimeout(() => {
-      w.terminate();
-      resolve({ hang: true });
-    }, 5000);
-    w.once("message", (m) => { clearTimeout(dog); resolve(m); });
-    w.once("error", (e) => { clearTimeout(dog); resolve({ ok: false, error: String(e) }); });
+  const commonWorkerData = {
+    wasmB64: Buffer.from(asm.wasm).toString("base64"),
+    attestation: att,
+    publicKeyPem: kp.publicKeyPem,
+    args: [1],
+  };
+  const missingExport = await invokeWasmInWorker({ ...commonWorkerData, flow: "missingRunawayLoop" });
+  assert.equal(missingExport.ok, false, "a missing-export control must be refused, not counted as a trap");
+  assert.match(missingExport.error, /not a callable function/u);
+  assert.equal(missingExport.workerExited, true, "the missing-export worker must be observed exiting");
+  assert.equal(missingExport.exitCode, 0, "the missing-export worker exits normally after reporting refusal");
+
+  // A function-entry trap or unrelated unreachable must not masquerade as fuel exhaustion.
+  const invoke = (flow, value, extraWorkerData = {}) => invokeWasmInWorker({
+    ...commonWorkerData,
+    flow,
+    args: [value],
+    ...extraWorkerData,
   });
 
-  assert.ok(!outcome.hang,
-    "RD-0314 CLASS REGRESSION: `while true` in real WASM ran past the watchdog — the loop FUEL CAP is gone " +
-    "(wat-emitter must emit the per-loop fuel trap; see task #22 / RD-0393). A hang is a finding, never a freeze.");
-  assert.ok(outcome.ok, `worker failed before invoke: ${outcome.error ?? "unknown"}`);
-  assert.equal(outcome.trapped, true, "runaway `while true` in real WASM must TRAP at the fuel cap (fail-closed), not return a value");
+  const zeroIterations = await invoke("runawayLoop", 0);
+  assert.ok(!zeroIterations.hang, "zero-iteration control exceeded the worker watchdog");
+  assert.ok(zeroIterations.ok, `worker failed before invoke: ${zeroIterations.error ?? "unknown"}`);
+  assert.equal(zeroIterations.callStarted, true, "the worker must verify a callable export before invocation");
+  assert.equal(zeroIterations.trapped, false, "zero iterations must return normally, not report an unrelated trap");
+  assert.equal(zeroIterations.value, 0, "zero iterations return the initialized value");
+  assert.equal(zeroIterations.workerExited, true, "the successful worker must be observed exiting");
+  assert.equal(zeroIterations.exitCode, 0, "the successful worker exits normally");
+
+  const atFuelCap = await invoke("boundedLoop", 100000);
+  assert.ok(!atFuelCap.hang, "the exact fuel-cap control exceeded the worker watchdog");
+  assert.ok(atFuelCap.ok, `worker failed before invoke: ${atFuelCap.error ?? "unknown"}`);
+  assert.equal(atFuelCap.trapped, false, "exactly 100000 loop iterations must complete");
+  assert.equal(atFuelCap.value, 100000, "the exact-cap control returns its iteration count");
+  assert.equal(atFuelCap.workerExited, true, "the exact-cap worker must be observed exiting");
+  assert.equal(atFuelCap.exitCode, 0, "the exact-cap worker exits normally");
+
+  const beyondFuelCap = await invoke("boundedLoop", 100001);
+  assert.ok(!beyondFuelCap.hang,
+    "RD-0314 CLASS REGRESSION: a runaway real-WASM loop exceeded the watchdog; fuel exhaustion must trap first");
+  assert.ok(beyondFuelCap.ok, `worker failed before invoke: ${beyondFuelCap.error ?? "unknown"}`);
+  assert.equal(beyondFuelCap.callStarted, true, "fuel exhaustion must follow a callable-export invocation");
+  assert.equal(beyondFuelCap.trapped, true, "100001 iterations must trap after the 100000-iteration cap");
+  assert.match(beyondFuelCap.trapReason, /trap during 'boundedLoop':.*unreachable/u,
+    "the over-cap execution must report the guest's WebAssembly unreachable failure");
+  assert.equal(beyondFuelCap.workerExited, true, "the trapped worker must be observed exiting");
+  assert.equal(beyondFuelCap.exitCode, 0, "the worker exits normally after reporting the guest trap");
+
+  const runaway = await invoke("runawayLoop", 1, { captureWasmStack: true });
+  assert.ok(!runaway.hang,
+    "RD-0314 CLASS REGRESSION: infinite real-WASM loop exceeded the watchdog; fuel exhaustion must trap first");
+  assert.ok(runaway.ok, `worker failed before invoke: ${runaway.error ?? "unknown"}`);
+  assert.equal(runaway.callStarted, true, "the runaway path must invoke a real callable export");
+  assert.equal(runaway.trapped, true, "the infinite loop must trap at the fuel cap");
+  assert.match(runaway.trapReason, /trap during 'runawayLoop':.*unreachable/u);
+  assert.match(runaway.trapStack ?? "", /wasm-function\[\d+\]:0x[\da-f]+/u,
+    "the exact admitted original module trap must expose its WebAssembly code offset");
+  assertWasmTrapOffsetMapsToOpcode(runaway.trapStack, asm.wasm, "runawayLoop", "unreachable");
+  assert.throws(
+    () => assertWasmTrapOffsetMapsToOpcode(runaway.trapStack, asm.wasm, "boundedLoop", "unreachable"),
+    /runtime function index must identify exported boundedLoop/u,
+    "the attribution must reject a different exported function",
+  );
+  const trapFrame = /wasm-function\[(\d+)\]:0x([\da-f]+)/iu.exec(runaway.trapStack);
+  assert.ok(trapFrame, "the positive trap frame remains available for the offset negative control");
+  const wrongOffset = Number.parseInt(trapFrame[2], 16) + 1;
+  const wrongOffsetStack = runaway.trapStack.replace(trapFrame[0],
+    `wasm-function[${trapFrame[1]}]:0x${wrongOffset.toString(16)}`);
+  assert.throws(
+    () => assertWasmTrapOffsetMapsToOpcode(wrongOffsetStack, asm.wasm, "runawayLoop", "unreachable"),
+    /must (?:lie in .*instructions|encode unreachable)/u,
+    "the attribution must reject an adjacent non-trap code offset",
+  );
+  assert.equal(runaway.workerExited, true, "the trapped runaway worker must be observed exiting");
+  assert.equal(runaway.exitCode, 0, "the runaway worker exits normally after reporting the guest trap");
+
+  // Negative control: an unrelated trap at the top of the loop body has the same generic
+  // WebAssembly 'unreachable' runtime reason. The attribution oracle must reject that module.
+  const exitBranch = /\(br_if \$while_exit_0 [^\r\n]+\)/u.exec(runawayWat);
+  assert.ok(exitBranch, "the runaway function must expose its condition/exit check");
+  const bodyTrapInsertAt = exitBranch.index + exitBranch[0].length;
+  const bodyTrapRunawayWat = `${runawayWat.slice(0, bodyTrapInsertAt)}\n    (nop)unreachable${runawayWat.slice(bodyTrapInsertAt)}`;
+  assert.notEqual(bodyTrapRunawayWat, runawayWat, "the negative control must inject a body-only trap");
+  assert.throws(
+    () => assertFuelGuardIsTheOnlyUnreachable(bodyTrapRunawayWat, "runawayLoop body-trap mutant"),
+    /exactly one unreachable opcode/u,
+    "the attribution oracle must fail on a non-fuel trap even when the fuel guard remains present",
+  );
+  assert.doesNotThrow(
+    () => assertFuelGuardIsTheOnlyUnreachable(`${runawayWat}\n    ;; harmless unreachable comment`, "runawayLoop comment control"),
+    "a non-executable comment must not be counted as a trap opcode",
+  );
+  const bodyTrapModuleWat = wat.replace(runawayWat, bodyTrapRunawayWat);
+  const bodyTrapAsm = await L.assembleWAT(bodyTrapModuleWat);
+  assert.ok(bodyTrapAsm.valid && bodyTrapAsm.diagnostics.length === 0,
+    `body-trap negative-control module assembles: ${JSON.stringify(bodyTrapAsm.diagnostics)}`);
+  const bodyTrapKeypair = L.generateRunnerKeypair();
+  const bodyTrapAttestation = L.signWasm(bodyTrapAsm.wasm, bodyTrapKeypair.privateKeyPem, "dev");
+  const bodyTrapCommonWorkerData = {
+    wasmB64: Buffer.from(bodyTrapAsm.wasm).toString("base64"),
+    attestation: bodyTrapAttestation,
+    publicKeyPem: bodyTrapKeypair.publicKeyPem,
+  };
+  const bodyTrapZeroIterations = await invokeWasmInWorker({
+    ...bodyTrapCommonWorkerData,
+    flow: "runawayLoop",
+    args: [0],
+  });
+  assert.equal(bodyTrapZeroIterations.ok, true,
+    `body-trap zero-iteration control failed before invoke: ${bodyTrapZeroIterations.error ?? "unknown"}`);
+  assert.equal(bodyTrapZeroIterations.trapped, false,
+    "the injected source-body trap must not run when the loop condition rejects entry");
+  assert.equal(bodyTrapZeroIterations.value, 0, "the body-trap mutant preserves the zero-iteration result");
+  assert.equal(bodyTrapZeroIterations.workerExited, true, "zero-iteration mutant worker must be observed exiting");
+  assert.equal(bodyTrapZeroIterations.exitCode, 0, "zero-iteration mutant worker exits normally");
+  const unrelatedTrap = await invokeWasmInWorker({
+    ...bodyTrapCommonWorkerData,
+    flow: "runawayLoop",
+    args: [1],
+  });
+  assert.equal(unrelatedTrap.ok, true, `body-trap worker failed before invoke: ${unrelatedTrap.error ?? "unknown"}`);
+  assert.equal(unrelatedTrap.callStarted, true, "the negative control invokes the admitted callable export");
+  assert.equal(unrelatedTrap.trapped, true, "the injected body trap must trap");
+  assert.match(unrelatedTrap.trapReason, /trap during 'runawayLoop':.*unreachable/u,
+    "the injected body trap deliberately shares the same generic runtime reason");
+  assert.equal(unrelatedTrap.workerExited, true, "the negative-control worker must be observed exiting");
+  assert.equal(unrelatedTrap.exitCode, 0, "the negative-control worker exits normally after reporting its trap");
 });
 
 test("0014 slice-5b: FUZZ WASM tier ≡ reference walker, byte-exact (value; trap⟺trap) over random i32 inputs", async () => {

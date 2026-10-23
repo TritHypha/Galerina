@@ -94,7 +94,7 @@ test("the canonical JSON decoder refuses an over-depth value", async () => {
 });
 
 test("dynamic regex uses the certified non-backtracking engine and bounds subjects", async () => {
-  const ambiguous = await callStdlib("matchesPattern", str(`${"a".repeat(20)}!`), [str("^(a|aa)+$")], ctx);
+  const ambiguous = await callStdlib("matchesPattern", str(`${"a".repeat(20)}!`), [str("^(?:a|aa)+$")], ctx);
   assert.equal(ambiguous.__tag, "bool");
   assert.equal(ambiguous.value, false);
   const oversized = await callStdlib("matchesPattern", str("a".repeat(4097)), [str("^a+$")], ctx);
@@ -102,7 +102,7 @@ test("dynamic regex uses the certified non-backtracking engine and bounds subjec
   const excessive = await callStdlib(
     "matchesPattern",
     str("a".repeat(4096)),
-    [str("(a?){500}z")],
+    [str("(?:a?){500}z")],
     ctx,
   );
   assert.equal(excessive.__tag, "err");

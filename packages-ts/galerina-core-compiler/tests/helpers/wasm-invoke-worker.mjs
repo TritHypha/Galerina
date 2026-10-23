@@ -9,16 +9,35 @@ import * as L from "../../dist/index.js";
 const { wasmB64, attestation, publicKeyPem, flow, args } = workerData;
 try {
   const { instance } = await L.admitAndInstantiate({
-    wasm: Buffer.from(wasmB64, "base64"),
+    // Buffer.from() may return a Buffer-backed pooled view. The runtime admission
+    // contract intentionally accepts only an ordinary, exclusively-owned Uint8Array.
+    wasm: Uint8Array.from(Buffer.from(wasmB64, "base64")),
     attestation,
     policy: { requireSigned: true, publicKeyPem },
     host: L.createHostRuntime(),
   });
+  if (typeof instance.exports[flow] !== "function") {
+    throw new Error(`requested export '${flow}' is not a callable function of the admitted module`);
+  }
   let trapped = false, value = null;
-  const invoked = L.invokeAdmittedExport(instance, flow, args);
-  if (!invoked.ok) trapped = true;
-  else value = typeof invoked.result === "number" ? invoked.result : invoked.result;
-  parentPort.postMessage({ ok: true, trapped, value });
+  let trapReason, trapStack;
+  if (workerData.captureWasmStack === true) {
+    try {
+      value = instance.exports[flow](...args);
+    } catch (err) {
+      trapped = true;
+      trapReason = `trap during '${flow}': ${err instanceof Error ? err.message : String(err)}`;
+      trapStack = err instanceof Error ? err.stack : undefined;
+    }
+  } else {
+    const invoked = L.invokeAdmittedExport(instance, flow, args);
+    if (!invoked.ok) {
+      trapped = true;
+      trapReason = invoked.reason;
+    }
+    else value = typeof invoked.result === "number" ? invoked.result : invoked.result;
+  }
+  parentPort.postMessage({ ok: true, callStarted: true, trapped, trapReason, trapStack, value });
 } catch (e) {
   parentPort.postMessage({ ok: false, error: String(e && e.message ? e.message : e) });
 }

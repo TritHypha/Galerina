@@ -32,6 +32,8 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { WATAssemblerConfig } from "./type-registry.js";
+import { getDerivedOwnedReturnSchemas, renderWAT } from "./wat-emitter.js";
+import type { WATModule, WATOwnedReturnSchemas } from "./wat-emitter-types.js";
 export type { WATAssemblerConfig } from "./type-registry.js";
 
 /** Wall-clock bound for instantiate+call. Same-thread timeouts cannot stop a guest loop. */
@@ -224,6 +226,103 @@ export async function assembleWAT(
       sourceWAT: watSource,
       valid: false,
       diagnostics: [{ message: String(err) }],
+    };
+  }
+}
+
+const OWNED_RETURN_SECTION_NAME = "fungi.owned-returns.v1";
+const MAX_OWNED_RETURN_SECTION_BYTES = 65_536;
+
+function encodeWasmU32(value: number): number[] {
+  if (!Number.isSafeInteger(value) || value < 0 || value > 0xffff_ffff) {
+    throw new RangeError("WASM section length is outside u32 range");
+  }
+  const bytes: number[] = [];
+  let remaining = value;
+  do {
+    let byte = remaining & 0x7f;
+    remaining = Math.floor(remaining / 0x80);
+    if (remaining !== 0) byte |= 0x80;
+    bytes.push(byte);
+  } while (remaining !== 0);
+  return bytes;
+}
+
+function readWasmU32(bytes: Uint8Array, cursor: { offset: number }, limit: number): number {
+  let value = 0;
+  for (let shift = 0; shift <= 28; shift += 7) {
+    if (cursor.offset >= limit) throw new Error("WASM section length is truncated");
+    const byte = bytes[cursor.offset++]!;
+    if (shift === 28 && (byte & 0xf0) !== 0) throw new Error("WASM u32 is out of range");
+    value += (byte & 0x7f) * 2 ** shift;
+    if ((byte & 0x80) === 0) return value;
+  }
+  throw new Error("WASM u32 is unterminated");
+}
+
+function hasOwnedReturnSection(wasm: Uint8Array): boolean {
+  if (wasm.length < 8 || wasm[0] !== 0 || wasm[1] !== 0x61 || wasm[2] !== 0x73 || wasm[3] !== 0x6d) {
+    throw new Error("assembler did not return a WASM module");
+  }
+  let offset = 8;
+  let found = false;
+  while (offset < wasm.length) {
+    const sectionId = wasm[offset++];
+    if (sectionId === undefined) throw new Error("WASM section id is truncated");
+    const cursor = { offset };
+    const length = readWasmU32(wasm, cursor, wasm.length);
+    const end = cursor.offset + length;
+    if (!Number.isSafeInteger(end) || end > wasm.length) throw new Error("WASM section exceeds module bounds");
+    if (sectionId === 0) {
+      const nameLength = readWasmU32(wasm, cursor, end);
+      const nameEnd = cursor.offset + nameLength;
+      if (nameEnd > end) throw new Error("WASM custom-section name exceeds section bounds");
+      const name = new TextDecoder("utf-8", { fatal: true }).decode(wasm.subarray(cursor.offset, nameEnd));
+      if (name === OWNED_RETURN_SECTION_NAME) {
+        if (found) throw new Error("WASM contains duplicate owned-return sections");
+        found = true;
+      }
+    }
+    offset = end;
+  }
+  return found;
+}
+
+function appendOwnedReturnSection(wasm: Uint8Array, schemas: WATOwnedReturnSchemas): Uint8Array {
+  if (hasOwnedReturnSection(wasm)) throw new Error("WASM already contains an owned-return section");
+  const json = JSON.stringify({ version: 1, exports: schemas });
+  const data = new TextEncoder().encode(json);
+  if (data.length === 0 || data.length > MAX_OWNED_RETURN_SECTION_BYTES) {
+    throw new Error("derived owned-return metadata exceeds the admitted byte bound");
+  }
+  const name = new TextEncoder().encode(OWNED_RETURN_SECTION_NAME);
+  const payload = [...encodeWasmU32(name.length), ...name, ...data];
+  const section = Uint8Array.from([0, ...encodeWasmU32(payload.length), ...payload]);
+  const output = new Uint8Array(wasm.length + section.length);
+  output.set(wasm);
+  output.set(section, wasm.length);
+  if (!WebAssembly.validate(output as BufferSource)) throw new Error("owned-return section produced invalid WASM");
+  return output;
+}
+
+/** Assemble a compiler-built module and bind its derived return shapes into the exact WASM bytes. */
+export async function assembleWATModule(
+  module: WATModule,
+  config?: WATAssemblerConfig,
+): Promise<WATAssemblerResult> {
+  const sourceWAT = renderWAT(module);
+  const assembled = await assembleWAT(sourceWAT, config);
+  if (!assembled.valid || assembled.diagnostics.length > 0) return assembled;
+  const schemas = getDerivedOwnedReturnSchemas(module, sourceWAT);
+  if (schemas === undefined) return assembled;
+  try {
+    return { ...assembled, wasm: appendOwnedReturnSection(assembled.wasm, schemas) };
+  } catch (error) {
+    return {
+      wasm: new Uint8Array(0),
+      sourceWAT,
+      valid: false,
+      diagnostics: [{ message: `compiler-derived owned-return metadata refused: ${error instanceof Error ? error.message : String(error)}` }],
     };
   }
 }

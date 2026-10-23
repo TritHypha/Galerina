@@ -136,20 +136,20 @@ async function runWasm(flow, input) {
   if (wasmCtx === null) {
     const asm = await L.assembleWAT(WAT);
     assert.ok(asm.valid && asm.diagnostics.length === 0, "combined lexer+parser+gir-emitter WAT assembles (R0): " + JSON.stringify(asm.diagnostics));
-    const host = L.createHostRuntime();
-    let maxH = 0;
-    for (const e of L.getInternedStrings()) { host.seedString(e.handle, e.value); if (e.handle > maxH) maxH = e.handle; }
     const kp = L.generateRunnerKeypair();
     const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
-    const { instance } = await L.admitAndInstantiate({
-      wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host,
-    });
-    assert.equal(typeof instance.exports.giremitProbe, "function", "driver admitted + exported (R1)");
-    wasmCtx = { host, instance, nextH: maxH + 1 };
+    wasmCtx = { wasm: asm.wasm, attestation: att, publicKeyPem: kp.publicKeyPem };
   }
-  const { host, instance } = wasmCtx;
-  const srcH = wasmCtx.nextH++;
-  host.seedString(srcH, input);
+  // Mirror the production low-level executor's one-host-per-execution lifecycle;
+  // otherwise the bounded host registries accumulate across unrelated corpus cases.
+  const host = L.createHostRuntime();
+  for (const e of L.getInternedStrings()) host.seedString(e.handle, e.value);
+  const { instance } = await L.admitAndInstantiate({
+    wasm: wasmCtx.wasm, attestation: wasmCtx.attestation,
+    policy: { requireSigned: true, publicKeyPem: wasmCtx.publicKeyPem }, host,
+  });
+  assert.equal(typeof instance.exports.giremitProbe, "function", "driver admitted + exported (R1)");
+  const srcH = host.internString(input);
   return Number(instance.exports[flow](srcH));
 }
 

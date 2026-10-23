@@ -160,7 +160,8 @@ function admitRuntime(
   const typeResult = checkTypes(parseResult.ast);
   appendDiagnostics(typeResult.diagnostics);
 
-  const valueStateResult = checkValueStates(parseResult.ast);
+  const valueStateMode = mode === "production" || mode === "deterministic" ? "production" : "development";
+  const valueStateResult = checkValueStates(parseResult.ast, valueStateMode);
   appendDiagnostics(valueStateResult.diagnostics);
 
   const effectResults = checkEffects(parseResult.flows, parseResult.ast);

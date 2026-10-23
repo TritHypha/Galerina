@@ -61,7 +61,7 @@ import { buildAiGraph, emitGIR } from "./gir-emitter.js";
 import { generateManifest, serializeManifest } from "./manifest-generator.js";
 import { renderWAT, astHasParamAdmission } from "./wat-emitter.js";
 import { buildWATFromCheckedProgram, checkProgram } from "./checked-program.js";
-import { assembleWAT } from "./wat-assembler.js";
+import { assembleWATModule } from "./wat-assembler.js";
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import { EFFECT_REGISTRY } from "./effect-checker.js";
 import { canonicalHash, hashSource, hashGIR } from "./runtime/canonicalHash.js";
@@ -1784,6 +1784,7 @@ async function runWasmStandaloneBuild(
 
   // Collect WAT from all files by compiling them
   const watParts: string[] = [];
+  let firstWatModule: ReturnType<typeof buildWATFromCheckedProgram> | undefined;
   let inputWasBlocked = false;
 
   for (const filePath of files) {
@@ -1832,6 +1833,7 @@ async function runWasmStandaloneBuild(
     try {
       const watModule = buildWATFromCheckedProgram(checked.program, STDLIB_CAPABILITY_MAP, "wasm-standalone");
       watText = renderWAT(watModule);
+      if (firstWatModule === undefined) firstWatModule = watModule;
     } catch (error) {
       inputWasBlocked = true;
       const message = error instanceof Error ? error.message : String(error);
@@ -1878,7 +1880,8 @@ async function runWasmStandaloneBuild(
   // transaction, so the pinned directory object is never held across await.
   let assembleResult;
   try {
-    assembleResult = await assembleWAT(cleanWat);
+    if (firstWatModule === undefined) throw new Error("no checked WAT module is available for assembly");
+    assembleResult = await assembleWATModule(firstWatModule);
   } catch (err: unknown) {
     try {
       replaceStandaloneOutput(watOutPath, cleanWat, outputPaths.outputDirectoryIdentity, "utf8");

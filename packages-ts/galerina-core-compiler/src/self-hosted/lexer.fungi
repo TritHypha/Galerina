@@ -616,7 +616,7 @@ contract {
 
     match ch {
       None => {
-        let eof = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
+        let eof: Token = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
         tokens = tokens.append(eof)
         return Ok(tokens)
       }
@@ -650,7 +650,7 @@ contract {
         if c is '\n' {
           let startLine = line
           let startCol = col
-          let tok = { kind: TokenKind.Newline, value: "\n", line: startLine, column: startCol, endLine: startLine, endColumn: startCol + 1, start: pos, end: pos + 1 }
+          let tok: Token = { kind: TokenKind.Newline, value: "\n", line: startLine, column: startCol, endLine: startLine, endColumn: startCol + 1, start: pos, end: pos + 1 }
           tokens = tokens.append(tok)
           line = line + 1
           col = 1
@@ -853,14 +853,14 @@ contract {
         }
       }
       _ => {
-        let eof = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
+        let eof: Token = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
         tokens = tokens.append(eof)
         return Ok(tokens)
       }
     }
   }
 
-  let eof = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
+  let eof: Token = { kind: TokenKind.Eof, value: "", line: line, column: col, endLine: line, endColumn: col, start: pos, end: pos }
   tokens = tokens.append(eof)
   return Ok(tokens)
 }

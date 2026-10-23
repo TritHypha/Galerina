@@ -45,7 +45,8 @@ async function instantiate() {
   const { instance } = await L.admitAndInstantiate({
     wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host,
   });
-  if (instance.exports.memory instanceof WebAssembly.Memory) host.bindMemory(instance.exports.memory);
+  assert.ok(host.snapshotMemory() instanceof Uint8Array,
+    "admission must bind the instance memory before the admitted instance is returned");
   return { instance, host };
 }
 

@@ -86,18 +86,19 @@ async function runWasm(input) {
     assert.ok(asm.valid && asm.diagnostics.length === 0,
       "combined lexer+parser+gir-emitter+runtime WAT assembles (R0): " + JSON.stringify(asm.diagnostics));
     const host = L.createHostRuntime();
-    let maxH = 0;
-    for (const e of L.getInternedStrings()) { host.seedString(e.handle, e.value); if (e.handle > maxH) maxH = e.handle; }
+    for (const e of L.getInternedStrings()) host.seedString(e.handle, e.value);
     const kp = L.generateRunnerKeypair();
     const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
     const { instance } = await L.admitAndInstantiate({
       wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host,
     });
     assert.equal(typeof instance.exports.runtimeProbe, "function", "driver admitted + exported (R1)");
-    wasmCtx = { host, instance, nextH: maxH + 1 };
+    wasmCtx = { host, instance };
   }
-  const srcH = wasmCtx.nextH++;
-  wasmCtx.host.seedString(srcH, input);
+  // Module start code may intern immutable runtime strings after the compiler's
+  // static table is seeded, so a guessed next handle can collide. Allocate dynamic
+  // probe inputs through the host registry's canonical allocator instead.
+  const srcH = wasmCtx.host.internString(input);
   return Number(wasmCtx.instance.exports.runtimeProbe(srcH));
 }
 

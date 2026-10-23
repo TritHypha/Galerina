@@ -5,6 +5,7 @@ declare module "node:crypto" {
     digest(format: "hex" | "base64" | "binary"): string;
   }
   export function createHash(algorithm: string): HashResult;
+  export function randomUUID(): string;
 
   interface GenerateKeyPairOptions {
     publicKeyEncoding?: { type: string; format: string };

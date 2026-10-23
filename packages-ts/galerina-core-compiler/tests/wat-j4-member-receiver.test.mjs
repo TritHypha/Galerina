@@ -1,11 +1,10 @@
 /**
  * J4 / E2a — #100 receiver forms used by checkFlowEffects.
  *
- * The live run-path traps are `fd.name` / `fd.kind` / `fd.effects` / `fd.usedEffects`
- * after `match flows.get(i) { Some(fd) => … }` where `flows: Array<Auto>`. Concrete
- * `Array<FlowDecl>` already lowered (p9-100 pin). Auto match-binds reconstruct a
- * unique record layout from the arm's `bind.field` uses and emit existing i32.load
- * field loads. Ambiguous single-field Auto stays fail-closed (not a default type).
+ * The self-hosted checker declares `checkFlowEffects(flows: Array<FlowDecl>)`.
+ * This test keeps that concrete Fungi contract through a loop, local Option and
+ * match binder; it must not rely on usage-based guessing from an Array<Auto>.
+ * Ambiguous single-field Auto remains fail-closed (not a default type).
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -41,7 +40,7 @@ function unresolvedMembers(wat) {
 const FLOWDECL = `record FlowDecl { kind: String name: String effects: Array<String> usedEffects: Array<String> }\n`;
 
 const AUTO_MATCH = FLOWDECL + `
-pure flow checkFlowEffects(flows: Array<Auto>) -> Int
+pure flow checkFlowEffects(flows: Array<FlowDecl>) -> Int
 contract { effects {} }
 {
   mut i: Int = 0
@@ -104,7 +103,7 @@ describe("J4 #100 match-bound Some(x) from Array.get receiver", () => {
     assert.match(wat, /i32\.load \(i32\.add/);
   });
 
-  it("Array<Auto> get→Some(fd) reconstructs FlowDecl from the four checkFlowEffects fields", () => {
+  it("typed Array<FlowDecl> get→Some(fd) preserves the declared field layout", () => {
     const wat = render(AUTO_MATCH, "j4-auto-match.fungi");
     const hits = unresolvedMembers(wat);
     assert.deepEqual(hits.filter((m) => ["name", "kind", "effects", "usedEffects"].includes(m)), []);
@@ -119,13 +118,13 @@ describe("J4 #100 match-bound Some(x) from Array.get receiver", () => {
     assert.ok(unresolvedMembers(wat).includes("name"), "ambiguous .name must stay fail-closed");
   });
 
-  it("interpreter≡WASM: in-flow Array<Auto> get→Some(fd) field loads return the same Int", async () => {
+  it("interpreter≡WASM: in-flow Array<FlowDecl> get→Some(fd) returns the same Int", async () => {
     const src = FLOWDECL + `
 pure flow probe() -> Int
 contract { effects {} }
 {
-  let fd = FlowDecl { kind: "pure", name: "ab", effects: Array.empty(), usedEffects: Array.empty() }
-  mut flows: Array<Auto> = Array.empty()
+  let fd: FlowDecl = FlowDecl { kind: "pure", name: "ab", effects: Array.empty(), usedEffects: Array.empty() }
+  mut flows: Array<FlowDecl> = Array.empty()
   flows = flows.append(fd)
   match flows.get(0) {
     Some(x) => {
@@ -143,10 +142,16 @@ contract { effects {} }
     const prog = L.parseProgram(`@version 1\n${src}`, "j4-probe-parity.fungi");
     const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
     assert.equal(errs.length, 0, "parse errors: " + JSON.stringify(errs.slice(0, 3)));
-    const fx = L.checkEffects(prog.flows, prog.ast);
-    const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
-    const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "j4-probe-parity", prog.ast, true));
-    assert.deepEqual(unresolvedMembers(wat).filter((m) => ["name", "kind", "effects", "usedEffects"].includes(m)), []);
+    const checked = L.checkProgram(`@version 1\n${src}`, "j4-probe-parity.fungi");
+    assert.equal(checked.ok, true, "checked source must be admissible: " + JSON.stringify(checked.diagnostics ?? []));
+    const wat = L.renderWAT(L.buildWATFromCheckedProgram(
+      checked.program, L.STDLIB_CAPABILITY_MAP, "wasm-standalone", true,
+    ));
+    assert.deepEqual(
+      unresolvedMembers(wat).filter((m) => ["name", "kind", "effects", "usedEffects"].includes(m)),
+      [],
+      wat.split("\n").filter((line) => line.includes("unresolved member:")).join("\n"),
+    );
     const interp = await L.executeFlow("probe", new Map(), prog.ast, prog.flows, undefined, undefined, { pureFastPath: true });
     const interpN = finiteNumber(interp, "j4 interp probe");
     const asm = await L.assembleWAT(wat);

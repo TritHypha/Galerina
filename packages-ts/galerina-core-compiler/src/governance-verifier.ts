@@ -56,6 +56,17 @@ import { foldStaticVerdict } from "./invariant-discharge.js";
 import { checkObservabilityWarnings } from "./observability-inference.js";
 import { checkSubstrateViolations } from "./substrate-inference.js";
 import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
+import {
+  i32AddChecked,
+  i32DivChecked,
+  i32FromLiteralText,
+  i32ModChecked,
+  i32MulChecked,
+  i32NegChecked,
+  i32SubChecked,
+  isI32Trap,
+  type I32Result,
+} from "./i32-arith.js";
 // RD-0358 governed memory-residency hardening (PROTOTYPE) — the explicit `hardening {}` block
 // enforcement. Auto-derivation (H-1) is record-only (surfaced by scripts/hardening-show-derived.mjs);
 // this validates the EXPLICIT opt-in block fail-closed (H-2/H-7/H-4). See hardening-residency.ts.
@@ -4043,45 +4054,165 @@ class GovernanceVerifier {
 
   /**
   /**
-   * FUNGI-STATIC-001/002: Verify top-level `static NAME = EXPR` declarations.
+   * FUNGI-STATIC-001/002: Verify module-wide `static NAME = EXPR` declarations,
+   * including declarations nested in flow bodies and other AST containers.
    *
    * FUNGI-STATIC-002: Redeclaration — the same name declared more than once.
-   * FUNGI-STATIC-001: Non-constant initializer — static uses a callExpr (runtime value).
+   * FUNGI-STATIC-001: Initializer is not a supported compile-time constant expression.
    *
    * Static constants must have unique names and must be initialized with compile-time
-   * literals (number, string, bool, or a previously-declared static identifier).
+   * literals, supported constant arithmetic, or a previously-declared valid static identifier.
    */
   private verifyStaticDecls(nodes: readonly AstNode[]): void {
     const seen = new Set<string>();
-    for (const node of nodes) {
-      if (node.kind !== "staticDecl") continue;
-      const name = node.value ?? "";
-      // FUNGI-STATIC-002: redeclaration
-      if (seen.has(name)) {
-        this.diagnostics.push(makeGovDiag(
-          "FUNGI-STATIC-002",
-          "STATIC_REDECLARATION",
-          "error",
-          `Static constant '${name}' is declared more than once. Static constants must be unique.`,
-          node.location,
-          `Remove the duplicate static declaration of '${name}'.`,
-        ));
+    type StaticValue =
+      | { readonly kind: "int"; readonly value: number }
+      | { readonly kind: "float" | "string" }
+      | { readonly kind: "bool"; readonly value: boolean };
+    const validStatics = new Map<string, StaticValue>();
+    const staticValueKind = (
+      expr: AstNode,
+      available: ReadonlyMap<string, StaticValue>,
+    ): { readonly value?: StaticValue; readonly reason?: string } => {
+      switch (expr.kind) {
+        case "numberLiteral": {
+          const raw = (expr.value ?? "0").replace(/_/g, "");
+          if (raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)) {
+            return Number.isFinite(Number.parseFloat(raw))
+              ? { value: { kind: "float" } }
+              : { reason: "floating-point literal is not finite" };
+          }
+          const value = i32FromLiteralText(raw);
+          return isI32Trap(value)
+            ? { reason: `integer literal refuses with ${value}` }
+            : { value: { kind: "int", value } };
+        }
+        case "stringLiteral":
+          return { value: { kind: "string" } };
+        case "boolLiteral":
+          return { value: { kind: "bool", value: expr.value === "true" } };
+        case "identifier": {
+          const identifier = expr.value ?? "";
+          if (identifier === "true" || identifier === "false") {
+            return { value: { kind: "bool", value: identifier === "true" } };
+          }
+          const value = available.get(identifier);
+          return value === undefined
+            ? { reason: `identifier '${identifier}' is unresolved or is not a previously declared valid static` }
+            : { value };
+        }
+        case "unaryExpr": {
+          const operand = expr.children?.[0];
+          if (operand === undefined || expr.children?.length !== 1) return { reason: "unary expression is malformed" };
+          if (expr.value === "-" && operand.kind === "numberLiteral" && typeof operand.value === "string") {
+            const raw = operand.value.replace(/_/g, "");
+            if (!raw.includes(".") && !/^\d+[eE][+-]?\d+$/.test(raw)) {
+              const literal = i32FromLiteralText(`-${raw}`);
+              return isI32Trap(literal)
+                ? { reason: `negative integer literal refuses with ${literal}` }
+                : { value: { kind: "int", value: literal } };
+            }
+          }
+          const operandValue = staticValueKind(operand, available);
+          if (operandValue.reason !== undefined) return operandValue;
+          const value = operandValue.value;
+          if (expr.value === "-" && value?.kind === "int") {
+            const negated = i32NegChecked(value.value);
+            return isI32Trap(negated)
+              ? { reason: `constant integer negation refuses with ${negated}` }
+              : { value: { kind: "int", value: negated } };
+          }
+          if (expr.value === "-" && value?.kind === "float") return { value };
+          if (expr.value === "!" && value?.kind === "bool") {
+            return { value: { kind: "bool", value: !value.value } };
+          }
+          return { reason: `unary operator '${expr.value ?? ""}' does not support this constant type` };
+        }
+        case "binaryExpr": {
+          const [left, right] = expr.children ?? [];
+          if (left === undefined || right === undefined || expr.children?.length !== 2) {
+            return { reason: "binary expression is malformed" };
+          }
+          if (!["+", "-", "*", "/", "%"].includes(expr.value ?? "")) {
+            return { reason: `binary operator '${expr.value ?? ""}' is not supported` };
+          }
+          const leftValue = staticValueKind(left, available);
+          if (leftValue.reason !== undefined) return leftValue;
+          const rightValue = staticValueKind(right, available);
+          if (rightValue.reason !== undefined) return rightValue;
+          const leftConstant = leftValue.value;
+          const rightConstant = rightValue.value;
+          if (leftConstant?.kind !== "int" || rightConstant?.kind !== "int") {
+            return { reason: "static binary arithmetic currently supports integer operands only" };
+          }
+          const result: I32Result | undefined = (() => {
+            switch (expr.value) {
+              case "+": return i32AddChecked(leftConstant.value, rightConstant.value);
+              case "-": return i32SubChecked(leftConstant.value, rightConstant.value);
+              case "*": return i32MulChecked(leftConstant.value, rightConstant.value);
+              case "/": return i32DivChecked(leftConstant.value, rightConstant.value);
+              case "%": return i32ModChecked(leftConstant.value, rightConstant.value);
+              default: return undefined;
+            }
+          })();
+          if (result === undefined) return { reason: `binary operator '${expr.value ?? ""}' is not supported` };
+          return isI32Trap(result)
+            ? { reason: `constant integer arithmetic refuses with ${result}` }
+            : { value: { kind: "int", value: result } };
+        }
+        default:
+          return { reason: `${expr.kind} is not a supported compile-time constant expression` };
       }
-      seen.add(name);
-      // FUNGI-STATIC-001: value must be a compile-time constant (not a function call)
-      const valueExpr = node.children?.[0];
-      if (valueExpr !== undefined && valueExpr.kind === "callExpr") {
-        this.diagnostics.push(makeGovDiag(
-          "FUNGI-STATIC-001",
-          "STATIC_NOT_CONSTANT",
-          "warning",
-          `Static constant '${name}' uses a function call as its value. Static constants should be ` +
-          `compile-time literals (number, string, bool). Function calls are evaluated at runtime.`,
-          node.location,
-          `Replace the function call with a literal value.`,
-        ));
+    };
+
+    const visit = (currentNodes: readonly AstNode[]): void => {
+      for (const node of currentNodes) {
+        if (node.kind === "staticDecl") {
+          const name = node.value ?? "";
+          const duplicate = seen.has(name);
+          // FUNGI-STATIC-002: redeclaration. The emitter's static table is module-wide,
+          // so nested declarations participate in the same uniqueness check.
+          if (duplicate) {
+            this.diagnostics.push(makeGovDiag(
+              "FUNGI-STATIC-002",
+              "STATIC_REDECLARATION",
+              "error",
+              `Static constant '${name}' is declared more than once. Static constants must be unique.`,
+              node.location,
+              `Remove the duplicate static declaration of '${name}'.`,
+            ));
+          } else {
+            seen.add(name);
+          }
+
+          // FUNGI-STATIC-001: invalid static expressions are hard errors. The interpreter and
+          // WAT folder both refuse unsupported values, so warning-only admission would defer a
+          // language error into execution (or produce a backend-specific trap).
+          const valueExpr = node.children?.[0];
+          if (valueExpr !== undefined) {
+            const value = staticValueKind(valueExpr, validStatics);
+            const reason = value.reason;
+            if (reason !== undefined) {
+              this.diagnostics.push(makeGovDiag(
+                "FUNGI-STATIC-001",
+                "STATIC_NOT_CONSTANT",
+                "error",
+                `Static constant '${name}' is not a supported compile-time constant: ${reason}.`,
+                node.location,
+                `Use a literal, supported constant arithmetic, or a previously declared valid static.`,
+              ));
+            } else if (!duplicate) {
+              if (value.value !== undefined) validStatics.set(name, value.value);
+            }
+          }
+        }
+
+        // Keep declaration visibility in AST traversal order, matching the interpreter and
+        // WAT collectors, while validating declarations nested in flows and other containers.
+        if (node.children !== undefined) visit(node.children);
       }
-    }
+    };
+    visit(nodes);
   }
 
   /**

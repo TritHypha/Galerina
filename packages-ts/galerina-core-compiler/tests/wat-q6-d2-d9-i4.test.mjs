@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import * as L from "../dist/index.js";
@@ -21,6 +21,20 @@ const EXAMPLES = join(ROOT, "examples");
 const DOCS = join(ROOT, "docs");
 const MARKER = "emitter cannot lower";
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
+
+function repositoryGitDir() {
+  const dotGit = join(ROOT, ".git");
+  if (statSync(dotGit).isDirectory()) return dotGit;
+
+  const pointer = /^gitdir:\s*(.+)\s*$/.exec(readFileSync(dotGit, "utf8"));
+  assert.ok(pointer, "worktree .git file must contain a gitdir pointer");
+  const raw = pointer[1];
+  const windowsDrive = /^([A-Za-z]):[\\/](.*)$/.exec(raw);
+  if (process.platform === "linux" && windowsDrive) {
+    return `/mnt/${windowsDrive[1].toLowerCase()}/${windowsDrive[2].replaceAll("\\", "/")}`;
+  }
+  return isAbsolute(raw) ? raw : resolve(ROOT, raw);
+}
 
 const EMITTER_AFTER = "77fa9e53de89816e3ee9b10a4cda67d76d584b0195b330f9367feb0e48b8fdf7";
 const STACKED_EMITTER = "62f53d58b86ac8e0158428c37061b78d332cefa5466205bb5cd142f209e3a0eb";
@@ -195,9 +209,15 @@ function parseTap(raw) {
 }
 
 describe("T1 classification table (stacked 52 → after-product)", () => {
-  it("stacked pin 8208236c is the pre-product emitter; after-hash is this job", () => {
+  it("the stacked and after-product emitter digests identify their historical source objects", () => {
     assert.equal(STACKED_EMITTER.length, 64);
-    assert.equal(sha256(readFileSync(join(SRC, "wat-emitter.ts"))), EMITTER_AFTER);
+    const historical = spawnSync("git", ["--git-dir", repositoryGitDir(), "show", "05eb5c29b:packages-ts/galerina-core-compiler/src/wat-emitter.ts"], {
+      cwd: ROOT,
+      encoding: null,
+    });
+    assert.equal(historical.status, 0, historical.stderr?.toString("utf8"));
+    assert.equal(sha256(historical.stdout), EMITTER_AFTER,
+      "preserve the exact historical after-product source pin without pinning today's evolved emitter");
     assert.notEqual(EMITTER_AFTER, STACKED_EMITTER);
   });
 
@@ -286,11 +306,12 @@ describe("T2 ladder self-test class-A-only flow done/not-done", () => {
   });
 });
 
-describe("T3 L1 stacked 200/200 plus refused:N", () => {
-  it("live ladder is 200/200 = 100 and reports refused separately", async () => {
+describe("T3 live L1 corpus plus refused:N", () => {
+  it("live ladder measures all current flows and reports refused separately", async () => {
     const live = await watLoweringLadderAsync();
-    assert.equal(live.total, 200);
-    assert.equal(live.done, 200);
+    assert.equal(live.total, 203);
+    assert.equal(live.done, 203);
+    assert.equal(live.done + live.refused, live.total);
     assert.equal(live.pct, 100);
     assert.equal(typeof live.refused, "number");
     assert.equal(live.refused, 0);
@@ -428,18 +449,15 @@ contract { effects {} }
 describe("T7 honesty pin nested Interpreter shares host state", () => {
   it("step:* wording is SIMULATED; runNestedFlow shares enforcer/capabilityHost/runtimeOptions/stepBudget; drcm.dwi_allocated; stdlib :1512/:1557", () => {
     const src = interpSrc();
-    const ls = linesOf(src);
-    assert.equal(ls[3196].includes("isolation is SIMULATED"), true, ls[3196]);
-    assert.equal(ls[3196].includes("shared enforcer, capability host and step budget"), true, ls[3196]);
     const stepBlock = src.slice(src.indexOf("`step:flowName(args)`"), src.indexOf("`step:flowName(args)`") + 900);
     assert.equal(stepBlock.includes("isolation is simulated"), true);
     assert.equal(stepBlock.includes("drcm.dwi_allocated"), true);
     assert.equal(stepBlock.includes("runNestedFlow"), true);
+    assert.equal(src.includes("In Stage A the isolation is simulated"), true);
     const nested = src.slice(src.indexOf("private async runNestedFlow"), src.indexOf("private async runNestedFlow") + 1800);
     assert.equal(nested.includes("new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions"), true);
     assert.equal(nested.includes("nested.stepBudget = this.stepBudget"), true);
-    assert.equal(ls[1511].includes("sub.stepBudget = this.stepBudget"), true, ls[1511]);
-    assert.equal(ls[1556].includes("sub.stepBudget = this.stepBudget"), true, ls[1556]);
+    assert.equal(src.split("sub.stepBudget = this.stepBudget;").length - 1 >= 2, true);
   });
 });
 

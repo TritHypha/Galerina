@@ -75,9 +75,41 @@ describe("UInt64 WASM ≡ walker (#52 unsigned-64 lowering)", () => {
     assert.doesNotMatch(wat, /i64\.div_s|fungi_checked_add_i64/, "must NOT use signed i64 ops for a UInt64 flow");
   });
 
-  it("a mixed UInt64×Int op DECLINES in WASM (walker handles the sign promotion)", () => {
-    // `n` (UInt64) + an Int param: the WASM emitter declines the subtle sign promotion → unreachable → walker.
-    const wat = compileWAT(`pure flow f(k: Int) -> UInt64\n${C}\n{ let n: UInt64 = 100  return n + k }`);
-    assert.match(wat, /mixed UInt64.*declines|unreachable/, "mixed UInt64×Int declines to the walker");
+  it("mixed UInt64×Int calls preserve positive promotion and refuse negative operands and WASM lowering", async () => {
+    const src = `pure flow f(k: Int) -> UInt64\n${C}\n{ let n: UInt64 = 100  return n + k }`;
+    assert.throws(() => compileWAT(src), /FUNGI-WAT-INT64-001/,
+      "unsupported mixed-width WASM must refuse with its named diagnostic, not emit an unreachable stub");
+    const parsed = L.parseProgram(src, "mixed-u64-int-parameter.fungi");
+    assert.deepEqual(parsed.diagnostics, [], "the call-parameter case must parse without unrelated errors");
+    const positive = await L.executeFlow("f", new Map([["k", { __tag: "int", value: 5 }]]), parsed.ast);
+    assert.deepEqual(positive.value, { __tag: "uint64", value: 105n },
+      "a non-negative Int call argument must widen exactly in the reference walker");
+    const negative = await L.executeFlow("f", new Map([["k", { __tag: "int", value: -1 }]]), parsed.ast);
+    assert.equal(negative.value.__tag, "runtimeError",
+      "a negative Int call argument cannot enter unsigned arithmetic and must fail closed");
+    assert.match(negative.value.message, /IntegerOverflow/,
+      "negative-to-unsigned refusal must retain the checked overflow reason");
+  });
+
+  it("preserves exact UInt64 precision when a large value is combined with an Int parameter", async () => {
+    const src = `pure flow f(k: Int) -> UInt64\n${C}\n{ let n: UInt64 = 9007199254740992  return n + k }`;
+    const parsed = L.parseProgram(src, "mixed-u64-int-precision.fungi");
+    assert.deepEqual(parsed.diagnostics, [], "the precision case must parse without unrelated errors");
+    const result = await L.executeFlow("f", new Map([["k", { __tag: "int", value: 1 }]]), parsed.ast);
+    assert.deepEqual(result.value, { __tag: "uint64", value: 9007199254740993n },
+      "UInt64 arithmetic must not round through JavaScript Number at an Int parameter boundary");
+  });
+
+  it("rejects an out-of-i32 host Int before widening it to UInt64", async () => {
+    const src = `pure flow f(k: Int) -> UInt64\n${C}\n{ return k }`;
+    const parsed = L.parseProgram(src, "mixed-u64-int-host-boundary.fungi");
+    assert.deepEqual(parsed.diagnostics, [], "the host-boundary case must parse without unrelated errors");
+    const max = await L.executeFlow("f", new Map([["k", { __tag: "int", value: 2147483647 }]]), parsed.ast);
+    assert.deepEqual(max.value, { __tag: "uint64", value: 2147483647n },
+      "the maximum signed i32 remains exactly widenable");
+    const overflow = await L.executeFlow("f", new Map([["k", { __tag: "int", value: 2147483648 }]]), parsed.ast);
+    assert.equal(overflow.value.__tag, "runtimeError",
+      "a host number outside the declared Int/i32 domain must be refused before widening");
+    assert.match(overflow.value.message, /expected a signed i32 value/);
   });
 });

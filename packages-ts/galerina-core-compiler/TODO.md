@@ -1,5 +1,30 @@
 # Galerina Compiler TODO
 
+## Q1 recursive-return status correction — 2026-10-13
+
+- The 2026-09-22 residual below said deeper recursive returns dropped grandchild
+  secrets. Current source instead emits a runtime `unreachable` when a
+  non-null recursive/depth-cutoff pointer would be silently truncated; low
+  addresses retain the existing null convention. The bounded finite-`Node`
+  controls now demonstrate `[0, 1, 7]` for an omitted grandchild and refusal for
+  a non-null child beyond the closed expansion. The refusal path also wipes its
+  partial flattened copy without wiping an unrelated sentinel; maximum-depth
+  null/non-null twins are covered.
+- Fresh `q1-secret-return-value.test.mjs`: **99/99 WSL** and **99/99 native
+  Windows**, using the current compiler `dist` (no build was run in this
+  verification). Evidence pin: checkout HEAD
+  `823c8bc30c34a354e033f597f6477d258e0de488`; working `wat-emitter.ts`
+  SHA-256 `B99E9A845944A5AB13D74E2039013A056A8FEBE1E2BDD8190DC4D225BFC93B7C`,
+  test SHA-256 `3095EBEE78E5D1EC5F890B1CFE560726D5B7737A37B10F177EF28137C962ABE4`,
+  and loaded `dist/wat-emitter.js` SHA-256
+  `164BF199A8AA5DDE126E05343B6F785EDE59F18DC9EB644624E51A783A1FEA4A`.
+- This supersedes the old drop-on-deep-return wording only for the tested
+  compiler-to-WASM cases. Runtime cycle walking, general recursive ABI/schema
+  guarantees, clean-HEAD regression admission, and Fungi/runtime/FFI/host or
+  RD-1413/1414/1415 closure are **not established**. The regression file and
+  surrounding integration checkout remain dirty; keep this as candidate
+  evidence until separately integrated and reviewed.
+
 ## RD-1296 custody check — 2026-09-26
 
 RD-1296 record/return/host-registry work is present in the dirty RD-0873
@@ -33,8 +58,9 @@ schema or lowering semantics, or authorize .fungi changes.
       Recursive `Node { child: Node, n: Int }` closed flatten copies
       `[0, 1, 7]` (not lossy `[0, 7]` or 8-hop pad). Q1 **27/27**.
       Independent scoped PASS `2026-09-22-closed-recursive-flatten-hold.md`.
-      Residual: deeper than one recursive expansion still drops grandchild
-      secrets. Not clean-HEAD admission.
+      At that review's date, deeper than one recursive expansion was reported
+      to drop grandchild secrets; see the 2026-10-13 status correction above.
+      Clean-HEAD admission remains unproven.
 - [x] `executeWASMFlow` work metering: loop-fuel ticks + worker
       instantiate/call with terminate-on-deadline (`src/wat-assembler.ts`,
       `src/wasm-flow-worker.mjs`). Tests

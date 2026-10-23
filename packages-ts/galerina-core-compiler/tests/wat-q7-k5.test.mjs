@@ -229,19 +229,32 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3101 / :3911 still trap", () => {
-    const lines = emitterSrc().split("\n");
-    assert.equal(lines[3100].includes("case \"faultStmt\""), true, lines[3100]);
-    assert.equal(lines[3910].includes("case \"faultStmt\""), true, lines[3910]);
-    assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
+  it("expression and statement faultStmt arms still emit traps", () => {
+    const src = emitterSrc();
+    const expressionCase = src.indexOf('case "faultStmt":');
+    const statementCase = src.indexOf('case "faultStmt":', expressionCase + 1);
+    assert.ok(expressionCase >= 0, "expression lowering retains an explicit faultStmt arm");
+    assert.ok(statementCase > expressionCase, "statement lowering retains a separate faultStmt arm");
+
+    const expressionEnd = src.indexOf("\n    default:", expressionCase);
+    assert.ok(expressionEnd > expressionCase, "expression switch has a bounded faultStmt arm");
+    const expressionArm = src.slice(expressionCase, expressionEnd);
+    assert.ok(expressionArm.includes("return `(unreachable)"), "expression-position faults trap");
+    assert.ok(expressionArm.includes("terminal audited channel, WASM tier traps"));
+
+    const statementEnd = src.indexOf('case "', statementCase + 1);
+    assert.ok(statementEnd > statementCase, "statement switch continues after the faultStmt arm");
+    const statementArm = src.slice(statementCase, statementEnd);
+    assert.ok(statementArm.includes("bodyLines.push(`(unreachable)"), "statement-position faults trap");
+    assert.ok(statementArm.includes("terminal audited channel, WASM tier traps"));
   });
 });
 
-describe("T10 L1 200/200 plus 7-stage hashes unchanged", () => {
-  it("live ladder is 200/200 = 100 and reports refused separately", async () => {
+describe("T10 live L1 corpus plus historical 7-stage hashes", () => {
+  it("live ladder measures all current flows and reports refused separately", async () => {
     const live = await watLoweringLadderAsync();
-    assert.equal(live.total, 200);
-    assert.equal(live.done, 200);
+    assert.equal(live.total, 203);
+    assert.equal(live.done, 203);
     assert.equal(live.pct, 100);
     assert.equal(typeof live.refused, "number");
     assert.equal(live.refused, 0);

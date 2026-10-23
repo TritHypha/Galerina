@@ -35,6 +35,34 @@ route GET "/ok" { flow permitted }
 `;
 
 describe("shared runtime admission", () => {
+  it("promotes secret-derived scalar returns to errors before production execution", async () => {
+    const source = `
+record Bit { n: Int }
+pure flow disclose(key: SecureString) -> Bit
+contract { intent { "production runtime must refuse secret-selected public output" } }
+{
+  if !key { return Bit { n: 1 } }
+  return Bit { n: 0 }
+}
+`;
+
+    const result = await run(
+      source,
+      "secret-selected-result-runtime-admission.fungi",
+      "disclose",
+      new Map([["key", { __tag: "secure", value: "synthetic-secret" }]]),
+      { mode: "production" },
+    );
+
+    assert.ok(
+      result.diagnostics.some((diagnostic) =>
+        diagnostic.code === "FUNGI-SECRET-006" && diagnostic.severity === "error"
+      ),
+      `production runtime admission must reject secret-selected public output: ${JSON.stringify(result.diagnostics)}`,
+    );
+    assert.equal(result.execution, undefined, "the flow must not execute after the production refusal");
+  });
+
   it("denies production run before execution when governance has an error", async () => {
     const result = await run(
       UNGOVERNED_SECURE_ROUTE,

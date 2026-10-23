@@ -90,3 +90,25 @@ test("check: a partial ignore still passes, and reports what it skipped", () => 
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("check: relative target paths match target-relative ignore patterns on Windows", () => {
+  const dir = mkdtempSync(join(tmpdir(), "galerina-check-relative-target-"));
+  try {
+    mkdirSync(join(dir, "examples", "auth-service"), { recursive: true });
+    writeFileSync(join(dir, "examples", "auth-service", "unit.fungi"), VALID_FUNGI, "utf8");
+    writeFileSync(join(dir, "galerina.check.json"), JSON.stringify({ ignore: ["unit.fungi"] }, null, 2), "utf8");
+    let code = 0;
+    let stdout = "";
+    try {
+      stdout = execFileSync(process.execPath, [CLI, "check", "examples/auth-service"], { cwd: dir, encoding: "utf8" });
+    } catch (error) {
+      code = error.status;
+      stdout = (error.stdout ?? "") + (error.stderr ?? "");
+    }
+    assert.equal(code, 1, `an ignored relative target must refuse consistently, got exit ${code}:\n${stdout}`);
+    assert.match(stdout, /REFUSED/, "the zero-file outcome must be explicit");
+    assert.doesNotMatch(stdout, /PASS: Check passed/, "a cross-platform path mismatch must not produce a false pass");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

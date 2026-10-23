@@ -543,10 +543,10 @@ contract { intent { "Lower a single body statement into a GIRStmt." } }
 }
 
 // Lower a statement list (a flow body or nested if/while block) into GIRStmt nodes.
-pure flow lowerBody(stmts: Array<Auto>) -> Array<Auto>
+pure flow lowerBody(stmts: Array<Auto>) -> Array<GIRStmt>
 contract { intent { "Map each statement of a body through lowerStmt, returning Array<GIRStmt>." } }
 {
-  mut out: Array<Auto> = Array.empty()
+  mut out: Array<GIRStmt> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
@@ -571,12 +571,12 @@ contract { intent { "Public entry — lower a flow body's statement AST into Arr
 // resolve flow→flow calls. Each entry: { name, params: Array<String>, body: Array<GIRStmt> }.
 //
 // FlowEntry is the runtime's cross-stage consumption shape (runtime.fungi's lookupFlow reads
-// entry.name/.params/.body). Named here at the producer (buildFlowTable) — derive-from-append,
-// one source of truth. params/body stay Array<Auto> to match paramNames/lowerBody's output.
+// entry.name/.params/.body). Keep the field types aligned with the producer outputs so the
+// runtime cannot treat an erased collection payload as a concrete layout at a call boundary.
 record FlowEntry {
   name: String
-  params: Array<Auto>
-  body: Array<Auto>
+  params: Array<String>
+  body: Array<GIRStmt>
   // Appended after the runtime-stable first three fields. The SLIDE R1 adapter
   // consumes these compiler-derived facts instead of accepting caller-supplied
   // preflight booleans or consulting the source AST.
@@ -587,7 +587,7 @@ record FlowEntry {
 }
 
 // Collect the ORDERED parameter names of a flow into an Array<String>.
-pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>
+pure flow paramNames(params: Array<FlowParam>) -> Array<String>
 contract { intent { "Extract each FlowParam's name into an ordered Array<String>." } }
 {
   mut names: Array<String> = Array.empty()

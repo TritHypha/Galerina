@@ -35,7 +35,8 @@ function stringValue(value) {
 }
 
 function arrayValue(items) {
-  return { __tag: "array", items };
+  // Match the interpreter's actual GalerinaValue representation for Array<T>.
+  return { __tag: "list", items };
 }
 
 function clone(value) {

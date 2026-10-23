@@ -77,19 +77,17 @@ async function runWasm(flow, input) {
     const asm = await L.assembleWAT(WAT);
     assert.ok(asm.valid && asm.diagnostics.length === 0, "combined WAT assembles (R0): " + JSON.stringify(asm.diagnostics));
     const host = L.createHostRuntime();
-    let maxH = 0;
-    for (const e of L.getInternedStrings()) { host.seedString(e.handle, e.value); if (e.handle > maxH) maxH = e.handle; }
+    for (const e of L.getInternedStrings()) host.seedString(e.handle, e.value);
     const kp = L.generateRunnerKeypair();
     const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
     const { instance } = await L.admitAndInstantiate({
       wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host,
     });
     assert.equal(typeof instance.exports.govProbe, "function", "driver admitted + exported (R1)");
-    wasmCtx = { host, instance, nextH: maxH + 1 };
+    wasmCtx = { host, instance };
   }
   const { host, instance } = wasmCtx;
-  const srcH = wasmCtx.nextH++;
-  host.seedString(srcH, input);
+  const srcH = host.internString(input);
   return Number(instance.exports[flow](srcH));
 }
 

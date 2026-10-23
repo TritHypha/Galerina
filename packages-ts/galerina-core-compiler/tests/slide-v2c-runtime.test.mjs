@@ -98,6 +98,251 @@ before(async () => {
 });
 
 describe("validated SLIDE V2-C immutable aggregate execution", () => {
+  it("represents missing runtime values without an out-of-range Int sentinel", async () => {
+    const empty = await run("emptySLIDEV2CRuntimeStore");
+    const missing = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(missing.audit.result, "ok", JSON.stringify(missing.audit));
+    assert.equal(field(missing.value, "present").value, false);
+    assert.equal(field(missing.value, "value").value, 0);
+
+    const stored = await run(
+      "slideV2CRuntimeStoreValue",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(0)],
+        ["value", intValue(-2147483648)],
+        ["failureId", intValue(0)],
+      ]),
+    );
+    const minimum = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(minimum.audit.result, "ok", JSON.stringify(minimum.audit));
+    assert.equal(field(minimum.value, "present").value, true);
+    assert.equal(field(minimum.value, "value").value, -2147483648);
+
+    const outside = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(48)],
+      ]),
+    );
+    assert.equal(outside.audit.result, "ok", JSON.stringify(outside.audit));
+    assert.equal(field(outside.value, "present").value, false);
+    assert.equal(field(outside.value, "value").value, 0);
+
+    const negative = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", stored.value],
+        ["resultId", intValue(-1)],
+      ]),
+    );
+    assert.equal(negative.audit.result, "ok", JSON.stringify(negative.audit));
+    assert.equal(field(negative.value, "present").value, false);
+
+    const lastStored = await run(
+      "slideV2CRuntimeStoreValue",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(47)],
+        ["value", intValue(-2147483648)],
+        ["failureId", intValue(0)],
+      ]),
+    );
+    const lastSlot = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", lastStored.value],
+        ["resultId", intValue(47)],
+      ]),
+    );
+    assert.equal(lastSlot.audit.result, "ok", JSON.stringify(lastSlot.audit));
+    assert.equal(field(lastSlot.value, "present").value, true);
+    assert.equal(field(lastSlot.value, "value").value, -2147483648);
+
+    const malformedStore = structuredClone(stored.value);
+    malformedStore.fields.set("values", { __tag: "list", items: [] });
+    const malformed = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", malformedStore],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(malformed.audit.result, "ok", JSON.stringify(malformed.audit));
+    assert.equal(field(malformed.value, "present").value, false);
+
+    const malformedBase = {
+      __tag: "record",
+      fields: new Map([
+        ["values", { __tag: "list", items: [] }],
+        ["failures", { __tag: "list", items: [intValue(0)] }],
+        ["defined", { __tag: "list", items: [intValue(1)] }],
+      ]),
+    };
+    const rewritten = await run(
+      "slideV2CRuntimeStoreValue",
+      new Map([
+        ["store", malformedBase],
+        ["resultId", intValue(1)],
+        ["value", intValue(17)],
+        ["failureId", intValue(0)],
+      ]),
+    );
+    const afterWrite = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", rewritten.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(afterWrite.audit.result, "ok", JSON.stringify(afterWrite.audit));
+    assert.equal(field(afterWrite.value, "present").value, false);
+
+    const newlyWritten = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", rewritten.value],
+        ["resultId", intValue(1)],
+      ]),
+    );
+    assert.equal(newlyWritten.audit.result, "ok", JSON.stringify(newlyWritten.audit));
+    assert.equal(field(newlyWritten.value, "present").value, true);
+    assert.equal(field(newlyWritten.value, "value").value, 17);
+
+    for (const [truncatedField, replacement] of [
+      ["values", []],
+      ["failures", []],
+      ["defined", []],
+    ]) {
+      const malformedSource = {
+        __tag: "record",
+        fields: new Map([
+          ["values", { __tag: "list", items: [intValue(23)] }],
+          ["failures", { __tag: "list", items: [intValue(0)] }],
+          ["defined", { __tag: "list", items: [intValue(1)] }],
+        ]),
+      };
+      malformedSource.fields.set(truncatedField, {
+        __tag: "list",
+        items: replacement.map(intValue),
+      });
+      const rewrittenSource = await run(
+        "slideV2CRuntimeStoreValue",
+        new Map([
+          ["store", malformedSource],
+          ["resultId", intValue(1)],
+          ["value", intValue(17)],
+          ["failureId", intValue(0)],
+        ]),
+      );
+      const absentPriorSlot = await run(
+        "slideV2CRuntimeRead",
+        new Map([
+          ["store", rewrittenSource.value],
+          ["resultId", intValue(0)],
+        ]),
+      );
+      const retainedNewSlot = await run(
+        "slideV2CRuntimeRead",
+        new Map([
+          ["store", rewrittenSource.value],
+          ["resultId", intValue(1)],
+        ]),
+      );
+      assert.equal(absentPriorSlot.audit.result, "ok", JSON.stringify(absentPriorSlot.audit));
+      assert.equal(field(absentPriorSlot.value, "present").value, false);
+      assert.equal(retainedNewSlot.audit.result, "ok", JSON.stringify(retainedNewSlot.audit));
+      assert.equal(field(retainedNewSlot.value, "present").value, true);
+      assert.equal(field(retainedNewSlot.value, "value").value, 17);
+    }
+
+    const failedSlot = await run(
+      "slideV2CRuntimeStoreValue",
+      new Map([
+        ["store", empty.value],
+        ["resultId", intValue(0)],
+        ["value", intValue(23)],
+        ["failureId", intValue(4)],
+      ]),
+    );
+    const withSecondSlot = await run(
+      "slideV2CRuntimeStoreValue",
+      new Map([
+        ["store", failedSlot.value],
+        ["resultId", intValue(1)],
+        ["value", intValue(17)],
+        ["failureId", intValue(0)],
+      ]),
+    );
+    const preservedFailure = await run(
+      "slideV2CRuntimeFailureAt",
+      new Map([
+        ["store", withSecondSlot.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(preservedFailure.audit.result, "ok", JSON.stringify(preservedFailure.audit));
+    assert.equal(preservedFailure.value.value, 4);
+    const retainedFailureValue = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", withSecondSlot.value],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    const retainedNewSlot = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", withSecondSlot.value],
+        ["resultId", intValue(1)],
+      ]),
+    );
+    assert.equal(retainedFailureValue.audit.result, "ok", JSON.stringify(retainedFailureValue.audit));
+    assert.equal(field(retainedFailureValue.value, "present").value, true);
+    assert.equal(field(retainedFailureValue.value, "value").value, 23);
+    assert.equal(field(withSecondSlot.value, "failures").items[0].value, 4);
+    assert.equal(retainedNewSlot.audit.result, "ok", JSON.stringify(retainedNewSlot.audit));
+    assert.equal(field(retainedNewSlot.value, "present").value, true);
+    assert.equal(field(retainedNewSlot.value, "value").value, 17);
+
+    const missingDefined = structuredClone(stored.value);
+    missingDefined.fields.set("defined", { __tag: "list", items: [] });
+    const missingMarker = await run(
+      "slideV2CRuntimeRead",
+      new Map([
+        ["store", missingDefined],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(missingMarker.audit.result, "ok", JSON.stringify(missingMarker.audit));
+    assert.equal(field(missingMarker.value, "present").value, false);
+
+    const missingFailures = structuredClone(stored.value);
+    missingFailures.fields.set("failures", { __tag: "list", items: [] });
+    const failureAt = await run(
+      "slideV2CRuntimeFailureAt",
+      new Map([
+        ["store", missingFailures],
+        ["resultId", intValue(0)],
+      ]),
+    );
+    assert.equal(failureAt.audit.result, "ok", JSON.stringify(failureAt.audit));
+    assert.equal(failureAt.value.value, 4);
+  });
+
   it("instruction-drives checked-index success through record and variant projection", async () => {
     for (const [index, expected] of [[0, 3], [1, 5], [2, 8]]) {
       const result = await execute(index);

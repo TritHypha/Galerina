@@ -1,10 +1,10 @@
 /**
  * J5 / E2b — #100 receiver forms used by governance-verifier (8 module-wide nodes).
  *
- * Live traps are Array<Auto> get→Some(x) field reads in findPolicyExists (`pol.name`),
- * effectIsPermitted (`pol.name` / `pol.permittedEffects`), and verifyGuardDecl
- * (`g.permittedEffects` / `g.name`). PolicyDecl ⊏ GuardDecl is a prefix family, not
- * a unique J4 type; sibling Alpha/Beta `{name}` stays fail-closed.
+ * The self-hosted governance verifier declares its inputs as Array<PolicyDecl> and
+ * Array<GuardDecl>. These tests ensure the concrete Fungi element types survive
+ * get→Some lowering; they do not authorize usage-based guessing from Array<Auto>.
+ * Ambiguous Auto siblings such as Alpha/Beta `{name}` must stay fail-closed.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -48,7 +48,7 @@ record DotPathParse { name: String nextPos: Int }
 `;
 
 const EFFECT_IS_PERMITTED = POLICY_GUARD + `
-pure flow effectIsPermitted(policies: Array<Auto>, policyName: String, effect: String) -> Bool
+pure flow effectIsPermitted(policies: Array<PolicyDecl>, policyName: String, effect: String) -> Bool
 contract { effects {} }
 {
   mut i: Int = 0
@@ -80,7 +80,7 @@ contract { effects {} }
 `;
 
 const FIND_POLICY_WITH_SIBLING = POLICY_GUARD + DISTRACTORS + `
-pure flow findPolicyExists(policies: Array<Auto>, name: String) -> Bool
+pure flow findPolicyExists(policies: Array<PolicyDecl>, name: String) -> Bool
 contract { effects {} }
 {
   mut i: Int = 0
@@ -95,7 +95,7 @@ contract { effects {} }
   }
   return false
 }
-pure flow effectIsPermitted(policies: Array<Auto>, policyName: String, effect: String) -> Bool
+pure flow effectIsPermitted(policies: Array<PolicyDecl>, policyName: String, effect: String) -> Bool
 contract { effects {} }
 {
   mut i: Int = 0
@@ -117,7 +117,7 @@ contract { effects {} }
 `;
 
 const VERIFY_GUARD = POLICY_GUARD + `
-pure flow verifyGuardDecl(guardDecls: Array<Auto>) -> Int
+pure flow verifyGuardDecl(guardDecls: Array<GuardDecl>) -> Int
 contract { effects {} }
 {
   mut n: Int = 0
@@ -174,7 +174,7 @@ contract { effects {} }
 `;
 
 describe("J5 #100 Array<Auto> PolicyDecl/GuardDecl prefix-family receivers", () => {
-  it("effectIsPermitted Array<Auto> get→Some(pol) reconstructs PolicyDecl prefix loads", () => {
+  it("effectIsPermitted typed Array<PolicyDecl> get→Some(pol) preserves field loads", () => {
     const wat = render(EFFECT_IS_PERMITTED, "j5-effect-is-permitted.fungi");
     const hits = unresolvedMembers(wat);
     assert.deepEqual(hits.filter((m) => m === "name" || m === "permittedEffects"), []);
@@ -182,13 +182,13 @@ describe("J5 #100 Array<Auto> PolicyDecl/GuardDecl prefix-family receivers", () 
     assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 4\)\)/, "pol.permittedEffects at offset 4");
   });
 
-  it("findPolicyExists pol.name widens from sibling Auto {name, permittedEffects} despite distractors", () => {
+  it("findPolicyExists typed PolicyDecl load remains stable despite module distractors", () => {
     const wat = render(FIND_POLICY_WITH_SIBLING, "j5-find-policy.fungi");
-    assert.deepEqual(unresolvedMembers(wat).filter((m) => m === "name" || m === "permittedEffects"), []);
+    assert.deepEqual(unresolvedMembers(wat).filter((m) => m === "name" || m === "permittedEffects"), [], wat.split("\n").filter((line) => line.includes("unresolved member:")).join("\n"));
     assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 0\)\)/, "pol.name at offset 0");
   });
 
-  it("verifyGuardDecl Array<Auto> get→Some(g) loads name + permittedEffects", () => {
+  it("verifyGuardDecl typed Array<GuardDecl> get→Some(g) preserves field loads", () => {
     const wat = render(VERIFY_GUARD, "j5-verify-guard.fungi");
     assert.deepEqual(unresolvedMembers(wat).filter((m) => m === "name" || m === "permittedEffects"), []);
     assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 0\)\)/, "g.name at offset 0");
@@ -205,13 +205,13 @@ describe("J5 #100 Array<Auto> PolicyDecl/GuardDecl prefix-family receivers", () 
     assert.ok(unresolvedMembers(wat).includes("name"), "non-prefix .name must stay fail-closed");
   });
 
-  it("interpreter≡WASM: Array<Auto> PolicyDecl name+permittedEffects loads return the same Int", async () => {
+  it("interpreter≡WASM: typed PolicyDecl loads return the same Int", async () => {
     const src = POLICY_GUARD + `
 pure flow probe() -> Int
 contract { effects {} }
 {
-  let p = PolicyDecl { name: "dom", permittedEffects: Array.empty() }
-  mut policies: Array<Auto> = Array.empty()
+  let p: PolicyDecl = PolicyDecl { name: "dom", permittedEffects: Array.empty() }
+  mut policies: Array<PolicyDecl> = Array.empty()
   policies = policies.append(p)
   match policies.get(0) {
     Some(pol) => {
@@ -227,9 +227,11 @@ contract { effects {} }
     const prog = L.parseProgram(`@version 1\n${src}`, "j5-probe-parity.fungi");
     const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
     assert.equal(errs.length, 0, "parse errors: " + JSON.stringify(errs.slice(0, 3)));
-    const fx = L.checkEffects(prog.flows, prog.ast);
-    const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
-    const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "j5-probe-parity", prog.ast, true));
+    const checked = L.checkProgram(`@version 1\n${src}`, "j5-probe-parity.fungi");
+    assert.equal(checked.ok, true, "checked source must be admissible: " + JSON.stringify(checked.diagnostics ?? []));
+    const wat = L.renderWAT(L.buildWATFromCheckedProgram(
+      checked.program, L.STDLIB_CAPABILITY_MAP, "wasm-standalone", true,
+    ));
     assert.deepEqual(unresolvedMembers(wat).filter((m) => m === "name" || m === "permittedEffects"), []);
     const interp = await L.executeFlow("probe", new Map(), prog.ast, prog.flows, undefined, undefined, { pureFastPath: true });
     const interpN = finiteNumber(interp, "j5 interp probe");

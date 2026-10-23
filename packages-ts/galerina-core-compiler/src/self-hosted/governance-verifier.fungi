@@ -38,7 +38,7 @@ record GovResult {
 // ── Helpers ───────────────────────────────────────────────────
 
 // True if `target` appears in the effects array.
-pure flow hasEffect(effectList: Array<Auto>, wanted: String) -> Bool
+pure flow hasEffect(effectList: Array<String>, wanted: String) -> Bool
 contract {
   intent { "Return true when the flow's declared effects include the target effect." }
 }
@@ -195,7 +195,8 @@ contract {
           let cOpt = kids.get(j)
           match cOpt {
             Some(c) => {
-              if exprCallsAudit(Array.empty().append(c)) { return true }
+              let singleton: Array<Expr> = Array.empty().append(c)
+              if exprCallsAudit(singleton) { return true }
             }
             None => {}
             _ => {}
@@ -246,7 +247,7 @@ contract {
 // Stage A TypeScript in governance-verifier.ts is a bootstrap mirror of this logic.
 
 // Return true if a policy with the given name exists in the policies array.
-pure flow findPolicyExists(policies: Array<Auto>, name: String) -> Bool
+pure flow findPolicyExists(policies: Array<PolicyDecl>, name: String) -> Bool
 contract {
   intent { "Return true if a policy with the given name exists in the policies array." }
 }
@@ -265,7 +266,7 @@ contract {
 }
 
 // Return true if the given effect is in the named policy's permitted_effects.
-pure flow effectIsPermitted(policies: Array<Auto>, policyName: String, effect: String) -> Bool
+pure flow effectIsPermitted(policies: Array<PolicyDecl>, policyName: String, effect: String) -> Bool
 contract {
   intent { "Return true if the given effect is in the named policy's permitted_effects." }
 }
@@ -276,9 +277,10 @@ contract {
     match pOpt {
       Some(pol) => {
         if pol.name == policyName {
+          let permittedEffects: Array<String> = pol.permittedEffects
           mut j: Int = 0
-          while j < pol.permittedEffects.count() {
-            let eOpt = pol.permittedEffects.get(j)
+          while j < permittedEffects.count() {
+            let eOpt = permittedEffects.get(j)
             match eOpt {
               Some(e) => { if e == effect { return true } }
               None => {}
@@ -298,7 +300,7 @@ contract {
 }
 
 // FUNGI-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract.
-pure flow verifyDomainGuardConformance(flows: Array<FlowDecl>, policies: Array<Auto>) -> GovResult
+pure flow verifyDomainGuardConformance(flows: Array<FlowDecl>, policies: Array<PolicyDecl>) -> GovResult
 contract {
   intent { "FUNGI-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract." }
 }
@@ -443,7 +445,7 @@ contract {
 // Verify a single guard {} declaration.
 // guardDecls shape: Array<{ name: String, permittedEffects: Array<String> }>
 // FUNGI-GOV-005: every permitted_effect must be a known capability token.
-pure flow verifyGuardDecl(guardDecls: Array<Auto>) -> GovResult
+pure flow verifyGuardDecl(guardDecls: Array<GuardDecl>) -> GovResult
 contract {
   intent { "FUNGI-GOV-005: guard permitted_effects must all be known capability tokens." }
 }

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as L from "../dist/index.js";
-import { finalizeSecretExportResult, invokeAdmittedExport, WAT_HEAP_BASE } from "@galerina/core-runtime-wasm";
+import { finalizeSecretExportResult, WAT_HEAP_BASE } from "@galerina/core-runtime-wasm";
 
 async function trapOnWipeModule() {
   const wat = `(module
@@ -27,11 +27,12 @@ async function trapOnWipeModule() {
 
 test("wipe trap after would-be secret copy returns refusal, not copied success, and is attempted once", async () => {
   const instance = await trapOnWipeModule();
-  const result = invokeAdmittedExport(instance, "h", []);
+  assert.throws(
+    () => finalizeSecretExportResult(instance, instance.exports.h()),
+    /FUNGI-WASM-CLEANUP-001/,
+    "the low-level finalizer reports cleanup failure without claiming to perform admission",
+  );
 
-  assert.equal(result.ok, false, "cleanup trap must not be converted into successful result delivery");
-  assert.equal(Object.hasOwn(result, "result"), false, "no copied payload may escape on cleanup failure");
-  assert.match(result.reason, /wipe|cleanup/i);
   assert.equal(instance.exports.__fungi_wipe_count(), 1, "one operation gets one cleanup attempt");
   assert.equal(new Int32Array(instance.exports.memory.buffer)[WAT_HEAP_BASE >>> 2], 0x53454352,
     "a failed wipe must leave the bytes visibly unresolved, not pretend they were cleared");
@@ -58,4 +59,22 @@ test("ret-state getter trap in direct finalizer still attempts owned cleanup onc
   assert.equal(instance.exports.__fungi_wipe_count(), 1, "a getter trap must not skip cleanup or trigger a duplicate cleanup");
   assert.equal(new Int32Array(instance.exports.memory.buffer)[WAT_HEAP_BASE >>> 2], 0,
     "the successful cleanup helper must clear the sentinel after the getter trap");
+});
+
+test("direct finalizer attempts cleanup when diagnostic Error construction throws", async () => {
+  const instance = await trapOnWipeModule();
+  const originalError = globalThis.Error;
+  globalThis.Error = function () {
+    throw new originalError("hostile diagnostic constructor");
+  };
+  try {
+    assert.throws(
+      () => finalizeSecretExportResult(instance, {}),
+      /hostile diagnostic constructor/iu,
+    );
+  } finally {
+    globalThis.Error = originalError;
+  }
+  assert.equal(instance.exports.__fungi_wipe_count(), 1,
+    "refusal construction failure must not bypass the one cleanup attempt");
 });

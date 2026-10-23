@@ -18,12 +18,13 @@ const SERVICE = join(__dir, "..", "..", "..", "examples", "auth-service", "compi
 
 describe("Phase 41: compilationService.fungi", () => {
   let server;
-  const PORT = 3919;
-  const url = `http://127.0.0.1:${PORT}/compile/tokenize`;
+  let url;
 
   before(async () => {
     const src = readFileSync(SERVICE, "utf8");
-    server = await serve(src, "compilationService.fungi", { port: PORT });
+    server = await serve(src, "compilationService.fungi", { port: 0 });
+    assert.ok(Number.isInteger(server.port) && server.port > 0);
+    url = `http://127.0.0.1:${server.port}/compile/tokenize`;
   });
 
   after(async () => { if (server) await server.close(); });

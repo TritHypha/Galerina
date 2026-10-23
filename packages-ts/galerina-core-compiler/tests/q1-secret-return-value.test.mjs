@@ -8,7 +8,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as L from "../dist/index.js";
 import {
-  createLowLevelWasmExecutor,
+  createBorderSafeRuntimeDeps,
+  serializeAttestation,
+  wasmHash,
   createHostRuntime,
   generateRunnerKeypair,
   signWasm,
@@ -18,6 +20,55 @@ import {
 } from "@galerina/core-runtime-wasm";
 
 const HEAP_BASE = 1024;
+
+// Exercise the paired production permit, not the intentionally refused raw-call API.
+function callSigned({ artifactBytes, exportName, args }) {
+  const keys = generateRunnerKeypair();
+  const deps = createBorderSafeRuntimeDeps({ policy: { requireSigned: true, publicKeyPem: keys.publicKeyPem } });
+  const invocationPermit = deps.admissionVerifier.prepareInvocation({
+    artifactBytes, exportName, args,
+    artifactSha256: wasmHash(artifactBytes),
+    attestation: serializeAttestation(signWasm(artifactBytes, keys.privateKeyPem, "dev")),
+  });
+  assert.ok(invocationPermit && typeof invocationPermit === "object", "fixture must pass signed admission before its execution assertion");
+  return deps.lowLevel.instantiateAndCall({ invocationPermit });
+}
+
+async function addAdmittedMemoryProbeExports(wat) {
+  const close = wat.lastIndexOf(")");
+  assert.ok(close >= 0, "fixture WAT must end with its module close");
+  const probes = `
+  (func (export "__test_fill_bytes") (param $start i32) (param $length i32) (param $value i32)
+    (memory.fill (local.get $start) (local.get $value) (local.get $length)))
+  (func (export "__test_all_bytes_equal") (param $start i32) (param $length i32) (param $expected i32) (result i32)
+    (local $offset i32)
+    (block $done
+      (loop $next
+        (br_if $done (i32.ge_u (local.get $offset) (local.get $length)))
+        (if (i32.ne
+              (i32.load8_u (i32.add (local.get $start) (local.get $offset)))
+              (local.get $expected))
+          (then (return (i32.const 0))))
+        (local.set $offset (i32.add (local.get $offset) (i32.const 1)))
+        (br $next)))
+    (i32.const 1))
+`;
+  const probeWat = `${wat.slice(0, close)}${probes}${wat.slice(close)}`;
+  const assembled = await L.assembleWAT(probeWat);
+  assert.ok(assembled.valid, `admitted-memory probe WAT must assemble: ${assembled.diagnostics.map(d => d.message).join("; ")}`);
+  return assembled.wasm;
+}
+
+async function admitFixture(wasm, probeWat) {
+  if (probeWat !== undefined) wasm = await addAdmittedMemoryProbeExports(probeWat);
+  const keys = generateRunnerKeypair();
+  const { instance } = await admitAndInstantiate({
+    wasm, attestation: signWasm(wasm, keys.privateKeyPem, "dev"),
+    policy: { requireSigned: true, publicKeyPem: keys.publicKeyPem },
+    host: createHostRuntime(),
+  });
+  return instance;
+}
 
 // These are existing lowering lanes, not a claim of strict source admission.
 // In particular f64 integral Numbers can look like addresses to the finalizer;
@@ -61,6 +112,49 @@ contract { intent { "scalar metadata ownership" } }
     });
   }
 }
+
+test("Q1 public record metadata is cleared by a later public scalar export", async () => {
+  const source = `record Pair { a: Int, b: Int }
+pure flow make() -> Pair
+contract { intent { "public record metadata producer" } }
+{ return Pair { a: 7, b: 9 } }
+pure flow scalar() -> Int
+contract { intent { "public scalar metadata consumer" } }
+{ return 2048 }`;
+  const { instance } = await build(source, "public-record-then-scalar.fungi");
+  const pointer = instance.exports.make();
+  assert.equal(instance.exports.__fungi_ret_is_heap_get(), 1);
+  assert.deepEqual(finalizeSecretExportResult(instance, pointer), [7, 9]);
+
+  const raw = instance.exports.scalar();
+  assert.equal(raw, 2048);
+  assert.equal(instance.exports.__fungi_ret_is_heap_get(), 0,
+    "every scalar export in a heap-using module must replace stale record metadata");
+  assert.equal(finalizeSecretExportResult(instance, raw), 2048,
+    "a scalar after a record must not be mis-finalized as a record pointer");
+});
+
+test("Q1 early public record return publishes metadata after nested scalar calls", async () => {
+  const source = `record Pair { a: Int, b: Int }
+pure flow inner() -> Int
+contract { intent { "nested secret scalar" } privacy { contains PII } }
+{ return 7 }
+pure flow outer(early: Bool) -> Pair
+contract { intent { "public record wrapping a nested result" } }
+{ if early { return Pair { a: inner(), b: 9 } }
+  return Pair { a: inner(), b: 9 } }`;
+  const parsed = L.parseProgram(source, "early-public-record-metadata.fungi");
+  assert.deepEqual(parsed.diagnostics.filter(d => d.severity === "error"), []);
+  assert.deepEqual(L.checkTypes(parsed.ast).diagnostics.filter(d => d.severity === "error"), []);
+  const { instance } = await build(source, "early-public-record-metadata.fungi");
+
+  for (const early of [0, 1]) {
+    const pointer = instance.exports.outer(early);
+    assert.equal(instance.exports.__fungi_ret_is_heap_get(), 1,
+      `nested call must not erase the outer record tag (early=${early})`);
+    assert.deepEqual(finalizeSecretExportResult(instance, pointer), [7, 9]);
+  }
+});
 
 for (const type of ['UInt8', 'UInt16', 'UInt32', 'Float', 'Float32', 'Int64', 'UInt64']) {
   test(`Q1 secret scalar ${type} early return preserves its ABI value`, async () => {
@@ -217,24 +311,25 @@ for (const start of [65_524, 65_528]) {
 pure flow h() -> Triple
 contract { intent { "null-result boundary" } privacy { contains PII } }
 { return Triple { a: 1, b: 2, c: 3 } }`;
-    const { instance } = await build(source, "null-reservation.fungi", module => ({
+    const { wasm, wat } = await build(source, "null-reservation.fungi", module => ({
       ...module, memory:{minPages:1,maxPages:1},
       functions:module.functions.map(fn => ({...fn,
         body:`(global.set $__fungi_heap (i32.const ${start}))\n(i32.const 0)`,
       })),
     }));
-    const bytes = new Uint8Array(instance.exports.memory.buffer);
-    bytes.fill(0x5a, HEAP_BASE);
-    bytes[HEAP_BASE - 1] = 0x31;
+    const instance = await admitFixture(wasm, wat);
+    instance.exports.__test_fill_bytes(HEAP_BASE, 65_536 - HEAP_BASE, 0x5a);
+    instance.exports.__test_fill_bytes(HEAP_BASE - 1, 1, 0x31);
     const result = invokeAdmittedExport(instance, "h", []);
     assert.equal(result.ok, start === 65_524);
     const end = start === 65_524 ? 65_536 : start;
     if (result.ok) assert.deepEqual(result.result, [0,0,0]);
     else assert.match(result.reason, /trap during 'h':.*unreachable/);
     assert.equal(instance.exports.__fungi_heap_get() >>> 0, end);
-    assert.ok(bytes.subarray(HEAP_BASE, end).every(byte => byte === 0));
-    assert.ok(bytes.subarray(end).every(byte => byte === 0x5a), "unowned tail remains intact");
-    assert.equal(bytes[HEAP_BASE - 1], 0x31);
+    assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE, end - HEAP_BASE, 0), 1);
+    assert.equal(instance.exports.__test_all_bytes_equal(end, 65_536 - end, 0x5a), 1,
+      "unowned tail remains intact");
+    assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE - 1, 1, 0x31), 1);
   });
 }
 
@@ -245,7 +340,7 @@ record Outer { inner: Cell, tail: Int }
 pure flow h() -> Outer
 contract { intent { "packed boundary" } privacy { contains PII } }
 { return Outer { inner: Cell { n: 7 }, tail: 9 } }`;
-    const { instance } = await build(source, "packed-reservation.fungi", module => ({
+    const { wasm, wat } = await build(source, "packed-reservation.fungi", module => ({
       ...module, memory:{minPages:1,maxPages:1},
       functions:module.functions.map(fn => ({...fn,
         body:`(i32.store (i32.const 1024) (i32.const 1032))
@@ -255,16 +350,17 @@ contract { intent { "packed boundary" } privacy { contains PII } }
 (i32.const 1024)`,
       })),
     }));
-    const bytes = new Uint8Array(instance.exports.memory.buffer);
-    bytes.fill(0x5a, HEAP_BASE);
-    bytes[HEAP_BASE - 1] = 0x31;
+    const instance = await admitFixture(wasm, wat);
+    instance.exports.__test_fill_bytes(HEAP_BASE, 65_536 - HEAP_BASE, 0x5a);
+    instance.exports.__test_fill_bytes(HEAP_BASE - 1, 1, 0x31);
     const result = invokeAdmittedExport(instance, "h", []);
     assert.equal(result.ok, start === 65_528);
     const end = start === 65_528 ? 65_536 : start;
     assert.equal(instance.exports.__fungi_heap_get() >>> 0, end);
-    assert.ok(bytes.subarray(HEAP_BASE, end).every(byte => byte === 0));
-    assert.ok(bytes.subarray(end).every(byte => byte === 0x5a), "no unreserved partial secret write");
-    assert.equal(bytes[HEAP_BASE - 1], 0x31);
+    assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE, end - HEAP_BASE, 0), 1);
+    assert.equal(instance.exports.__test_all_bytes_equal(end, 65_536 - end, 0x5a), 1,
+      "no unreserved partial secret write");
+    assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE - 1, 1, 0x31), 1);
     if (result.ok) assert.deepEqual(result.result, [7,9]);
     else assert.match(result.reason, /trap during 'h':.*unreachable/);
   });
@@ -472,7 +568,7 @@ contract { intent { "q1 scalar 1024" } privacy { contains PII } }
 { let w: Cell = Cell { a: 1 } return s }
 `;
   const { wasm } = await build(src);
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "g",
     args: [1024],
@@ -491,7 +587,7 @@ contract { intent { "outer scalar" } privacy { contains PII } }
 { let _w: Sec = inner(s) return s }
 `;
   const { wasm } = await build(src, "nested-prod-int.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "g",
     args: [1024],
@@ -580,7 +676,7 @@ contract { intent { "early heap" } privacy { contains PII } }
 { if s <= 10 { return Sec { a: s } } return Sec { a: 1 } }
 `;
   const { wasm } = await build(src, "early-heap-prod.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -599,7 +695,7 @@ contract { intent { "outer heap" } privacy { contains PII } }
 { let _x: Int = inner(s) return Sec { a: s } }
 `;
   const { wasm } = await build(src, "nested-prod-sec.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -615,7 +711,7 @@ contract { intent { "q1 extra alloc" } privacy { contains PII } }
 { let r: Sec = Sec { a: s } let _x: Sec = Sec { a: 99 } return r }
 `;
   const { wasm } = await build(src, "extra-alloc.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -631,7 +727,7 @@ contract { intent { "q1 wide host" } privacy { contains PII } }
 { return Wide { a: s, b: s, c: s } }
 `;
   const { wasm } = await build(src, "wide-host.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -648,7 +744,7 @@ contract { intent { "q1 heap_ret guard" } privacy { contains PII } }
 `;
   const { wat, wasm } = await build(src, "heap-ret-guard.fungi");
   assert.match(wat, /i32\.lt_u \(local\.get \$__fungi_heap_ret\) \(i32\.const 1024\)/);
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -680,7 +776,7 @@ contract { intent { "q1 omitted inner child" } privacy { contains PII } }
 { return Node { child: Node { n: 1 }, n: s } }
 `;
   const { wasm } = await build(src, "cyclic-node.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -701,12 +797,13 @@ contract { intent { "q1 over-depth recursive return" } privacy { contains PII } 
 { return Node { child: Node { child: Node { n: 3 }, n: 2 }, n: s } }
 `;
   const { wasm } = await build(src, "deep-recursive-node-refusal.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [1],
   });
   assert.equal(r.ok, false, "deeper non-null children must refuse instead of silently truncating the return value");
+  assert.match(r.reason, /trap during 'h':.*unreachable/, "refusal must come from the executed depth guard, not missing admission");
 });
 
 test("Q1 recursive flatten refusal wipes its partial secret copy without widening cleanup", async () => {
@@ -715,7 +812,7 @@ pure flow h() -> Node
 contract { intent { "q1 refused partial recursive return" } privacy { contains PII } }
 { return Node { n: 73, child: Node { n: 2, child: Node { n: 3 } } } }
 `;
-  const { instance, memory, wat } = await build(src, "recursive-partial-copy-wipe.fungi");
+  const { instance, memory, wat, wasm } = await build(src, "recursive-partial-copy-wipe.fungi");
   const destinationWord = (HEAP_BASE + 24) / 4;
   const unrelatedWord = HEAP_BASE / 4 + 32;
   memory[unrelatedWord] = 0x12345678;
@@ -734,13 +831,16 @@ contract { intent { "q1 refused partial recursive return" } privacy { contains P
   assert.ok(memory.slice(HEAP_BASE / 4, destinationWord + 3).every(word => word === 0));
   assert.equal(memory[unrelatedWord], 0x12345678);
 
-  const result = invokeAdmittedExport(instance, "h", []);
+  const admitted = await admitFixture(wasm, wat);
+  admitted.exports.__test_fill_bytes(destinationWord * 4, 12, 0x5a);
+  admitted.exports.__test_fill_bytes(unrelatedWord * 4, 4, 0x78);
+  const result = invokeAdmittedExport(admitted, "h", []);
 
   assert.equal(result.ok, false);
   if (!result.ok) assert.match(result.reason, /trap during 'h':.*unreachable/);
-  assert.deepEqual(Array.from(memory.slice(destinationWord, destinationWord + 3)), [0, 0, 0],
+  assert.equal(admitted.exports.__test_all_bytes_equal(destinationWord * 4, 12, 0), 1,
     "partial flattened secret words outside the source-record range must be included in trap cleanup");
-  assert.equal(memory[unrelatedWord], 0x12345678,
+  assert.equal(admitted.exports.__test_all_bytes_equal(unrelatedWord * 4, 4, 0x78), 1,
     "trap cleanup must not widen beyond the owned source and reserved return-copy allocation");
 });
 
@@ -759,19 +859,19 @@ pure flow h() -> R0
 contract { intent { "q1 maximum flatten depth" } privacy { contains PII } }
 { return ${value} }
 `;
-  const { instance } = await build(src, "maximum-flatten-depth-refusal.fungi");
-  const memory = new Uint8Array(instance.exports.memory.buffer);
-  memory[HEAP_BASE - 1] = 0x31;
-  memory[HEAP_BASE + 256] = 0x53;
+  const { wasm, wat } = await build(src, "maximum-flatten-depth-refusal.fungi");
+  const instance = await admitFixture(wasm, wat);
+  instance.exports.__test_fill_bytes(HEAP_BASE - 1, 1, 0x31);
+  instance.exports.__test_fill_bytes(HEAP_BASE + 256, 1, 0x53);
   const result = invokeAdmittedExport(instance, "h", []);
   assert.equal(result.ok, !nonNullTail, "non-null cutoff must refuse, null cutoff must preserve representable fields");
   if (!result.ok) assert.match(result.reason, /trap during 'h':.*unreachable/);
   else assert.deepEqual(result.result, [0,8,7,6,5,4,3,2,1,0]);
   const end = instance.exports.__fungi_heap_get();
   assert.ok(end > HEAP_BASE && end < HEAP_BASE + 256);
-  assert.ok(memory.subarray(HEAP_BASE, end).every(byte => byte === 0));
-  assert.equal(memory[HEAP_BASE - 1], 0x31);
-  assert.equal(memory[HEAP_BASE + 256], 0x53);
+  assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE, end - HEAP_BASE, 0), 1);
+  assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE - 1, 1, 0x31), 1);
+  assert.equal(instance.exports.__test_all_bytes_equal(HEAP_BASE + 256, 1, 0x53), 1);
 });
 }
 
@@ -783,7 +883,7 @@ contract { intent { "q1 nested rec" } privacy { contains PII } }
 { return Outer { inner: Sec { a: s }, n: 99 } }
 `;
   const { wasm } = await build(src, "nested-rec.fungi");
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],
@@ -824,7 +924,7 @@ contract { intent { "q1 prod host" } privacy { contains PII } }
 { return Sec { a: s } }
 `;
   const { wasm } = await build(src);
-  const r = createLowLevelWasmExecutor().instantiateAndCall({
+  const r = callSigned({
     artifactBytes: wasm,
     exportName: "h",
     args: [7],

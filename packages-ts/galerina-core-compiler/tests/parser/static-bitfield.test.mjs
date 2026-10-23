@@ -22,7 +22,16 @@ import {
   parseProgram,
   checkEffects,
   verifyGovernance,
+  checkProgram,
+  buildWATFromCheckedProgram,
+  renderWAT,
   executeFlow,
+  assembleWAT,
+  admitAndInstantiate,
+  createHostRuntime,
+  generateRunnerKeypair,
+  signWasm,
+  getInternedStrings,
 } from "../../dist/index.js";
 
 // ---------------------------------------------------------------------------
@@ -166,6 +175,303 @@ bitfield FLAGS {
     const bfNode = findTopLevelNode(ast, "bitfieldDecl", "FLAGS");
     assert.ok(bfNode !== undefined, "bitfieldDecl must exist for FLAGS");
     assert.equal((bfNode.children ?? []).length, 4, "Expected 4 field children");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FUNGI-STATIC-001: compile-time constant initializer
+// ---------------------------------------------------------------------------
+
+describe("FUNGI-STATIC-001: static initializer must be a compile-time constant", () => {
+  it("rejects a function call as an error rather than a warning", () => {
+    const result = parseAndVerify("static VALUE = identity(1)");
+    const diagnostic = result.diagnostics.find((item) => item.code === "FUNGI-STATIC-001");
+    assert.equal(diagnostic?.severity, "error");
+  });
+
+  it("rejects unresolved and forward static identifiers", () => {
+    for (const source of [
+      "static VALUE = MISSING",
+      "static FIRST = LATER\nstatic LATER = 1",
+    ]) {
+      const result = parseAndVerify(source);
+      assert.ok(
+        result.diagnostics.some((item) => item.code === "FUNGI-STATIC-001" && item.severity === "error"),
+        `Expected FUNGI-STATIC-001 error for ${source}`,
+      );
+    }
+  });
+
+  it("rejects an unsupported array initializer", () => {
+    const result = parseAndVerify("static VALUE = [1]");
+    assert.ok(
+      result.diagnostics.some((item) => item.code === "FUNGI-STATIC-001" && item.severity === "error"),
+    );
+  });
+
+  it("rejects constant-looking arithmetic outside the static evaluator's supported types", () => {
+    for (const source of [
+      'static VALUE = "a" + "b"',
+      "static VALUE = 1.0 + 2.0",
+    ]) {
+      const result = parseAndVerify(source);
+      assert.ok(
+        result.diagnostics.some((item) => item.code === "FUNGI-STATIC-001" && item.severity === "error"),
+        `Expected FUNGI-STATIC-001 error for ${source}`,
+      );
+    }
+  });
+
+  it("accepts a literal and a reference to an earlier static", () => {
+    const result = parseAndVerify("static BASE = 1\nstatic VALUE = BASE + 2");
+    assert.equal(
+      result.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"),
+      false,
+    );
+  });
+
+  it("accepts supported boolean constant negation", () => {
+    const result = parseAndVerify("static FLAG = !false");
+    assert.equal(
+      result.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"),
+      false,
+    );
+  });
+
+  it("blocks the checked-program path for a non-constant initializer", () => {
+    const checked = checkProgram(`@version 1
+pure flow identity(value: Int) -> Int { return value }
+static VALUE = identity(1)
+pure flow read() -> Int { return VALUE }
+`, "static-checked-program.fungi");
+    assert.equal(checked.ok, false);
+    assert.ok(checked.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"));
+  });
+
+  it("rejects an invalid nested static even when no flow references it", () => {
+    const checked = checkProgram(`@version 1
+pure flow read() -> Int {
+  static BAD = 1 / 0
+  return 7
+}
+`, "static-nested-invalid-unused.fungi");
+    assert.equal(checked.ok, false);
+    assert.ok(!checked.ok && checked.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"));
+  });
+
+  it("rejects duplicate nested statics across flows because the emitted table is module-wide", () => {
+    const checked = checkProgram(`@version 1
+pure flow first() -> Int {
+  static SHARED = 1
+  return SHARED
+}
+pure flow second() -> Int {
+  static SHARED = 2
+  return SHARED
+}
+`, "static-nested-duplicate.fungi");
+    assert.equal(checked.ok, false);
+    assert.ok(!checked.ok && checked.diagnostics.some((item) => item.code === "FUNGI-STATIC-002"));
+  });
+
+  it("refuses static arithmetic that cannot produce a checked compile-time value", () => {
+    for (const expression of [
+      "1 / 0",
+      "1 % 0",
+      "2147483647 + 1",
+      "-(-2147483648)",
+      "-2147483648 / -1",
+    ]) {
+      for (const use of ["", "\npure flow read() -> Int { return VALUE }"]) {
+        const checked = checkProgram(
+          `@version 1\nstatic VALUE = ${expression}${use}\n`,
+          "static-checked-arithmetic.fungi",
+        );
+        assert.equal(checked.ok, false, `Expected checked-program refusal for ${expression}${use ? " when used" : " even when unused"}`);
+        assert.ok(
+          !checked.ok && checked.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"),
+          `Expected FUNGI-STATIC-001 for ${expression}`,
+        );
+      }
+    }
+  });
+
+  it("refuses a non-finite float static before checked-program creation", () => {
+    const checked = checkProgram(`@version 1
+static RATE = 1e400
+pure flow read() -> Float64 { return RATE }
+`, "static-nonfinite.fungi");
+    assert.equal(checked.ok, false);
+    assert.ok(!checked.ok && checked.diagnostics.some((item) => item.code === "FUNGI-STATIC-001"));
+  });
+
+  it("keeps valid checked static arithmetic admitted", () => {
+    const checked = checkProgram(`@version 1
+static VALUE = 6 / 2
+pure flow read() -> Int { return VALUE }
+`, "static-checked-arithmetic-valid.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+  });
+
+  it("lowers checked boolean, float, and string statics with matching assembled-WASM values", async () => {
+    const checked = checkProgram(`@version 1
+static FLAG = !false
+static FLAG_COPY = FLAG
+static RATE = 1.5
+static LABEL = "safe"
+pure flow readFlag() -> Bool { return FLAG_COPY }
+pure flow readRate() -> Float64 { return RATE }
+pure flow readLabel() -> String { return LABEL }
+`, "static-scalar-wat.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+    if (!checked.ok) return;
+
+    const wat = renderWAT(buildWATFromCheckedProgram(checked.program, undefined, "wasm-standalone", true));
+    assert.doesNotMatch(wat, /unresolved: (?:FLAG_COPY|RATE|LABEL)/u);
+    assert.match(wat, /\(i32\.eqz \(i32\.const 0\)\)/u, "boolean unary constant must lower to its value");
+    assert.match(wat, /\(f64\.const 1\.5\)/u, "float static must lower as f64 rather than an unresolved i32 placeholder");
+
+    const assembled = await assembleWAT(wat);
+    assert.ok(assembled.valid, `typed static module must assemble: ${JSON.stringify(assembled.diagnostics)}`);
+    const keypair = generateRunnerKeypair();
+    const attestation = signWasm(assembled.wasm, keypair.privateKeyPem, "dev");
+    const host = createHostRuntime();
+    for (const entry of getInternedStrings()) host.seedString(entry.handle, entry.value);
+    const { instance } = await admitAndInstantiate({
+      wasm: assembled.wasm,
+      attestation,
+      policy: { requireSigned: true, publicKeyPem: keypair.publicKeyPem },
+      host,
+    });
+    assert.equal(instance.exports.readFlag(), 1);
+    assert.equal(instance.exports.readRate(), 1.5);
+    assert.equal(host.readString(instance.exports.readLabel()), "safe");
+  });
+
+  it("lowers a checked static declared inside a flow body", async () => {
+    const checked = checkProgram(`@version 1
+pure flow readLocal() -> Int {
+  static LOCAL_VALUE = 7
+  return LOCAL_VALUE
+}
+`, "static-flow-local.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+    if (!checked.ok) return;
+
+    const parsed = parse(`@version 1
+pure flow readLocal() -> Int {
+  static LOCAL_VALUE = 7
+  return LOCAL_VALUE
+}
+`);
+    const interpreted = await executeFlow("readLocal", new Map(), parsed.ast, parsed.flows);
+    assert.deepEqual(interpreted.value, { __tag: "int", value: 7 }, "interpreter and WAT must share nested static semantics");
+
+    const wat = renderWAT(buildWATFromCheckedProgram(checked.program, undefined, "wasm-standalone", true));
+    assert.doesNotMatch(wat, /unresolved: LOCAL_VALUE/u);
+    const assembled = await assembleWAT(wat);
+    assert.ok(assembled.valid, `flow-body static module must assemble: ${JSON.stringify(assembled.diagnostics)}`);
+    const keypair = generateRunnerKeypair();
+    const attestation = signWasm(assembled.wasm, keypair.privateKeyPem, "dev");
+    const { instance } = await admitAndInstantiate({
+      wasm: assembled.wasm,
+      attestation,
+      policy: { requireSigned: true, publicKeyPem: keypair.publicKeyPem },
+      host: createHostRuntime(),
+    });
+    assert.equal(instance.exports.readLocal(), 7);
+  });
+
+  it("binds a static alias before flow parameters can shadow its source name", async () => {
+    const checked = checkProgram(`@version 1
+static FLAG = true
+static COPY = FLAG
+pure flow read(FLAG: Bool) -> Bool { return COPY }
+`, "static-alias-shadow.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+    if (!checked.ok) return;
+
+    const interpreted = await executeFlow(
+      "read",
+      new Map([["FLAG", { __tag: "bool", value: false }]]),
+      checked.program.ast,
+      checked.program.flows,
+    );
+    assert.deepEqual(interpreted.value, { __tag: "bool", value: true });
+
+    const wat = renderWAT(buildWATFromCheckedProgram(checked.program, undefined, "wasm-standalone", true));
+    const assembled = await assembleWAT(wat);
+    assert.ok(assembled.valid, `shadowed static alias module must assemble: ${JSON.stringify(assembled.diagnostics)}`);
+    const keypair = generateRunnerKeypair();
+    const attestation = signWasm(assembled.wasm, keypair.privateKeyPem, "dev");
+    const { instance } = await admitAndInstantiate({
+      wasm: assembled.wasm,
+      attestation,
+      policy: { requireSigned: true, publicKeyPem: keypair.publicKeyPem },
+      host: createHostRuntime(),
+    });
+    assert.equal(instance.exports.read(0), 1, "WASM must use the declaration-bound static rather than the caller's FLAG argument");
+  });
+
+  it("retains a static alias type when a flow parameter shadows its source name", async () => {
+    const checked = checkProgram(`@version 1
+static RATE = 1.5
+static NEG = -RATE
+pure flow read(RATE: Int) -> Float64 { return NEG }
+`, "static-alias-float-shadow.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+    if (!checked.ok) return;
+
+    const interpreted = await executeFlow(
+      "read",
+      new Map([["RATE", { __tag: "int", value: 7 }]]),
+      checked.program.ast,
+      checked.program.flows,
+    );
+    assert.deepEqual(interpreted.value, { __tag: "float", value: -1.5 });
+
+    const wat = renderWAT(buildWATFromCheckedProgram(checked.program, undefined, "wasm-standalone", true));
+    const assembled = await assembleWAT(wat);
+    assert.ok(assembled.valid, `shadowed Float static alias must assemble: ${JSON.stringify(assembled.diagnostics)}`);
+    const keypair = generateRunnerKeypair();
+    const attestation = signWasm(assembled.wasm, keypair.privateKeyPem, "dev");
+    const { instance } = await admitAndInstantiate({
+      wasm: assembled.wasm,
+      attestation,
+      policy: { requireSigned: true, publicKeyPem: keypair.publicKeyPem },
+      host: createHostRuntime(),
+    });
+    assert.equal(instance.exports.read(7), -1.5);
+  });
+
+  it("uses interpreter-defined module-static precedence over a same-named flow parameter", async () => {
+    const checked = checkProgram(`@version 1
+static FLAG = true
+pure flow read(FLAG: Bool) -> Bool { return FLAG }
+`, "static-name-shadow.fungi");
+    assert.equal(checked.ok, true, checked.ok ? "" : JSON.stringify(checked.diagnostics));
+    if (!checked.ok) return;
+
+    const interpreted = await executeFlow(
+      "read",
+      new Map([["FLAG", { __tag: "bool", value: false }]]),
+      checked.program.ast,
+      checked.program.flows,
+    );
+    assert.deepEqual(interpreted.value, { __tag: "bool", value: true });
+
+    const wat = renderWAT(buildWATFromCheckedProgram(checked.program, undefined, "wasm-standalone", true));
+    const assembled = await assembleWAT(wat);
+    assert.ok(assembled.valid, `static name shadow module must assemble: ${JSON.stringify(assembled.diagnostics)}`);
+    const keypair = generateRunnerKeypair();
+    const attestation = signWasm(assembled.wasm, keypair.privateKeyPem, "dev");
+    const { instance } = await admitAndInstantiate({
+      wasm: assembled.wasm,
+      attestation,
+      policy: { requireSigned: true, publicKeyPem: keypair.publicKeyPem },
+      host: createHostRuntime(),
+    });
+    assert.equal(instance.exports.read(0), 1);
   });
 });
 

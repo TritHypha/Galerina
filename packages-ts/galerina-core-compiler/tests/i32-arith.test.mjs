@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import {
   I32_MIN, I32_MAX,
   i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, isI32Trap,
+  i32FromLiteralText,
 } from "../dist/i32-arith.js";
 
 test("add: normal math + boundaries pass; overflow traps both directions", () => {
@@ -60,4 +61,22 @@ test("isI32Trap discriminates a trap-kind from a value", () => {
   assert.equal(isI32Trap("DivisionByZero"), true);
   assert.equal(isI32Trap(0), false);
   assert.equal(isI32Trap(-1), false);
+});
+
+test("literal conversion preserves exact digits and signed radix magnitude", () => {
+  for (const [literal, expected] of [
+    ["0", 0], ["1_024", 1024], ["+42", 42], ["-42", -42],
+    // Preserve the current lexer's permissive decimal-separator spellings.
+    ["1__0", 10], ["1_", 1],
+    ["0xFFFFFFFF", -1], ["-0x80000000", I32_MIN],
+    ["0b100000", 32], ["-0o20", -16],
+    ["9007199254740993", 1], ["-9007199254740993", -1],
+  ]) assert.equal(i32FromLiteralText(literal), expected, literal);
+});
+
+test("literal conversion refuses empty, whitespace and malformed complete tokens", () => {
+  for (const literal of ["", " ", "\t", "\n", "+", "-", "__", "_1",
+    " 1", "1 ", "1\n", "1junk", "1.5", "1e3", "0x", "+-1", "--1"]) {
+    assert.equal(i32FromLiteralText(literal), "IntegerOverflow", JSON.stringify(literal));
+  }
 });

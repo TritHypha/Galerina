@@ -65,6 +65,8 @@ import {
   type WATEmitResult,
   type WATRecordFieldLayout,
   type WATRecordLayout,
+  type WATOwnedReturnShape,
+  type WATOwnedReturnSchemas,
   type WATFlowInput,
   type WATGIRInput,
   type ArrayHofHelper,
@@ -109,6 +111,8 @@ export {
   type WATEmitResult,
   type WATRecordFieldLayout,
   type WATRecordLayout,
+  type WATOwnedReturnShape,
+  type WATOwnedReturnSchemas,
   type WATFlowInput,
   type WATGIRInput,
 } from "./wat-emitter-types.js";
@@ -460,6 +464,12 @@ let watRecordLayouts: Lookup<ReadonlyMap<string, WATRecordLayout>> = none("watRe
  *  Populated from `let r: T = …` annotations, `let r = T{…}` literal types, and
  *  record-typed flow params. Lets `r.field` resolve to an i32.load at the slot offset. */
 let recordVarTypes: Lookup<Map<string, string>> = none("recordVarTypes:unset");
+// Static constants are module-scoped compile-time values. Non-integer values retain
+// their validated pure AST so the emitter can lower them using the same typed paths
+// as their source literals; integers remain checked/folded to i32 values.
+type StaticConstValue = number | AstNode;
+type StaticConstMap = ReadonlyMap<string, StaticConstValue>;
+let staticConstTypes: ReadonlyMap<string, string> = new Map();
 /** enumTypeName → ordered variant names (declaration order = i32 tag). #144: lets
  *  `EnumType.Variant` lower to its stable i32 tag instead of an `(i32.const 0)`
  *  placeholder. The tag is an internal convention; the host runtime (#145) maps the
@@ -469,6 +479,69 @@ let enumVariants: Lookup<ReadonlyMap<string, readonly string[]>> = none("enumVar
  *  lets `let xs = makeKeywordTable()` carry a type so `xs.contains(s)` lowers to the
  *  value-based __array_contains_str bridge. absent/absent → no inference (placeholder). */
 let flowReturnTypes: Lookup<ReadonlyMap<string, string>> = none("flowReturnTypes:unset");
+
+// Only compiler-built module identities may carry derived owned-return metadata into assembly.
+// Keeping the wire data in a WeakMap prevents a caller from attaching an arbitrary shape to a
+// rendered WAT string or a hand-built WATModule and having it silently treated as compiler proof.
+const DERIVED_OWNED_RETURN_SCHEMAS = new WeakMap<WATModule, { readonly sourceWAT: string; readonly schemas: WATOwnedReturnSchemas }>();
+
+export function getDerivedOwnedReturnSchemas(module: WATModule, sourceWAT: string): WATOwnedReturnSchemas | undefined {
+  const derived = DERIVED_OWNED_RETURN_SCHEMAS.get(module);
+  return derived?.sourceWAT === sourceWAT ? derived.schemas : undefined;
+}
+
+const OWNED_RETURN_I32_SCALARS = new Set([
+  "Int", "Int8", "Int16", "Int32", "Byte", "Bool", "Verdict",
+]);
+
+function deriveOwnedReturnSchemas(
+  exportedNames: readonly string[],
+  functions: readonly WATFunction[],
+  returnTypes: ReadonlyMap<string, string>,
+  recordLayouts: ReadonlyMap<string, WATRecordLayout>,
+  enumNames: ReadonlySet<string>,
+): WATOwnedReturnSchemas | undefined {
+  if (exportedNames.length === 0 || exportedNames.length > 256) return undefined;
+  let nodeCount = 0;
+  const shapeForType = (type: string, depth: number, active: ReadonlySet<string>): WATOwnedReturnShape | undefined => {
+    if (depth > 8) return undefined;
+    nodeCount += 1;
+    if (nodeCount > 4096) return undefined;
+    const normalized = type.trim();
+    if (OWNED_RETURN_I32_SCALARS.has(normalized) || enumNames.has(normalized)) {
+      return Object.freeze({ kind: "i32" });
+    }
+    const layout = recordLayouts.get(normalized);
+    if (layout === undefined || layout.fields.length === 0 || layout.fields.length > 64 || active.has(normalized)) {
+      return undefined;
+    }
+    const nextActive = new Set(active);
+    nextActive.add(normalized);
+    const fields: WATOwnedReturnShape[] = [];
+    for (const field of layout.fields) {
+      // Runtime copying reads a compact sequence of i32 values/pointers. Refuse padding,
+      // wide lanes, float slots, and opaque i32 handles rather than guessing their ownership.
+      if (field.size !== 4 || field.watType !== "i32") return undefined;
+      const nested = shapeForType(field.type, depth + 1, nextActive);
+      if (nested === undefined) return undefined;
+      fields.push(nested);
+    }
+    return Object.freeze({ kind: "record", fields: Object.freeze(fields) });
+  };
+
+  const exports: Record<string, WATOwnedReturnShape> = Object.create(null) as Record<string, WATOwnedReturnShape>;
+  for (const name of exportedNames) {
+    const fn = functions.find((candidate) => candidate.name === name);
+    const returnType = returnTypes.get(name);
+    if (fn === undefined || returnType === undefined || fn.type.results.length !== 1 || fn.type.results[0] !== "i32") {
+      return undefined;
+    }
+    const shape = shapeForType(returnType, 0, new Set());
+    if (shape === undefined) return undefined;
+    Object.defineProperty(exports, name, { value: shape, enumerable: true });
+  }
+  return Object.freeze(exports);
+}
 
 /** C02 capture-free array HOF helpers requested while emitting a module. */
 let arrayHofHelpers: ArrayHofHelper[] = [];
@@ -490,7 +563,6 @@ function emptyWatJobCaches(): WatJobCacheState {
     hofProgramAst: none("no-program-ast"),
     internedLayouts: none("interned-layouts-uninitialized"),
     internedFieldTypes: none("interned-field-types-uninitialized"),
-    autoAppendShapes: none("auto-append-shapes-uncomputed"),
     informalShapes: none("informal-shapes-uncomputed"),
     autoSomeBindMemberFields: none("auto-some-bind-fields-uncomputed"),
   };
@@ -500,7 +572,6 @@ function resetWatJobCachesForModule(ast: Lookup<AstNode>): WatJobCacheState {
     hofProgramAst: ast,
     internedLayouts: found(new Map()),
     internedFieldTypes: found(new Map()),
-    autoAppendShapes: none("reset-for-module"),
     informalShapes: none("reset-for-module"),
     autoSomeBindMemberFields: none("reset-for-module"),
   };
@@ -508,6 +579,7 @@ function resetWatJobCachesForModule(ast: Lookup<AstNode>): WatJobCacheState {
 let watJobCaches: WatJobCacheState = emptyWatJobCaches();
 /** Parser-absent members — intern would invent AST fields (NOT Y). */
 const INFORMAL_DENY_FIELDS = new Set(["pattern", "target", "litI32Overflow"]);
+const UNRESOLVED_AUTO_RECORD_LAYOUT = "\0unresolved-auto-record-layout";
 
 /** Build the flowName → return-type registry from a program AST's flow decls.
  *  Flow node shape (parser): value = name; children = [...paramDecls, retTypeNode, …].
@@ -580,7 +652,7 @@ function collectHofLocalBindings(n: AstNode, into: Set<string>): void {
 
 /** True when the named callback flow body uses an identifier that is not a parameter
  *  of that flow, not a local binding, not another flow name, and not a compile-time constant. */
-function namedFlowCapturesOuter(fnName: string, ast: Lookup<AstNode>, consts: ReadonlyMap<string, number>): boolean {
+function namedFlowCapturesOuter(fnName: string, ast: Lookup<AstNode>, consts: StaticConstMap): boolean {
   const flow = findNamedFlowDecl(ast, fnName);
   if (flow.kind === "none") return true;
   const children = flow.value.children ?? [];
@@ -707,7 +779,7 @@ function rewriteG5cCaptureThenWipe(body: string, wipeFill: string): string {
 }
 
 /** Heap-pointer `(return …)` must tag the result before the function-level return skips the exit wrapper. */
-function rewriteHeapReturnTag(body: string, fn: WATFunction): string {
+function rewriteHeapReturnTag(body: string, fn: WATFunction, flattenResult = true): string {
   const token = "(return";
   let out = "";
   let i = 0;
@@ -737,8 +809,15 @@ function rewriteHeapReturnTag(body: string, fn: WATFunction): string {
     }
     const inner = body.slice(after, j - 1);
     out += body.slice(i, at);
-    const flattenWAT = flattenFromHeapRet(fn, " ").body.join(" ");
-    out += `(return (block (result i32) (local.set $__fungi_heap_ret${inner}) ${flattenWAT}))`;
+    if (flattenResult) {
+      const flattenWAT = flattenFromHeapRet(fn, " ").body.join(" ");
+      out += `(return (block (result i32) (local.set $__fungi_heap_ret${inner}) ${flattenWAT}))`;
+    } else {
+      const words = fn.returnWordCount ?? 1;
+      // Evaluate the result before publishing its metadata: nested calls may update
+      // the same module globals while producing the outer record value.
+      out += `(return (block (result i32) (local.set $__fungi_heap_ret${inner}) (global.set $__fungi_ret_is_heap (i32.const 1)) (global.set $__fungi_ret_words (i32.const ${words})) (local.get $__fungi_heap_ret)))`;
+    }
     i = j;
   }
   return out;
@@ -919,7 +998,7 @@ export function renderWAT(module: WATModule): string {
       : FLOAT_WAT_TYPES.has(fn.returnType) ? "f64"
       : is64BitWatType(numericBaseType(fn.returnType)) ? "i64"
       : undefined;
-    const wrapsScalarResultTag = usesHeap && moduleHasSecret
+    const wrapsScalarResultTag = usesHeap
       && scalarResultLane !== undefined
       && fn.type.results.length === 1
       && fn.type.results[0] === scalarResultLane;
@@ -973,6 +1052,12 @@ export function renderWAT(module: WATModule): string {
         `(memory.fill (local.get $__fungi_owner_base) (i32.const 0) (i32.sub (global.get $__fungi_heap) (local.get $__fungi_owner_base))) (global.set $__fungi_heap (local.get $__fungi_owner_base))`;
       const isPrimI32Return = fn.returnType !== undefined && PRIMITIVE_RETURN_TYPES.has(fn.returnType)
         && (fn.type.results[0] ?? "i32") === "i32";
+      const isOwnedHeapReturn = usesHeap
+        && fn.returnType !== undefined
+        && !PRIMITIVE_RETURN_TYPES.has(fn.returnType)
+        && fn.returnWordCount !== undefined
+        && fn.type.results.length === 1
+        && fn.type.results[0] === "i32";
       let flowBody = wipeSecretsOnBreach
         ? fn.body.replace(
             /\(then unreachable\)/g,
@@ -983,8 +1068,8 @@ export function renderWAT(module: WATModule): string {
       // Heap-pointer results skip this rewrite so the returned object is not destroyed-as-success.
       if (wipeSecretsOnBreach && isPrimI32Return) {
         flowBody = rewriteG5cCaptureThenWipe(flowBody, ownedFill);
-      } else if (wipeSecretsOnBreach && (fn.type.results[0] ?? "i32") === "i32") {
-        flowBody = rewriteHeapReturnTag(flowBody, fn);
+      } else if (isOwnedHeapReturn) {
+        flowBody = rewriteHeapReturnTag(flowBody, fn, wipeSecretsOnBreach);
       }
 
       // B2b zero-on-EXIT (owner-chosen, audit): eagerly destroy THIS call's secret records BEFORE returning,
@@ -1047,15 +1132,34 @@ export function renderWAT(module: WATModule): string {
         continue; // this flow is fully emitted via the zero-on-exit path
       }
 
+      if (isOwnedHeapReturn && !wipeSecretsOnBreach && (bodyArr.length - locEnd) > 0) {
+        for (const l of bodyArr.slice(0, locEnd)) lines.push(`    ${l}`);
+        lines.push(`    (local $__fungi_owned_result i32)`);
+        lines.push(`    (local $__fungi_heap_ret i32)`);
+        if (emitArenaReset) {
+          lines.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
+        }
+        lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
+        lines.push(`    (local.set $__fungi_owned_result (block (result i32)`);
+        for (const l of bodyArr.slice(locEnd)) lines.push(`      ${l}`);
+        lines.push(`    ))`);
+        lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 1))`);
+        lines.push(`    (global.set $__fungi_ret_words (i32.const ${fn.returnWordCount ?? 1}))`);
+        lines.push(`    (local.get $__fungi_owned_result)`);
+        lines.push(`  )`);
+        if (fn.isEntryPoint) lines.push(`  (export "${fn.name}" (func $${fn.name}))`);
+        lines.push("");
+        continue;
+      }
+
       if (
-        wipeSecretsOnBreach
-        && !isPrimI32Return
-        && (fn.type.results[0] ?? "i32") === "i32"
+        isOwnedHeapReturn
+        && wipeSecretsOnBreach
         && (bodyArr.length - locEnd) > 0
       ) {
         const flatten = flattenFromHeapRet(fn, "    ");
         for (const l of bodyArr.slice(0, locEnd)) lines.push(`    ${l}`);
-        lines.push(`    (local $__fungi_owner_base i32)`);
+        if (wipeSecretsOnBreach) lines.push(`    (local $__fungi_owner_base i32)`);
         lines.push(`    (local $__fungi_heap_ret i32)`);
         for (const extra of flatten.extraLocals) lines.push(`    (local ${extra} i32)`);
         if (emitZeroing) {
@@ -1064,7 +1168,9 @@ export function renderWAT(module: WATModule): string {
         if (emitArenaReset) {
           lines.push(`    (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE}))`);
         }
-        lines.push(`    (local.set $__fungi_owner_base (global.get $__fungi_heap))`);
+        if (wipeSecretsOnBreach) {
+          lines.push(`    (local.set $__fungi_owner_base (global.get $__fungi_heap))`);
+        }
         lines.push(`    (global.set $__fungi_ret_is_heap (i32.const 0))`);
         lines.push(`    (local.set $__fungi_heap_ret (block (result i32)`);
         for (const l of bodyArr.slice(locEnd)) lines.push(`      ${l}`);
@@ -1246,6 +1352,25 @@ function isFloatOptionType(t: string | undefined): boolean {
   return payload.kind === "found" && payload.value === "f64";
 }
 
+/** True only for a single-level Option<Float*>; Result shares the payload ABI but
+ *  must never be routed through Option-specific equality imports. */
+const MAX_OPTION_FLOAT_EQUALITY_DEPTH = 8;
+
+/** Count Option wrappers around a Float payload; zero means this is not an Option<Float*>. */
+function floatOptionNestingDepth(t: string | undefined): number {
+  let current = t?.trim() ?? "";
+  let depth = 0;
+  while (true) {
+    const inner = /^Option<\s*(.+)\s*>$/.exec(current);
+    if (inner === null) return FLOAT_OPTION_WAT_TYPES.has(current) ? depth : 0;
+    current = inner[1]!.trim();
+    depth++;
+    if (depth > MAX_OPTION_FLOAT_EQUALITY_DEPTH && FLOAT_OPTION_WAT_TYPES.has(current)) {
+      throw new Error(`Option<Float> equality exceeds the admitted type nesting depth (${MAX_OPTION_FLOAT_EQUALITY_DEPTH})`);
+    }
+  }
+}
+
 /** `bind.field` member names under `node` (match-arm reconstruction for Auto receivers). */
 function memberFieldsOnBind(bind: string, node: AstNode | undefined): Set<string> {
   const out = new Set<string>();
@@ -1375,48 +1500,6 @@ function collectAutoArrayIdents(flow: AstNode): Set<string> {
   return ids;
 }
 
-const AUTO_APPEND_FLOW_KINDS = new Set([
-  "pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl", "governedFlowDecl",
-]);
-
-/** Field orders of `#record` literals appended onto Array<Auto> (existing positional store ABI). */
-function collectArrayAutoAppendShapes(ast: Lookup<AstNode>): string[][] {
-  const cached = watJobCaches.autoAppendShapes;
-  if (cached.kind === "found") return cached.value;
-  const shapes: string[][] = [];
-  watJobCaches.autoAppendShapes = found(shapes);
-  if (ast.kind === "none") return shapes;
-  const program = ast.value;
-  const seen = new Set<string>();
-  for (const flow of program.children ?? []) {
-    if (!AUTO_APPEND_FLOW_KINDS.has(flow.kind)) continue;
-    const autoIdents = collectAutoArrayIdents(flow);
-    const walk = (n: AstNode): void => {
-      if (n.kind === "letDecl" || n.kind === "mutDecl") {
-        const nm = ((n.value ?? "").split(":")[0] ?? "").trim();
-        const ty = (n.value ?? "").includes(":") ? (n.value ?? "").slice((n.value ?? "").indexOf(":") + 1).trim() : "";
-        if (nm !== "" && isArrayAutoType(ty)) autoIdents.add(nm);
-      }
-      if (n.kind === "callExpr" && n.callStyle === "method" && n.value === "append") {
-        const recv = n.children?.[0];
-        const arg = n.children?.[1];
-        if (exprIsArrayAuto(recv, autoIdents, flow) && arg?.kind === "callExpr" && arg.value === "#record") {
-          const fields = (arg.children ?? []).map((c) => c.value ?? "").filter((f) => f.length > 0);
-          const key = fields.join("\0");
-          if (fields.length > 0 && !seen.has(key)) {
-            seen.add(key);
-            shapes.push(fields);
-          }
-        }
-      }
-      for (const c of n.children ?? []) walk(c);
-    };
-    walk(flow);
-  }
-  watJobCaches.autoAppendShapes = found(shapes);
-  return shapes;
-}
-
 /** ZipPair (Codex GO 2026-10-02): payload types whose Option handle carries the value through the i32
  *  `__option_value_v2` lane unchanged. Float/Int64/Decimal/Money/records/protected payloads keep METHOD-001. */
 const ZIP_PAIR_I32_PAYLOADS: ReadonlySet<string> = new Set(["Int", "Bool", "Char", "String"]);
@@ -1471,34 +1554,6 @@ function internAnonLayout(fields: readonly string[], fieldTypes?: ReadonlyMap<st
     }
   }
   return name;
-}
-
-/**
- * Unique Array<Auto> append shape for which `fields` is a prefix (set-equal to the
- * shape's first N names) and every matching shape agrees on offsets. Fail-closed
- * when two append shapes would load the same field at different slots.
- */
-function uniqueAnonPrefixLayout(fields: ReadonlySet<string>): Lookup<string> {
-  if (fields.size === 0) return none("anon-prefix:empty-fields");
-  const matches: string[][] = [];
-  for (const shape of collectArrayAutoAppendShapes(watJobCaches.hofProgramAst)) {
-    if (shape.length < fields.size) continue;
-    const prefix = shape.slice(0, fields.size);
-    if (prefix.every((f) => fields.has(f)) && [...fields].every((f) => prefix.includes(f))) {
-      matches.push(shape);
-    }
-  }
-  if (matches.length === 0) return none("anon-prefix:no-shape");
-  const offsetOf = (shape: string[], f: string): number => shape.indexOf(f);
-  for (const f of fields) {
-    const off = offsetOf(matches[0]!, f);
-    if (off < 0) return none(`anon-prefix:field-absent:${f}`);
-    for (let i = 1; i < matches.length; i++) {
-      if (offsetOf(matches[i]!, f) !== off) return none(`anon-prefix:offset-conflict:${f}`);
-    }
-  }
-  matches.sort((a, b) => a.length - b.length);
-  return found(internAnonLayout(matches[0]!));
 }
 
 /** `bind.field` names in first-occurrence order (informal decl intern order). */
@@ -1607,11 +1662,10 @@ function collectNestedInformalShapes(bind: string, body: AstNode | undefined, sh
 }
 
 /**
- * Informal Array<Auto> param / get-local Some-bind field orders (buildStaticEnv
- * `{kind,name,value,typeName}`, buildBitfieldEnv `{kind,fields,register}` + nested
- * `{name,mask}`) plus Auto-param `stmt: Auto` field orders (J6c: checkGenericBinding
- * `{typeBase,typeArgs,name}`, checkTensorBinding tensor fields + `name`). Shapes that
- * name parser-absent fields are dropped (no invented `.pattern` / `.target`).
+ * Legacy candidate shapes observed in Auto-param consumers. These observations are
+ * not allocation/layout authority for Array<Auto>. Array element member access must
+ * instead use a declared element record or a local origin/index proof; candidates
+ * that name parser-absent fields remain excluded.
  */
 function collectInformalAutoParamShapes(ast: Lookup<AstNode>): InformalShape[] {
   const cached = watJobCaches.informalShapes;
@@ -1621,7 +1675,7 @@ function collectInformalAutoParamShapes(ast: Lookup<AstNode>): InformalShape[] {
   if (ast.kind === "none") return shapes;
   const program = ast.value;
   for (const flow of program.children ?? []) {
-    if (!AUTO_APPEND_FLOW_KINDS.has(flow.kind)) continue;
+    if (!ARRAY_LAYOUT_FLOW_KINDS.has(flow.kind)) continue;
     for (const c of flow.children ?? []) {
       if (c.kind !== "paramDecl") continue;
       const raw = c.value ?? "";
@@ -1826,13 +1880,836 @@ function uniqueRecordTypeForFields(fields: ReadonlySet<string>): Lookup<string> 
   return found(shortestType);
 }
 
-/** Keep a concrete layout type; reconstruct Auto/unknown from member uses in the arm body. */
+/** A declared record that explains only part of an Auto bind's observed fields is
+ *  evidence against inventing a wider informal layout from those same accesses. */
+function hasStrictDeclaredLayoutSubset(fields: ReadonlySet<string>): boolean {
+  if (recordLayouts.kind !== "found" || fields.size < 2) return false;
+  for (const layout of recordLayouts.value.values()) {
+    if (layout.length >= fields.size) continue;
+    if (layout.every((field) => fields.has(field))) return true;
+  }
+  return false;
+}
+
+const ARRAY_LAYOUT_FLOW_KINDS = new Set([
+  "pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl", "governedFlowDecl",
+]);
+
+type ArrayLayoutScope = { readonly block: AstNode; readonly targetIndex: number };
+type ArrayLayoutValueBinding = {
+  readonly name: string;
+  readonly type: string | undefined;
+  /** Number of enclosing lexical blocks at the binding site. */
+  readonly scopeDepth: number;
+};
+type ArrayLayoutContext = {
+  readonly flow: AstNode;
+  readonly block: AstNode;
+  readonly targetIndex: number;
+  readonly target: AstNode;
+  /** Lexical block path from the flow body to the block containing target. */
+  readonly scopes: readonly ArrayLayoutScope[];
+  /** Non-block binders (match payloads and for-each items) on the path to target. */
+  readonly lexicalBindings: readonly ArrayLayoutValueBinding[];
+};
+
+function containsAstNode(root: AstNode, target: AstNode): boolean {
+  if (root === target) return true;
+  return (root.children ?? []).some((child) => containsAstNode(child, target));
+}
+
+function findArrayLayoutContext(ast: Lookup<AstNode>, target: AstNode | undefined): ArrayLayoutContext | undefined {
+  if (ast.kind === "none" || target === undefined) return undefined;
+  let match: ArrayLayoutContext | undefined;
+  const visit = (node: AstNode): boolean => {
+    if (ARRAY_LAYOUT_FLOW_KINDS.has(node.kind)) {
+      const block = (node.children ?? []).find((child) => child.kind === "block");
+      if (block !== undefined) {
+        const subjectName = target.kind === "identifier" ? target.value ?? "" : "";
+        let enclosing: ArrayLayoutContext | undefined;
+        let deepestProven: ArrayLayoutContext | undefined;
+        let deepestDepth = -1;
+        const visitBlockPath = (candidate: AstNode, depth: number, ancestors: readonly ArrayLayoutScope[]): void => {
+          let scopes = ancestors;
+          if (candidate.kind === "block") {
+            const targetIndex = (candidate.children ?? []).findIndex((child) => containsAstNode(child, target));
+            if (targetIndex >= 0) {
+              scopes = [...ancestors, { block: candidate, targetIndex }];
+              const context = { flow: node, block: candidate, targetIndex, target, scopes, lexicalBindings: [] };
+              if (depth === 0) enclosing = context;
+              const bindsSubject = subjectName !== "" &&
+                (candidate.children ?? []).slice(0, targetIndex).some((statement) =>
+                  (statement.kind === "letDecl" || statement.kind === "mutDecl") &&
+                  bindingName(statement) === subjectName,
+                );
+              const nestedLayout = bindsSubject && depth > 0
+                ? selectedFreshAnonymousArrayLayout(target, context)
+                : undefined;
+              const unresolvedOriginNeedsLocalContext = nestedLayout?.kind === "none" &&
+                (nestedLayout.reason === "array-layout:empty-array-alias-escaped" ||
+                 nestedLayout.reason === "array-layout:call-returned-array");
+              const resolvedSubject = bindsSubject && depth > 0
+                ? resolveImmutableExpressionAtUse(target, context, new Set())
+                : undefined;
+              const nestedGetReceiver = resolvedSubject !== undefined &&
+                isMethodCall(resolvedSubject.expression, "get")
+                ? resolvedSubject.expression.children?.[0]
+                : undefined;
+              const nestedGetElementType = nestedGetReceiver === undefined
+                ? undefined
+                : explicitArrayElementType(
+                  nestedGetReceiver, context, new Set(),
+                  resolvedSubject!.useScopeIndex, resolvedSubject!.useIndex,
+                );
+              // Keep local context for declared arrays even when mutable provenance
+              // is not strong enough to authorize an offset. refineAutoRecordType
+              // then refuses unknown payloads instead of borrowing module fields.
+              const nestedGetHasArrayDeclaration = nestedGetReceiver?.kind === "identifier" &&
+                hasVisibleArrayBinding(
+                  nestedGetReceiver.value ?? "", context,
+                  resolvedSubject!.useScopeIndex, resolvedSubject!.useIndex,
+                );
+              const nestedArrayGet = nestedGetReceiver !== undefined &&
+                (nestedGetElementType !== undefined || nestedGetHasArrayDeclaration);
+              if (bindsSubject && depth > 0 &&
+                  (nestedLayout?.kind === "found" || unresolvedOriginNeedsLocalContext ||
+                   nestedArrayGet) &&
+                  depth > deepestDepth) {
+                deepestProven = context;
+                deepestDepth = depth;
+              }
+            }
+          }
+          for (const child of candidate.children ?? []) {
+            if (containsAstNode(child, target)) visitBlockPath(child, depth + 1, scopes);
+          }
+        };
+        visitBlockPath(block, 0, []);
+        if (deepestProven !== undefined || enclosing !== undefined) {
+          match = deepestProven ?? enclosing;
+          return true;
+        }
+      }
+    }
+    for (const child of node.children ?? []) if (visit(child)) return true;
+    return false;
+  };
+  visit(ast.value);
+  return match;
+}
+
+function bindingName(node: AstNode): string {
+  return (node.value ?? "").trim().replace(/^(?:safe|unsafe)\s+/, "").split(":", 1)[0]?.trim() ?? "";
+}
+
+function hasWriteToBinding(node: AstNode, name: string): boolean {
+  if ((node.kind === "mutDecl" && bindingName(node) === name) ||
+      (node.kind === "assignStmt" && node.value === name)) return true;
+  return (node.children ?? []).some((child) => hasWriteToBinding(child, name));
+}
+
+function containsIdentifier(node: AstNode, name: string): boolean {
+  if (node.kind === "identifier" && node.value === name) return true;
+  return (node.children ?? []).some((child) => containsIdentifier(child, name));
+}
+
+/** Conservatively refuse a variable-backed empty array if its handle escaped before append. */
+function hasArrayAliasBeforeUse(
+  name: string,
+  context: ArrayLayoutContext,
+  allocationScopeIndex: number,
+  allocationIndex: number,
+  useScopeIndex: number,
+  useIndex: number,
+): boolean {
+  for (let scopeIndex = allocationScopeIndex; scopeIndex <= useScopeIndex; scopeIndex++) {
+    const scope = context.scopes[scopeIndex]!;
+    const statements = scope.block.children ?? [];
+    const start = scopeIndex === allocationScopeIndex ? allocationIndex + 1 : 0;
+    const end = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+    for (let index = start; index < end; index++) {
+      const statement = statements[index]!;
+      if (((statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === name) ||
+          containsIdentifier(statement, name)) return true;
+    }
+  }
+  return false;
+}
+
+function hasNestedShadowBeforeTarget(
+  root: AstNode,
+  target: AstNode,
+  outerBlock: AstNode,
+  name: string,
+): boolean {
+  if (root === target) return false;
+  if (root.kind === "block" && root !== outerBlock) {
+    const statements = root.children ?? [];
+    const targetIndex = statements.findIndex((statement) => containsAstNode(statement, target));
+    if (targetIndex >= 0 && statements.slice(0, targetIndex).some((statement) =>
+      (statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === name,
+    )) return true;
+  }
+  for (const child of root.children ?? []) {
+    if (containsAstNode(child, target)) {
+      return hasNestedShadowBeforeTarget(child, target, outerBlock, name);
+    }
+  }
+  return false;
+}
+
+type ImmutableBinding = {
+  readonly initializer: AstNode;
+  readonly declarationIndex: number;
+  readonly scopeIndex: number;
+};
+
+/** Resolve at the use site, searching the current lexical scope then its parents. */
+function immutableBinding(
+  name: string,
+  context: ArrayLayoutContext,
+  useScopeIndex = context.scopes.length - 1,
+  useIndex = context.scopes[useScopeIndex]?.targetIndex ?? context.targetIndex,
+): ImmutableBinding | undefined {
+  for (let scopeIndex = useScopeIndex; scopeIndex >= 0; scopeIndex--) {
+    const scope = context.scopes[scopeIndex]!;
+    const statements = scope.block.children ?? [];
+    const limit = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+    const declarations: Array<{ readonly index: number; readonly kind: string; readonly initializer: AstNode | undefined }> = [];
+    for (let index = 0; index < limit; index++) {
+      const statement = statements[index]!;
+      if ((statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === name) {
+        declarations.push({ index, kind: statement.kind, initializer: statement.children?.[0] });
+      }
+    }
+    if (declarations.length === 0) continue;
+    if (declarations.length !== 1) return undefined;
+    const declaration = declarations[0]!;
+    if (declaration.kind !== "letDecl" || declaration.initializer === undefined) return undefined;
+    for (let index = declaration.index + 1; index < limit; index++) {
+      if (hasWriteToBinding(statements[index]!, name)) return undefined;
+    }
+    return { initializer: declaration.initializer, declarationIndex: declaration.index, scopeIndex };
+  }
+  return undefined;
+}
+
+type ResolvedImmutableExpression = {
+  readonly expression: AstNode;
+  readonly useScopeIndex: number;
+  readonly useIndex: number;
+};
+
+function resolveImmutableExpressionAtUse(
+  node: AstNode | undefined,
+  context: ArrayLayoutContext,
+  seen: ReadonlySet<string>,
+  useScopeIndex = context.scopes.length - 1,
+  useIndex = context.scopes[useScopeIndex]?.targetIndex ?? context.targetIndex,
+): ResolvedImmutableExpression | undefined {
+  if (node === undefined) return undefined;
+  if (node.kind !== "identifier") return { expression: node, useScopeIndex, useIndex };
+  const name = node.value ?? "";
+  if (name === "" || seen.has(name)) return undefined;
+  const binding = immutableBinding(name, context, useScopeIndex, useIndex);
+  if (binding === undefined) return undefined;
+  return resolveImmutableExpressionAtUse(
+    binding.initializer,
+    context,
+    new Set([...seen, name]),
+    binding.scopeIndex,
+    binding.declarationIndex,
+  );
+}
+
+function resolveImmutableExpression(
+  node: AstNode | undefined,
+  context: ArrayLayoutContext,
+  seen: ReadonlySet<string> = new Set(),
+  useScopeIndex = context.scopes.length - 1,
+  useIndex = context.scopes[useScopeIndex]?.targetIndex ?? context.targetIndex,
+): AstNode | undefined {
+  return resolveImmutableExpressionAtUse(node, context, seen, useScopeIndex, useIndex)?.expression;
+}
+
+function arrayElementTypeAnnotation(value: string | undefined): string | undefined {
+  const colon = (value ?? "").indexOf(":");
+  if (colon < 0) return undefined;
+  const typeText = (value ?? "").slice(colon + 1).trim();
+  return typeText.startsWith("Array<") && typeText.endsWith(">")
+    ? typeText.slice("Array<".length, -1).trim()
+    : undefined;
+}
+
+function genericTypeArguments(typeText: string | undefined): readonly string[] {
+  const input = (typeText ?? "").trim();
+  const open = input.indexOf("<");
+  const close = input.lastIndexOf(">");
+  if (open < 0 || close < open) return [];
+  const args: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const ch of input.slice(open + 1, close)) {
+    if (ch === "<" || ch === "[") depth++;
+    else if (ch === ">" || ch === "]") depth--;
+    if (ch === "," && depth === 0) {
+      args.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim() !== "") args.push(current.trim());
+  return args;
+}
+
+function isArrayTypeAnnotation(value: string | undefined): boolean {
+  const colon = (value ?? "").indexOf(":");
+  if (colon < 0) return false;
+  const typeText = (value ?? "").slice(colon + 1).trim();
+  return typeText === "Array" || (typeText.startsWith("Array<") && typeText.endsWith(">"));
+}
+
+function hasVisibleArrayBinding(
+  name: string,
+  context: ArrayLayoutContext,
+  useScopeIndex: number,
+  useIndex: number,
+): boolean {
+  if (name === "") return false;
+  for (let scopeIndex = useScopeIndex; scopeIndex >= 0; scopeIndex--) {
+    const scope = context.scopes[scopeIndex]!;
+    const statements = scope.block.children ?? [];
+    const limit = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+    const declarations = statements.slice(0, limit).filter((statement) =>
+      (statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === name,
+    );
+    if (declarations.length > 0) {
+      return declarations.length === 1 && isArrayTypeAnnotation(declarations[0]!.value);
+    }
+  }
+  const param = (context.flow.children ?? []).find((child) =>
+    child.kind === "paramDecl" && bindingName(child) === name,
+  );
+  return param !== undefined && isArrayTypeAnnotation(param.value);
+}
+
+function explicitArrayElementType(
+  node: AstNode | undefined,
+  context: ArrayLayoutContext,
+  seen: ReadonlySet<string> = new Set(),
+  useScopeIndex = context.scopes.length - 1,
+  useIndex = context.scopes[useScopeIndex]?.targetIndex ?? context.targetIndex,
+): string | undefined {
+  if (node === undefined) return undefined;
+  if (node.kind === "identifier") {
+    const name = node.value ?? "";
+    if (name === "" || seen.has(name)) return undefined;
+    const binding = immutableBinding(name, context, useScopeIndex, useIndex);
+    if (binding === undefined) {
+      const mutableElementType = provenMutableArrayElementType(
+        name, context, useScopeIndex, useIndex,
+      );
+      if (mutableElementType !== undefined) return mutableElementType;
+      const hasLocalDeclaration = context.scopes.slice(0, useScopeIndex + 1).some((scope, scopeIndex) => {
+        const statements = scope.block.children ?? [];
+        const limit = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+        return statements.slice(0, limit).some((statement) =>
+          (statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === name,
+        );
+      });
+      if (hasLocalDeclaration) return undefined;
+      const param = (context.flow.children ?? []).find((child) =>
+        child.kind === "paramDecl" && bindingName(child) === name,
+      );
+      return param === undefined ? undefined : arrayElementTypeAnnotation(param.value);
+    }
+    const declaration = context.scopes[binding.scopeIndex]!.block.children?.[binding.declarationIndex];
+    if (declaration === undefined) return undefined;
+    const declaredType = arrayElementTypeAnnotation(declaration.value);
+    if (declaredType !== undefined) {
+      // A type annotation on an immutable alias cannot upgrade an unproven
+      // mutable array payload. Re-open identifier initializers at their own
+      // declaration point; parameters remain trusted contracts, while a local
+      // mutable source must independently pass its append/provenance proof.
+      if (binding.initializer?.kind === "identifier") {
+        const sourceElementType = explicitArrayElementType(
+          binding.initializer,
+          context,
+          new Set([...seen, name]),
+          binding.scopeIndex,
+          binding.declarationIndex,
+        );
+        if (sourceElementType === undefined || sourceElementType !== declaredType) return undefined;
+      } else if (isMethodCall(binding.initializer, "append")) {
+        // The append result annotation cannot vouch for the element just added.
+        // Until the payload is proven at this exact lexical use, keep the alias
+        // layout unknown instead of lowering later reads with the annotation.
+        return undefined;
+      }
+      return declaredType;
+    }
+    return explicitArrayElementType(
+      binding.initializer,
+      context,
+      new Set([...seen, name]),
+      binding.scopeIndex,
+      binding.declarationIndex,
+    );
+  }
+  if (node.kind === "memberExpr") {
+    const receiverType = inferExprType(node.children?.[0]);
+    if (receiverType === undefined || receiverType === "Auto" ||
+        receiverType === UNRESOLVED_AUTO_RECORD_LAYOUT || !hasRecordLayout(receiverType)) return undefined;
+    const memberType = fieldTypeOf(receiverType, node.value ?? "");
+    if (memberType.kind === "none") return undefined;
+    const type = memberType.value.trim();
+    return type.startsWith("Array<") && type.endsWith(">")
+      ? type.slice("Array<".length, -1).trim()
+      : undefined;
+  }
+  if (isMethodCall(node, "append")) {
+    return explicitArrayElementType(node.children?.[0], context, seen, useScopeIndex, useIndex);
+  }
+  return undefined;
+}
+
+function isMethodCall(node: AstNode | undefined, name: string): node is AstNode {
+  return node?.kind === "callExpr" && node.callStyle === "method" && node.value === name;
+}
+
+/**
+ * Recover a local mutable array's declared element layout only for the narrow
+ * bootstrap pattern that starts empty, is updated solely by typed self-append,
+ * and never exposes the handle before the selected read. This is not a Fungi
+ * aliasing rule; unsupported or ambiguous provenance remains unresolved.
+ */
+function provenMutableArrayElementType(
+  name: string,
+  context: ArrayLayoutContext,
+  useScopeIndex: number,
+  useIndex: number,
+): string | undefined {
+  const targetInsideLoop = (node: AstNode, inLoop = false): boolean => {
+    const nestedInLoop = inLoop || node.kind === "whileStmt" || node.kind === "forEachStmt";
+    if (node === context.target) return nestedInLoop;
+    return (node.children ?? []).some((child) => targetInsideLoop(child, nestedInLoop));
+  };
+  // A prefix ending at the current read cannot establish what a later write
+  // does to the next loop iteration. Until back-edge dataflow is modeled, do
+  // not recover mutable layouts for reads inside a loop.
+  if (targetInsideLoop(context.flow)) return undefined;
+
+  let declaration: {
+    readonly node: AstNode;
+    readonly index: number;
+    readonly scopeIndex: number;
+    readonly initializer: AstNode | undefined;
+  } | undefined;
+  for (let scopeIndex = useScopeIndex; scopeIndex >= 0; scopeIndex--) {
+    const scope = context.scopes[scopeIndex]!;
+    const limit = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+    const matches = (scope.block.children ?? []).slice(0, limit)
+      .map((node, index) => ({ node, index }))
+      .filter(({ node }) => (node.kind === "letDecl" || node.kind === "mutDecl") && bindingName(node) === name);
+    if (matches.length === 0) continue;
+    if (matches.length !== 1 || matches[0]!.node.kind !== "mutDecl") return undefined;
+    const match = matches[0]!;
+    declaration = {
+      node: match.node,
+      index: match.index,
+      scopeIndex,
+      initializer: match.node.children?.[0],
+    };
+    break;
+  }
+  if (declaration === undefined || declaration.initializer === undefined) return undefined;
+  const elementType = arrayElementTypeAnnotation(declaration.node.value);
+  if (elementType === undefined || elementType === "" || elementType === "Auto" ||
+      !hasRecordLayout(elementType)) return undefined;
+  const init = declaration.initializer;
+  if (!isMethodCall(init, "empty") || init.children?.length !== 1 ||
+      init.children[0]?.kind !== "identifier" || init.children[0]?.value !== "Array") return undefined;
+
+  // The AST currently exposes the receiver's spelling here, not a resolved
+  // builtin symbol identity. Do not grant the builtin empty-array layout proof
+  // when a parameter or lexically visible local named `Array` can shadow it.
+  if ((context.flow.children ?? []).some((candidate) =>
+    candidate.kind === "paramDecl" && bindingName(candidate) === "Array")) return undefined;
+  for (let scopeIndex = declaration.scopeIndex; scopeIndex >= 0; scopeIndex--) {
+    const scope = context.scopes[scopeIndex]!;
+    const limit = scopeIndex === declaration.scopeIndex ? declaration.index : scope.targetIndex;
+    const shadowsArray = (scope.block.children ?? []).slice(0, limit).some((candidate) =>
+      (candidate.kind === "letDecl" || candidate.kind === "mutDecl") &&
+      bindingName(candidate) === "Array");
+    if (shadowsArray) return undefined;
+  }
+
+  const useContext = (target: AstNode): ArrayLayoutContext | undefined => {
+    const root = context.scopes[0]?.block;
+    if (root === undefined) return undefined;
+    const visit = (
+      node: AstNode,
+      ancestors: readonly ArrayLayoutScope[],
+      lexicalBindings: readonly ArrayLayoutValueBinding[] = [],
+      matchSubjectType: string | undefined = undefined,
+    ): ArrayLayoutContext | undefined => {
+      if (node.kind === "block") {
+        const statements = node.children ?? [];
+        for (let index = 0; index < statements.length; index++) {
+          const statement = statements[index]!;
+          if (!containsAstNode(statement, target)) continue;
+          const scopes = [...ancestors, { block: node, targetIndex: index }];
+          if (statement === target) {
+            return { ...context, block: node, targetIndex: index, scopes, lexicalBindings };
+          }
+          const nested = visit(statement, scopes, lexicalBindings, matchSubjectType);
+          if (nested !== undefined) return nested;
+          return undefined;
+        }
+        return undefined;
+      }
+      if (node.kind === "matchExpr") {
+        const subjectType = inferExprType(node.children?.[0]);
+        for (const child of node.children ?? []) {
+          if (!containsAstNode(child, target)) continue;
+          const nested = visit(child, ancestors, lexicalBindings, subjectType);
+          if (nested !== undefined) return nested;
+        }
+        return undefined;
+      }
+      if (node.kind === "matchArm") {
+        const pattern = node.value ?? "";
+        const binder = node.children?.[0];
+        if (binder?.kind === "identifier" && binder.value !== undefined) {
+          const subject = genericTypeArguments(matchSubjectType);
+          const payloadType = pattern === "Some" ? subject[0]
+            : pattern === "Ok" ? subject[0]
+              : pattern === "Err" ? subject[1]
+                : undefined;
+          lexicalBindings = [...lexicalBindings, {
+            name: binder.value,
+            type: payloadType,
+            scopeDepth: ancestors.length,
+          }];
+        }
+      } else if (node.kind === "forEachStmt") {
+        const rawBinding = node.value ?? "item";
+        const colon = rawBinding.indexOf(":");
+        const name = (colon < 0 ? rawBinding : rawBinding.slice(0, colon)).trim();
+        const annotatedType = colon < 0 ? undefined : rawBinding.slice(colon + 1).trim();
+        const collectionElementType = arrayElementTypeAnnotation(
+          `collection: ${inferExprType(node.children?.[0]) ?? ""}`,
+        );
+        lexicalBindings = [
+          ...lexicalBindings,
+          { name, type: annotatedType || collectionElementType, scopeDepth: ancestors.length },
+        ];
+      }
+      for (const child of node.children ?? []) {
+        if (!containsAstNode(child, target)) continue;
+        const nested = visit(child, ancestors, lexicalBindings, matchSubjectType);
+        if (nested !== undefined) return nested;
+      }
+      return undefined;
+    };
+    return visit(root, [], context.lexicalBindings);
+  };
+
+  const isMutableBindingAtUse = (
+    binding: string,
+    scopeIndex: number,
+    useIndex: number,
+    scopes: readonly ArrayLayoutScope[] = context.scopes,
+  ): boolean => {
+    for (let currentScopeIndex = scopeIndex; currentScopeIndex >= 0; currentScopeIndex--) {
+      const scope = scopes[currentScopeIndex]!;
+      const limit = currentScopeIndex === scopeIndex ? useIndex : scope.targetIndex;
+      const statements = scope.block.children ?? [];
+      for (let index = Math.min(limit, statements.length) - 1; index >= 0; index--) {
+        const candidate = statements[index]!;
+        if ((candidate.kind === "letDecl" || candidate.kind === "mutDecl") &&
+            bindingName(candidate) === binding) {
+          return candidate.kind === "mutDecl";
+        }
+      }
+    }
+    return false;
+  };
+
+  const valueTypeAtUse = (
+    value: AstNode | undefined,
+    scopeIndex: number,
+    useIndex: number,
+    scopes: readonly ArrayLayoutScope[] = context.scopes,
+    lexicalBindings: readonly ArrayLayoutValueBinding[] = context.lexicalBindings,
+  ): string | undefined => {
+    if (value?.kind !== "identifier" || value.value === undefined) return inferExprType(value);
+    const binding = value.value;
+    let declarationScopeIndex: number | undefined;
+    let declarationType: string | undefined;
+    for (let currentScopeIndex = scopeIndex; currentScopeIndex >= 0; currentScopeIndex--) {
+      const scope = scopes[currentScopeIndex]!;
+      const limit = currentScopeIndex === scopeIndex ? useIndex : scope.targetIndex;
+      const statements = scope.block.children ?? [];
+      for (let index = Math.min(limit, statements.length) - 1; index >= 0; index--) {
+        const candidate = statements[index]!;
+        if ((candidate.kind !== "letDecl" && candidate.kind !== "mutDecl") ||
+            bindingName(candidate) !== binding) continue;
+        const colon = (candidate.value ?? "").indexOf(":");
+        declarationScopeIndex = currentScopeIndex;
+        declarationType = colon >= 0
+          ? (candidate.value ?? "").slice(colon + 1).trim()
+          : inferExprType(candidate.children?.[0]);
+        break;
+      }
+      if (declarationScopeIndex !== undefined) break;
+    }
+    const lexicalBinding = [...lexicalBindings].reverse().find((candidate) => candidate.name === binding);
+    if (lexicalBinding !== undefined &&
+        (declarationScopeIndex === undefined || lexicalBinding.scopeDepth > declarationScopeIndex)) {
+      return lexicalBinding.type;
+    }
+    if (declarationScopeIndex !== undefined) return declarationType;
+    const parameter = (context.flow.children ?? []).find((candidate) =>
+      candidate.kind === "paramDecl" && bindingName(candidate) === binding);
+    if (parameter === undefined) return inferExprType(value);
+    const colon = (parameter.value ?? "").indexOf(":");
+    return colon >= 0 ? (parameter.value ?? "").slice(colon + 1).trim() : inferExprType(value);
+  };
+
+  const dependsOnMutableBinding = (
+    value: AstNode | undefined,
+    scopeIndex: number,
+    useIndex: number,
+    seen: ReadonlySet<string> = new Set(),
+    scopes: readonly ArrayLayoutScope[] = context.scopes,
+    lexicalBindings: readonly ArrayLayoutValueBinding[] = context.lexicalBindings,
+  ): boolean => {
+    if (value === undefined) return false;
+    if (value.kind !== "identifier" || value.value === undefined) {
+      return (value.children ?? []).some((child) =>
+        dependsOnMutableBinding(child, scopeIndex, useIndex, seen, scopes, lexicalBindings));
+    }
+    const bindingNameAtUse = value.value;
+    if (bindingNameAtUse === "" || seen.has(bindingNameAtUse)) return true;
+    const lexicalBinding = [...lexicalBindings].reverse().find((candidate) => candidate.name === bindingNameAtUse);
+    if (lexicalBinding !== undefined) {
+      let declarationScopeIndex: number | undefined;
+      for (let currentScopeIndex = scopeIndex; currentScopeIndex >= 0; currentScopeIndex--) {
+        const scope = scopes[currentScopeIndex]!;
+        const limit = currentScopeIndex === scopeIndex ? useIndex : scope.targetIndex;
+        const statements = scope.block.children ?? [];
+        for (let index = Math.min(limit, statements.length) - 1; index >= 0; index--) {
+          const candidate = statements[index]!;
+          if ((candidate.kind === "letDecl" || candidate.kind === "mutDecl") &&
+              bindingName(candidate) === bindingNameAtUse) {
+            declarationScopeIndex = currentScopeIndex;
+            break;
+          }
+        }
+        if (declarationScopeIndex !== undefined) break;
+      }
+      if (declarationScopeIndex === undefined || lexicalBinding.scopeDepth > declarationScopeIndex) return false;
+    }
+    if (isMutableBindingAtUse(bindingNameAtUse, scopeIndex, useIndex, scopes)) return true;
+    const scopedContext = { ...context, scopes };
+    const immutable = immutableBinding(bindingNameAtUse, scopedContext, scopeIndex, useIndex);
+    if (immutable === undefined) return false;
+    return dependsOnMutableBinding(
+      immutable.initializer,
+      immutable.scopeIndex,
+      immutable.declarationIndex,
+      new Set([...seen, bindingNameAtUse]),
+      scopes,
+      [],
+    );
+  };
+
+  const validUse = (
+    node: AstNode,
+    parent: AstNode | undefined,
+    grandparent: AstNode | undefined,
+    scopeIndex: number,
+    useIndex: number,
+  ): boolean => {
+    if ((node.kind === "letDecl" || node.kind === "mutDecl") &&
+        node !== declaration!.node && bindingName(node) === name) return false;
+    if (node.kind === "assignStmt" && node.value === name) {
+      const location = useContext(node);
+      if (location === undefined) return false;
+      const localScopeIndex = location.scopes.length - 1;
+      const localUseIndex = location.targetIndex;
+      const append = node.children?.[0];
+      const [receiver, value] = append?.children ?? [];
+      if (!isMethodCall(append, "append") || append.children?.length !== 2 ||
+          receiver?.kind !== "identifier" || receiver.value !== name ||
+          dependsOnMutableBinding(
+            value, localScopeIndex, localUseIndex, new Set(), location.scopes, location.lexicalBindings,
+          ) ||
+          valueTypeAtUse(value, localScopeIndex, localUseIndex, location.scopes, location.lexicalBindings) !== elementType) return false;
+    }
+    if (node.kind === "identifier" && node.value === name) {
+      if ((!isMethodCall(parent, "append") && !isMethodCall(parent, "get")) ||
+          parent?.children?.[0] !== node) return false;
+      if (isMethodCall(parent, "append") &&
+          (grandparent?.kind !== "assignStmt" || grandparent.value !== name ||
+           grandparent.children?.[0] !== parent)) return false;
+    }
+    return (node.children ?? []).every((child) =>
+      validUse(child, node, parent, scopeIndex, useIndex));
+  };
+
+  for (let scopeIndex = declaration.scopeIndex; scopeIndex <= useScopeIndex; scopeIndex++) {
+    const scope = context.scopes[scopeIndex]!;
+    const statements = scope.block.children ?? [];
+    const start = scopeIndex === declaration.scopeIndex ? declaration.index + 1 : 0;
+    const end = scopeIndex === useScopeIndex ? useIndex : scope.targetIndex;
+    for (let index = start; index < end; index++) {
+      if (!validUse(statements[index]!, undefined, undefined, scopeIndex, index)) return undefined;
+    }
+  }
+  return elementType;
+}
+
+/**
+ * Prove only the bounded case whose selected Auto value comes from one append
+ * to a fresh Array.empty() and constant get(0). Module-wide append shapes are
+ * not evidence about an incoming or reassigned element.
+ */
+function selectedFreshAnonymousArrayLayout(
+  subject: AstNode | undefined,
+  context: ArrayLayoutContext | undefined,
+): Lookup<string> {
+  if (context === undefined) return none("array-layout:no-local-context");
+  const selection = resolveImmutableExpressionAtUse(subject, context, new Set());
+  if (selection === undefined || !isMethodCall(selection.expression, "get")) return none("array-layout:not-get");
+  const selected = selection.expression;
+  const [receiver, index] = selected.children ?? [];
+  if (index?.kind !== "numberLiteral" || Number((index.value ?? "").replace(/_/g, "")) !== 0) {
+    return none("array-layout:index-not-zero");
+  }
+  const appendOrigin = resolveImmutableExpressionAtUse(
+    receiver, context, new Set(), selection.useScopeIndex, selection.useIndex,
+  );
+  if (appendOrigin === undefined) return none("array-layout:not-append");
+  if (!isMethodCall(appendOrigin.expression, "append")) {
+    return (appendOrigin.expression as AstNode).kind === "callExpr"
+      ? none("array-layout:call-returned-array")
+      : none("array-layout:not-append");
+  }
+  const [arraySource, recordSource] = appendOrigin.expression.children ?? [];
+  const emptyOrigin = resolveImmutableExpressionAtUse(
+    arraySource, context, new Set(), appendOrigin.useScopeIndex, appendOrigin.useIndex,
+  );
+  if (emptyOrigin?.expression.kind === "callExpr" &&
+      !isMethodCall(emptyOrigin.expression, "empty")) {
+    return none("array-layout:call-returned-array");
+  }
+  if (emptyOrigin === undefined || !isMethodCall(emptyOrigin.expression, "empty") ||
+      emptyOrigin.expression.children?.length !== 1 ||
+      emptyOrigin.expression.children[0]?.kind !== "identifier" ||
+      emptyOrigin.expression.children[0]?.value !== "Array") {
+    return none("array-layout:not-fresh-empty-array");
+  }
+  if (arraySource?.kind === "identifier" && hasArrayAliasBeforeUse(
+    arraySource.value ?? "", context, emptyOrigin.useScopeIndex, emptyOrigin.useIndex,
+    appendOrigin.useScopeIndex, appendOrigin.useIndex,
+  )) return none("array-layout:empty-array-alias-escaped");
+  const record = resolveImmutableExpression(
+    recordSource, context, new Set(), appendOrigin.useScopeIndex, appendOrigin.useIndex,
+  );
+  if (record?.kind !== "callExpr" || record.value !== "#record" || record.typeName !== undefined) {
+    return none("array-layout:not-anonymous-record-literal");
+  }
+  const fields = record.children ?? [];
+  if (fields.length === 0 || fields.some((field) => field.kind !== "identifier" ||
+      field.value === undefined || field.children?.length !== 1)) {
+    return none("array-layout:invalid-record-fields");
+  }
+  const names = fields.map((field) => field.value!);
+  if (new Set(names).size !== names.length) return none("array-layout:duplicate-record-field");
+  const fieldTypes = new Map<string, string>();
+  for (const field of fields) {
+    const fieldType = inferExprType(field.children?.[0]);
+    if (fieldType === undefined || fieldType === "Auto") return none("array-layout:unknown-field-type");
+    fieldTypes.set(field.value!, fieldType);
+  }
+  return found(internAnonLayout(names, fieldTypes));
+}
+
+/** A local Option<Record> layout is trusted only when the binding is explicitly typed. */
+function explicitOptionRecordInnerAtUse(
+  subject: AstNode | undefined,
+  context: ArrayLayoutContext | undefined,
+): Lookup<string> {
+  if (subject?.kind !== "identifier" || subject.value === undefined || context === undefined) {
+    return none("option-record:no-local-subject");
+  }
+  const name = subject.value;
+  for (let scopeIndex = context.scopes.length - 1; scopeIndex >= 0; scopeIndex--) {
+    const scope = context.scopes[scopeIndex]!;
+    const statements = scope.block.children ?? [];
+    const limit = scopeIndex === context.scopes.length - 1 ? context.targetIndex : scope.targetIndex;
+    for (let index = Math.min(limit, statements.length) - 1; index >= 0; index--) {
+      const declaration = statements[index]!;
+      if ((declaration.kind !== "letDecl" && declaration.kind !== "mutDecl") || bindingName(declaration) !== name) continue;
+      const raw = declaration.value ?? "";
+      const colon = raw.indexOf(":");
+      if (colon < 0) return none("option-record:binding-not-explicitly-typed");
+      const inner = optionInnerType(raw.slice(colon + 1).trim());
+      return inner.kind === "found" && hasRecordLayout(inner.value)
+        ? inner
+        : none("option-record:annotation-not-record");
+    }
+  }
+  const parameter = (context.flow.children ?? []).find((node) =>
+    node.kind === "paramDecl" && bindingName(node) === name,
+  );
+  if (parameter === undefined) return none("option-record:binding-not-found");
+  const raw = parameter.value ?? "";
+  const colon = raw.indexOf(":");
+  if (colon < 0) return none("option-record:parameter-not-explicitly-typed");
+  const inner = optionInnerType(raw.slice(colon + 1).trim());
+  return inner.kind === "found" && hasRecordLayout(inner.value)
+    ? inner
+    : none("option-record:parameter-not-record");
+}
+
 function refineAutoRecordType(
   bind: string,
   body: AstNode | undefined,
   current: string | undefined,
+  subject: AstNode | undefined,
 ): Lookup<string> {
-  if (current !== undefined && current !== "Auto" && hasRecordLayout(current)) return found(current);
+  const context = findArrayLayoutContext(watJobCaches.hofProgramAst, subject);
+  const subjectName = subject?.kind === "identifier" ? subject.value ?? "" : "";
+  const targetStatement = context?.block.children?.[context.targetIndex];
+  const outerSubjectBinding = context?.block.children?.slice(0, context.targetIndex).some((statement) =>
+    (statement.kind === "letDecl" || statement.kind === "mutDecl") && bindingName(statement) === subjectName,
+  ) ?? false;
+  if (context !== undefined && subject !== undefined && subjectName !== "" && outerSubjectBinding &&
+      targetStatement !== undefined &&
+      hasNestedShadowBeforeTarget(targetStatement, subject, context.block, subjectName)) {
+    // Once scope-aware provenance detects a shadowing declaration, do not let
+    // weaker module-wide field inference re-authorize the selected payload.
+    return found(UNRESOLVED_AUTO_RECORD_LAYOUT);
+  }
+  const explicitOptionRecord = explicitOptionRecordInnerAtUse(subject, context);
+  if (explicitOptionRecord.kind === "found") return explicitOptionRecord;
+  const selectedExpression = context !== undefined
+    ? resolveImmutableExpression(subject, context)
+    : subject?.kind === "identifier" ? undefined : subject;
+  if (isMethodCall(selectedExpression, "get")) {
+    const provenArrayLayout = selectedFreshAnonymousArrayLayout(subject, context);
+    if (provenArrayLayout.kind === "found") return provenArrayLayout;
+    const declaredElementType = context === undefined
+      ? undefined
+      : explicitArrayElementType(selectedExpression.children?.[0], context);
+    if (declaredElementType !== undefined && declaredElementType !== "Auto" &&
+        hasRecordLayout(declaredElementType)) return found(declaredElementType);
+    return found(UNRESOLVED_AUTO_RECORD_LAYOUT);
+  }
   const local = memberFieldsOnBind(bind, body);
   const reconstructed = uniqueRecordTypeForFields(local);
   if (reconstructed.kind === "found") return reconstructed;
@@ -1843,10 +2720,10 @@ function refineAutoRecordType(
     const widened = uniqueRecordTypeForFields(union);
     if (widened.kind === "found") return widened;
   }
-  // J6a: Array<Auto> append-shape prefix (lookupQualifiedType `{name,typeName}`,
-  // StaticEnv.entries `{name,value}` ⊏ `{name,value,typeName}`, BitfieldEnv.entries).
-  const anon = uniqueAnonPrefixLayout(local);
-  if (anon.kind === "found") return anon;
+  // A concrete Array<Auto> append-shape is stronger evidence than an unrelated
+  // shorter named record sharing only some accessed fields. If no exact unique
+  // append shape explains the access, retain the fail-closed subset refusal.
+  if (hasStrictDeclaredLayoutSubset(local)) return found(UNRESOLVED_AUTO_RECORD_LAYOUT);
   // J6b: informal Array<Auto> param decls (no append shape) + nested get→Some.
   // J6c: Auto-param `stmt: Auto` intern shares this exact unique field-set path.
   const informal = uniqueInformalLayout(local);
@@ -1860,6 +2737,7 @@ function refineAutoRecordType(
  */
 function resolveRecordReceiverType(receiverNode: AstNode | undefined, fieldName: string): Lookup<string> {
   const inferred = inferExprType(receiverNode);
+  if (inferred === UNRESOLVED_AUTO_RECORD_LAYOUT) return none("receiver-type:auto-layout-refused");
   if (inferred !== undefined && inferred !== "Auto" && hasRecordLayout(inferred)) return found(inferred);
   if (fieldName === "") {
     return inferred !== undefined ? found(inferred) : none("receiver-type:empty-field");
@@ -1875,6 +2753,11 @@ function isNumericLiteralWat(node: AstNode | undefined): boolean {
   if (node === undefined) return false;
   if (node.kind === "numberLiteral") return true;
   return node.kind === "unaryExpr" && node.value === "-" && node.children?.[0]?.kind === "numberLiteral";
+}
+
+function isIntegerLiteralWatText(raw: string): boolean {
+  const cleaned = raw.replaceAll("_", "");
+  return /^(?:\d+|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+)$/.test(cleaned);
 }
 
 /** The exact source value of a numeric literal operand (sign folded in). */
@@ -1961,10 +2844,14 @@ function inferExprType(node: AstNode | undefined): string | undefined {
     case "charLiteral":   return "Char";
     case "numberLiteral": {
       const raw = node.value ?? "0";
-      return raw.includes(".") || raw.includes("e") || raw.includes("E") ? "Float" : "Int";
+      return !isIntegerLiteralWatText(raw) && (raw.includes(".") || /[eE]/.test(raw)) ? "Float" : "Int";
     }
     case "boolLiteral": return "Bool";
-    case "identifier":  return (recordVarTypes.kind === "found" ? recordVarTypes.value.get(node.value ?? "") : undefined);
+    // Module statics have precedence over same-named flow parameters in the
+    // interpreter's declaration environment. Keep type inference aligned with
+    // that rule so a caller-local annotation cannot retag a retained static AST.
+    case "identifier":  return staticConstTypes.get(node.value ?? "")
+      ?? (recordVarTypes.kind === "found" ? recordVarTypes.value.get(node.value ?? "") : undefined);
     // W5a K3: Verdict producers/operators. LOAD-BEARING for soundness — without
     // these, `Verdict.Deny && Verdict.Allow` would fall to the Bool lane and lower
     // as bitwise i32.and(-1,1)=1 = ALLOW (a fail-open); K3 min is DENY.
@@ -2104,7 +2991,7 @@ function inferExprType(node: AstNode | undefined): string | undefined {
 export function emitWATExpr(
   node: AstNode,
   vars: ReadonlyMap<string, string>,
-  staticConsts: ReadonlyMap<string, number> = new Map(),
+  staticConsts: StaticConstMap = new Map(),
   /** Step 3g: the type the surrounding context expects (an Int64 binding / return / Int64-operand
    *  sibling), so a typed integer LITERAL emits i64.const instead of an invalid/truncating i32.const.
    *  Only Int64 is honoured today; undefined → the historical i32/f64 literal behaviour (unchanged). */
@@ -2113,15 +3000,22 @@ export function emitWATExpr(
   switch (node.kind) {
     case "identifier": {
       const name = node.value ?? "";
+      // Static declarations are module-scoped and the interpreter resolves
+      // them before flow scope. Apply the same precedence here; otherwise a
+      // same-named parameter makes interpreter and WASM results diverge.
+      const constVal = staticConsts.get(name);
+      if (constVal !== undefined) {
+        if (typeof constVal === "number") return `(i32.const ${constVal}) (; static ${name} ;)`;
+        // A retained static AST is evaluated in its declaration environment,
+        // not the caller's flow-local environment.
+        return emitWATExpr(constVal, new Map(), staticConsts, staticConstTypes.get(name));
+      }
       const watName = vars.get(name);
       if (watName !== undefined) return `(local.get ${watName})`;
-      // Check compile-time constants (static NAME = EXPR)
-      const constVal = staticConsts.get(name);
       // #163 sibling: this `(i32.const N)` is an INLINE expression fragment (it gets
       // spliced into a parent S-expression). A trailing `;;` line comment would swallow
       // the enclosing `)` — exactly the rule the enum-variant path below (1037+) states.
       // Use an inline-safe block comment to keep the diagnostic without the hazard.
-      if (constVal !== undefined) return `(i32.const ${constVal}) (; static ${name} ;)`;
       // None is a value, not a constructor call. Use the versioned Option ABI's
       // absence producer; otherwise a valid missing optional field traps as an
       // unresolved identifier before the validator can examine the record.
@@ -2141,7 +3035,7 @@ export function emitWATExpr(
         const constVal = staticConsts.get(dottedKey);
         // #163 sibling: inline-safe block comment (see the static-const path above) —
         // this `(i32.const N)` is spliced inline, so a `;;` would swallow the enclosing `)`.
-        if (constVal !== undefined) return `(i32.const ${constVal}) (; bitfield ${dottedKey} ;)`;
+        if (typeof constVal === "number") return `(i32.const ${constVal}) (; bitfield ${dottedKey} ;)`;
 
         // W5a K3: the Verdict member-constants — inline i32 trits (block comment, inline-safe).
         if (receiverName === "Verdict") {
@@ -2194,35 +3088,43 @@ export function emitWATExpr(
 
     case "numberLiteral": {
       const raw = node.value ?? "0";
-      const isFloat = raw.includes(".") || raw.includes("e") || raw.includes("E");
+      const normalized = raw.replace(/_/g, "");
+      const isInteger = isIntegerLiteralWatText(raw);
+      const isFloat = !isInteger && (raw.includes(".") || /[eE]/.test(raw));
       // E5: a literal in a declared Float32/Float16 context is the rounded binary32/binary16 constant.
       const narrowExpected = narrowFloatWidthOf(numericBaseType(expectedType ?? ""));
-      if (narrowExpected !== undefined) return narrowLiteralWat(Number(raw.replace(/_/g, "")), narrowExpected, raw);
+      if (narrowExpected !== undefined) return narrowLiteralWat(Number(normalized), narrowExpected, raw);
       const expectedWatType = expectedType === undefined || expectedType.trim() === ""
         ? undefined
         : galerinaTypeToWAT(expectedType);
       if (expectedWatType === "f64") {
-        const value = Number(raw);
+        const value = Number(normalized);
         if (!Number.isFinite(value)) {
           return `(unreachable) (; non-finite float literal '${raw}' overflows f64 — fail-closed (#55/FUNGI-FLOAT-NAN-001) ;)`;
         }
-        return `(f64.const ${raw})`;
+        return `(f64.const ${normalized})`;
       }
       if (isFloat) {
         // #55: a literal that overflows f64 to ±Inf (e.g. 1e400) must NOT emit a non-finite (f64.const …) —
         // it would pass range guards / be signed. Fail-closed (matches the walker's mkFloat on the literal).
-        if (!Number.isFinite(parseFloat(raw))) {
+        if (!Number.isFinite(parseFloat(normalized))) {
           return `(unreachable) (; non-finite float literal '${raw}' overflows f64 to ±Inf — fail-closed (#55/FUNGI-FLOAT-NAN-001) ;)`;
         }
-        return `(f64.const ${raw})`;
+        return `(f64.const ${normalized})`;
       }
       // Step 3g: an Int64-typed integer literal emits i64.const — an i32.const is INVALID for a >2^31
       // literal and a silent truncation for a smaller one in an i64 context. UInt64 stores as i64 too (#52)
       // — wat2wasm accepts an i64.const across the full [0, 2^64-1] unsigned range.
       if (expectedType !== undefined && is64BitWatType(numericBaseType(expectedType))) {
-        return `(i64.const ${raw})`;
+        // WAT accepts decimal/hex integer spellings but not Fungi's binary/octal prefixes. Normalize
+        // through BigInt so radix conversion cannot round wide values or confuse a hex digit `e` with
+        // a decimal exponent. Keep the full magnitude in the i64 bit-pattern lane for WAT validation.
+        return `(i64.const ${BigInt(raw.replaceAll("_", "")).toString(10)})`;
       }
-      return `(i32.const ${raw})`;
+      // Fungi Int lowering is the signed i32 bit-pattern of the exact source integer. Emit canonical
+      // decimal WAT, never source-only 0b/0o syntax; modulo behavior matches i32FromLiteralText.
+      const exact = BigInt(raw.replaceAll("_", ""));
+      return `(i32.const ${BigInt.asIntN(32, exact).toString(10)})`;
     }
 
     case "binaryExpr": {
@@ -2250,6 +3152,19 @@ export function emitWATExpr(
       const rty = inferExprType(children[1]);
       // R2: no Money operator is in the host ABI (an i32 op on two handles is a silent wrong answer).
       if (isMoneyWatType(lty) || isMoneyWatType(rty)) refuseMoneyWat(`operator '${op}'`);
+      if (op === "==" || op === "!=") {
+        const leftDepth = floatOptionNestingDepth(lty);
+        const rightDepth = floatOptionNestingDepth(rty);
+        if (leftDepth > 0 && leftDepth === rightDepth) {
+          const importName = leftDepth === 1
+            ? "__option_eq_f64_v2"
+            : leftDepth === 2
+              ? "__option_eq_option_f64_v2"
+              : `__option_eq_f64_depth_${leftDepth}_v2`;
+          const equal = `(call $host_${importName} ${left} ${right})`;
+          return op === "==" ? equal : `(i32.eqz ${equal})`;
+        }
+      }
       const stringOperand = lty === "String" || rty === "String";
       if (op === "+" && stringOperand) {
         return `(call $host___str_concat ${left} ${right})`;
@@ -2426,8 +3341,9 @@ export function emitWATExpr(
       const childType = inferExprType(child);
       const childInt64 = INT64_WAT_TYPES.has(childType ?? "");
       if (op === "-" && (wantI64u || childInt64)) {
-        if (child?.kind === "numberLiteral" && typeof child.value === "string" && !/[.eE]/.test(child.value)) {
-          return `(i64.const -${child.value})`;
+        if (child?.kind === "numberLiteral" && typeof child.value === "string" && isIntegerLiteralWatText(child.value)) {
+          const magnitude = BigInt(child.value.replaceAll("_", ""));
+          return `(i64.const -${magnitude.toString(10)})`;
         }
         // negate an i64 value via the CHECKED i64 sub so -INT64_MIN traps; sign-extend an i32 operand first.
         const inner = child ? emitWATExpr(child, vars, staticConsts, "Int64") : "(i64.const 0)";
@@ -2450,16 +3366,14 @@ export function emitWATExpr(
       }
       const operand = child ? emitWATExpr(child, vars, staticConsts) : "(i32.const 0)";
       if (op === "-") {
-        // Mirror of the i64 literal rule above: a negative INT32 LITERAL composes into a SINGLE
-        // (i32.const -n). `sub 0 (const 2147483648)` is NOT that — 2147483648 is out of signed-i32
-        // range, wabt wraps it to -2^31 via the unsigned bit-pattern, and the checked sub then
-        // computes 0 - (-2^31) = +2^31 → OVERFLOW TRAP on the perfectly legal value -2147483648
-        // (walker=int, wasm=trap — found by the slice-6 shape fuzzer on its first run). Guarded to
-        // magnitudes that FIT when negated; anything larger falls through and traps loudly (the
-        // literal itself is already out of i32 — FUNGI-TYPE-024 warns at check time).
+        // A source integer literal is lowered as one exact signed value into the i32 bit-pattern
+        // lane. Combine the sign before reducing to 32 bits; routing a large magnitude through
+        // checked subtraction changes a literal conversion into checked arithmetic and can trap
+        // where i32FromLiteralText returns a valid signed bit pattern.
         if (child?.kind === "numberLiteral" && typeof child.value === "string"
-            && !/[.eE]/.test(child.value) && BigInt(child.value) <= 2147483648n) {
-          return `(i32.const -${child.value})`;
+            && isIntegerLiteralWatText(child.value)) {
+          const magnitude = BigInt(child.value.replaceAll("_", ""));
+          return `(i32.const ${BigInt.asIntN(32, -magnitude).toString(10)})`;
         }
         return `(call $fungi_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN (runtime value) overflows → trap
       }
@@ -2628,6 +3542,9 @@ export function emitWATExpr(
         const receiverIsArrayType =
           receiverNode?.kind === "identifier" && receiverNode.value === "Array";
         if (name === "empty" && receiverIsArrayType) {
+          if (vars.has("Array")) {
+            return refuseUnknownMethodWat("Array.empty", "receiver spelling is shadowed by a value binding; builtin identity is unresolved");
+          }
           return `(call $host___array_create)`;
         }
 
@@ -2775,6 +3692,21 @@ export function emitWATExpr(
           }
         }
 
+        // Array<String> Option access must snapshot the selected string value just
+        // like Some(String); otherwise the Option payload aliases a caller-owned
+        // seed-slot handle and equality depends on which producer created it.
+        if (realReceiver !== undefined &&
+            /^Array<\s*String\s*>$/.test(inferExprType(realReceiver) ?? "") &&
+            (name === "get" || name === "first" || name === "last")) {
+          const recvWat = emitWATExpr(realReceiver, vars, staticConsts);
+          if (name === "get" && argNodes.length === 1) {
+            return `(call $host___array_get_option_string_v2 ${recvWat} ${emitWATExpr(argNodes[0]!, vars, staticConsts)})`;
+          }
+          if ((name === "first" || name === "last") && argNodes.length === 0) {
+            return `(call $host___array_${name}_option_string_v2 ${recvWat})`;
+          }
+        }
+
         // Typed Option<Float*>.unwrapOr must read the f64 payload from the
         // matching registry lane. The handle itself remains i32; only the
         // default and returned payload are f64. Integer/String/record options
@@ -2826,6 +3758,16 @@ export function emitWATExpr(
           const isTypeReceiver =
             recvName === "String" || recvName === "Int" || recvName === "Char" || recvName === "Array" ||
             recvName === "Float" || recvName === "Float64" || recvName === "Double";
+          if (recvName === "Array" && argNodes.length > 0 &&
+              /^Array<\s*String\s*>$/.test(inferExprType(argNodes[0]) ?? "")) {
+            const arrayWat = emitWATExpr(argNodes[0]!, vars, staticConsts);
+            if (name === "get" && argNodes.length === 2) {
+              return `(call $host___array_get_option_string_v2 ${arrayWat} ${emitWATExpr(argNodes[1]!, vars, staticConsts)})`;
+            }
+            if ((name === "first" || name === "last") && argNodes.length === 1) {
+              return `(call $host___array_${name}_option_string_v2 ${arrayWat})`;
+            }
+          }
           const operandNodes = isTypeReceiver ? argNodes : children;
           const operandWats = operandNodes.map((c) => emitWATExpr(c, vars, staticConsts));
           return `(call ${hostFn} ${operandWats.join(" ")})`.trimEnd();
@@ -2970,6 +3912,12 @@ export function emitWATExpr(
         if (name === "Some" && children.length === 1 &&
             FLOAT_OPTION_WAT_TYPES.has(inferExprType(children[0]) ?? "")) {
           return `(call $host___option_some_f64_v2 ${emitWATExpr(children[0]!, vars, staticConsts, "Float64")})`;
+        }
+        // String is also carried as an i32 handle, but Option equality is by
+        // string value. Snapshot/canonicalize it at Some construction; passing
+        // the mutable input-slot handle would make retained Options alias host input.
+        if (name === "Some" && children.length === 1 && inferExprType(children[0]) === "String") {
+          return `(call $host___option_some_string_v2 ${emitWATExpr(children[0]!, vars, staticConsts, "String")})`;
         }
         const args = children.map((c) => emitWATExpr(c, vars, staticConsts));
         return `(call ${hostCallFn} ${args.join(" ")})`.trimEnd();
@@ -3148,6 +4096,7 @@ export function emitWATExpr(
           someBind ?? "",
           someBody.kind === "found" ? someBody.value : undefined,
           ((t) => t.kind === "found" ? t.value : undefined)(optionInnerType(inferExprType(subject))),
+          subject,
         );
         const hadType = someBind !== undefined && recordVarTypes.kind === "found" && recordVarTypes.value.has(someBind);
         const prevType = someBind !== undefined ? (recordVarTypes.kind === "found" ? recordVarTypes.value.get(someBind) : undefined) : undefined;
@@ -3407,7 +4356,7 @@ function negateBinaryOp(op: string): Lookup<string> {
 export function emitBlockLastExpr(
   blockNode: AstNode,
   vars: ReadonlyMap<string, string>,
-  staticConsts: ReadonlyMap<string, number> = new Map(),
+  staticConsts: StaticConstMap = new Map(),
 ): string {
   const stmts = blockNode.children ?? [];
   const last = stmts[stmts.length - 1];
@@ -3448,9 +4397,22 @@ function emitBlockStatements(
    *  Used inside nested blocks (if/while bodies) where implicit stack return is invalid. */
   nested = false,
   /** Compile-time constants from `static` and `bitfield` declarations. */
-  staticConsts: ReadonlyMap<string, number> = new Map(),
+  staticConsts: StaticConstMap = new Map(),
 ): void {
   const stmts: readonly AstNode[] = blockNode.children ?? [];
+
+  const uniqueLocalName = (baseName: string): string => {
+    const used = new Set<string>(vars.values());
+    for (const declaration of localDecls) {
+      const match = /^\(local\s+(\$[^\s)]+)/.exec(declaration);
+      if (match?.[1] !== undefined) used.add(match[1]);
+    }
+    if (!used.has(baseName)) return baseName;
+    for (let suffix = 1; ; suffix++) {
+      const candidate = `${baseName}__${suffix}`;
+      if (!used.has(candidate)) return candidate;
+    }
+  };
 
   for (let si = 0; si < stmts.length; si++) {
     const stmt = stmts[si] as AstNode;  // guaranteed by bounds check
@@ -3483,7 +4445,7 @@ function emitBlockStatements(
         const nameBeforeColon = rawName.split(":")[0]?.trim() ?? rawName;
         // Strip "unsafe " / "safe " prefix (the binding trust-level modifier).
         const varName  = nameBeforeColon.replace(/^(?:unsafe|safe)\s+/, "");
-        const watLocal = `$${varName}`;
+        let watLocal = vars.get(varName) ?? `$${varName}`;
         const initNode = stmt.children?.[0];
         // P9.4b: remember the record type of this binding so later `varName.field`
         // accesses lower to an i32.load at the field offset.
@@ -3522,6 +4484,7 @@ function emitBlockStatements(
             FLOAT_WAT_TYPES.has(bindAnnoType) ? "f64" :
             is64BitWatType(numericBaseType(bindAnnoType)) ? "i64" :  // Int64 OR UInt64 (#52) → i64 local
             watStackType(initExpr);
+          watLocal = uniqueLocalName(watLocal);
           vars.set(varName, watLocal);
           localDecls.push(`(local ${watLocal} ${localVal})`);
           bodyLines.push(`(local.set ${watLocal} ${initExpr})`);
@@ -3633,9 +4596,9 @@ function emitBlockStatements(
                 children: [takenArm],
                 ...(takenArm.location !== undefined ? { location: takenArm.location } : {}),
               };
-              emitBlockStatements(synth, vars, localDecls, bodyLines, labelCounter, true, staticConsts);
+              emitBlockStatements(synth, new Map(vars), localDecls, bodyLines, labelCounter, true, staticConsts);
             } else {
-              emitBlockStatements(takenArm, vars, localDecls, bodyLines, labelCounter, true, staticConsts);
+              emitBlockStatements(takenArm, new Map(vars), localDecls, bodyLines, labelCounter, true, staticConsts);
             }
           }
           // folded-true with no then-block, or folded-false with no else, emits nothing — the if is dead.
@@ -3672,7 +4635,7 @@ function emitBlockStatements(
             bodyLines.push(`(if ${condExpr}`);
             bodyLines.push(`  (then`);
             const thenLines: string[] = [];
-            emitBlockStatements(thenBlock, vars, localDecls, thenLines, labelCounter, true, staticConsts);
+            emitBlockStatements(thenBlock, new Map(vars), localDecls, thenLines, labelCounter, true, staticConsts);
             for (const line of thenLines) bodyLines.push(`    ${line}`);
             bodyLines.push(`  )`);
             if (elseBlock !== undefined) {
@@ -3685,9 +4648,9 @@ function emitBlockStatements(
                 children: [elseBlock],
                 ...(elseBlock.location !== undefined ? { location: elseBlock.location } : {}),
               };
-                emitBlockStatements(synthBlock, vars, localDecls, elseLines, labelCounter, true, staticConsts);
+                emitBlockStatements(synthBlock, new Map(vars), localDecls, elseLines, labelCounter, true, staticConsts);
               } else {
-                emitBlockStatements(elseBlock, vars, localDecls, elseLines, labelCounter, true, staticConsts);
+                emitBlockStatements(elseBlock, new Map(vars), localDecls, elseLines, labelCounter, true, staticConsts);
               }
               for (const line of elseLines) bodyLines.push(`    ${line}`);
               bodyLines.push(`  )`);
@@ -3738,7 +4701,7 @@ function emitBlockStatements(
 
         if (bodyBlock !== undefined) {
           const loopLines: string[] = [];
-          emitBlockStatements(bodyBlock, vars, localDecls, loopLines, labelCounter, true, staticConsts);
+          emitBlockStatements(bodyBlock, new Map(vars), localDecls, loopLines, labelCounter, true, staticConsts);
           for (const line of loopLines) bodyLines.push(`    ${line}`);
         }
 
@@ -3805,6 +4768,7 @@ function emitBlockStatements(
             someBind ?? "",
             someArmBody.kind === "found" ? someArmBody.value : undefined,
             ((t) => t.kind === "found" ? t.value : undefined)(optionInnerType(inferExprType(matchSubject))),
+            matchSubject,
           );
 
           // Evaluate the subject once into a scratch local so it can be both tested
@@ -3830,7 +4794,7 @@ function emitBlockStatements(
               vars.set(bind, valueLocal);
               if (recordVarTypes.kind === "found" && someBindType.kind === "found") recordVarTypes.value.set(bind, someBindType.value);
             }
-            emitBlockStatements(body, vars, localDecls, lines, labelCounter, true, staticConsts);
+            emitBlockStatements(body, new Map(vars), localDecls, lines, labelCounter, true, staticConsts);
             if (bind !== undefined) {
               if (hadBind) vars.set(bind, prevBind!);
               else vars.delete(bind);
@@ -3898,7 +4862,7 @@ function emitBlockStatements(
               vars.set(bind, valLocal);
               if (recordVarTypes.kind === "found" && bindType !== undefined) recordVarTypes.value.set(bind, bindType);
             }
-            emitBlockStatements(bodyBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
+            emitBlockStatements(bodyBlock, new Map(vars), localDecls, lines, labelCounter, true, staticConsts);
             if (bind !== undefined) {
               if (hadBind) vars.set(bind, prevBind!); else vars.delete(bind);
               if (recordVarTypes.kind === "found") { if (hadType) recordVarTypes.value.set(bind, prevType!); else recordVarTypes.value.delete(bind); }
@@ -3949,7 +4913,7 @@ function emitBlockStatements(
             const bodyBlock: AstNode = armBody.kind === "block"
               ? armBody
               : { kind: "block", children: [armBody], ...(armBody.location !== undefined ? { location: armBody.location } : {}) };
-            emitBlockStatements(bodyBlock, vars, localDecls, armLines, labelCounter, true, staticConsts);
+            emitBlockStatements(bodyBlock, new Map(vars), localDecls, armLines, labelCounter, true, staticConsts);
           }
 
           const isDefault = pattern === "_" || pattern === "else" || pattern === "None" || pattern === "default";
@@ -4044,12 +5008,13 @@ function emitBlockStatements(
         localDecls.push(`(local ${idxLocal} i32)`);
         localDecls.push(`(local ${lenLocal} i32)`);
         localDecls.push(`(local ${arrLocal} i32)`);
-        // Loop variable: reuse an existing local (mutation/shadow) else declare + register it.
-        if (!vars.has(varName)) {
-          vars.set(varName, `$${varName}`);
-          localDecls.push(`(local $${varName} i32)`);
-        }
-        const loopVarLocal = vars.get(varName) ?? `$${varName}`;
+        // A loop binder is lexical, so it must never overwrite a same-named outer local.
+        // Allocate a fresh WAT local for every loop; localDecls is shared across nested
+        // blocks, and uniqueLocalName prevents duplicate declarations across sibling loops.
+        const loopVars = new Map(vars);
+        const loopVarLocal = uniqueLocalName(`$${varName}`);
+        loopVars.set(varName, loopVarLocal);
+        localDecls.push(`(local ${loopVarLocal} i32)`);
 
         const collExpr = collectionNode
           ? emitWATExpr(collectionNode, vars, staticConsts)
@@ -4064,11 +5029,11 @@ function emitBlockStatements(
         bodyLines.push(`    (local.set ${loopVarLocal} (call $host___array_get (local.get ${arrLocal}) (local.get ${idxLocal})))`);
         if (bodyBlock !== undefined) {
           const loopLines: string[] = [];
-          emitBlockStatements(bodyBlock, vars, localDecls, loopLines, labelCounter, true, staticConsts);
+          emitBlockStatements(bodyBlock, loopVars, localDecls, loopLines, labelCounter, true, staticConsts);
           if (whereGuard !== undefined) {
             // `where` filter: run the body only when the guard is truthy. The idx increment stays
             // OUTSIDE the guard so the loop always advances (no infinite loop on a failing guard).
-            const guardWat = emitWATExpr(whereGuard, vars, staticConsts);
+            const guardWat = emitWATExpr(whereGuard, loopVars, staticConsts);
             bodyLines.push(`    (if ${guardWat} (then`);
             for (const line of loopLines) bodyLines.push(`      ${line}`);
             bodyLines.push(`    ))`);
@@ -4104,7 +5069,7 @@ function emitBlockStatements(
             return [`(unreachable) ;; check{}: missing '${label}' arm — fail-closed (FUNGI-CHECK-001 belt)`];
           const lines: string[] = [];
           const armBlock: AstNode = body.kind === "block" ? body : { kind: "block", children: [body] };
-          emitBlockStatements(armBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
+          emitBlockStatements(armBlock, new Map(vars), localDecls, lines, labelCounter, true, staticConsts);
           return lines;
         };
         bodyLines.push(`(local.set ${scratch} ${subjectWat})`);
@@ -4159,7 +5124,7 @@ function emitBlockStatements(
             return [`(unreachable) ;; prefilter{}: missing '${label}' arm — fail-closed (FUNGI-PREFILTER-001 belt)`];
           const lines: string[] = [];
           const armBlock: AstNode = body.kind === "block" ? body : { kind: "block", children: [body] };
-          emitBlockStatements(armBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
+          emitBlockStatements(armBlock, new Map(vars), localDecls, lines, labelCounter, true, staticConsts);
           return lines;
         };
         bodyLines.push(`(local.set ${scratch} ${subjectWat})`);
@@ -4207,6 +5172,10 @@ function emitBlockStatements(
         refuseGovernedOrClosureStmtWat("requireStmt");
       case "fnDecl":
         refuseGovernedOrClosureStmtWat("fnDecl");
+      case "staticDecl":
+        // Static declarations are compile-time module values, validated and
+        // collected before flow emission; they have no runtime statement effect.
+        break;
 
       default:
         // FAIL-CLOSED (task #128 · audit-phase1-2026-06-16). An unhandled statement
@@ -4251,7 +5220,7 @@ function emitBlockStatements(
 export function emitWATFromFlowAST(
   flowNode: AstNode,
   paramNames: readonly string[],
-  staticConsts: ReadonlyMap<string, number> = new Map(),
+  staticConsts: StaticConstMap = new Map(),
   layouts: Lookup<ReadonlyMap<string, readonly string[]>> = none("layouts:unset"),
   enums: Lookup<ReadonlyMap<string, readonly string[]>> = none("enums:unset"),
 ): Lookup<string> {
@@ -4737,31 +5706,50 @@ import { getWATImportsForEffects } from "./wat-emitter-gir.js";
  */
 
 /**
- * Collects compile-time integer constants from top-level `static` and `bitfield`
- * declarations in the program AST.
+ * Collects supported compile-time values from top-level `static` and `bitfield`
+ * declarations in the program AST. Integer values are checked/folded to i32;
+ * directly lowerable Boolean, String, Char, and finite Float expressions retain
+ * their AST so each use follows the normal typed WAT lowering path.
  *
  * `static NAME = N` → staticConsts.set("NAME", N)
  * `bitfield REG { field: bitPos }` → staticConsts.set("REG.field", 1 << bitPos)
  *                                    staticConsts.set("REG.BIT_field", bitPos)
  *
- * Only integer literals are folded here (the WAT emitter only supports i32).
- * Non-integer static values are ignored (they will emit (i32.const 0) at use site).
+ * Unsupported or non-finite values are omitted and therefore remain fail-closed
+ * at use sites; the checked-program verifier rejects them before this emitter.
  */
-function collectStaticConsts(ast: AstNode | undefined): ReadonlyMap<string, number> {
-  const consts = new Map<string, number>();
+function collectStaticConsts(ast: AstNode | undefined): StaticConstMap {
+  const consts = new Map<string, StaticConstValue>();
+  const types = new Map<string, string>();
+  staticConstTypes = types;
   if (ast === undefined) return consts;
 
-  for (const node of ast.children ?? []) {
+  const collectStatic = (node: AstNode): void => {
     if (node.kind === "staticDecl") {
       const name = node.value ?? "";
       const valueExpr = node.children?.[0];
       if (name !== "" && valueExpr !== undefined) {
         const n = foldToInt(valueExpr, consts);
-        if (n.kind === "found") consts.set(name, n.value);
+        if (n.kind === "found") {
+          consts.set(name, n.value);
+          types.set(name, "Int");
+          return;
+        }
+        const type = pureStaticValueType(valueExpr, consts, types);
+        if (type !== undefined) {
+          consts.set(name, valueExpr);
+          types.set(name, type);
+        }
       }
-    } else if (node.kind === "bitfieldDecl") {
+      return;
+    }
+    for (const child of node.children ?? []) collectStatic(child);
+  };
+
+  const collectBitfield = (node: AstNode): void => {
+    if (node.kind === "bitfieldDecl") {
       const registerName = node.value ?? "";
-      if (registerName === "") continue;
+      if (registerName === "") return;
       for (const child of node.children ?? []) {
         const parts = (child.value ?? "").split(":");
         if (parts.length !== 2) continue;
@@ -4772,9 +5760,53 @@ function collectStaticConsts(ast: AstNode | undefined): ReadonlyMap<string, numb
         consts.set(`${registerName}.${fieldName}`, bitmask);
         consts.set(`${registerName}.BIT_${fieldName}`, bitPos);
       }
+      return;
     }
+    for (const child of node.children ?? []) collectBitfield(child);
+  };
+
+  for (const node of ast.children ?? []) {
+    collectStatic(node);
+    collectBitfield(node);
   }
   return consts;
+}
+
+/**
+ * Identify only the side-effect-free, directly lowerable static values supported
+ * by the WAT tier. The checked-program verifier is the public admission gate, but
+ * this local allowlist also keeps direct emitter callers from embedding calls or
+ * other runtime work into a supposedly compile-time constant.
+ */
+function pureStaticValueType(
+  expr: AstNode,
+  consts: StaticConstMap,
+  types: ReadonlyMap<string, string>,
+): string | undefined {
+  switch (expr.kind) {
+    case "boolLiteral": return "Bool";
+    case "stringLiteral": return "String";
+    case "charLiteral": return "Char";
+    case "numberLiteral": {
+      const raw = (expr.value ?? "0").replace(/_/g, "");
+      if (isIntegerLiteralWatText(raw)) return undefined; // handled by checked integer folding
+      return Number.isFinite(Number(raw)) ? "Float" : undefined;
+    }
+    case "identifier": {
+      const name = expr.value ?? "";
+      return consts.has(name) ? types.get(name) : undefined;
+    }
+    case "unaryExpr": {
+      const operand = expr.children?.[0];
+      if (operand === undefined) return undefined;
+      const operandType = pureStaticValueType(operand, consts, types);
+      if (expr.value === "!" && operandType === "Bool") return "Bool";
+      if (expr.value === "-" && operandType !== undefined &&
+          (FLOAT_WAT_TYPES.has(operandType) || operandType === "Int")) return operandType;
+      return undefined;
+    }
+    default: return undefined;
+  }
 }
 
 /**
@@ -4784,18 +5816,42 @@ function collectStaticConsts(ast: AstNode | undefined): ReadonlyMap<string, numb
  */
 function foldToInt(
   expr: AstNode,
-  consts: ReadonlyMap<string, number>,
+  consts: StaticConstMap,
 ): Lookup<number> {
   if (expr.kind === "numberLiteral") {
     const raw = (expr.value ?? "0").replace(/_/g, "");
-    if (raw.includes(".")) return none("fold-float");
-    const n = parseInt(raw, 10);
-    return Number.isFinite(n) ? found(n) : none("fold-nonfinite");
+    if (!isIntegerLiteralWatText(raw)) return none("fold-float");
+    try {
+      const exact = BigInt(raw);
+      return found(Number(BigInt.asIntN(32, exact)));
+    } catch {
+      return none("fold-invalid-integer");
+    }
   }
   if (expr.kind === "identifier") {
     const name = expr.value ?? "";
     const v = consts.get(name);
-    return v !== undefined ? found(v) : none("fold-unbound");
+    return typeof v === "number" ? found(v) : none("fold-unbound-or-noninteger");
+  }
+  if (expr.kind === "unaryExpr" && (expr.value ?? "") === "-") {
+    const operand = expr.children?.[0];
+    if (operand === undefined) return none("fold-unary-missing-operand");
+    // Direct signed source literals are normalized as one literal, so the valid
+    // INT32_MIN boundary is retained. Negating a computed i32 value instead uses
+    // checked arithmetic and refuses the INT32_MIN overflow.
+    if (operand.kind === "numberLiteral" && typeof operand.value === "string"
+        && isIntegerLiteralWatText(operand.value)) {
+      try {
+        const magnitude = BigInt(operand.value.replaceAll("_", ""));
+        return found(Number(BigInt.asIntN(32, -magnitude)));
+      } catch {
+        return none("fold-unary-invalid-integer");
+      }
+    }
+    const value = foldToInt(operand, consts);
+    if (value.kind === "none") return none("fold-unary-operand");
+    const negated = i32SubChecked(0, value.value);
+    return isI32Trap(negated) ? none("fold-unary-trap") : found(negated);
   }
   // Constant-EXPRESSION folding (AOT #1, R&D 0036): fold `const <op> const` arithmetic at build time using
   // the SAME checked i32 ops as runtime, so the result is identical to executing it. CRITICAL (Fork-A=TRAP /
@@ -4837,10 +5893,15 @@ function foldToInt(
  */
 function foldToBool(
   expr: AstNode | undefined,
-  consts: ReadonlyMap<string, number>,
+  consts: StaticConstMap,
 ): Lookup<boolean> {
   if (expr === undefined) return none("fold-bool:missing-expr");
   if (expr.kind === "boolLiteral") return found(expr.value === "true");
+  if (expr.kind === "identifier") {
+    const value = consts.get(expr.value ?? "");
+    if (value !== undefined && typeof value !== "number") return foldToBool(value, consts);
+    return none("fold-bool:identifier-not-boolean");
+  }
   if (expr.kind === "unaryExpr" && (expr.value ?? "") === "!") {
     const inner = foldToBool(expr.children?.[0], consts);
     return inner.kind === "none" ? inner : found(!inner.value);
@@ -4923,13 +5984,16 @@ export function buildWATModule(
     { module: "host", name: "__array_append",   effect: "stdlib.array", type: { params: ["i32", "i32"],   results: ["i32"] } }, // returns the array handle (#145a: `arr = arr.append(x)`)
     { module: "host", name: "__array_get",      effect: "stdlib.array", type: { params: ["i32", "i32"],   results: ["i32"] } },
     { module: "host", name: "__array_get_option_v2", effect: "stdlib.array", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__array_get_option_string_v2", effect: "stdlib.array", type: { params: ["i32", "i32"], results: ["i32"] } },
     { module: "host", name: "__array_length",   effect: "stdlib.array", type: { params: ["i32"],          results: ["i32"] } },
     { module: "host", name: "__array_contains", effect: "stdlib.array", type: { params: ["i32", "i32"],   results: ["i32"] } },
     { module: "host", name: "__array_contains_str", effect: "stdlib.array", type: { params: ["i32", "i32"], results: ["i32"] } }, // value-based Array<String> membership (#160)
     { module: "host", name: "__array_first",    effect: "stdlib.array", type: { params: ["i32"],          results: ["i32"] } },
     { module: "host", name: "__array_last",     effect: "stdlib.array", type: { params: ["i32"],          results: ["i32"] } },
     { module: "host", name: "__array_first_option_v2", effect: "stdlib.array", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__array_first_option_string_v2", effect: "stdlib.array", type: { params: ["i32"], results: ["i32"] } },
     { module: "host", name: "__array_last_option_v2", effect: "stdlib.array", type: { params: ["i32"], results: ["i32"] } },
+    { module: "host", name: "__array_last_option_string_v2", effect: "stdlib.array", type: { params: ["i32"], results: ["i32"] } },
     // String operations
     { module: "host", name: "__str_concat",     effect: "stdlib.string", type: { params: ["i32", "i32"],  results: ["i32"] } },
     { module: "host", name: "__str_length",     effect: "stdlib.string", type: { params: ["i32"],          results: ["i32"] } },
@@ -4972,7 +6036,19 @@ export function buildWATModule(
     { module: "host", name: "__option_none",    effect: "stdlib.result", type: { params: [],               results: ["i32"] } },
     { module: "host", name: "__unwrap_or_v2",   effect: "stdlib.result", type: { params: ["i32", "i32"],  results: ["i32"] } },
     { module: "host", name: "__option_some_v2", effect: "stdlib.result", type: { params: ["i32"],          results: ["i32"] } },
+    { module: "host", name: "__option_some_string_v2", effect: "stdlib.result", type: { params: ["i32"], results: ["i32"] } },
     { module: "host", name: "__option_none_v2", effect: "stdlib.result", type: { params: [],               results: ["i32"] } },
+    { module: "host", name: "__option_eq_f64_v2", effect: "stdlib.result", type: { params: ["i32", "i32"], results: ["i32"] } },
+    { module: "host", name: "__option_eq_option_f64_v2", effect: "stdlib.result", type: { params: ["i32", "i32"], results: ["i32"] } },
+    ...Array.from({ length: MAX_OPTION_FLOAT_EQUALITY_DEPTH - 2 }, (_, index) => {
+      const depth = index + 3;
+      return {
+        module: "host" as const,
+        name: `__option_eq_f64_depth_${depth}_v2`,
+        effect: "stdlib.result",
+        type: { params: ["i32", "i32"] as const, results: ["i32"] as const },
+      };
+    }),
     { module: "host", name: "__option_is_some_v2", effect: "stdlib.result", type: { params: ["i32"],          results: ["i32"] } },
     { module: "host", name: "__option_is_none_v2", effect: "stdlib.result", type: { params: ["i32"],          results: ["i32"] } },
     { module: "host", name: "__option_value_v2",   effect: "stdlib.result", type: { params: ["i32"],          results: ["i32"] } },
@@ -5361,13 +6437,24 @@ export function buildWATModule(
     }
   }
 
+  const derivedOwnedReturnSchemas =
+    flowReturnTypes.kind === "found" && watRecordLayouts.kind === "found"
+      ? deriveOwnedReturnSchemas(
+          exportedNames,
+          functions,
+          flowReturnTypes.value,
+          watRecordLayouts.value,
+          new Set(enumVariantRegistry.keys()),
+        )
+      : undefined;
+
   flowReturnTypes = prevFlowReturnTypes; // #160: restore module-level type context
   recordFieldTypes = prevRecordFieldTypes;
   watRecordLayouts = prevWATRecordLayouts;
   flowParamBases = prevFlowParamBases;   // 0115: restore
   watJobCaches = prevWatJobCaches;
 
-  return {
+  const module: WATModule = {
     schemaVersion: "fungi.wat.v1",
     sourceHash: gir.sourceHash ?? "",
     girHash: gir.girHash ?? "",
@@ -5379,6 +6466,13 @@ export function buildWATModule(
     memory: deriveArenaWATMemory(gir.ast, gir.flows),
     target,
   };
+  if (derivedOwnedReturnSchemas !== undefined) {
+    DERIVED_OWNED_RETURN_SCHEMAS.set(module, {
+      sourceWAT: renderWAT(module),
+      schemas: derivedOwnedReturnSchemas,
+    });
+  }
+  return module;
 }
 
 // ---------------------------------------------------------------------------

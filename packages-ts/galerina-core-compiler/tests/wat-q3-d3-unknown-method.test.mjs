@@ -157,6 +157,20 @@ describe("T6 catalogued unknown + mid-chain", () => {
   });
 });
 
+describe("collection aliases and sensitivity-qualified receivers", () => {
+  it("admits the Array method surface for the declared List<T> alias", () => {
+    const src = "pure flow f(xs: List<Int>) -> Int { return xs.length() }";
+    const diags = pipeline001(src);
+    assert.equal(diags.length, 0, typeErrors(src).map((d) => d.code + ":" + d.message).join(" | "));
+  });
+
+  it("keeps the Array method surface available through a protected qualifier", () => {
+    const src = "pure flow f(xs: protected Array<Int>) -> Int { return xs.length() }";
+    const diags = pipeline001(src);
+    assert.equal(diags.length, 0, typeErrors(src).map((d) => d.code + ":" + d.message).join(" | "));
+  });
+});
+
 describe("T7 Option.zip", () => {
   const src = `pure flow f(a: Option<Int>, b: Option<Int>) -> Option<ZipPair<Int, Int>>
 contract { effects {} }

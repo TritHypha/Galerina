@@ -12,8 +12,8 @@
 // "two-oracles-drift trap". This module makes drift IMPOSSIBLE by construction: both sides
 // call `foldStaticVerdict`, so they cannot disagree about what is a proven constant.
 //
-// The fold is deliberately conservative — a constant boolean, a comparison of two numeric
-// literals, or the negation of a constant boolean, and nothing else. It NEVER folds a
+// The fold is deliberately conservative — a constant boolean, an exact comparison of two
+// complete integer literals, or the negation of a constant boolean, and nothing else. It NEVER folds a
 // runtime-dependent operand, so an elided gate is ALWAYS a proven constant and UNKNOWN ⇒ 0
 // ⇒ keep the runtime gate (fail-CLOSED). The richer lattice (escape-analysis, manifest-
 // proven targets, effect/grant — RD-0456 full-A) plugs in HERE later; until then the trit
@@ -28,6 +28,24 @@ import type { AstNode } from "./parser.js";
  *  UNKNOWN ⇒ keep the gate. */
 export type StaticVerdict = 1 | 0 | -1;
 
+/** Prove only complete, nonnegative signed-i32 integer tokens, never a numeric
+ * prefix or rounded Number. This type-free AST fold must agree with the current
+ * untyped WASM literal lane; outside its common exact range, keep the runtime
+ * check. This is a bootstrap-folding bound, not a Fungi language type rule.
+ * The lexer preserves decimal separators; base-prefixed tokens have no
+ * separators. Fractions/exponents need runtime enforcement here. Signs are
+ * unary AST nodes, not part of a numberLiteral token. Bound token length before
+ * BigInt parsing so an arbitrary source numeral cannot trigger unbounded work.
+ */
+function exactIntegerLiteral(value: string | undefined): bigint | undefined {
+  if (value === undefined || value.length > 40 ||
+      !/^(?:[0-9]+(?:_[0-9]+)*|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+)(?![\s\S])/.test(value)) {
+    return undefined;
+  }
+  const exact = BigInt(value.replace(/_/g, ""));
+  return exact <= 2_147_483_647n ? exact : undefined;
+}
+
 /** Flatten a governance conjunction (`&&`/`and`, which lowers to K3 min / bitwise-and; `true`
  *  is the identity of both) into its operand list; a non-conjunction returns `[expr]`.
  *  `a && b && c` (left-assoc nested binaryExpr) → `[a, b, c]`, so each operand folds alone. */
@@ -40,9 +58,8 @@ export function flattenGovernanceConjunction(expr: AstNode): AstNode[] {
 
 /** The ONE constant-fold static oracle. Returns the discharge trit for `expr`:
  *  +1 if it provably evaluates to true, -1 if provably false, 0 if it is not a constant.
- *  Superset of the historical `tryStaticEval`/`tryConstantFold` (bool literal · numeric-literal
- *  comparison · negation of a bool literal) — the union of what both sides proved, so neither
- *  consumer loses a case and both now agree on every case. */
+ *  Shared by both consumers. Numeric proof is restricted to complete integer tokens;
+ *  valid fractional/exponent forms remain UNKNOWN and require runtime enforcement. */
 export function foldStaticVerdict(expr: AstNode): StaticVerdict {
   // Strong-Kleene conjunction is false when any operand is false, even when
   // another operand is runtime-dependent.  Resolve that annihilator here so
@@ -65,7 +82,8 @@ export function foldStaticVerdict(expr: AstNode): StaticVerdict {
   if (expr.kind === "binaryExpr" && expr.children?.length === 2) {
     const l = expr.children[0], r = expr.children[1];
     if (l?.kind === "numberLiteral" && r?.kind === "numberLiteral") {
-      const lv = parseFloat(l.value ?? "0"), rv = parseFloat(r.value ?? "0");
+      const lv = exactIntegerLiteral(l.value), rv = exactIntegerLiteral(r.value);
+      if (lv === undefined || rv === undefined) return 0;
       switch (expr.value) {
         case ">":  return lv >  rv ? 1 : -1;
         case "<":  return lv <  rv ? 1 : -1;

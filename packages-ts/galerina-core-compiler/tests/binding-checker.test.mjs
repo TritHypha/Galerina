@@ -14,7 +14,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { parseProgram, checkTypes } from "../dist/index.js";
+import { parseProgram, checkTypes, checkProgram } from "../dist/index.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -93,6 +93,235 @@ pure flow test() -> Int {
       !hasDiag(typeDiags, "FUNGI-BINDING-005"),
       `Should not emit FUNGI-BINDING-005 for mut reassignment, got: ${typeDiags.map((d) => d.code).join(", ")}`,
     );
+  });
+
+  it("rejects an incompatible record value assigned to a mut binding", () => {
+    const { typeDiags } = parseAndCheck(`
+record Row { name: String }
+record Wrong { prefix: Int name: String }
+pure flow test(good: Row, bad: Wrong) -> String {
+  mut value: Row = good
+  value = bad
+  return value.name
+}
+`);
+    assert.ok(
+      hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Expected incompatible mut assignment to be rejected, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("rejects an erased Auto value assigned to a concrete mutable record binding", () => {
+    const { typeDiags } = parseAndCheck(`
+record Row { other: String }
+pure flow test(good: Row, unknown: Auto) -> String {
+  mut value: Row = good
+  value = unknown
+  return value.other
+}
+`);
+    assert.ok(
+      hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Expected erased Auto assignment to be rejected, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("refuses an erased Auto reassignment through the checked-program entry point", () => {
+    const checked = checkProgram(`@version 1
+record Row { other: String }
+pure flow test(good: Row, unknown: Auto) -> String {
+  mut value: Row = good
+  value = unknown
+  return value.other
+}
+`, "binding-auto-reassignment.fungi");
+    assert.ok(
+      hasDiag(checked.diagnostics, "FUNGI-TYPE-002"),
+      `The checked-program entry point must preserve the type refusal, got: ${checked.diagnostics.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("refuses erased collection initialization through the checked-program entry point", () => {
+    const checked = checkProgram(`@version 1
+record Row { other: String }
+pure flow test(unknown: Array<Auto>) -> Int {
+  let rows: Array<Row> = unknown
+  return 0
+}
+`, "binding-auto-array-initializer.fungi");
+    assert.equal(checked.ok, false,
+      "Array<Auto> must not acquire a concrete Row layout from an immutable annotation");
+    assert.ok(hasDiag(checked.diagnostics, "FUNGI-TYPE-002"),
+      `Expected the concrete array-layout assignment to be refused, got: ${checked.diagnostics.map((d) => d.code).join(", ")}`);
+  });
+
+  it("refuses nested erased array payloads at binding and call boundaries", () => {
+    const checked = checkProgram(`@version 1
+record Row { other: String }
+type UnknownRows = Array<Array<Auto>>
+pure flow consume(rows: Array<Array<Row>>) -> Int { return 0 }
+pure flow test(unknown: UnknownRows) -> Int {
+  let rows: Array<Array<Row>> = unknown
+  return consume(unknown)
+}
+`, "binding-nested-auto-array-boundary.fungi");
+    assert.equal(checked.ok, false,
+      "nested Array<Auto> payloads must not establish concrete nested row layouts");
+    assert.ok(checked.diagnostics.some((d) => d.code === "FUNGI-TYPE-002") &&
+      checked.diagnostics.some((d) => d.code === "FUNGI-TYPE-005"),
+      `Expected initializer and call-boundary refusals, got: ${checked.diagnostics.map((d) => d.code).join(", ")}`);
+  });
+
+  it("refuses bare Auto initialization of a concrete mutable array", () => {
+    const checked = checkProgram(`@version 1
+record Row { other: String }
+pure flow test(unknown: Auto) -> Int {
+  mut rows: Array<Row> = unknown
+  return rows.length()
+}
+`, "binding-auto-array-bare-initializer.fungi");
+    assert.equal(checked.ok, false,
+      "bare Auto must not establish a concrete mutable array payload layout");
+    assert.ok(hasDiag(checked.diagnostics, "FUNGI-TYPE-002"),
+      `Expected the concrete array-layout assignment to be refused, got: ${checked.diagnostics.map((d) => d.code).join(", ")}`);
+  });
+
+  it("rejects an erased Auto initializer for a concrete mutable record binding", () => {
+    const { typeDiags } = parseAndCheck(`
+record Row { other: String }
+pure flow test(unknown: Auto) -> String {
+  mut value: Row = unknown
+  return value.other
+}
+`);
+    assert.ok(
+      hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Expected erased Auto initializer to be rejected, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("rejects an erased array reassigned to a concrete mutable array binding", () => {
+    const { typeDiags } = parseAndCheck(`
+pure flow test(unknown: Array<Auto>) -> Int {
+  mut rows: Array<Int> = Array.empty()
+  rows = unknown
+  return rows.length()
+}
+`);
+    assert.ok(
+      hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Expected erased array payload reassignment to be rejected, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("keeps a typed self-append binding update valid", () => {
+    const concrete = checkProgram(`@version 1
+record Row { other: String }
+pure flow test(seed: Row) -> Int {
+  mut rows: Array<Row> = Array.empty()
+  rows = rows.append(seed)
+  return rows.length()
+    }
+`, "binding-typed-self-append.fungi");
+    assert.equal(concrete.ok, true,
+      `A value of the declared element type may be appended to its own array, got: ${(concrete.diagnostics ?? []).map((d) => d.code).join(", ")}`);
+  });
+
+  it("accepts reassignment through the same concrete mutable type alias", () => {
+    const { parseDiags, typeDiags } = parseAndCheck(`
+type Rows = Array<Int>
+pure flow test(seed: Rows) -> Int {
+  mut rows: Rows = seed
+  rows = seed
+  return rows.length()
+}
+`);
+    assert.equal(parseDiags.filter((d) => d.severity === "error").length, 0,
+      `Expected alias fixture to parse, got: ${parseDiags.map((d) => d.code).join(", ")}`);
+    assert.ok(
+      !hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Same-alias assignment should remain compatible, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("resolves aliases nested inside mutable generic assignment types", () => {
+    const { parseDiags, typeDiags } = parseAndCheck(`
+type Count = Int
+pure flow test(seed: Array<Int>) -> Int {
+  mut values: Array<Count> = seed
+  values = seed
+  return values.length()
+}
+`);
+    assert.equal(parseDiags.filter((d) => d.severity === "error").length, 0,
+      `Expected nested alias fixture to parse, got: ${parseDiags.map((d) => d.code).join(", ")}`);
+    assert.ok(
+      !hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Equivalent generic payload aliases should remain compatible, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("resolves aliases through multiple nested generic levels", () => {
+    const { parseDiags, typeDiags } = parseAndCheck(`
+type Count = Int
+pure flow test(seed: Array<Array<Int>>) -> Int {
+  mut values: Array<Array<Count>> = seed
+  values = seed
+  return values.length()
+}
+`);
+    assert.equal(parseDiags.filter((d) => d.severity === "error").length, 0,
+      `Expected deeply nested alias fixture to parse, got: ${parseDiags.map((d) => d.code).join(", ")}`);
+    assert.ok(
+      !hasDiag(typeDiags, "FUNGI-TYPE-002"),
+      `Equivalent deeply nested payload aliases should remain compatible, got: ${typeDiags.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("fails closed for cyclic aliases used as mutable binding types", () => {
+    const { parseDiags, typeDiags } = parseAndCheck(`
+type First = Second
+type Second = First
+pure flow test() -> Int {
+  mut value: First = 1
+  value = 2
+  return value
+}
+`);
+    assert.equal(parseDiags.filter((d) => d.severity === "error").length, 0,
+      `Expected cyclic alias fixture to parse, got: ${parseDiags.map((d) => d.code).join(", ")}`);
+    assert.ok(
+      typeDiags.length > 0,
+      "A cyclic alias must not normalize into an apparently valid concrete mutable type",
+    );
+  });
+
+  it("does not erase a spurious type argument from a non-generic alias", () => {
+    const { parseDiags, typeDiags } = parseAndCheck(`
+type Count = Int
+pure flow test(seed: Array<Int>) -> Int {
+  mut values: Array<Count<Int>> = seed
+  values = seed
+  return values.length()
+}
+`);
+    assert.equal(parseDiags.filter((d) => d.severity === "error").length, 0,
+      `Expected malformed alias application to reach type validation, got: ${parseDiags.map((d) => d.code).join(", ")}`);
+    assert.ok(
+      typeDiags.length > 0,
+      "A non-generic alias with type arguments must remain invalid, not normalize to Int",
+    );
+  });
+
+  it("rejects a non-generic alias used with type arguments", () => {
+    const checked = checkProgram(`@version 1
+type Rows = Array<Int>
+pure flow test(value: Rows<String>) -> Int { return 0 }
+`, "binding-nongeneric-alias-application.fungi");
+    assert.equal(checked.ok, false,
+      "A non-generic alias application must not be admitted as a new generic type constructor");
+    assert.ok(checked.diagnostics.length > 0,
+      "The invalid alias application must have an explicit diagnostic");
   });
 
   it("emits FUNGI-BINDING-005 for let reassignment in a guarded flow", () => {

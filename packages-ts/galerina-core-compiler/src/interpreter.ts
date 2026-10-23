@@ -23,7 +23,7 @@ import { compileToBytecode, runBytecode } from "./bytecode-vm.js";
 import { canonicalHash } from "./runtime/canonicalHash.js";
 import { requireFixedGalerinaProductContext } from "./product-cli.js";
 import type { ProductArtifactContext } from "./product-artifact-identity.js";
-import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, i32AbsChecked, i32FromIntegralChecked, isI32Trap, type I32Result } from "./i32-arith.js";
+import { I32_MAX, I32_MIN, i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, i32AbsChecked, i32FromIntegralChecked, i32FromLiteralText, isI32Trap, type I32Result } from "./i32-arith.js";
 import { I64_MAX, I64_MIN, i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
 import { U64_MAX, u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
 import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, decFromInt, isExactTrapLabel, type DecResult } from "./decimal-arith.js";
@@ -182,6 +182,14 @@ function literalU64FromNode(node: AstNode | undefined): bigint | "OutOfRange" | 
  * UInt64 additionally rejects a NEGATIVE i32, fail-closed); a checked trap propagates. Anything else
  * assigned to a 64-bit slot is a fail-closed type error (the type-checker should have rejected it).
  */
+const NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES = new WeakSet<object>();
+
+function nonDiscardableWideArgumentFailure(message: string): GalerinaValue {
+  const failure: GalerinaValue = Object.freeze({ __tag: "runtimeError", message });
+  NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES.add(failure);
+  return failure;
+}
+
 function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, initNode: AstNode | undefined): GalerinaValue {
   if (declaredBase === "Int64") {
     const lit = literalI64FromNode(initNode);
@@ -198,10 +206,11 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
       if (payload < I64_MIN || payload > I64_MAX) return { __tag: "runtimeError", message: "IntegerOverflow" };
       return { __tag: "int64", value: payload };
     }
-    if (valueTag === "runtimeError") return { __tag: "runtimeError", message: "Invalid Int64 argument" };
+    if (valueTag === "runtimeError") return nonDiscardableWideArgumentFailure("Invalid Int64 argument");
     if (valueTag === "int") {
       const payload = ownDataValue(value, "value");
       return typeof payload === "number" && Number.isSafeInteger(payload)
+        && payload >= I32_MIN && payload <= I32_MAX
         ? { __tag: "int64", value: BigInt(payload) }
         : { __tag: "runtimeError", message: "IntegerOverflow" };
     }
@@ -222,11 +231,12 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
       if (payload < 0n || payload > U64_MAX) return { __tag: "runtimeError", message: "IntegerOverflow" };
       return { __tag: "uint64", value: payload };
     }
-    if (valueTag === "runtimeError") return { __tag: "runtimeError", message: "Invalid UInt64 argument" };
+    if (valueTag === "runtimeError") return nonDiscardableWideArgumentFailure("Invalid UInt64 argument");
     // a non-negative i32 widens exactly; a NEGATIVE i32 cannot be unsigned → fail-closed underflow trap.
     if (valueTag === "int") {
       const payload = ownDataValue(value, "value");
-      return typeof payload === "number" && Number.isSafeInteger(payload) && payload >= 0
+      return typeof payload === "number" && Number.isSafeInteger(payload)
+        && payload >= 0 && payload <= I32_MAX
         ? { __tag: "uint64", value: BigInt(payload) }
         : { __tag: "runtimeError", message: "IntegerOverflow" };
     }
@@ -237,6 +247,55 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
   const narrow = narrowFloatWidthOf(declaredBase);
   if (narrow !== undefined && (value.__tag === "float" || value.__tag === "int")) return mkNarrowFloat(value.value, narrow);
   return value;
+}
+
+/** Validate and detach scalar numeric values at a declared flow-return boundary. */
+function normalizeNumericReturn(declaredBase: string, value: GalerinaValue): GalerinaValue | undefined {
+  const base = declaredBase === "Double" ? "Float64" : declaredBase;
+  if (!new Set(["Int", "Int64", "UInt64", "Float", "Float64", "Float32", "Float16"]).has(base)) return undefined;
+  if (isRuntimeError(value)) return value;
+
+  const tag = ownDataValue(value, "__tag");
+  const payload = ownDataValue(value, "value");
+  const invalid = (): GalerinaValue => ({ __tag: "runtimeError", message: `Invalid ${base} return value` });
+
+  if (base === "Int") {
+    return tag === "int" && typeof payload === "number" && Number.isSafeInteger(payload)
+      && payload >= I32_MIN && payload <= I32_MAX
+      ? { __tag: "int", value: payload }
+      : invalid();
+  }
+  if (base === "Int64") {
+    if (tag === "int64" && typeof payload === "bigint" && payload >= I64_MIN && payload <= I64_MAX) {
+      return { __tag: "int64", value: payload };
+    }
+    if (tag === "int" && typeof payload === "number" && Number.isSafeInteger(payload)
+        && payload >= I32_MIN && payload <= I32_MAX) {
+      return { __tag: "int64", value: BigInt(payload) };
+    }
+    return invalid();
+  }
+  if (base === "UInt64") {
+    if (tag === "uint64" && typeof payload === "bigint" && payload >= 0n && payload <= U64_MAX) {
+      return { __tag: "uint64", value: payload };
+    }
+    if (tag === "int" && typeof payload === "number" && Number.isSafeInteger(payload)
+        && payload >= 0 && payload <= I32_MAX) {
+      return { __tag: "uint64", value: BigInt(payload) };
+    }
+    return invalid();
+  }
+  if (base === "Float16" || base === "Float32") {
+    if ((tag !== "float" && tag !== "int") || typeof payload !== "number") return invalid();
+    if (tag === "int" && (!Number.isSafeInteger(payload) || payload < I32_MIN || payload > I32_MAX)) return invalid();
+    return mkNarrowFloat(payload, base === "Float16" ? 16 : 32);
+  }
+  if (tag === "float" && typeof payload === "number") return mkFloat(payload);
+  if (tag === "int" && typeof payload === "number" && Number.isSafeInteger(payload)
+      && payload >= I32_MIN && payload <= I32_MAX) {
+    return { __tag: "int", value: payload };
+  }
+  return invalid();
 }
 
 /** Singleton booleans — avoids allocating { __tag: "bool", value: ... } on every comparison. */
@@ -439,6 +498,9 @@ export function dispatchTagId(tag: string): number {
     case "char": return 8;
     case "record": return 9;
     case "list": return 10;
+    // Some is a composite value: keep it out of the verdict/unresolved wildcard so
+    // equality reaches the structural Galerina-value comparator below.
+    case "some": return 11;
     default: return 0;
   }
 }
@@ -1056,7 +1118,7 @@ class SyncInterpreter {
         // mis-classified as int → parseInt stops at 'e' → `9e9` silently became 9 (a wrong value AND a tier
         // divergence: WASM emits f64.const 9e9). mkFloat traps a literal that overflows to ±Inf (`1e400`).
         if (raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)) return mkFloat(parseFloat(raw));
-        return intVal(parseInt(raw, 10));
+        return i32R(i32FromLiteralText(raw));
       }
 
       case "boolLiteral":
@@ -1125,6 +1187,13 @@ class SyncInterpreter {
 
       case "unaryExpr": {
         const op = node.value ?? "";
+        const child = node.children?.[0];
+        if (op === "-" && child?.kind === "numberLiteral" && typeof child.value === "string") {
+          const raw = child.value.replace(/_/g, "");
+          if (!raw.includes(".") && !/^\d+[eE][+-]?\d+$/.test(raw)) {
+            return i32R(i32FromLiteralText(`-${raw}`));
+          }
+        }
         const operand = this.evalExprS(node.children![0]!);
         // #0021: checked i32 unary-minus on the SYNC fast path too (traps -INT32_MIN, canonicalizes -0).
         if (op === "-" && operand.__tag === "int")   return i32R(i32NegChecked(operand.value as number));
@@ -1141,7 +1210,7 @@ class SyncInterpreter {
 
         if (name === "Ok" || name === "Err" || name === "Some") {
           const payload = children[0] !== undefined ? this.evalExprS(children[0]) : FUNGI_VOID;
-          if (isCheckedTrap(payload)) return payload;
+          if (isNonDiscardableStatementFailure(payload)) return payload;
           if (name === "Ok") return { __tag: "ok", value: payload };
           if (name === "Err") return { __tag: "err", error: payload };
           return { __tag: "some", value: payload };
@@ -1264,6 +1333,7 @@ export function tryPureFlowSync(
   if (flowMeta === undefined) return null;
   if (flowMeta.qualifier !== "pure") return null;
   if (flowRequiresGovernedPath(ast, flowName)) return null;
+  if (hasInvalidHostIntParameter(ast, flowName, args)) return null;
 
   try {
     const interp = new SyncInterpreter(ast, flows, maxIterations, maxSteps);
@@ -1534,13 +1604,15 @@ class Interpreter {
     this.runtimeOptions = runtimeOptions ?? {};
     this.executionPlans = executionPlans ?? new Map();
     this.manifest = manifest;
-    // Pre-process top-level staticDecl and bitfieldDecl nodes synchronously.
-    // Static constants are folded at construction time (compile-time simulation).
+    // Pre-process staticDecl and top-level bitfieldDecl nodes synchronously.
+    // The grammar permits static declarations inside flow bodies; the verifier
+    // treats their names as module-scoped, so fold them in AST traversal order.
     this.processTopLevelStatics(ast.children ?? []);
   }
 
   /**
-   * Pre-process top-level `static NAME = EXPR` and `bitfield NAME { ... }` declarations.
+   * Pre-process `static NAME = EXPR` declarations (including those nested in flows)
+   * and top-level `bitfield NAME { ... }` declarations.
    * Populates staticConstants map so that identifier lookups during flow execution
    * resolve constants first — simulating compile-time constant folding.
    */
@@ -1548,7 +1620,7 @@ class Interpreter {
     const tempScope = new Map<string, BindingEntry>();
     this.scopes.push(tempScope);
     try {
-      for (const node of nodes) {
+      const processStaticDeclarations = (node: AstNode): void => {
         if (node.kind === "staticDecl") {
           const name = node.value ?? "";
           const valueExpr = node.children?.[0];
@@ -1556,7 +1628,13 @@ class Interpreter {
             const value = this.evalExprSync(valueExpr);
             this.staticConstants.set(name, value);
           }
-        } else if (node.kind === "bitfieldDecl") {
+          return;
+        }
+        for (const child of node.children ?? []) processStaticDeclarations(child);
+      };
+
+      for (const node of nodes) {
+        if (node.kind === "bitfieldDecl") {
           const registerName = node.value ?? "";
           if (registerName === "") continue;
           for (const child of node.children ?? []) {
@@ -1571,6 +1649,11 @@ class Interpreter {
             // V_DPM.BIT_network_outbound = raw bit position (e.g. 0)
             this.staticConstants.set(`${registerName}.BIT_${fieldName}`, intVal(bitPos));
           }
+        } else {
+          // The grammar permits compile-time static declarations inside flow
+          // bodies. The verifier treats their names as module-scoped, so make
+          // them available before any flow executes, in source traversal order.
+          processStaticDeclarations(node);
         }
       }
     } finally {
@@ -1588,29 +1671,66 @@ class Interpreter {
     switch (node.kind) {
       case "numberLiteral": {
         const raw = (node.value ?? "0").replace(/_/g, "");
-        if (raw.startsWith("0x") || raw.startsWith("0X")) return { __tag: "int", value: parseInt(raw, 16) };
-        if (raw.startsWith("0b") || raw.startsWith("0B")) return { __tag: "int", value: parseInt(raw.slice(2), 2) };
-        if (raw.startsWith("0o") || raw.startsWith("0O")) return { __tag: "int", value: parseInt(raw.slice(2), 8) };
         // float if it has a '.' OR a decimal exponent (`1e400`, `9e9`); mkFloat traps an overflow-to-±Inf
         // literal. The dotless-exponent case was previously mis-read as int (`9e9` → 9). (FUNGI-FLOAT-NAN-001.)
         return raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)
           ? mkFloat(parseFloat(raw))
-          : { __tag: "int", value: parseInt(raw, 10) };
+          : i32R(i32FromLiteralText(raw));
       }
       case "stringLiteral":
         return { __tag: "string", value: stripStringQuotes(node.value ?? "") };
       case "boolLiteral":
         return { __tag: "bool", value: node.value === "true" };
+      case "unaryExpr": {
+        const op = node.value ?? "";
+        const operandNode = node.children?.[0];
+        if (operandNode === undefined) {
+          return { __tag: "runtimeError", message: `Static unary expression is missing an operand: ${op}` };
+        }
+        // A source integer literal is one exact signed literal, not a positive i32
+        // followed by checked runtime negation. This preserves INT32_MIN just as
+        // the ordinary expression evaluator does.
+        if (op === "-" && operandNode.kind === "numberLiteral" && typeof operandNode.value === "string") {
+          const raw = operandNode.value.replace(/_/g, "");
+          if (!raw.includes(".") && !/^\d+[eE][+-]?\d+$/.test(raw)) {
+            return i32R(i32FromLiteralText(`-${raw}`));
+          }
+        }
+        const operand = this.evalExprSync(operandNode);
+        if (operand.__tag === "runtimeError") return operand;
+        if (op === "-" && operand.__tag === "int") return i32R(i32NegChecked(operand.value as number));
+        if (op === "-" && operand.__tag === "float") return mkFloat(-(operand.value as number));
+        if (op === "!" && operand.__tag === "bool") return { __tag: "bool", value: !(operand.value as boolean) };
+        return { __tag: "runtimeError", message: `Unsupported static unary expression: ${op}` };
+      }
       case "identifier": {
         const name = node.value ?? "";
         const constVal = this.staticConstants.get(name);
         if (constVal !== undefined) return constVal;
         if (name === "true")  return { __tag: "bool", value: true };
         if (name === "false") return { __tag: "bool", value: false };
-        return { __tag: "int", value: 0 }; // unresolved in static context
+        return { __tag: "runtimeError", message: `Unresolved identifier '${name}' in static initializer` };
+      }
+      case "binaryExpr": {
+        const [leftNode, rightNode] = node.children ?? [];
+        if (leftNode === undefined || rightNode === undefined) {
+          return { __tag: "runtimeError", message: "Static arithmetic is missing an operand" };
+        }
+        const left = this.evalExprSync(leftNode);
+        const right = this.evalExprSync(rightNode);
+        if (left.__tag === "runtimeError") return left;
+        if (right.__tag === "runtimeError") return right;
+        const op = node.value ?? "";
+        if (!["+", "-", "*", "/", "%"].includes(op)
+          || left.__tag !== "int" || right.__tag !== "int") {
+          return { __tag: "runtimeError", message: `Unsupported static arithmetic: ${op}` };
+        }
+        const evaluate = BINARY_DISPATCH.get(dispatchKey(left.__tag, op, right.__tag));
+        return evaluate?.(left, right)
+          ?? { __tag: "runtimeError", message: `Unsupported static arithmetic: ${op}` };
       }
       default:
-        return { __tag: "int", value: 0 };
+        return { __tag: "runtimeError", message: `Unsupported static initializer expression: ${node.kind}` };
     }
   }
 
@@ -1816,6 +1936,34 @@ class Interpreter {
         const message =
           `Flow '${flowName}' received malformed Bool argument '${paramName}' — ` +
           `expected exactly true or false; fail-closed`;
+        this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+        const value: GalerinaValue = { __tag: "runtimeError", message };
+        return this.buildResult(flowName, qualifier, startedAt, value, message);
+      }
+      if (paramType === "Int") {
+        const tag = ownDataValue(argVal, "__tag");
+        if (tag === "runtimeError") {
+          const failure = inspectRuntimeError(argVal);
+          const message =
+            `Flow '${flowName}' rejected failed Int argument '${paramName}' — ` +
+            (failure.kind === "error" ? failure.message : "host runtime failure; fail-closed");
+          this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
+          return this.buildResult(flowName, qualifier, startedAt, failure.kind === "error" ? failure.value : argVal, message);
+        }
+        const payload = ownDataValue(argVal, "value");
+        if (
+          tag === "int"
+          && typeof payload === "number"
+          && Number.isSafeInteger(payload)
+          && payload >= I32_MIN
+          && payload <= I32_MAX
+        ) {
+          admittedArgs.set(paramName, { __tag: "int", value: payload });
+          continue;
+        }
+        const message =
+          `Flow '${flowName}' received malformed Int argument '${paramName}' — ` +
+          `expected a signed i32 value; fail-closed`;
         this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
         const value: GalerinaValue = { __tag: "runtimeError", message };
         return this.buildResult(flowName, qualifier, startedAt, value, message);
@@ -2031,13 +2179,21 @@ class Interpreter {
       });
     }
 
-    // E5 (PROVISIONAL): a Float32/Float16-returning flow returns a binary32/binary16 value (rounded once at
-    // the flow exit, matching the WASM return lane). Read from this flow's own node, not shared state.
-    if (runtimeError === undefined && flowNode !== undefined && (returnValue.__tag === "float" || returnValue.__tag === "int")) {
+    // Normalize scalar numeric outputs at the declared boundary. Nested host-owned values are untrusted;
+    // descriptor reads avoid executing accessors, validation enforces the declared scalar representation,
+    // and a fresh value prevents the host retaining an alias to the returned runtime object.
+    if (runtimeError === undefined && flowNode !== undefined) {
       const kids = flowNode.children ?? [];
       const rt = kids[kids.filter((c) => c.kind === "paramDecl").length]?.value;
-      const narrowRet = narrowFloatWidthOf(typeof rt === "string" ? this.resolveRuntimeNumericBaseType(rt, flowNode) ?? "" : "");
-      if (narrowRet !== undefined) returnValue = mkNarrowFloat(returnValue.value, narrowRet);
+      const returnBase = typeof rt === "string" ? this.resolveRuntimeNumericBaseType(rt, flowNode) : undefined;
+      if (returnBase !== undefined) {
+        returnValue = normalizeNumericReturn(returnBase, returnValue) ?? returnValue;
+        if (ownDataValue(returnValue, "__tag") === "runtimeError") {
+          const message = ownDataValue(returnValue, "message");
+          runtimeError = typeof message === "string" ? message : "Invalid numeric return value";
+          this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message: runtimeError });
+        }
+      }
     }
 
     // 0040/#70: output post-conditions — evaluate `invariant { ensure result … }` against the
@@ -2066,6 +2222,10 @@ class Interpreter {
     const observedError = inspectRuntimeError(value);
     const error = runtimeError ?? (observedError.kind === "error" ? observedError.message : undefined);
     const resultValue = observedError.kind === "error" ? observedError.value : value;
+    if (NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES.has(value)) {
+      Object.freeze(resultValue);
+      NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES.add(resultValue);
+    }
     // R6B: Include manifest metadata in audit record when manifest was used
     const manifestFields: Partial<ExecutionAuditRecord> =
       this.manifest !== undefined && this.manifest.verified
@@ -2429,7 +2589,7 @@ class Interpreter {
         // 0038 fail-closed: a checked-op trap (overflow/div0) must FAIL THE FLOW where it occurs, not be
         // bound + silently discarded. Soft runtimeErrors (e.g. missing field) keep value semantics. A bad
         // Int64 literal (Step 1b) also fails closed. (Non-Int64 behaviour is unchanged.)
-        if (isCheckedTrap(initVal) || ((letDeclBase === "Int64" || letDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
+        if (isNonDiscardableStatementFailure(initVal) || ((letDeclBase === "Int64" || letDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
         const wrappedVal = wrapGovernedValue(initVal, rawType);
         // R1C: Soft-tag governed values with a non-enumerable _governed property (Phase 11D)
         if (rawType.startsWith("protected ") || rawType.startsWith("redacted ")) {
@@ -2448,7 +2608,7 @@ class Interpreter {
         }
         const mutDeclBase = resolvedBase ?? "";
         const initVal = await this.evalBindingInit(initNode, mutDeclBase);
-        if (isCheckedTrap(initVal) || ((mutDeclBase === "Int64" || mutDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
+        if (isNonDiscardableStatementFailure(initVal) || ((mutDeclBase === "Int64" || mutDeclBase === "UInt64") && initVal.__tag === "runtimeError")) return initVal;
         const value = wrapGovernedValue(initVal, rawType);
         // R1C: Soft-tag governed values with a non-enumerable _governed property (Phase 11D)
         if (rawType.startsWith("protected ") || rawType.startsWith("redacted ")) {
@@ -2653,7 +2813,7 @@ class Interpreter {
           ? rawValue
           : coerceToDeclaredNumeric(targetBase, rawValue, rhsNode);
         if (
-          isCheckedTrap(newValue) ||
+          isNonDiscardableStatementFailure(newValue) ||
           ((targetBase === "Int64" || targetBase === "UInt64") && newValue.__tag === "runtimeError")
         ) return newValue; // fail closed: do not assign or discard a failed wide-integer conversion
         if (!this.assign(targetName, newValue)) {
@@ -2700,6 +2860,7 @@ class Interpreter {
           // calls). checkDeadline() throws [FUNGI-TIMEOUT] when exceeded → runFlow's catch fails closed.
           this.enforcer?.checkDeadline();
           const cond = await this.evalExpr(conditionNode);
+          if (isNonDiscardableStatementFailure(cond)) return cond;
           // Same truthy check as ifStmt: bool, non-zero int, some, ok
           const condTruthy =
             (cond.__tag === "bool" && cond.value) ||
@@ -2722,6 +2883,7 @@ class Interpreter {
         if (collectionNode === undefined || bodyNode === undefined) return undefined;
 
         const collection = await this.evalExpr(collectionNode);
+        if (isNonDiscardableStatementFailure(collection)) return collection;
         const items = collection.__tag === "list" ? collection.items : [];
 
         const MAX_ITERATIONS = this.runtimeOptions.maxIterations ?? 100_000;
@@ -2739,6 +2901,10 @@ class Interpreter {
           let pass = true;
           if (whereGuard !== undefined) {
             const g = await this.evalExpr(whereGuard);
+            if (isNonDiscardableStatementFailure(g)) {
+              this.popScope();
+              return g;
+            }
             pass = (g.__tag === "bool" && g.value) ||
                    (g.__tag === "int" && g.value !== 0) ||
                    (g.__tag === "float" && g.value !== 0) ||
@@ -2765,7 +2931,7 @@ class Interpreter {
       default: {
         // 0038 fail-closed: a bare expression-statement that hits a checked-op trap must fail the flow.
         const v = await this.evalExpr(node);
-        return isCheckedTrap(v) ? v : undefined;
+        return isNonDiscardableStatementFailure(v) ? v : undefined;
       }
     }
   }
@@ -2796,14 +2962,11 @@ class Interpreter {
 
       case "numberLiteral": {
         const raw = (node.value ?? "0").replace(/_/g, "");
-        if (raw.startsWith("0x") || raw.startsWith("0X")) return { __tag: "int", value: parseInt(raw, 16) };
-        if (raw.startsWith("0b") || raw.startsWith("0B")) return { __tag: "int", value: parseInt(raw.slice(2), 2) };
-        if (raw.startsWith("0o") || raw.startsWith("0O")) return { __tag: "int", value: parseInt(raw.slice(2), 8) };
         // float if it has a '.' OR a decimal exponent (`1e400`, `9e9`); mkFloat traps an overflow-to-±Inf
         // literal. The dotless-exponent case was previously mis-read as int (`9e9` → 9). (FUNGI-FLOAT-NAN-001.)
         return raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)
           ? mkFloat(parseFloat(raw))
-          : { __tag: "int", value: parseInt(raw, 10) };
+          : i32R(i32FromLiteralText(raw));
       }
 
       case "boolLiteral":
@@ -2814,7 +2977,11 @@ class Interpreter {
 
       case "listLiteral": {
         const items: GalerinaValue[] = [];
-        for (const child of node.children ?? []) items.push(await this.evalExpr(child));
+        for (const child of node.children ?? []) {
+          const item = await this.evalExpr(child);
+          if (isNonDiscardableStatementFailure(item)) return item;
+          items.push(item);
+        }
         return { __tag: "list", items };
       }
 
@@ -2877,6 +3044,12 @@ class Interpreter {
       case "unaryExpr": {
         const operandNode = node.children?.[0];
         if (operandNode === undefined) return FUNGI_VOID;
+        if (node.value === "-" && operandNode.kind === "numberLiteral" && typeof operandNode.value === "string") {
+          const raw = operandNode.value.replace(/_/g, "");
+          if (!raw.includes(".") && !/^\d+[eE][+-]?\d+$/.test(raw)) {
+            return i32R(i32FromLiteralText(`-${raw}`));
+          }
+        }
         const operand = await this.evalExpr(operandNode);
         const op = node.value ?? "";
         if (operand.__tag === "runtimeError") return operand; // fail closed through unaries
@@ -3051,11 +3224,13 @@ class Interpreter {
     }
 
     const left = await this.evalExpr(leftNode);
+    if (isNonDiscardableStatementFailure(left)) return left;
     // Equality is a decision boundary for admitted String comparisons too: a soft runtime error
     // (for example, a missing JSON record field) must not be collapsed into ordinary inequality.
     // Preserve left-to-right evaluation and do not run a right-side effect after this refusal.
     if ((op === "==" || op === "!=") && left.__tag === "runtimeError") return left;
     const right = await this.evalExpr(rightNode);
+    if (isNonDiscardableStatementFailure(right)) return right;
 
     // 0038: a CHECKED-OP trap operand (IntegerOverflow / DivisionByZero) PROPAGATES through the
     // expression — otherwise the dispatch-miss fallthrough below masks it as a soft "Operator '…' not
@@ -3174,6 +3349,7 @@ class Interpreter {
           const fieldValue = fieldValueNode !== undefined
             ? await this.evalExpr(fieldValueNode)
             : { __tag: "void" as const };
+          if (isNonDiscardableStatementFailure(fieldValue)) return fieldValue;
           fields.set(fieldName, fieldValue);
         }
       }
@@ -3192,6 +3368,7 @@ class Interpreter {
         if (child.value === "#spread") {
           const baseNode = child.children?.[0];
           const baseVal = baseNode !== undefined ? await this.evalExpr(baseNode) : undefined;
+          if (baseVal !== undefined && isNonDiscardableStatementFailure(baseVal)) return baseVal;
           if (baseVal === undefined || baseVal.__tag !== "record") {
             return { __tag: "runtimeError", message: "record update '...' spread base is not a record" };
           }
@@ -3201,6 +3378,7 @@ class Interpreter {
           const fieldValue = fieldValueNode !== undefined
             ? await this.evalExpr(fieldValueNode)
             : { __tag: "void" as const };
+          if (isNonDiscardableStatementFailure(fieldValue)) return fieldValue;
           fields.set(child.value, fieldValue);
         }
       }
@@ -3230,7 +3408,7 @@ class Interpreter {
       // and cannot be converted into apparent success (Ok/Some) or a handleable
       // domain error (Err). This also keeps the walker aligned with WAT, where
       // the trap fires before the constructor host call is reached.
-      if (isCheckedTrap(payload)) return payload;
+      if (isNonDiscardableStatementFailure(payload)) return payload;
       if (methodName === "Ok") return { __tag: "ok", value: payload };
       if (methodName === "Err") return { __tag: "err", error: payload };
       return { __tag: "some", value: payload };
@@ -3241,6 +3419,13 @@ class Interpreter {
     }
 
     const evaluatedReceiver = receiver !== undefined ? await this.evalExpr(receiver) : undefined;
+    // A receiver may itself be a failed nested computation (including a marked
+    // wide-integer host refusal). Do not evaluate method arguments after that
+    // failure: they may have observable effects, and dispatch would otherwise
+    // replace the original refusal with a discardable method error.
+    if (evaluatedReceiver !== undefined && isNonDiscardableStatementFailure(evaluatedReceiver)) {
+      return evaluatedReceiver;
+    }
     const evaluatedArgs: GalerinaValue[] = [];
     const argumentFlow = receiver === undefined && resolveCapabilityEffect(fullName) === undefined
       ? this.flowIndex.get(methodName)
@@ -3740,7 +3925,9 @@ class Interpreter {
         return this.staticConstants.get(dottedKey)!;
       }
     }
-    return this.evalMethodCall(await this.evalExpr(receiver), memberName, []);
+    const receiverValue = await this.evalExpr(receiver);
+    if (isNonDiscardableStatementFailure(receiverValue)) return receiverValue;
+    return this.evalMethodCall(receiverValue, memberName, []);
   }
 
   private getReceiverName(node: AstNode): string {
@@ -3832,7 +4019,9 @@ class Interpreter {
 
   private isWideIntegerArgumentFailure(value: GalerinaValue, paramNode: AstNode | undefined): boolean {
     const paramBase = this.resolveRuntimeNumericBaseType(bindingTypeName(paramNode?.value ?? ""), paramNode);
-    return (paramBase === undefined || paramBase === "Int64" || paramBase === "UInt64") && value.__tag === "runtimeError";
+    return NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES.has(value)
+      || ((paramBase === undefined || paramBase === "Int64" || paramBase === "UInt64")
+        && ownDataValue(value, "__tag") === "runtimeError");
   }
 
   private async runNestedFlow(name: string, argNodes: readonly AstNode[]): Promise<GalerinaValue> {
@@ -3972,6 +4161,32 @@ function buildFlowIndex(ast: AstNode): ReadonlyMap<string, AstNode> {
   indexOrdinary(ast);
   indexGovernedSecure(ast);
   return index;
+}
+
+/** Reject malformed host Int/i32 arguments before any synchronous or bytecode fast path can wrap them. */
+function hasInvalidHostIntParameter(
+  ast: AstNode,
+  flowName: string,
+  args: ReadonlyMap<string, GalerinaValue>,
+): boolean {
+  const flowNode = buildFlowIndex(ast).get(flowName);
+  if (flowNode === undefined) return false;
+  const scopes = collectRuntimeTypeAliases(ast);
+  for (const param of flowNode.children ?? []) {
+    if (param.kind !== "paramDecl") continue;
+    if (resolveRuntimeNumericBaseType(bindingTypeName(param.value ?? ""), scopes.get(param)) !== "Int") continue;
+    const arg = args.get(extractParamName(param.value ?? "")) ?? FUNGI_VOID;
+    const tag = ownDataValue(arg, "__tag");
+    const payload = ownDataValue(arg, "value");
+    if (
+      tag !== "int"
+      || typeof payload !== "number"
+      || !Number.isSafeInteger(payload)
+      || payload < I32_MIN
+      || payload > I32_MAX
+    ) return true;
+  }
+  return false;
 }
 
 function matchPattern(
@@ -4309,10 +4524,28 @@ function isCheckedTrap(value: GalerinaValue): boolean {
   return m === "IntegerOverflow" || m === "DivisionByZero" ||
     isExactTrapLabel(m) ||                             // R6: the shared Decimal/Money trap vocabulary
     m === FLOAT_NONFINITE_TRAP ||                      // non-finite float (NaN/±Inf) — FUNGI-FLOAT-NAN-001
+    m.includes("FUNGI-INV-001") ||                    // failed nested-flow precondition must not be discarded
+    m.includes("FUNGI-INV-002") ||                    // failed nested-flow postcondition must not be discarded
     m.includes("FUNGI-INV-000 trap") ||               // named `trap COND : ERROR_CODE` firing
     m.includes("Compute budget exceeded") ||         // global compute-step cap (maxSteps)
     m.includes("Loop exceeded maximum iteration") ||  // per-loop cap (maxIterations)
     m.includes("Recursion depth exceeded");           // call-depth cap (maxCallDepth)
+}
+
+/** Refusals returned by a nested declared-wide argument conversion are hard at statement boundaries.
+ * Keep this separate from isCheckedTrap: numeric expression coercion still needs to normalize ordinary
+ * type mismatches, while a standalone binding/expression may not silently discard host-boundary refusal. */
+function isNonDiscardableStatementFailure(value: GalerinaValue): boolean {
+  if (isCheckedTrap(value)) return true;
+  if (NON_DISCARDABLE_WIDE_ARGUMENT_FAILURES.has(value)) return true;
+  if (ownDataValue(value, "__tag") !== "runtimeError") return false;
+  const message = ownDataValue(value, "message");
+  if (typeof message !== "string") return false;
+  return message.includes("received invalid Int64 argument")
+    || message.includes("received invalid UInt64 argument")
+    || message.includes("Invalid Int64 payload")
+    || message.includes("Invalid UInt64 payload")
+    || /cannot represent .* as (Int64|UInt64)$/.test(message);
 }
 
 function stripStringQuotes(value: string): string {
@@ -4782,6 +5015,12 @@ export async function executeFlow(
   args = snapshotHostRuntimeErrors(args);
   const productContext = runtimeOptions?.productArtifactContext
     ?? requireFixedGalerinaProductContext();
+  const pureFastPathFlowNode = runtimeOptions?.pureFastPath === true
+    ? buildFlowIndex(ast).get(flowName)
+    : undefined;
+  const pureFastPathTypeScopes = pureFastPathFlowNode === undefined
+    ? undefined
+    : collectRuntimeTypeAliases(ast);
   // Pure flow erasure fast path:
   // When pureFastPath is explicitly set to true AND the flow is provably
   // IsPure + EffectFree (no declared effects), skip all governance overhead
@@ -4795,6 +5034,10 @@ export async function executeFlow(
   if (
     runtimeOptions?.pureFastPath === true &&   // opt-in: pass { pureFastPath: true } to enable
     isPureEffectFree(ast, flowName) &&
+    pureFastPathFlowNode !== undefined &&
+    pureFastPathTypeScopes !== undefined &&
+    !flowDeclaresRuntimeWideInteger(pureFastPathFlowNode, pureFastPathTypeScopes) &&
+    !hasInvalidHostIntParameter(ast, flowName, args) &&
     // Invariants, admissions, and named traps must take the governed exit.
     // Bytecode/sync/cache cannot bypass control they do not yet model.
     !flowRequiresGovernedPath(ast, flowName)
@@ -4987,6 +5230,8 @@ export async function executeFlow(
       // ExecutionGraph also returns early; exclude every governed-only control
       // until the graph tier proves equivalent enforcement.
       if (egraphEnabled && egraph.isPure && enforcer === undefined && capabilityHost === undefined
+          && !hasInvalidHostIntParameter(ast, flowName, args)
+          && !flowDeclaresRuntimeWideInteger(flowNode, collectRuntimeTypeAliases(ast))
           && !flowRequiresGovernedPath(ast, flowName)) {
         const fastResult = runFromGraph(egraph, args);
         if (fastResult !== null) {

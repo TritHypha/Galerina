@@ -103,7 +103,7 @@ test("G5(a): public anti-wipe oracle rejects an executed wipe inserted before na
   const { instance } = await build(mk(false), wat => {
     // Inject into one generated function, after locals but BEFORE its rebase;
     // otherwise a zero-length wipe would not exercise the intended failure.
-    const target = /(\(func \$narrow\b[\s\S]*?)(\(global\.set \$__fungi_heap \(i32\.const 1024\)\))/g;
+    const target = /(\(func \$narrow_impl\b[\s\S]*?)(\(global\.set \$__fungi_heap \(i32\.const 1024\)\))/g;
     assert.equal([...wat.matchAll(target)].length, 1, 'exact mutation site');
     return wat.replace(target, '$1(call $__fungi_wipe_owned)\n    $2');
   });

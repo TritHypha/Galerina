@@ -33,7 +33,7 @@ function intValue(value) {
 }
 
 function arrayValue(items) {
-  return { __tag: "array", items };
+  return { __tag: "list", items };
 }
 
 function clone(value) {

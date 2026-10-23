@@ -1,5 +1,5 @@
 /**
- * J6b / E2c stage 2 — type-checker informal Array<Auto> decls + nested get→Some.
+ * J6b / E2c stage 2 — declared collection layouts and fail-closed Array<Auto> cases.
  *
  * Live traps of this form: buildStaticEnv `{kind,name,value,typeName}`,
  * buildBitfieldEnv decls `{kind,fields,register}` + nested fields.get `{name,mask}`.
@@ -37,19 +37,19 @@ function unresolvedMembers(wat) {
 }
 
 const STATIC_DECLS = `
-record StaticEnv { entries: Array<Auto> }
-pure flow buildStaticEnv(decls: Array<Auto>) -> StaticEnv
+record StaticDecl { name: String valueExpr: String inferredType: String }
+record StaticEntry { name: String value: String typeName: String }
+record StaticEnv { entries: Array<StaticEntry> }
+pure flow buildStaticEnv(decls: Array<StaticDecl>) -> StaticEnv
 contract { effects {} }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<StaticEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
     match dOpt {
       Some(d) => {
-        if d.kind == "static" {
-          entries = entries.append({ name: d.name, value: d.value, typeName: d.typeName })
-        }
+        entries = entries.append({ name: d.name, value: d.valueExpr, typeName: d.inferredType })
       }
       None => {}
       _ => {}
@@ -61,11 +61,14 @@ contract { effects {} }
 `;
 
 const BITFIELD_DECLS = `
-record BitfieldEnv { entries: Array<Auto> }
-pure flow buildBitfieldEnv(decls: Array<Auto>) -> BitfieldEnv
+record BitfieldFieldInput { name: String mask: Int }
+record BitfieldBuildInput { kind: String register: String fields: Array<BitfieldFieldInput> }
+record BitfieldEnvEntry { register: String field: String mask: Int }
+record BitfieldEnv { entries: Array<BitfieldEnvEntry> }
+pure flow buildBitfieldEnv(decls: Array<BitfieldBuildInput>) -> BitfieldEnv
 contract { effects {} }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<BitfieldEnvEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -132,20 +135,19 @@ contract { effects {} }
 }
 `;
 
-describe("J6b #100 informal Array<Auto> decls + nested get→Some", () => {
-  it("buildStaticEnv decls get→Some(d) loads kind/name/value/typeName", () => {
+describe("J6b #100 declared layouts and fail-closed Array<Auto> cases", () => {
+  it("buildStaticEnv uses the three-field declared StaticDecl input layout", () => {
     const wat = render(STATIC_DECLS, "j6b-static.fungi");
     assert.deepEqual(
-      unresolvedMembers(wat).filter((m) => m === "kind" || m === "name" || m === "value" || m === "typeName"),
+      unresolvedMembers(wat).filter((m) => m === "name" || m === "valueExpr" || m === "inferredType"),
       [],
     );
-    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 0\)\)/, "d.kind at offset 0");
-    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 4\)\)/, "d.name at offset 4");
-    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 8\)\)/, "d.value at offset 8");
-    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 12\)\)/, "d.typeName at offset 12");
+    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 0\)\)/, "d.name at offset 0");
+    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 4\)\)/, "d.valueExpr at offset 4");
+    assert.match(wat, /i32\.load \(i32\.add [^\n]* \(i32\.const 8\)\)/, "d.inferredType at offset 8");
   });
 
-  it("buildBitfieldEnv decls + nested fields.get loads kind/fields/register and name/mask", () => {
+  it("buildBitfieldEnv uses declared normalized field and declaration layouts", () => {
     const wat = render(BITFIELD_DECLS, "j6b-bitfield.fungi");
     assert.deepEqual(
       unresolvedMembers(wat).filter((m) =>
@@ -170,11 +172,11 @@ describe("J6b #100 informal Array<Auto> decls + nested get→Some", () => {
 
   it("interpreter≡WASM: informal {kind,name,value,typeName} match-bound loads", async () => {
     const src = `
+record StaticProbeRow { kind: String name: String value: String typeName: String }
 pure flow probe() -> Int
 contract { effects {} }
 {
-  mut decls: Array<Auto> = Array.empty()
-  decls = decls.append({ kind: "static", name: "x", value: "1", typeName: "Int" })
+  let decls = Array.empty().append({ kind: "static", name: "x", value: "1", typeName: "Int" })
   match decls.get(0) {
     Some(d) => {
       if d.kind == "static" {

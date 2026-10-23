@@ -290,11 +290,11 @@ describe("T9 no C20 run-time stub in wat-emitter.ts", () => {
   });
 });
 
-describe("T10 L1 200/200 plus 7-stage hashes unchanged", () => {
-  it("live ladder is 200/200 = 100 and reports refused separately", async () => {
+describe("T10 live L1 corpus plus historical 7-stage hashes", () => {
+  it("live ladder measures all current flows and reports refused separately", async () => {
     const live = await watLoweringLadderAsync();
-    assert.equal(live.total, 200);
-    assert.equal(live.done, 200);
+    assert.equal(live.total, 203);
+    assert.equal(live.done, 203);
     assert.equal(live.pct, 100);
     assert.equal(typeof live.refused, "number");
     assert.equal(live.refused, 0);

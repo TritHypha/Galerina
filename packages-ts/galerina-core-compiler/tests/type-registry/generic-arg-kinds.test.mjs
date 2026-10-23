@@ -16,6 +16,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { parseProgram, checkTypes } from "../../dist/index.js";
+import { genericArgumentKind } from "../../dist/generic-argument-kinds.js";
 
 function codesFor(source) {
   const parsed = parseProgram(source, "test.fungi");
@@ -48,5 +49,13 @@ describe("GENERIC_ARG_KINDS: a non-type arg position never raises FUNGI-TYPE-001
       codes.includes("FUNGI-TYPE-001"),
       `expected FUNGI-TYPE-001 for MadeUpErrorXyz but got: [${codes.join(", ")}]`,
     );
+  });
+});
+
+describe("genericArgumentKind: invalid positions are not inferred as type arguments", () => {
+  it("refuses surplus, negative, and fractional positions for a known generic", () => {
+    assert.equal(genericArgumentKind("Brand", 2), undefined);
+    assert.equal(genericArgumentKind("Brand", -1), undefined);
+    assert.equal(genericArgumentKind("Brand", 0.5), undefined);
   });
 });

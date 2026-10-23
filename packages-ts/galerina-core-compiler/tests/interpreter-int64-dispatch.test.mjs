@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { BINARY_DISPATCH, dispatchKey } from "../dist/interpreter.js";
-import { checkTypes, executeFlow, executeFlowSync, parseProgram, resolveSymbols, tryPureFlowSync } from "../dist/index.js";
+import { checkTypes, clearPureFlowCache, executeFlow, executeFlowSync, parseProgram, resolveSymbols, tryPureFlowSync } from "../dist/index.js";
 import { I64_MAX, I64_MIN } from "../dist/i64-arith.js";
 
 const i64 = (v) => ({ __tag: "int64", value: v });
@@ -62,6 +62,65 @@ describe("interpreter 64-bit literals passed across flow calls", () => {
       pure flow caller() -> UInt64 contract { effects {} } { return identity(18446744073709551615) }
     `, "caller");
     assert.deepEqual(result.value, { __tag: "uint64", value: 18446744073709551615n });
+  });
+
+  it("does not discard a nested flow postcondition failure when its binding is unused", async () => {
+    const source = `
+      flow bad() -> UInt64
+      contract { invariant { ensure result > 5 } }
+      { return 1 }
+      flow caller() -> UInt64 {
+        let ignored = bad()
+        return 7
+      }
+    `;
+    const parsed = parseProgram(source, "nested-postcondition-refusal.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "fixture must parse");
+    resolveSymbols(parsed.ast);
+    const typeDiagnostics = checkTypes(parsed.ast).diagnostics;
+    assert.equal(typeDiagnostics.filter((d) => d.severity === "error").length, 0, "fixture must typecheck");
+
+    const refused = await executeFlow("caller", new Map(), parsed.ast);
+    assert.equal(refused.value.__tag, "runtimeError", "nested postcondition refusal must fail the caller");
+    assert.equal(refused.audit.result, "error", "caller must not report success after the nested refusal");
+
+    const validParsed = parseProgram(source.replace("return 1", "return 6"), "nested-postcondition-valid.fungi");
+    resolveSymbols(validParsed.ast);
+    assert.equal(checkTypes(validParsed.ast).diagnostics.filter((d) => d.severity === "error").length, 0, "valid control must typecheck");
+    const valid = await executeFlow("caller", new Map(), validParsed.ast);
+    assert.deepEqual(valid.value, { __tag: "uint64", value: 7n }, "valid nested result must preserve caller behavior");
+    assert.equal(valid.audit.result, "ok");
+  });
+
+  it("does not discard a malformed nested UInt64 argument refusal when its binding is unused", async () => {
+    const source = `
+      flow id(x: UInt64) -> UInt64 { return x }
+      flow caller(xs: Array<UInt64>) -> Int {
+        let ignored = id(xs.first().unwrapOr(0))
+        return 7
+      }
+    `;
+    const parsed = parseProgram(source, "nested-malformed-wide-refusal.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "fixture must parse");
+    resolveSymbols(parsed.ast);
+    assert.equal(checkTypes(parsed.ast).diagnostics.filter((d) => d.severity === "error").length, 0, "fixture must typecheck");
+
+    const direct = await executeFlow("id", new Map([[
+      "x", { __tag: "uint64", value: "bad" },
+    ]]), parsed.ast);
+    assert.equal(direct.value.__tag, "runtimeError", `direct callee boundary must refuse: ${JSON.stringify(direct)}`);
+
+    const refused = await executeFlow("caller", new Map([[
+      "xs", { __tag: "list", items: [{ __tag: "uint64", value: "bad" }] },
+    ]]), parsed.ast);
+    assert.equal(refused.value.__tag, "runtimeError", `nested wide-boundary refusal must fail the caller: ${JSON.stringify(refused)}`);
+    assert.equal(refused.audit.result, "error", "caller must not report success after the nested refusal");
+
+    const valid = await executeFlow("caller", new Map([[
+      "xs", { __tag: "list", items: [{ __tag: "uint64", value: 9n }] },
+    ]]), parsed.ast);
+    assert.deepEqual(valid.value, { __tag: "int", value: 7 }, "valid nested argument must preserve caller behavior");
+    assert.equal(valid.audit.result, "ok");
   });
 
   it("fails closed when a negative literal is passed to a UInt64 parameter", async () => {
@@ -276,6 +335,152 @@ describe("interpreter 64-bit literals passed across flow calls", () => {
     `, "ignores", new Map([["value", { __tag: "int", value: -1 }]]));
     assert.equal(result.value.__tag, "runtimeError");
     assert.match(result.value.message, /IntegerOverflow/);
+  });
+
+  it("refuses out-of-i32 host Int values before sync or pure-fast-path execution", async () => {
+    const parsed = parseProgram(`
+      pure flow identity(value: Int) -> Int contract { effects {} } { return value }
+    `, "host-int-i32-boundary.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+    const args = new Map([["value", int(2147483648)]]);
+
+    assert.equal(executeFlowSync("identity", args, parsed.ast, parsed.flows), null,
+      "the sync entry must decline malformed Int inputs so the checked walker can reject them");
+    const optimized = await executeFlow("identity", args, parsed.ast, parsed.flows,
+      undefined, undefined, { pureFastPath: true });
+    assert.equal(optimized.value.__tag, "runtimeError",
+      "the opt-in bytecode/sync/cache path must not wrap an out-of-i32 host Int");
+    assert.match(optimized.value.message, /signed i32 value/);
+    assert.equal(optimized.executionTier, "tree");
+  });
+
+  it("refuses out-of-i32 host Int values on the execution-graph route too", async () => {
+    const parsed = parseProgram(`
+      pure flow identity(value: Int) -> Int contract { effects {} } { return value }
+    `, "host-int-i32-egraph-boundary.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+
+    const valid = await executeFlow("identity", new Map([["value", int(2147483647)]]), parsed.ast,
+      undefined, undefined, undefined, { egraphFastPath: true });
+    assert.deepEqual(valid.value, int(2147483647), "the signed i32 maximum remains admitted");
+    assert.equal(valid.executionTier, "egraph", "positive control proves the graph route was exercised");
+
+    for (const options of [
+      { egraphFastPath: true },
+      { pureFastPath: true, egraphFastPath: true },
+    ]) {
+      const refused = await executeFlow("identity", new Map([["value", int(2147483648)]]), parsed.ast,
+        undefined, undefined, undefined, options);
+      assert.equal(refused.value.__tag, "runtimeError", "every selected execution route must enforce Int admission");
+      assert.match(refused.value.message, /signed i32 value/);
+      assert.notEqual(refused.executionTier, "egraph");
+    }
+  });
+
+  it("does not admit an invalid host UInt64 through the execution-graph route", async () => {
+    const parsed = parseProgram(`
+      pure flow identity(value: UInt64) -> UInt64 contract { effects {} } { return value }
+    `, "host-uint64-egraph-boundary.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+
+    for (const options of [
+      { egraphFastPath: true },
+      { pureFastPath: true, egraphFastPath: true },
+    ]) {
+      const result = await executeFlow("identity", new Map([["value", { __tag: "uint64", value: -1n }]]),
+        parsed.ast, undefined, undefined, undefined, options);
+
+      assert.equal(result.value.__tag, "runtimeError", "invalid UInt64 must be refused before an unchecked graph return");
+      assert.equal(result.audit.result, "error");
+      assert.notEqual(result.executionTier, "egraph", "unchecked graph execution must not bypass wide-value admission");
+    }
+  });
+
+  it("does not admit an invalid aliased UInt64 through the execution-graph route", async () => {
+    const parsed = parseProgram(`
+      type Count = UInt64
+      pure flow identity(value: Count) -> Count contract { effects {} } { return value }
+    `, "host-uint64-alias-egraph-boundary.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+
+    const result = await executeFlow("identity", new Map([["value", { __tag: "uint64", value: -1n }]]),
+      parsed.ast, undefined, undefined, undefined, { pureFastPath: true, egraphFastPath: true });
+
+    assert.equal(result.value.__tag, "runtimeError", "invalid alias payload must be refused before an unchecked graph return");
+    assert.equal(result.audit.result, "error");
+    assert.notEqual(result.executionTier, "egraph");
+  });
+
+  it("falls back to checked execution for an exact valid UInt64 when the graph tier is requested", async () => {
+    const parsed = parseProgram(`
+      pure flow identity(value: UInt64) -> UInt64 contract { effects {} } { return value }
+    `, "host-uint64-egraph-fallback.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+
+    const result = await executeFlow("identity", new Map([["value", { __tag: "uint64", value: 18446744073709551615n }]]),
+      parsed.ast, undefined, undefined, undefined, { egraphFastPath: true });
+
+    assert.deepEqual(result.value, { __tag: "uint64", value: 18446744073709551615n });
+    assert.equal(result.audit.result, "ok");
+    assert.equal(result.executionTier, "tree", "wide values must use the checked tree tier until graph admission is implemented");
+  });
+
+  it("does not let a cached pure-flow result bypass wide-integer admission", async () => {
+    clearPureFlowCache();
+    const parsed = parseProgram(`
+      pure flow identity(value: Int64) -> Int64 contract { effects {} } { return value }
+    `, "wide-cache-admission.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+    const args = new Map([["value", i64(9007199254740993n)]]);
+    const options = { pureFastPath: true, egraphFastPath: true };
+
+    const first = await executeFlow("identity", args, parsed.ast, undefined, undefined, undefined, options);
+    const second = await executeFlow("identity", args, parsed.ast, undefined, undefined, undefined, options);
+
+    assert.deepEqual(first.value, i64(9007199254740993n));
+    assert.deepEqual(second.value, i64(9007199254740993n));
+    assert.equal(first.executionTier, "tree");
+    assert.equal(second.executionTier, "tree", "a cache hit must not bypass checked wide-value admission");
+  });
+
+  it("refuses a host runtimeError argument before an Int flow can ignore it", async () => {
+    const parsed = parseProgram(`
+      pure flow ignores(value: Int) -> Int contract { effects {} } { return 7 }
+    `, "host-int-runtime-error-boundary.fungi");
+    assert.equal(parsed.diagnostics.filter((d) => d.severity === "error").length, 0, "parse must succeed");
+    resolveSymbols(parsed.ast);
+    checkTypes(parsed.ast);
+    const args = new Map([["value", { __tag: "runtimeError", message: "upstream failure" }]]);
+    for (const options of [
+      undefined,
+      { pureFastPath: true },
+      { egraphFastPath: true },
+      { pureFastPath: true, egraphFastPath: true },
+    ]) {
+      const result = await executeFlow("ignores", args, parsed.ast, undefined, undefined, undefined, options);
+      assert.equal(result.value.__tag, "runtimeError", "an error-valued host argument is not a valid Int input");
+      assert.equal(result.audit.result, "error", "the refusal must be visible in execution evidence");
+      assert.equal(result.value.message, "Host-supplied runtime error",
+        "host-owned error text stays redacted while still refusing the typed Int parameter");
+      assert.ok(result.diagnostics.some((diagnostic) => diagnostic.code === "FUNGI-RUNTIME-003"),
+        "the typed-entry refusal must retain its runtime diagnostic");
+      assert.doesNotMatch(JSON.stringify(result.diagnostics), /upstream failure/,
+        "diagnostics must not disclose host-owned error text");
+      assert.doesNotMatch(JSON.stringify(result.audit), /upstream failure/,
+        "audit output must not disclose host-owned error text");
+    }
   });
 
   for (const [type, tag] of [["Int64", "int64"], ["UInt64", "uint64"]]) {
@@ -563,7 +768,154 @@ describe("interpreter 64-bit literals passed across flow calls", () => {
     assert.equal(messageReads, 0, "result construction must use only an own data message");
   });
 
-  it("refuses an accessor-backed host tag in the synchronous flow entry", () => {
+  it("does not invoke a nested host __tag accessor while returning a collection element", async () => {
+    let tagReads = 0;
+    const hostile = {};
+    Object.defineProperty(hostile, "__tag", {
+      get() {
+        tagReads += 1;
+        throw new Error("untrusted nested tag accessor ran");
+      },
+    });
+    const result = await runSourceFlow(`
+      flow expose(values: Array<Int>) -> Int {
+        return values.first().unwrapOr(0)
+      }
+    `, "expose", new Map([["values", { __tag: "list", items: [hostile] }]]));
+
+    assert.equal(result.audit.result, "error");
+    assert.equal(result.value.__tag, "runtimeError");
+    assert.equal(tagReads, 0, "host-owned nested tag accessors must never execute during result handling");
+  });
+
+  it("refuses a malformed numeric payload returned from a host-owned collection", async () => {
+    const result = await runSourceFlow(`
+      flow expose(values: Array<Float32>) -> Float32 {
+        return values.first().unwrapOr(0)
+      }
+    `, "expose", new Map([["values", { __tag: "list", items: [{ __tag: "float", value: "not-a-number" }] }]]));
+
+    assert.equal(result.value.__tag, "runtimeError", "a forged numeric tag with a non-number payload must not escape");
+    assert.equal(result.audit.result, "error", "malformed numeric return must not be recorded as successful execution");
+  });
+
+  it("does not widen an out-of-i32 host Int from a collection into Int64", async () => {
+    for (const [type, payload] of [
+      ["Int64", -2147483649],
+      ["Int64", 2147483648],
+      ["UInt64", -1],
+      ["UInt64", 2147483648],
+    ]) {
+      const result = await runSourceFlow(`
+        flow expose(values: Array<${type}>) -> ${type} {
+          return values.first().unwrapOr(0)
+        }
+      `, "expose", new Map([[
+        "values", { __tag: "list", items: [{ __tag: "int", value: payload }] },
+      ]]));
+
+      assert.equal(result.value.__tag, "runtimeError", `out-of-i32 host Int must not widen into ${type}`);
+      assert.equal(result.audit.result, "error");
+    }
+  });
+
+  it("widens only valid i32 boundary values when returning Int64 or UInt64", async () => {
+    for (const [type, payload, expected] of [
+      ["Int64", -2147483648, i64(-2147483648n)],
+      ["Int64", 2147483647, i64(2147483647n)],
+      ["UInt64", 0, { __tag: "uint64", value: 0n }],
+      ["UInt64", 2147483647, { __tag: "uint64", value: 2147483647n }],
+    ]) {
+      const result = await runSourceFlow(`
+        flow expose(values: Array<${type}>) -> ${type} {
+          return values.first().unwrapOr(0)
+        }
+      `, "expose", new Map([[
+        "values", { __tag: "list", items: [{ __tag: "int", value: payload }] },
+      ]]));
+
+      assert.deepEqual(result.value, expected, `${type} must widen an in-range i32 exactly`);
+      assert.equal(result.audit.result, "ok");
+    }
+  });
+
+  it("validates the declared numeric return shape before recording success", async () => {
+    let payloadReads = 0;
+    const accessorPayload = { __tag: "float" };
+    Object.defineProperty(accessorPayload, "value", {
+      get() {
+        payloadReads += 1;
+        return 1.5;
+      },
+    });
+    for (const [type, payload] of [
+      ["Float32", { value: 1 }],
+      ["Float32", { __tag: "forged-float", value: 1 }],
+      ["Float32", { __tag: "float" }],
+      ["Float32", accessorPayload],
+      ["Float16", { __tag: "float", value: Number.NaN }],
+      ["Float16", { __tag: "float", value: Number.POSITIVE_INFINITY }],
+      ["Float16", { __tag: "float", value: 65520 }],
+      ["Float64", { __tag: "float", value: Number.NaN }],
+      ["Float64", { __tag: "float", value: Number.NEGATIVE_INFINITY }],
+      ["Int", { __tag: "int", value: "not-an-integer" }],
+      ["Int64", { __tag: "int64", value: "not-an-integer" }],
+      ["UInt64", { __tag: "uint64", value: -1n }],
+    ]) {
+      const result = await runSourceFlow(`
+        flow expose(values: Array<${type}>) -> ${type} {
+          return values.first().unwrapOr(0)
+        }
+      `, "expose", new Map([["values", { __tag: "list", items: [payload] }]]));
+
+      assert.equal(result.value.__tag, "runtimeError", `${type} malformed return must be refused`);
+      assert.equal(result.audit.result, "error", `${type} malformed return must not receive an ok audit`);
+    }
+    assert.equal(payloadReads, 0, "numeric return validation must not invoke a host-owned payload accessor");
+  });
+
+  it("does not invoke a nested host payload accessor while admitting an optimized pure flow", async () => {
+    let payloadReads = 0;
+    const hostile = { __tag: "float" };
+    Object.defineProperty(hostile, "value", {
+      get() {
+        payloadReads += 1;
+        return 1.5;
+      },
+    });
+    const result = await runSourceFlow(`
+      pure flow expose(values: Array<Float32>) -> Float32 contract { effects {} } {
+        return values.first().unwrapOr(0)
+      }
+    `, "expose", new Map([["values", { __tag: "list", items: [hostile] }]]), { pureFastPath: true });
+
+    assert.equal(payloadReads, 0, "cache admission must not execute host-owned nested accessors");
+    assert.equal(result.value.__tag, "runtimeError", "uninspectable host numeric values must reach checked refusal");
+    assert.equal(result.audit.result, "error");
+  });
+
+  it("returns detached normalized values for valid numeric host collection results", async () => {
+    for (const [type, tag, payload, expected] of [
+      ["Int", "int", 7, { __tag: "int", value: 7 }],
+      ["Float32", "float", 1.5, { __tag: "float", value: 1.5, width: 32 }],
+      ["Float64", "float", 1.25, { __tag: "float", value: 1.25 }],
+      ["Int64", "int64", 9007199254740993n, { __tag: "int64", value: 9007199254740993n }],
+      ["UInt64", "uint64", 18446744073709551615n, { __tag: "uint64", value: 18446744073709551615n }],
+    ]) {
+      const hostValue = { __tag: tag, value: payload };
+      const result = await runSourceFlow(`
+        flow expose(values: Array<${type}>) -> ${type} {
+          return values.first().unwrapOr(0)
+        }
+      `, "expose", new Map([["values", { __tag: "list", items: [hostValue] }]]));
+
+      assert.deepEqual(result.value, expected, `${type} result must preserve its admitted numeric value`);
+      assert.notStrictEqual(result.value, hostValue, `${type} output must be detached from host-owned storage`);
+      assert.equal(result.audit.result, "ok");
+    }
+  });
+
+  it("declines sync execution for an accessor-backed host tag without invoking it", () => {
     let tagReads = 0;
     const hostValue = {};
     Object.defineProperty(hostValue, "__tag", {
@@ -581,8 +933,7 @@ describe("interpreter 64-bit literals passed across flow calls", () => {
 
     const result = executeFlowSync("identity", new Map([["value", hostValue]]), source.ast, source.flows);
 
-    assert.equal(result?.__tag, "runtimeError", "sync entry must refuse uninspectable host values");
-    assert.notStrictEqual(result, hostValue);
+    assert.equal(result, null, "the sync tier must decline so the checked async interpreter can refuse it");
     assert.equal(tagReads, 0, "refusal must not execute a host-owned tag accessor");
   });
 });

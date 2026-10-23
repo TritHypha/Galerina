@@ -38,16 +38,16 @@ function unresolvedMembers(wat) {
 }
 
 const NAME_TYPENAME = `
-record RecordFieldDecl { name: String typeName: String }
+record QualifiedBinding { name: String typeName: String }
 record FlowParam { name: String typeName: String isReadonly: Bool isTainted: Bool sourceFrom: String whereExpr: String }
 record Stmt { kind: String name: String typeName: String expr: Array<String> }
 `;
 
 const LOOKUP = NAME_TYPENAME + `
-pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<Auto>
+pure flow qualifierParamScope(params: Array<FlowParam>) -> Array<QualifiedBinding>
 contract { effects {} }
 {
-  mut out: Array<Auto> = Array.empty()
+  mut out: Array<QualifiedBinding> = Array.empty()
   mut i: Int = 0
   while i < params.count() {
     let pOpt = params.get(i)
@@ -60,7 +60,7 @@ contract { effects {} }
   }
   return out
 }
-pure flow lookupQualifiedType(scope: Array<Auto>, name: String) -> String
+pure flow lookupQualifiedType(scope: Array<QualifiedBinding>, name: String) -> String
 contract { effects {} }
 {
   mut i: Int = 0
@@ -80,17 +80,19 @@ contract { effects {} }
 `;
 
 const STATIC_ENV = `
-record StaticEnv { entries: Array<Auto> }
-pure flow buildStaticEnv(decls: Array<Auto>) -> StaticEnv
+record StaticDecl { name: String valueExpr: String inferredType: String }
+record StaticEntry { name: String value: String typeName: String }
+record StaticEnv { entries: Array<StaticEntry> }
+pure flow buildStaticEnv(decls: Array<StaticDecl>) -> StaticEnv
 contract { effects {} }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<StaticEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
     match dOpt {
       Some(d) => {
-        entries = entries.append({ name: d.name, value: d.value, typeName: d.typeName })
+        entries = entries.append({ name: d.name, value: d.valueExpr, typeName: d.inferredType })
       }
       None => {}
       _ => {}
@@ -119,11 +121,12 @@ contract { effects {} }
 `;
 
 const BITFIELD_ENV = `
-record BitfieldEnv { entries: Array<Auto> }
-pure flow buildBitfieldEnv(decls: Array<Auto>) -> BitfieldEnv
+record BitfieldEnvEntry { register: String field: String mask: Int }
+record BitfieldEnv { entries: Array<BitfieldEnvEntry> }
+pure flow buildBitfieldEnv(decls: Array<BitfieldEnvEntry>) -> BitfieldEnv
 contract { effects {} }
 {
-  mut entries: Array<Auto> = Array.empty()
+  mut entries: Array<BitfieldEnvEntry> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -226,13 +229,12 @@ describe("J6a #100 match-bound Array.get Some receivers (type-checker forms)", (
     assert.ok(unresolvedMembers(wat).includes("name"), "non-prefix .name must stay fail-closed");
   });
 
-  it("interpreter≡WASM: Array<Auto> {name,typeName} match-bound loads return the same String handle path as Int", async () => {
+  it("interpreter≡WASM: declared Array<QualifiedBinding> match-bound loads preserve the String handle path", async () => {
     const src = NAME_TYPENAME + `
 pure flow probe() -> Int
 contract { effects {} }
 {
-  mut scope: Array<Auto> = Array.empty()
-  scope = scope.append({ name: "x", typeName: "Int" })
+  let scope = Array.empty().append({ name: "x", typeName: "Int" })
   match scope.get(0) {
     Some(entry) => {
       let n: String = entry.name

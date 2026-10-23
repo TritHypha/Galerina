@@ -29,18 +29,35 @@ const HELPERS = `
     (global.get $__fungi_ret_words))
 `;
 
-async function instantiateWat(bodyFuncs) {
+async function instantiateWat(bodyFuncs, admitted = false, host = L.createHostRuntime()) {
   const wat = `(module\n${HELPERS}\n${bodyFuncs}\n)`;
   const asm = await L.assembleWAT(wat);
   assert.ok(asm.valid, `assemble: ${(asm.diagnostics ?? []).map((d) => d.message).join("; ")}`);
+  if (admitted) {
+    const keys = L.generateRunnerKeypair();
+    const { instance } = await L.admitAndInstantiate({
+      wasm: asm.wasm,
+      attestation: L.signWasm(asm.wasm, keys.privateKeyPem, "dev"),
+      policy: { requireSigned: true, publicKeyPem: keys.publicKeyPem },
+      host,
+    });
+    return instance;
+  }
   const { instance } = await WebAssembly.instantiate(asm.wasm);
   return instance;
 }
 
-function storeWords(instance, ptr, words) {
+function storeRawFixtureWords(instance, ptr, words) {
   const view = new Int32Array(instance.exports.memory.buffer);
   const start = ptr >>> 2;
   for (let i = 0; i < words.length; i++) view[start + i] = words[i];
+}
+
+function hostWords(host) {
+  const snapshot = host.snapshotMemory();
+  assert.ok(snapshot, "admitted host must expose its memory snapshot");
+  assert.equal(snapshot.byteLength, 65_536, "the one-page fixture snapshot must have its exact length");
+  return new Int32Array(snapshot.buffer, snapshot.byteOffset, snapshot.byteLength / Int32Array.BYTES_PER_ELEMENT);
 }
 
 test("positive: exact-width three-word heap copy", async () => {
@@ -51,27 +68,47 @@ test("positive: exact-width three-word heap copy", async () => {
       (global.set $__fungi_ret_words (i32.const 3))
       (i32.const ${WAT_HEAP_BASE}))
   `);
-  storeWords(instance, WAT_HEAP_BASE, [7, 8, 9]);
+  storeRawFixtureWords(instance, WAT_HEAP_BASE, [7, 8, 9]);
   const copied = finalizeSecretExportResult(instance, instance.exports.h());
   assert.deepEqual(copied, [7, 8, 9]);
+  const view = new Int32Array(instance.exports.memory.buffer);
+  assert.deepEqual(
+    Array.from(view.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 3)),
+    [0, 0, 0],
+    "all three words in the declared heap interval must be wiped after the exact-width copy",
+  );
 });
 
 test("hostile: 65 tagged words refuse incomplete copy (FUNGI-WASM-RET-001)", async () => {
-  const instance = await instantiateWat(`
+  const stores = Array.from({ length: 65 }, (_, index) =>
+    `(i32.store (i32.const ${WAT_HEAP_BASE + index * 4}) (i32.const ${index + 1}))`,
+  ).join("\n");
+  const body = `
     (func (export "h") (result i32)
+      ${stores}
+      (i32.store (i32.const ${WAT_HEAP_BASE + 1024}) (i32.const 305419896))
       (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE + 65 * 4}))
       (global.set $__fungi_ret_is_heap (i32.const 1))
       (global.set $__fungi_ret_words (i32.const 65))
       (i32.const ${WAT_HEAP_BASE}))
-  `);
-  storeWords(instance, WAT_HEAP_BASE, Array.from({ length: 65 }, (_, i) => i + 1));
+  `;
+  const instance = await instantiateWat(body);
   assert.throws(
     () => finalizeSecretExportResult(instance, instance.exports.h()),
     /FUNGI-WASM-RET-001.*taggedWords=65/,
   );
-  const invoked = invokeAdmittedExport(instance, "h", []);
+  const host = L.createHostRuntime();
+  const admitted = await instantiateWat(body, true, host);
+  const invoked = invokeAdmittedExport(admitted, "h", []);
   assert.equal(invoked.ok, false);
   assert.match(String(invoked.reason), /FUNGI-WASM-RET-001/);
+  const words = hostWords(host);
+  const wipedRange = words.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 65);
+  assert.equal(wipedRange.length, 65, "snapshot must include the complete owned range");
+  assert.ok(wipedRange.every(word => word === 0),
+    "refused copy still wipes the populated owned range");
+  assert.equal(words[(WAT_HEAP_BASE + 1024) >>> 2], 305419896,
+    "cleanup must preserve the non-owned sentinel outside the wiped interval");
 });
 
 test("hostile: zero tagged words refuse", async () => {
@@ -82,7 +119,7 @@ test("hostile: zero tagged words refuse", async () => {
       (global.set $__fungi_ret_words (i32.const 0))
       (i32.const ${WAT_HEAP_BASE}))
   `);
-  storeWords(instance, WAT_HEAP_BASE, [42]);
+  storeRawFixtureWords(instance, WAT_HEAP_BASE, [42]);
   assert.throws(
     () => finalizeSecretExportResult(instance, instance.exports.h()),
     /FUNGI-WASM-RET-001.*taggedWords=0/,
@@ -119,17 +156,22 @@ test("hostile: short remaining memory refuses truncated copy", async () => {
 });
 
 test("hostile: trap after secret write still wipes via invokeAdmittedExport", async () => {
+  const host = L.createHostRuntime();
   const instance = await instantiateWat(`
     (func (export "h") (result i32)
       (global.set $__fungi_heap (i32.const ${WAT_HEAP_BASE + 4}))
       (i32.store (i32.const ${WAT_HEAP_BASE}) (i32.const 1094795585))
+      (i32.store (i32.const ${WAT_HEAP_BASE + 64}) (i32.const 305419896))
       unreachable)
-  `);
-  const view = new Int32Array(instance.exports.memory.buffer);
+  `, true, host);
   const invoked = invokeAdmittedExport(instance, "h", []);
   assert.equal(invoked.ok, false);
-  assert.match(String(invoked.reason), /trap during 'h'/);
-  assert.equal(view[WAT_HEAP_BASE >>> 2], 0, "owned secret word must be wiped after trap");
+  assert.match(String(invoked.reason), /trap during 'h':.*unreachable/);
+  const words = hostWords(host);
+  assert.equal(words[WAT_HEAP_BASE >>> 2], 0,
+    "owned secret word must be wiped after trap");
+  assert.equal(words[(WAT_HEAP_BASE + 64) >>> 2], 305419896,
+    "trap cleanup must preserve the non-owned sentinel");
 });
 
 test("producer: flat padded [i32,i64,i32] packs or records the exact refuse gate", async () => {
@@ -183,6 +225,12 @@ test("positive: secret nested layout copy owns inner rows then wipes guest", asy
   `);
   const flat = finalizeSecretExportResult(instance, instance.exports.h());
   assert.deepEqual(flat, [WAT_HEAP_BASE, 99], "without layout the inner field is still a guest pointer");
+  const flatView = new Int32Array(instance.exports.memory.buffer);
+  assert.deepEqual(
+    Array.from(flatView.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 3)),
+    [0, 0, 0],
+    "all three words in the declared heap interval must be wiped after the legacy flat copy",
+  );
   const instance2 = await instantiateWat(`
     (func (export "h") (result i32)
       (i32.store (i32.const ${WAT_HEAP_BASE}) (i32.const 7))
@@ -196,7 +244,11 @@ test("positive: secret nested layout copy owns inner rows then wipes guest", asy
   const copied = finalizeSecretExportResult(instance2, instance2.exports.h(), OUTER_LAYOUT);
   assert.deepEqual(copied, [[7], 99]);
   const view = new Int32Array(instance2.exports.memory.buffer);
-  assert.equal(view[WAT_HEAP_BASE >>> 2], 0, "guest inner word must be wiped after layout copy");
+  assert.deepEqual(
+    Array.from(view.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 3)),
+    [0, 0, 0],
+    "all three guest-owned words must be wiped after layout copy",
+  );
   assert.deepEqual(copied, [[7], 99], "owned nested rows survive guest wipe");
 });
 
@@ -212,6 +264,12 @@ test("positive: secret nested layout copy zeros an omitted inner pointer", async
   `);
   const copied = finalizeSecretExportResult(instance, instance.exports.h(), OUTER_LAYOUT);
   assert.deepEqual(copied, [[0], 99]);
+  const view = new Int32Array(instance.exports.memory.buffer);
+  assert.deepEqual(
+    Array.from(view.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 2)),
+    [0, 0],
+    "both words in the guest-owned interval must be wiped after the omitted-pointer copy",
+  );
 });
 
 test("hostile: secret nested layout copy refuses a cyclic inner pointer then wipes", async () => {
@@ -229,5 +287,9 @@ test("hostile: secret nested layout copy refuses a cyclic inner pointer then wip
     () => finalizeSecretExportResult(instance, instance.exports.h(), OUTER_LAYOUT),
     /FUNGI-WASM-HOST-001.*cyclic/,
   );
-  assert.equal(view[WAT_HEAP_BASE >>> 2], 0, "guest must be wiped after cyclic layout refuse");
+  assert.deepEqual(
+    Array.from(view.slice(WAT_HEAP_BASE >>> 2, (WAT_HEAP_BASE >>> 2) + 2)),
+    [0, 0],
+    "both words in the guest-owned interval must be wiped after cyclic-layout refusal",
+  );
 });

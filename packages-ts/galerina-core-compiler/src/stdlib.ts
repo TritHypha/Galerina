@@ -1906,6 +1906,7 @@ export function galerinaValuesEqual(a: GalerinaValue, b: GalerinaValue): boolean
   if (a.__tag === "bool" && b.__tag === "bool") return a.value === b.value;
   if (a.__tag === "char" && b.__tag === "char") return a.value === b.value;
   if (a.__tag === "none" && b.__tag === "none") return true;
+  if (a.__tag === "some" && b.__tag === "some") return galerinaValuesEqual(a.value, b.value);
   if (a.__tag === "void" && b.__tag === "void") return true;
   // Composite STRUCTURAL equality (2026-07-23, bridge 0096): before this, record/list `==` collided into
   // the dispatch wildcard and compared the absent `.value` (undefined===undefined) → two DIFFERENT

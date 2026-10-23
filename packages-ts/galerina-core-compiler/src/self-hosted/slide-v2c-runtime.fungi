@@ -20,6 +20,11 @@ record SLIDEV2CRuntimeStore {
   defined: Array<Int>
 }
 
+record SLIDEV2CRuntimeRead {
+  present: Bool
+  value: Int
+}
+
 // Create a fixed no-address store with every SSA slot undefined.
 pure flow emptySLIDEV2CRuntimeStore() -> SLIDEV2CRuntimeStore
 contract { intent { "Create a fixed no-address store with every SSA slot undefined." } }
@@ -56,25 +61,44 @@ contract { intent { "Return a new bounded store with one immutable SSA result." 
       failures = failures.append(failureId)
       defined = defined.append(1)
     } else {
-      values = values.append(slideV2CIntAt(store.values, i))
-      failures = failures.append(slideV2CIntAt(store.failures, i))
-      defined = defined.append(slideV2CIntAt(store.defined, i))
+      if i < store.values.count() and i < store.failures.count() and i < store.defined.count() {
+        if slideV2CIntAt(store.defined, i) == 1 {
+          values = values.append(slideV2CIntAt(store.values, i))
+          failures = failures.append(slideV2CIntAt(store.failures, i))
+          defined = defined.append(1)
+        } else {
+          values = values.append(0)
+          failures = failures.append(0)
+          defined = defined.append(0)
+        }
+      } else {
+        values = values.append(0)
+        failures = failures.append(0)
+        defined = defined.append(0)
+      }
     }
     i = i + 1
   }
   return { values: values failures: failures defined: defined }
 }
 
-// Read one initialized scalar or return a terminal-only sentinel.
+// Read one initialized scalar without reserving an invalid Int as a sentinel.
 pure flow slideV2CRuntimeRead(
   store: SLIDEV2CRuntimeStore,
   resultId: Int,
-) -> Int
-contract { intent { "Read one initialized scalar or return a terminal-only sentinel." } }
+) -> SLIDEV2CRuntimeRead
+contract { intent { "Read one initialized scalar with explicit presence." } }
 {
-  if resultId < 0 or resultId >= 48 { return -2147483649 }
-  if slideV2CIntAt(store.defined, resultId) != 1 { return -2147483649 }
-  return slideV2CIntAt(store.values, resultId)
+  if resultId < 0 or resultId >= 48 {
+    return { present: false value: 0 }
+  }
+  if resultId >= store.defined.count() or resultId >= store.values.count() {
+    return { present: false value: 0 }
+  }
+  if slideV2CIntAt(store.defined, resultId) != 1 {
+    return { present: false value: 0 }
+  }
+  return { present: true value: slideV2CIntAt(store.values, resultId) }
 }
 
 // Read the registered failure carried by one initialized result.
@@ -85,6 +109,9 @@ pure flow slideV2CRuntimeFailureAt(
 contract { intent { "Read the registered failure carried by one initialized result." } }
 {
   if resultId < 0 or resultId >= 48 { return 4 }
+  if resultId >= store.defined.count() or resultId >= store.failures.count() {
+    return 4
+  }
   if slideV2CIntAt(store.defined, resultId) != 1 { return 4 }
   return slideV2CIntAt(store.failures, resultId)
 }
@@ -221,15 +248,15 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
         mut built: Array<Int> = Array.empty()
         mut operandIndex: Int = 0
         while operandIndex < instruction.operands.count() {
-          let value = slideV2CRuntimeRead(
+          let read = slideV2CRuntimeRead(
             store, slideV2CIntAt(instruction.operands, operandIndex),
           )
-          if value == -2147483649 {
+          if read.present == false {
             return refuseSLIDEV2CRuntime(
               "SLIDE-V2C-RUNTIME-006", "array operand is undefined",
             )
           }
-          built = built.append(value)
+          built = built.append(read.value)
           operandIndex = operandIndex + 1
         }
         arrayValues = built
@@ -245,17 +272,22 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
         )
       }
       16 => {
-        let index = slideV2CRuntimeRead(
+        let indexRead = slideV2CRuntimeRead(
           store, slideV2CIntAt(instruction.operands, 1),
         )
-        if index < 0 or index >= arrayValues.count() {
+        if indexRead.present == false {
+          return refuseSLIDEV2CRuntime(
+            "SLIDE-V2C-RUNTIME-006", "array index operand is undefined",
+          )
+        }
+        if indexRead.value < 0 or indexRead.value >= arrayValues.count() {
           store = slideV2CRuntimeStoreValue(
             store, instruction.resultId, 0, 4,
           )
         } else {
           store = slideV2CRuntimeStoreValue(
             store, instruction.resultId,
-            slideV2CIntAt(arrayValues, index), 0,
+            slideV2CIntAt(arrayValues, indexRead.value), 0,
           )
         }
       }
@@ -266,8 +298,13 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
         let right = slideV2CRuntimeRead(
           store, slideV2CIntAt(instruction.operands, 1),
         )
+        if left.present == false or right.present == false {
+          return refuseSLIDEV2CRuntime(
+            "SLIDE-V2C-RUNTIME-006", "comparison operand is undefined",
+          )
+        }
         mut compared: Int = 0
-        if left >= right { compared = 1 }
+        if left.value >= right.value { compared = 1 }
         store = slideV2CRuntimeStoreValue(
           store, instruction.resultId, compared, 0,
         )
@@ -284,11 +321,21 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
             "SLIDE-V2C-RUNTIME-005", "record construction exceeds runtime copy budget",
           )
         }
-        recordValues = Array.of(
-          slideV2CRuntimeRead(store, slideV2CIntAt(instruction.operands, 0)),
-          slideV2CRuntimeRead(store, slideV2CIntAt(instruction.operands, 1)),
-          slideV2CRuntimeRead(store, slideV2CIntAt(instruction.operands, 2)),
+        let first = slideV2CRuntimeRead(
+          store, slideV2CIntAt(instruction.operands, 0),
         )
+        let second = slideV2CRuntimeRead(
+          store, slideV2CIntAt(instruction.operands, 1),
+        )
+        let third = slideV2CRuntimeRead(
+          store, slideV2CIntAt(instruction.operands, 2),
+        )
+        if first.present == false or second.present == false or third.present == false {
+          return refuseSLIDEV2CRuntime(
+            "SLIDE-V2C-RUNTIME-006", "record operand is undefined",
+          )
+        }
+        recordValues = Array.of(first.value, second.value, third.value)
         recordFailures = Array.of(
           slideV2CRuntimeFailureAt(store, slideV2CIntAt(instruction.operands, 0)),
           0, 0,
@@ -319,9 +366,15 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
             "SLIDE-V2C-RUNTIME-005", "variant construction exceeds runtime copy budget",
           )
         }
-        variantValue = slideV2CRuntimeRead(
+        let variantRead = slideV2CRuntimeRead(
           store, slideV2CIntAt(instruction.operands, 0),
         )
+        if variantRead.present == false {
+          return refuseSLIDEV2CRuntime(
+            "SLIDE-V2C-RUNTIME-006", "variant operand is undefined",
+          )
+        }
+        variantValue = variantRead.value
         variantFailure = slideV2CRuntimeFailureAt(
           store, slideV2CIntAt(instruction.operands, 0),
         )
@@ -357,7 +410,13 @@ contract { intent { "Decode, admit, and instruction-drive immutable aggregates u
   }
   let resultId = slideV2CIntAt(block.terminator.operands, 0)
   let failureId = slideV2CRuntimeFailureAt(store, resultId)
-  let resultValue = slideV2CRuntimeRead(store, resultId)
+  let resultRead = slideV2CRuntimeRead(store, resultId)
+  if resultRead.present == false {
+    return refuseSLIDEV2CRuntime(
+      "SLIDE-V2C-RUNTIME-006", "return operand is undefined",
+    )
+  }
+  let resultValue = resultRead.value
   steps = steps + 1
   if aggregateDepth > imported.program.limits.aggregateDepth {
     return refuseSLIDEV2CRuntime(

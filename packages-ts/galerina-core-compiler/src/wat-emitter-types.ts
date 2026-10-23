@@ -98,6 +98,12 @@ export interface WATModule {
   readonly target: "wasm-standalone" | "wasm-hybrid";
 }
 
+/** Wire shapes emitted only from checked compiler metadata for strict owned-return admission. */
+export type WATOwnedReturnShape =
+  | { readonly kind: "i32" }
+  | { readonly kind: "record"; readonly fields: readonly WATOwnedReturnShape[] };
+export type WATOwnedReturnSchemas = Readonly<Record<string, WATOwnedReturnShape>>;
+
 export interface WATEmitResult {
   readonly module: WATModule;
   readonly wat: string;
@@ -146,7 +152,6 @@ export type WatJobCacheState = {
   hofProgramAst: Lookup<AstNode>;
   internedLayouts: Lookup<Map<string, string[]>>;
   internedFieldTypes: Lookup<Map<string, Map<string, string>>>;
-  autoAppendShapes: Lookup<string[][]>;
   informalShapes: Lookup<InformalShape[]>;
   autoSomeBindMemberFields: Lookup<Set<string>>;
 };

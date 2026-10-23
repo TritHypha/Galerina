@@ -473,6 +473,25 @@ function genericArgumentsCompatible(
   });
 }
 
+/** An erased or bare array cannot satisfy a concrete element-layout contract at a call boundary. */
+function hasUnprovenConcreteArrayPayload(declared: string, inferred: string): boolean {
+  const expected = parseTypeString(declared);
+  const actual = parseTypeString(inferred);
+  if (expected.base === "Array" && expected.args.length === 1 && expected.args[0] !== "Auto") {
+    if (inferred.trim() === "Auto") return true;
+    if (actual.base !== "Array" || actual.args.length !== 1) return false;
+    if (actual.args[0] === "Auto") return true;
+    return hasUnprovenConcreteArrayPayload(expected.args[0]!, actual.args[0]!);
+  }
+
+  // Preserve the same check when an array is nested under another generic
+  // constructor (for example Option<Array<Row>> versus Option<Array<Auto>>).
+  if (expected.base !== actual.base || expected.args.length !== actual.args.length) return false;
+  return expected.args.some((argument, index) =>
+    hasUnprovenConcreteArrayPayload(argument, actual.args[index]!),
+  );
+}
+
 /**
  * Returns true when a value of `inferred` type can be used where `declared`
  * type is expected. Phase 8A: covers literals, numeric widening, and
@@ -705,6 +724,51 @@ class TypeChecker {
     return this.recordFieldTypes.has(base) ? base : undefined;
   }
 
+  /** An erased Auto value cannot establish a concrete record field layout. */
+  private hasUnprovenConcreteRecordValue(declaredType: string, inferredType: string): boolean {
+    return inferredType === "Auto" && this.recordSchemaName(declaredType) !== undefined;
+  }
+
+  /** A concrete array contract must validate the payload of an inline append expression. */
+  private hasUnprovenArrayAppendValue(expectedType: string, argument: AstNode): boolean {
+    const expected = parseTypeString(this.resolveTypeAliases(expectedType));
+    if (expected.base !== "Array" || expected.args.length !== 1 || expected.args[0] === "Auto" ||
+        argument.kind !== "callExpr" || argument.callStyle !== "method" || argument.value !== "append") {
+      return false;
+    }
+    const children = argument.children ?? [];
+    const receiver = children[0];
+    const payload = children[1];
+    if (children.length !== 2 || receiver === undefined || payload === undefined) return true;
+    const receiverIsAppend = receiver.kind === "callExpr" &&
+      receiver.callStyle === "method" && receiver.value === "append";
+    if (receiverIsAppend) {
+      if (this.hasUnprovenArrayAppendValue(expectedType, receiver)) return true;
+    } else {
+      const inferredReceiverType = this.inferType(receiver);
+      if (inferredReceiverType === undefined) return true;
+      const resolvedReceiverType = this.resolveTypeAliases(inferredReceiverType);
+      if (resolvedReceiverType === "Auto" ||
+          hasUnprovenConcreteArrayPayload(expectedType, resolvedReceiverType) ||
+          !isAssignmentCompatible(expectedType, resolvedReceiverType)) return true;
+    }
+    if (payload.kind === "callExpr" && payload.value === "#record") {
+      const diagnosticsBefore = this.diagnostics.length;
+      const adopted = this.tryRecordLiteralAdoption(
+        expected.args[0]!, payload, payload.location,
+        "FUNGI-TYPE-005", "INVALID_CALL_ARG_TYPE",
+        `appended payload to concrete array '${expectedType}'`,
+      );
+      return !adopted || this.diagnostics.length > diagnosticsBefore;
+    }
+    const inferredPayloadType = this.inferType(payload);
+    if (inferredPayloadType === undefined) return true;
+    const resolvedPayloadType = this.resolveTypeAliases(inferredPayloadType);
+    return resolvedPayloadType === "Auto" ||
+      hasUnprovenConcreteArrayPayload(expected.args[0]!, resolvedPayloadType) ||
+      !isAssignmentCompatible(expected.args[0]!, resolvedPayloadType);
+  }
+
   /** Structural record-literal adoption (return, let, call-arg, constructor payload).
    *  When a `#record` literal meets a DECLARED record type: field-check it against the
    *  declaration, including nested record literals under their field schemas.
@@ -821,18 +885,37 @@ class TypeChecker {
 
   /** Resolve a bounded chain of simple named aliases without guessing through cycles. */
   private resolveTypeAliases(raw: string): string {
-    let current = raw.trim();
-    const seen = new Set<string>();
-    while (current !== "") {
+    const resolve = (input: string, activeAliases: ReadonlySet<string>): string => {
+      const current = input.trim();
+      if (current === "") return current;
+
       const qualifier = GOVERNANCE_QUALIFIER_PREFIXES.find((prefix) => current.startsWith(prefix));
       const unqualified = qualifier === undefined ? current : current.slice(qualifier.length).trim();
       const parsed = parseTypeString(unqualified);
-      const target = this.typeAliases.get(parsed.base);
-      if (target === undefined || seen.has(parsed.base)) return current;
-      seen.add(parsed.base);
-      current = `${qualifier ?? ""}${target.trim()}`;
-    }
-    return current;
+
+      // A simple alias is a name, not a parameterized constructor. Keep malformed
+      // applications such as Alias<T> intact for the normal type validator to reject.
+      const target = parsed.args.length === 0 ? this.typeAliases.get(parsed.base) : undefined;
+      if (target !== undefined && !activeAliases.has(parsed.base)) {
+        const nextAliases = new Set(activeAliases);
+        nextAliases.add(parsed.base);
+        return `${qualifier ?? ""}${resolve(target, nextAliases)}`;
+      }
+
+      if (parsed.args.length === 0) return current;
+
+      // Aliases may occur below built-in or user generic constructors (for
+      // example Array<Count>). Resolve each parsed top-level argument separately;
+      // parseTypeString already preserves nested generic and shape commas.
+      const ltIdx = unqualified.indexOf("<");
+      const gtIdx = unqualified.lastIndexOf(">");
+      if (ltIdx < 0 || gtIdx < ltIdx) return current;
+      const suffix = unqualified.slice(gtIdx + 1);
+      const args = parsed.args.map((arg) => resolve(arg, activeAliases));
+      return `${qualifier ?? ""}${parsed.base}<${args.join(", ")}>${suffix}`;
+    };
+
+    return resolve(raw, new Set());
   }
 
   check(ast: AstNode): void {
@@ -1699,8 +1782,9 @@ class TypeChecker {
     switch (node.kind) {
       case "numberLiteral": {
         const v = node.value ?? "";
-        if (v.startsWith("0x") || v.startsWith("0b") || v.startsWith("0o")) return "Byte";
-        if (v.includes(".")) return "Float";
+        const normalized = v.replace(/_/g, "");
+        if (/^0[xbo]/i.test(normalized)) return "Byte";
+        if (normalized.includes(".") || /^\d+[eE][+-]?\d+$/.test(normalized)) return "Float";
         return "Int";
       }
       case "stringLiteral": return "String";
@@ -2561,6 +2645,93 @@ class TypeChecker {
               `Change the declaration to: mut ${targetName}: ...`,
             ));
           }
+
+          const registeredType = this.lookupBindingType(targetName);
+          const assignedValue = node.children?.[0];
+          const hasGovernanceQualifier = registeredType?.startsWith("protected ") ||
+            registeredType?.startsWith("redacted ");
+          const isViewType = registeredType?.startsWith("view:");
+          if (kind === "mut" && registeredType !== undefined && registeredType !== "" &&
+              assignedValue !== undefined && !hasGovernanceQualifier && !isViewType) {
+            const inferredType = this.inferType(assignedValue);
+            const resolvedRegisteredType = this.resolveTypeAliases(registeredType);
+            const resolvedInferredType = inferredType === undefined
+              ? undefined
+              : this.resolveTypeAliases(inferredType);
+            const isAnonymousRecordLiteral = assignedValue.kind === "callExpr" &&
+              assignedValue.value === "#record";
+            const selfAppendReceiver = assignedValue.kind === "callExpr" &&
+              assignedValue.callStyle === "method" && assignedValue.value === "append" &&
+              assignedValue.children?.[0]?.kind === "identifier" &&
+              assignedValue.children[0].value === targetName;
+            const declaredArray = parseTypeString(resolvedRegisteredType);
+            const selfAppendArrayUpdate = selfAppendReceiver && declaredArray.base === "Array" &&
+              declaredArray.args.length === 1;
+            const selfAppendValue = selfAppendArrayUpdate ? assignedValue.children?.[1] : undefined;
+            const declaredElementType = selfAppendArrayUpdate
+              ? this.resolveTypeAliases(declaredArray.args[0]!)
+              : undefined;
+            const selfAppendValueType = selfAppendValue === undefined
+              ? undefined
+              : this.inferType(selfAppendValue);
+            const resolvedSelfAppendValueType = selfAppendValueType === undefined
+              ? undefined
+              : this.resolveTypeAliases(selfAppendValueType);
+            let selfAppendLiteralInvalid = false;
+            if (selfAppendArrayUpdate && declaredElementType !== "Auto" &&
+                selfAppendValue?.kind === "callExpr" && selfAppendValue.value === "#record") {
+              const diagnosticsBeforeAdoption = this.diagnostics.length;
+              const adopted = this.tryRecordLiteralAdoption(
+                declaredElementType!, selfAppendValue, selfAppendValue.location,
+                "FUNGI-TYPE-002", "TYPE_MISMATCH",
+                `element of mutable binding '${targetName}'`,
+              );
+              selfAppendLiteralInvalid = !adopted || this.diagnostics.length > diagnosticsBeforeAdoption;
+            }
+            // A same-binding append may infer Array<Auto> because the bootstrap
+            // method signature erases its result payload. Preserve the update
+            // exemption only when its appended value independently satisfies the
+            // declared element contract; never let it attest an Auto or shadowed
+            // payload as a concrete record layout.
+            const hasUnprovenSelfAppendPayload = selfAppendArrayUpdate &&
+              declaredElementType !== "Auto" &&
+              (selfAppendValue === undefined ||
+               (selfAppendValue.kind === "callExpr" && selfAppendValue.value === "#record"
+                 ? selfAppendLiteralInvalid
+                 : selfAppendValueType === undefined || resolvedSelfAppendValueType === undefined ||
+                   resolvedSelfAppendValueType === "Auto" ||
+                   hasUnprovenConcreteArrayPayload(declaredElementType!, resolvedSelfAppendValueType) ||
+                   !isAssignmentCompatible(declaredElementType!, resolvedSelfAppendValueType)));
+            const hasUnprovenArrayPayload = inferredType !== undefined &&
+              (selfAppendArrayUpdate
+                ? hasUnprovenSelfAppendPayload
+                : hasUnprovenConcreteArrayPayload(resolvedRegisteredType, resolvedInferredType!));
+            const hasUnprovenRecordPayload = inferredType !== undefined &&
+              !isAnonymousRecordLiteral &&
+              this.hasUnprovenConcreteRecordValue(resolvedRegisteredType, resolvedInferredType!);
+            const hasIncompatibleDeclaredLayout = inferredType !== undefined && !selfAppendArrayUpdate &&
+              (declaredArray.base === "Array" || this.recordSchemaName(resolvedRegisteredType) !== undefined) &&
+              !isAssignmentCompatible(resolvedRegisteredType, resolvedInferredType!);
+            if (hasUnprovenSelfAppendPayload ||
+              (inferredType !== undefined &&
+              (hasUnprovenArrayPayload || hasUnprovenRecordPayload || hasIncompatibleDeclaredLayout))) {
+              const declaredBase = parseTypeString(resolvedRegisteredType).base;
+              const adopted = this.tryRecordLiteralAdoption(
+                declaredBase, assignedValue, node.location,
+                "FUNGI-TYPE-002", "TYPE_MISMATCH",
+                `mutable binding '${targetName}'`,
+              );
+              if (!adopted) {
+                this.diagnostics.push(makeTCDiag(
+                  "FUNGI-TYPE-002",
+                  "TYPE_MISMATCH",
+                  `Cannot assign '${inferredType}' to mutable binding '${targetName}' declared as '${registeredType}'. The value is incompatible or does not establish the declared array/record layout.`,
+                  node.location,
+                  `Assign a '${registeredType}' value, or update the binding's declared type.`,
+                ));
+              }
+            }
+          }
         }
         for (const child of node.children ?? []) this.walkNode(child);
         return;
@@ -2722,6 +2893,11 @@ class TypeChecker {
               const expectedType = paramTypes[i];
               if (argNode === undefined || !expectedType) continue;
               const inferredArgType = this.inferType(argNode);
+              const diagnosticsBeforeAppendCheck = this.diagnostics.length;
+              const hasUnprovenAppendedArrayPayload =
+                this.hasUnprovenArrayAppendValue(expectedType, argNode);
+              const appendCheckEmittedDiagnostic =
+                this.diagnostics.length > diagnosticsBeforeAppendCheck;
               const expectedBase = parseTypeString(this.resolveTypeAliases(expectedType)).base;
               const adoptedArg = this.tryRecordLiteralAdoption(
                 expectedBase,
@@ -2734,14 +2910,23 @@ class TypeChecker {
               if (adoptedArg) {
                 continue;
               }
-              if (inferredArgType !== undefined && !isAssignmentCompatible(expectedType, inferredArgType)) {
-                this.diagnostics.push(makeTCDiag(
-                  "FUNGI-TYPE-005",
-                  "INVALID_CALL_ARG_TYPE",
-                  `Argument ${i + 1} to '${flowName}' expects '${expectedType}' but received '${inferredArgType}'.`,
-                  argNode.location,
-                  `Pass a value of type '${expectedType}' as argument ${i + 1}.`,
-                ));
+              const resolvedExpectedType = this.resolveTypeAliases(expectedType);
+              const resolvedInferredArgType = inferredArgType === undefined
+                ? undefined
+                : this.resolveTypeAliases(inferredArgType);
+              if (inferredArgType !== undefined &&
+                  (hasUnprovenAppendedArrayPayload ||
+                   hasUnprovenConcreteArrayPayload(resolvedExpectedType, resolvedInferredArgType!) ||
+                   !isAssignmentCompatible(expectedType, inferredArgType))) {
+                if (!appendCheckEmittedDiagnostic) {
+                  this.diagnostics.push(makeTCDiag(
+                    "FUNGI-TYPE-005",
+                    "INVALID_CALL_ARG_TYPE",
+                    `Argument ${i + 1} to '${flowName}' expects '${expectedType}' but received '${inferredArgType}'.`,
+                    argNode.location,
+                    `Pass a value of type '${expectedType}' as argument ${i + 1}.`,
+                  ));
+                }
               } else if (inferredArgType !== undefined && expectedType === "Auto") {
                 // Surface the deferral (see FUNGI-TYPE-023 on returnStmt): an `Auto`-declared
                 // parameter silently mutes the argument-type check via isAssignmentCompatible.
@@ -2821,7 +3006,7 @@ class TypeChecker {
           this.pushBindingScope();
           this.pushTypeScope();
           if (bindingId?.kind === "identifier" && bindingId.value !== undefined && bindingId.value !== ""
-              && payloadType !== undefined && payloadType !== "" && payloadType !== "Auto") {
+              && payloadType !== undefined && payloadType !== "") {
             this.registerBinding(bindingId.value);
             this.registerBindingType(bindingId.value, payloadType);
           }
@@ -2829,6 +3014,40 @@ class TypeChecker {
           this.popTypeScope();
           this.popBindingScope();
         }
+        return;
+      }
+
+      case "forEachStmt": {
+        const children = node.children ?? [];
+        const collection = children[0];
+        if (collection !== undefined) this.walkNode(collection);
+        const rawBinding = node.value ?? "<item>";
+        const colon = rawBinding.indexOf(":");
+        const bindingName = (colon < 0 ? rawBinding : rawBinding.slice(0, colon)).trim();
+        const annotatedType = colon < 0 ? undefined : rawBinding.slice(colon + 1).trim();
+        const collectionType = collection === undefined
+          ? undefined
+          : this.inferType(collection);
+        const collectionRef = parseTypeString(
+          collectionType === undefined ? "" : this.resolveTypeAliases(collectionType),
+        );
+        const elementType = annotatedType ??
+          (collectionRef.base === "Array" || collectionRef.base === "List"
+            ? collectionRef.args[0]
+            : undefined) ?? "Auto";
+
+        this.pushBindingScope();
+        this.pushTypeScope();
+        if (bindingName !== "" && bindingName !== "<item>") {
+          this.registerBinding(bindingName);
+          // Auto deliberately shadows any same-named outer value when this
+          // collection's payload type cannot be proven.
+          this.registerBindingType(bindingName, elementType);
+        }
+        if (children[2] !== undefined) this.walkNode(children[2]);
+        if (children[1] !== undefined) this.walkNode(children[1]);
+        this.popTypeScope();
+        this.popBindingScope();
         return;
       }
 
@@ -2940,7 +3159,20 @@ class TypeChecker {
         const initNode = node.children?.[0];
         if (!hasGovernanceQualifier && !isViewType && initNode !== undefined) {
           const inferredType = this.inferType(initNode);
-          if (inferredType !== undefined && !isAssignmentCompatible(registeredType, inferredType)) {
+          const resolvedRegisteredType = this.resolveTypeAliases(registeredType);
+          const resolvedInferredType = inferredType === undefined
+            ? undefined
+            : this.resolveTypeAliases(inferredType);
+          const isAnonymousRecordLiteral = initNode.kind === "callExpr" && initNode.value === "#record";
+          const hasUnprovenArrayPayload = inferredType !== undefined &&
+            (hasUnprovenConcreteArrayPayload(resolvedRegisteredType, resolvedInferredType!) ||
+              this.hasUnprovenArrayAppendValue(resolvedRegisteredType, initNode));
+          const hasUnprovenRecordPayload = inferredType !== undefined &&
+            !isAnonymousRecordLiteral &&
+            this.hasUnprovenConcreteRecordValue(resolvedRegisteredType, resolvedInferredType!);
+          if (inferredType !== undefined &&
+              (hasUnprovenArrayPayload || hasUnprovenRecordPayload ||
+                !isAssignmentCompatible(resolvedRegisteredType, resolvedInferredType!))) {
             // `let x: SomeRecord = { … }` — same structural adoption as the return position
             // (finding ii): a matching literal IS the declared record; a mismatch gets the
             // precise field diagnostic from the helper instead of the generic one below.
@@ -3814,8 +4046,9 @@ class TypeChecker {
 
   private checkIntLiteralRange(node: AstNode): void {
     const v = node.value ?? "";
-    if (v.includes(".") || v.startsWith("0x") || v.startsWith("0b") || v.startsWith("0o")) return;
-    const n = Number(v);
+    const normalized = v.replace(/_/g, "");
+    if (normalized.includes(".") || /^\d+[eE][+-]?\d+$/.test(normalized) || /^0[xbo]/i.test(normalized)) return;
+    const n = Number(normalized);
     if (!Number.isFinite(n)) return;
     if (n > 2147483647 || n < -2147483648) {
       const d = makeTCDiag(
@@ -3965,6 +4198,19 @@ class TypeChecker {
           example,  // suggestedCode: the canonical example form, without prose
         ));
       }
+    }
+
+    // `type Name = ...` declares a transparent, non-parameterized alias. Do not
+    // let `Name<T>` silently behave as a generic constructor merely because the
+    // alias name has no entry in the built-in generic arity table.
+    if (this.typeAliases.has(base) && args.length > 0) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-TYPE-009",
+        "INVALID_GENERIC_INSTANTIATION",
+        `Type alias '${base}' is not generic but received ${args.length} type argument${args.length === 1 ? "" : "s"}.`,
+        location,
+        `Use the declared alias '${base}' without type arguments.`,
+      ));
     }
 
     // RD-0659: an Authority tag is a closed runtime identity, not display text.

@@ -38,6 +38,7 @@ import { type AstNode, type SourceLocation, type TypeReferenceStructure } from "
 import { GENERIC_ARITY, genericArgumentKind } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js"; // Q2: governed-aware shadow-floor scan
 import { numericBaseType, BACKEND_UNLOWERABLE_SCALAR } from "./numeric-lowering.js";
+import { valueStateLoopStateKey } from "./value-state-loop-key.js";
 import {
   analyzeRequirementTaintForValueState,
   EMPTY_REQUIREMENT_VALIDATOR_INPUT,
@@ -928,14 +929,14 @@ function derivesFromMatchArmResult(
           }
           if (conditionIsSecret && thenFeasible && elseFeasible && !thenOutcome.continues && !elseOutcome.continues &&
               (containsReturnStatement(thenBlock) || containsReturnStatement(elseBlock))) {
-            const thenLiteral = thenBlock === undefined ? undefined : directLiteralReturnSignature(thenBlock);
-            const elseLiteral = elseBlock === undefined ? undefined : directLiteralReturnSignature(elseBlock);
+            const thenConstant = thenBlock === undefined ? undefined : directConstantReturnSignature(thenBlock);
+            const elseConstant = elseBlock === undefined ? undefined : directConstantReturnSignature(elseBlock);
             // Two terminal returns can still expose a secret-dependent value
-            // even though neither path reaches a later statement. Prove the
-            // result is independent only for the same direct primitive literal;
-            // unknown expressions, mixed returns/faults, and different literals
+            // even though neither path reaches a later statement. Prove result
+            // independence only for the same bounded literal/record constant;
+            // unknown expressions, mixed returns/faults, and different values
             // remain confidential.
-            if (thenLiteral === undefined || thenLiteral !== elseLiteral) secretResult = true;
+            if (thenConstant === undefined || thenConstant !== elseConstant) secretResult = true;
           }
 
           const reachableStates = [
@@ -1548,44 +1549,158 @@ function isCatchAllMatchArm(node: AstNode): boolean {
   return node.kind === "matchArm" && (node.value === "_" || node.value === "else");
 }
 
-/** A declared SecureString component preserves the confidentiality label at return. */
-function returnTypePreservesSecretLabel(type: AstNode | undefined): boolean {
-  // Legacy/synthetic string-only nodes carry no parser identity evidence. Do not
-  // re-lex cooked values or let a quoted tag/unknown alias authorize preservation.
-  const classify = (node: TypeReferenceStructure | undefined, depth: number): boolean | undefined => {
-    if (depth > 64 || node?.kind !== "type") return undefined;
-    if (node.name === "SecureString") return !node.generic && node.args.length === 0 ? true : undefined;
-    const arity = GENERIC_ARITY.get(node.name);
-    if (arity === undefined) return !node.generic && node.args.length === 0 ? false : undefined;
-    if (!node.generic || node.args.length !== arity) return undefined;
+/**
+ * A Result/Option preserves secrecy only when the actual returned constructor
+ * places the secret-derived payload in the matching type argument. For other
+ * known generic containers, the declared secret-bearing component continues to
+ * label the whole value as established by the value-state contract.
+ */
+function returnPreservesSecretLabel(
+  type: AstNode | undefined,
+  returned: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+  requireValuePosition = false,
+  secretControl = false,
+  shadowedResultConstructors: ReadonlySet<string> = new Set(),
+): boolean {
+  const isDirectSecureString = (candidate: TypeReferenceStructure | undefined): boolean =>
+    candidate?.kind === "type" && candidate.name === "SecureString"
+      && !candidate.generic && candidate.args.length === 0;
+  const typeContainsSecret = (candidate: TypeReferenceStructure | undefined, depth: number): boolean | undefined => {
+    if (depth > 64 || candidate?.kind !== "type") return undefined;
+    if (isDirectSecureString(candidate)) return true;
+    const arity = GENERIC_ARITY.get(candidate.name);
+    if (arity === undefined) return !candidate.generic && candidate.args.length === 0 ? false : undefined;
+    if (!candidate.generic || candidate.args.length !== arity) return undefined;
     let secret = false;
-    for (let i = 0; i < node.args.length; i++) {
-      if (genericArgumentKind(node.name, i) !== "type") continue;
-      const component = classify(node.args[i], depth + 1);
+    for (let index = 0; index < candidate.args.length; index++) {
+      if (genericArgumentKind(candidate.name, index) !== "type") continue;
+      const component = typeContainsSecret(candidate.args[index], depth + 1);
       if (component === undefined) return undefined;
       secret ||= component;
     }
     return secret;
   };
-  return classify(type?.typeStructure, 0) === true;
+  const expressionCarriesSecret = (
+    candidateType: TypeReferenceStructure | undefined,
+    expression: AstNode,
+    depth: number,
+    seenBindings: ReadonlySet<BindingInfo> = new Set(),
+    bindingLookup: (name: string) => BindingInfo | undefined = lookupBinding,
+    activeShadowedConstructors: ReadonlySet<string> = shadowedResultConstructors,
+  ): boolean => {
+    if (depth > 64 || candidateType?.kind !== "type") return false;
+    if (isDirectSecureString(candidateType)) {
+      return derivesFromSecret(expression, bindingLookup);
+    }
+    if (expression.kind === "identifier") {
+      const name = expression.value ?? "";
+      const binding = bindingLookup(name);
+      if (binding === undefined || binding.secretControlDerived === true ||
+          binding.secretValueUnknown === true || binding.secretValueExpressions === undefined ||
+          binding.secretValueExpressions.length === 0 || seenBindings.has(binding)) return false;
+      const nextSeen = new Set(seenBindings);
+      nextSeen.add(binding);
+      return binding.secretValueExpressions.every((captured) =>
+        expressionCarriesSecret(
+          candidateType,
+          captured.expression,
+          depth + 1,
+          nextSeen,
+          (capturedName) => captured.bindings.get(capturedName),
+          captured.shadowedResultConstructors,
+        ));
+    }
+    if (candidateType.name === "Result" || candidateType.name === "Option") {
+      if (secretControl) return false;
+      const arity = GENERIC_ARITY.get(candidateType.name);
+      if (!candidateType.generic || candidateType.args.length !== arity ||
+          expression.kind !== "callExpr" || expression.callStyle !== undefined ||
+          (expression.children ?? []).length !== 1) return false;
+      const constructor = expression.value ?? "";
+      if (bindingLookup(constructor) !== undefined || activeShadowedConstructors.has(constructor)) return false;
+      const payloadPosition = candidateType.name === "Result"
+        ? constructor === "Ok" ? 0 : constructor === "Err" ? 1 : undefined
+        : constructor === "Some" ? 0 : undefined;
+      if (payloadPosition === undefined || genericArgumentKind(candidateType.name, payloadPosition) !== "type") return false;
+      const payload = expression.children?.[0];
+      return payload !== undefined && expressionCarriesSecret(
+        candidateType.args[payloadPosition], payload, depth + 1, seenBindings, bindingLookup,
+        activeShadowedConstructors,
+      );
+    }
+    if (candidateType.name === "Array" || candidateType.name === "List") {
+      if (secretControl) return false;
+      const arity = GENERIC_ARITY.get(candidateType.name);
+      if (!candidateType.generic || candidateType.args.length !== arity ||
+          expression.kind !== "listLiteral" || (expression.children ?? []).length === 0) return false;
+      return (expression.children ?? []).every((item) =>
+        expressionCarriesSecret(candidateType.args[0], item, depth + 1, seenBindings, bindingLookup,
+          activeShadowedConstructors));
+    }
+    return typeContainsSecret(candidateType, depth) === true;
+  };
+  const structure = type?.typeStructure;
+  if (isDirectSecureString(structure)) return true;
+  if (structure?.kind === "type" && (structure.name === "Result" || structure.name === "Option")) {
+    if (expressionCarriesSecret(structure, returned, 0)) return true;
+    // A Result/Option type containing SecureString is not enough: the active
+    // constructor must put the actual secret in the corresponding payload.
+    // Identifier-only legacy classification remains available to the helper
+    // metadata checks below, but security-sensitive returns fail closed.
+    if (requireValuePosition || returned.kind === "identifier" ||
+        returned.kind === "matchExpr" || returned.kind === "callExpr") return false;
+  }
+  if (structure?.kind === "type" && (structure.name === "Array" || structure.name === "List") &&
+      typeContainsSecret(structure, 0) === true) {
+    return expressionCarriesSecret(structure, returned, 0);
+  }
+  if (requireValuePosition) return false;
+  return typeContainsSecret(structure, 0) === true;
 }
 
-function directLiteralReturnSignature(node: AstNode): string | undefined {
+/** Preserve implicit-flow provenance separately from secret-byte provenance. */
+function derivesFromSecretControl(
+  node: AstNode,
+  lookupBinding: (name: string) => BindingInfo | undefined,
+): boolean {
+  if (node.kind === "identifier") return lookupBinding(node.value ?? "")?.secretControlDerived === true;
+  if (node.kind === "fnDecl") return false;
+  return (node.children ?? []).some((child) => derivesFromSecretControl(child, lookupBinding));
+}
+
+function directConstantReturnSignature(node: AstNode): string | undefined {
   const returned = node.kind === "returnStmt"
     ? node
     : node.kind === "block" && node.children?.length === 1 && node.children[0]?.kind === "returnStmt"
       ? node.children[0]
       : undefined;
   const value = returned?.children?.[0];
-  if (value === undefined || ![
+  return value === undefined ? undefined : constantExpressionSignature(value, 0);
+}
+
+function constantExpressionSignature(node: AstNode, depth: number): string | undefined {
+  if (depth > 16) return undefined;
+  if ([
     "boolLiteral",
     "charLiteral",
     "floatLiteral",
     "intLiteral",
     "numberLiteral",
     "stringLiteral",
-  ].includes(value.kind)) return undefined;
-  return JSON.stringify([value.kind, value.value]);
+  ].includes(node.kind)) return JSON.stringify([node.kind, node.value]);
+
+  if (node.kind !== "callExpr" || node.value !== "#record" || typeof node.typeName !== "string" ||
+      node.typeName.length === 0 || (node.children?.length ?? 0) > 64) return undefined;
+  const fields: Array<readonly [string, string]> = [];
+  for (const field of node.children ?? []) {
+    if (field.kind !== "identifier" || typeof field.value !== "string" || field.value.length === 0 ||
+        field.children?.length !== 1) return undefined;
+    const signature = constantExpressionSignature(field.children[0]!, depth + 1);
+    if (signature === undefined) return undefined;
+    fields.push([field.value, signature]);
+  }
+  return JSON.stringify(["record", node.typeName, fields]);
 }
 
 function containsReturnStatement(node: AstNode | undefined): boolean {
@@ -1816,6 +1931,8 @@ const USER_GATE_NAME_PREFIXES = [
   "decode",
 ] as const;
 
+const RESULT_CONSTRUCTOR_NAMES = new Set(["Ok", "Err", "Some", "None"]);
+
 /**
  * Phase 11B.2: Walk the AST and collect user-defined gate function names.
  *
@@ -1918,8 +2035,16 @@ function buildFullCallName(node: AstNode, aliasMap?: ReadonlyMap<string, string>
 // for VS-001/002/004/005/006/007; it fires ONLY FUNGI-VALUESTATE-008 at a governed sink.
 interface BindingInfo {
   readonly name: string;
+  /** Stable identity of this lexical declaration, retained by all state snapshots. */
+  readonly declarationIdentity?: object;
   readonly safetyPrefix: "unsafe" | "safe" | "boundary-untrusted" | undefined;
   readonly typeName: string;
+  /** Value or payload was selected/created under a secret-controlled path. */
+  readonly secretControlDerived?: boolean;
+  /** Definition-time expression snapshots for structured values. */
+  readonly secretValueExpressions?: readonly SecretValueExpression[];
+  /** A structured value has an uninitialized or otherwise unknown reaching definition. */
+  readonly secretValueUnknown?: boolean;
   /** Receiver identity captured by an immutable bare-identifier initializer. */
   readonly moduleAlias?: string;
   /** Location where this binding was declared — used for Rust-style related diagnostics. */
@@ -1950,6 +2075,89 @@ interface BindingInfo {
   readonly consumed?: boolean;
   /** NET-NEW 0111: where it was first consumed (Rust-style related location). */
   readonly consumedAt?: SourceLocation;
+}
+
+const provenanceIdentityIds = new WeakMap<object, number>();
+let nextProvenanceIdentityId = 1;
+
+function provenanceIdentityId(identity: object): number {
+  const existing = provenanceIdentityIds.get(identity);
+  if (existing !== undefined) return existing;
+  const assigned = nextProvenanceIdentityId++;
+  provenanceIdentityIds.set(identity, assigned);
+  return assigned;
+}
+
+/** Missing source locations are not enough to establish declaration identity. */
+export function sameBindingDeclarationIdentity(left: BindingInfo, right: BindingInfo): boolean {
+  const leftIdentity = left.declarationIdentity ?? left;
+  const rightIdentity = right.declarationIdentity ?? right;
+  return leftIdentity === rightIdentity;
+}
+
+/** An expression with the lexical environment that gave its identifiers meaning. */
+interface SecretValueExpression {
+  readonly expression: AstNode;
+  readonly bindings: ReadonlyMap<string, BindingInfo>;
+  readonly shadowedResultConstructors: ReadonlySet<string>;
+}
+
+/** Compare captured provenance without erasing lexical declaration identity. */
+export function sameSecretValueExpression(
+  left: SecretValueExpression,
+  right: SecretValueExpression,
+): boolean {
+  const bindingShape = (
+    binding: BindingInfo,
+    seenBindings: ReadonlyMap<BindingInfo, number>,
+  ): unknown => {
+    const location = binding.declaredAt;
+    const core = [
+      binding.name,
+      binding.typeName,
+      provenanceIdentityId(binding.declarationIdentity ?? binding),
+      location === undefined ? "location-missing" : [
+        location.file,
+        location.line,
+        location.column,
+        location.offset ?? null,
+        location.endLine ?? null,
+        location.endColumn ?? null,
+        location.endOffset ?? null,
+        location.length ?? null,
+      ],
+      binding.secretControlDerived === true,
+      binding.secretValueUnknown === true,
+      binding.secretValueExpressions === undefined ? "missing" : binding.secretValueExpressions.length,
+    ];
+    // A declaration token identifies a lexical binder, but separate snapshots of
+    // that binder can carry different captured environments. Only an actual
+    // object-cycle may truncate traversal; declaration identity remains in core.
+    const priorId = seenBindings.get(binding);
+    if (priorId !== undefined) {
+      return [...core, ["cycle-ref", priorId]];
+    }
+    const nextSeen = new Map(seenBindings);
+    nextSeen.set(binding, nextSeen.size);
+    const roots = (binding.secretValueExpressions ?? [])
+      .map((captured) => expressionShape(captured, nextSeen))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    return [...core, roots];
+  };
+  const expressionShape = (
+    captured: SecretValueExpression,
+    seenBindings: ReadonlyMap<BindingInfo, number>,
+  ): unknown => [
+    captured.expression,
+    [...captured.bindings.entries()]
+      .sort(([leftName], [rightName]) => leftName.localeCompare(rightName))
+      .map(([name, binding]) => [name, bindingShape(binding, seenBindings)]),
+    [...captured.shadowedResultConstructors].sort(),
+  ];
+  const shape = (captured: SecretValueExpression): string => JSON.stringify(
+    expressionShape(captured, new Map()),
+  );
+  return shape(left) === shape(right);
 }
 
 /** Resolve named aliases backed directly or transitively by Authority<Tag>. */
@@ -2335,8 +2543,11 @@ function findTaintSourceName(
 
 class ValueStateChecker {
   private readonly diagnostics: ValueStateDiagnostic[] = [];
+  private readonly declarationIdentities = new WeakMap<AstNode, object>();
   // Binding scope stack — innermost scope is last
   private readonly scopes: Array<Map<string, BindingInfo>> = [];
+  // Result constructor declarations are scoped to their containing block.
+  private readonly shadowedResultConstructorScopes: Array<Set<string>> = [];
   // Phase 11B.2: user-defined gate function names (collected from fnDecl nodes)
   private readonly userGates: ReadonlySet<string>;
   // Phase 4.3: user-defined flow names (collected from *flowDecl nodes)
@@ -2392,8 +2603,13 @@ class ValueStateChecker {
 
   check(ast: AstNode): void {
     this.pushScope();
-    this.walkNode(ast);
-    this.popScope();
+    this.pushShadowedResultConstructors();
+    try {
+      this.walkNode(ast);
+    } finally {
+      this.popShadowedResultConstructors();
+      this.popScope();
+    }
   }
 
   getResult(): ValueStateCheckResult {
@@ -2410,6 +2626,27 @@ class ValueStateChecker {
     this.scopes.pop();
   }
 
+  private pushShadowedResultConstructors(): void {
+    this.shadowedResultConstructorScopes.push(new Set());
+  }
+
+  private registerResultConstructorDeclaration(node: AstNode): void {
+    if (node.kind !== "fnDecl" || !RESULT_CONSTRUCTOR_NAMES.has(node.value ?? "")) return;
+    this.shadowedResultConstructorScopes.at(-1)?.add(node.value ?? "");
+  }
+
+  private popShadowedResultConstructors(): void {
+    this.shadowedResultConstructorScopes.pop();
+  }
+
+  private get activeShadowedResultConstructors(): ReadonlySet<string> {
+    const names = new Set<string>();
+    for (const scope of this.shadowedResultConstructorScopes) {
+      for (const name of scope) names.add(name);
+    }
+    return names;
+  }
+
   private currentScope(): Map<string, BindingInfo> {
     return this.scopes[this.scopes.length - 1] ?? new Map();
   }
@@ -2422,8 +2659,111 @@ class ValueStateChecker {
     return undefined;
   }
 
-  private registerBinding(info: BindingInfo): void {
-    this.currentScope().set(info.name, info);
+  private captureSecretValueExpression(expression: AstNode): SecretValueExpression {
+    const flattenCapturedAlias = (
+      captured: SecretValueExpression,
+      seen: ReadonlySet<BindingInfo>,
+    ): SecretValueExpression[] => {
+      if (captured.expression.kind !== "identifier") return [captured];
+      const binding = captured.bindings.get(captured.expression.value ?? "");
+      if (binding === undefined || seen.has(binding) || binding.secretValueUnknown === true ||
+          binding.secretValueExpressions === undefined || binding.secretValueExpressions.length === 0) {
+        return [captured];
+      }
+      const nextSeen = new Set(seen);
+      nextSeen.add(binding);
+      return binding.secretValueExpressions.flatMap((nested) => flattenCapturedAlias(nested, nextSeen));
+    };
+    const bindings = new Map<string, BindingInfo>();
+    const scalarBinding = (binding: BindingInfo, seenNames: ReadonlySet<string>): boolean => {
+      if (binding.typeName === "SecureString" || binding.typeName.includes("<") ||
+          binding.secretControlDerived === true || binding.secretValueUnknown === true) return false;
+      if (seenNames.has(binding.name)) return true;
+      if (binding.secretValueExpressions === undefined || binding.secretValueExpressions.length === 0) {
+        return /^(?:Bool|Boolean|Byte|Char|Float(?:32|64)?|Int(?:8|16|32|64)?|UInt(?:8|16|32|64)?|String)$/i
+          .test(binding.typeName);
+      }
+      const nextSeen = new Set(seenNames);
+      nextSeen.add(binding.name);
+      return binding.secretValueExpressions.every((captured) =>
+        scalarExpression(captured.expression, captured.bindings, nextSeen));
+    };
+    const scalarExpression = (
+      node: AstNode,
+      capturedBindings: ReadonlyMap<string, BindingInfo>,
+      seenNames: ReadonlySet<string>,
+    ): boolean => {
+      if ([
+        "boolLiteral",
+        "booleanLiteral",
+        "charLiteral",
+        "floatLiteral",
+        "intLiteral",
+        "numberLiteral",
+        "stringLiteral",
+      ].includes(node.kind)) return true;
+      if (node.kind === "identifier") {
+        const binding = capturedBindings.get(node.value ?? "");
+        return binding !== undefined && scalarBinding(binding, seenNames);
+      }
+      if (node.kind === "unaryExpr" || node.kind === "binaryExpr") {
+        const children = node.children ?? [];
+        return children.length > 0 && children.every((child) =>
+          scalarExpression(child, capturedBindings, seenNames));
+      }
+      return false;
+    };
+    const referencedNames = new Set<string>();
+    const collectIdentifiers = (node: AstNode): void => {
+      if (node.kind === "identifier" && node.value !== undefined) referencedNames.add(node.value);
+      if (node.kind === "callExpr" && RESULT_CONSTRUCTOR_NAMES.has(node.value ?? "")) {
+        referencedNames.add(node.value ?? "");
+      }
+      for (const child of node.children ?? []) collectIdentifiers(child);
+    };
+    collectIdentifiers(expression);
+    for (const name of referencedNames) {
+      const binding = this.lookupBinding(name);
+      if (binding !== undefined) {
+        bindings.set(name, scalarBinding(binding, new Set())
+          ? { ...binding, secretValueExpressions: [] }
+          : binding);
+      }
+    }
+    const captured = Object.freeze({
+      expression,
+      bindings,
+      shadowedResultConstructors: new Set(this.activeShadowedResultConstructors),
+    });
+    if (expression.kind !== "identifier") return captured;
+    const expanded = flattenCapturedAlias(captured, new Set());
+    return expanded.length === 1 ? expanded[0]! : Object.freeze({
+      expression,
+      bindings,
+      shadowedResultConstructors: captured.shadowedResultConstructors,
+    });
+  }
+
+  /** Keep provenance only when a value can affect a secret/control result. */
+  private captureSecretValueExpressions(expression: AstNode): SecretValueExpression[] {
+    const lookup = (name: string) => this.lookupBinding(name);
+    if (this.secretControlDepth === 0 && !derivesFromSecret(expression, lookup, this.moduleAliases) &&
+        !derivesFromSecretControl(expression, lookup)) return [];
+    return [this.captureSecretValueExpression(expression)];
+  }
+
+  private registerBinding(info: BindingInfo, declarationNode?: AstNode): void {
+    const cachedIdentity = declarationNode === undefined
+      ? undefined
+      : this.declarationIdentities.get(declarationNode);
+    const declarationIdentity = info.declarationIdentity ?? cachedIdentity ?? Object.freeze({});
+    if (declarationNode !== undefined && cachedIdentity === undefined) {
+      this.declarationIdentities.set(declarationNode, declarationIdentity);
+    }
+    this.currentScope().set(info.name, {
+      ...info,
+      declarationIdentity,
+    });
   }
 
   /**
@@ -2464,6 +2804,15 @@ class ValueStateChecker {
         if (current === undefined || branchBindings.length === 0) continue;
 
         const tainted = branchBindings.some((binding) => binding.tainted === true);
+        const secretValueExpressions: SecretValueExpression[] = [];
+        for (const candidate of branchBindings.flatMap((binding) => binding.secretValueExpressions ?? [])) {
+          if (!secretValueExpressions.some((current) => sameSecretValueExpression(current, candidate))) {
+            secretValueExpressions.push(candidate);
+          }
+        }
+        const secretValueUnknown = branchBindings.some((binding) =>
+          binding.secretValueUnknown === true || (binding.secretValueUnknown === undefined &&
+            (binding.secretValueExpressions === undefined || binding.secretValueExpressions.length === 0)));
         const consumed = includeAffineConsumption
           ? branchBindings.some((binding) => binding.consumed === true)
           : original.consumed === true;
@@ -2493,6 +2842,9 @@ class ValueStateChecker {
         const joined: BindingInfo = {
           ...base,
           typeName,
+          secretControlDerived: branchBindings.some((binding) => binding.secretControlDerived === true),
+          secretValueExpressions,
+          secretValueUnknown,
           tainted,
           embeddingDerived: branchBindings.some((binding) => binding.embeddingDerived === true),
           consumed,
@@ -2591,9 +2943,15 @@ class ValueStateChecker {
 
   private walkNode(node: AstNode): void {
     switch (node.kind) {
-      case "program":
-        this.walkChildren(node);
+      case "program": {
+        for (const child of node.children ?? []) {
+          // Match symbol-resolver.ts: fnDecl becomes visible when its
+          // declaration is visited, not from the start of the whole block.
+          this.registerResultConstructorDeclaration(child);
+          this.walkNode(child);
+        }
         break;
+      }
 
       case "flowDecl":
       case "secureFlowDecl":
@@ -2643,14 +3001,17 @@ class ValueStateChecker {
       case "block": {
         const inheritedSecretControlDepth = this.secretControlDepth;
         this.pushScope();
+        this.pushShadowedResultConstructors();
         let resultingSecretControlDepth = inheritedSecretControlDepth;
         try {
           for (const child of node.children ?? []) {
+            this.registerResultConstructorDeclaration(child);
             this.walkNode(child);
           }
         } finally {
           resultingSecretControlDepth = this.secretControlDepth;
           this.secretControlDepth = inheritedSecretControlDepth;
+          this.popShadowedResultConstructors();
           this.popScope();
         }
         // A nested conditional may return on a secret-dependent path while
@@ -2722,11 +3083,22 @@ class ValueStateChecker {
 
       case "returnStmt": {
         const returned = node.children?.[0];
+        const lookup = (name: string) => this.lookupBinding(name);
+        const hasSecretValue = returned !== undefined && derivesFromSecret(returned, lookup, this.moduleAliases);
+        const hasSecretControl = returned !== undefined && derivesFromSecretControl(returned, lookup);
+        const returnType = this.currentFlowReturnType?.typeStructure;
+        const resultOrOptionReturn = returnType?.kind === "type" &&
+          (returnType.name === "Result" || returnType.name === "Option");
+        const needsValuePosition = this.secretControlDepth > 0 || hasSecretControl ||
+          (resultOrOptionReturn && (returned?.kind === "callExpr" || returned?.kind === "matchExpr"));
         if (
           returned !== undefined
           && this.currentFlowKind !== undefined
-          && !returnTypePreservesSecretLabel(this.currentFlowReturnType)
-          && derivesFromSecret(returned, (name) => this.lookupBinding(name), this.moduleAliases)
+          && (this.secretControlDepth > 0 || hasSecretValue || hasSecretControl)
+          && !returnPreservesSecretLabel(
+            this.currentFlowReturnType, returned, lookup, needsValuePosition,
+            this.secretControlDepth > 0 || hasSecretControl, this.activeShadowedResultConstructors,
+          )
         ) {
           const returnType = this.currentFlowReturnType?.value ?? "an unqualified result";
           this.diagnostics.push({
@@ -2871,10 +3243,15 @@ class ValueStateChecker {
     const continuingControlDepths: number[] = [];
     const thenTerminates = thenBlock !== undefined && definitelyTerminates(thenBlock);
     const elseTerminates = elseBlock !== undefined && definitelyTerminates(elseBlock);
+    const sameTerminalConstantResult = secretCondition && thenTerminates && elseTerminates
+      && thenBlock !== undefined && elseBlock !== undefined
+      && directConstantReturnSignature(thenBlock) !== undefined
+      && directConstantReturnSignature(thenBlock) === directConstantReturnSignature(elseBlock);
+    const secretControlChangesReturn = secretCondition && !sameTerminalConstantResult;
     if (thenBlock !== undefined) {
       this.restoreScopes(baseline);
       this.secretControlDepth = baselineSecretControlDepth;
-      this.walkUnderSecretControl(thenBlock, secretCondition);
+      this.walkUnderSecretControl(thenBlock, secretControlChangesReturn);
       if (!thenTerminates) {
         outcomes.push(this.snapshotScopes());
         continuingControlDepths.push(this.secretControlDepth);
@@ -2886,7 +3263,7 @@ class ValueStateChecker {
     this.restoreScopes(baseline);
     this.secretControlDepth = baselineSecretControlDepth;
     if (elseBlock !== undefined) {
-      this.walkUnderSecretControl(elseBlock, secretCondition);
+      this.walkUnderSecretControl(elseBlock, secretControlChangesReturn);
       if (!elseTerminates) {
         outcomes.push(this.snapshotScopes());
         continuingControlDepths.push(this.secretControlDepth);
@@ -2913,6 +3290,42 @@ class ValueStateChecker {
     }
   }
 
+  /** Widen cyclic loop-carried value provenance to an explicit unknown fact. */
+  private widenCyclicLoopProvenance(): void {
+    const reachesName = (
+      captured: SecretValueExpression,
+      target: BindingInfo,
+      seen: ReadonlySet<BindingInfo>,
+    ): boolean => {
+      for (const binding of captured.bindings.values()) {
+        const sameDeclaration = sameBindingDeclarationIdentity(binding, target);
+        if (sameDeclaration) return true;
+        if (seen.has(binding)) continue;
+        const nextSeen = new Set(seen);
+        nextSeen.add(binding);
+        if ((binding.secretValueExpressions ?? []).some((nested) =>
+          reachesName(nested, target, nextSeen))) return true;
+      }
+      return false;
+    };
+
+    for (const scope of this.scopes) {
+      for (const [name, binding] of scope) {
+        const expressions = binding.secretValueExpressions ?? [];
+        if (expressions.some((captured) => reachesName(captured, binding, new Set()))) {
+          scope.set(name, {
+            ...binding,
+            // A loop-carried self-dependency can grow an unbounded history of AST
+            // snapshots. Preserve fail-closed behavior while making the abstract
+            // state finite; downstream checks must not infer a public value.
+            secretValueExpressions: [],
+            secretValueUnknown: true,
+          });
+        }
+      }
+    }
+  }
+
   /** Track secret-dependent loop entry/exit, body effects, and later-iteration state. */
   private handleWhileStmt(node: AstNode): void {
     const [condition, body] = node.children ?? [];
@@ -2930,9 +3343,6 @@ class ValueStateChecker {
         loopDiagnostics.set(JSON.stringify(diagnostic), diagnostic);
       }
     };
-    const stateKey = (scopes: Array<Map<string, BindingInfo>>, depth: number): string =>
-      JSON.stringify([scopes.map((scope) => [...scope.entries()]), depth]);
-
     let headScopes = baseline;
     let headSecretControlDepth = baselineSecretControlDepth;
     let warnedForSecretCondition = false;
@@ -2991,10 +3401,11 @@ class ValueStateChecker {
           bodyTerminates ? [conditionOutcome] : [conditionOutcome, bodyOutcome],
         );
       }
+      if (!bodyTerminates) this.widenCyclicLoopProvenance();
       nextHeadScopes = this.snapshotScopes();
 
-      const stable = stateKey(headScopes, headSecretControlDepth) ===
-        stateKey(nextHeadScopes, nextHeadSecretControlDepth);
+      const stable = valueStateLoopStateKey(headScopes, headSecretControlDepth) ===
+        valueStateLoopStateKey(nextHeadScopes, nextHeadSecretControlDepth);
       headScopes = nextHeadScopes;
       headSecretControlDepth = nextHeadSecretControlDepth;
       // A terminating body has no backedge. Replaying the condition would
@@ -3070,7 +3481,7 @@ class ValueStateChecker {
                   safetyPrefix: undefined,
                   typeName: subjectIsSecret ? "SecureString" : "",
                   ...(child.location !== undefined ? { declaredAt: child.location } : {}),
-                });
+                }, child);
               }
             }
           }
@@ -3271,7 +3682,7 @@ class ValueStateChecker {
     const untrusted = isTaintedParam
       || (sourceFromOrigin !== undefined && isUntrustedSourceFromOrigin(sourceFromOrigin));
     if (untrusted) {
-      this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField, ...passportField, ...authorityField });
+      this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField, ...passportField, ...authorityField }, node);
     } else if (this.currentFlowKind === "secureFlowDecl" || this.currentFlowKind === "guardedFlowDecl" || this.currentFlowKind === "governedFlowDecl") {
       // R&D 0093 "34B hole": a BARE param at a posture-gated entry boundary (secure/guarded
       // flow) is untrusted-until-gated. `boundary-untrusted` is inert everywhere EXCEPT a
@@ -3279,9 +3690,9 @@ class ValueStateChecker {
       // param-trusted-by-default fail-open at the secure/guarded tier without the false
       // positives of a full taint flip (string-concat / VS-004 stays clean). `pure`/plain
       // `flow` stay trusted-by-default (non-breaking).
-      this.registerBinding({ name, safetyPrefix: "boundary-untrusted", typeName, ...locField, ...passportField, ...authorityField });
+      this.registerBinding({ name, safetyPrefix: "boundary-untrusted", typeName, ...locField, ...passportField, ...authorityField }, node);
     } else {
-      this.registerBinding({ name, safetyPrefix: undefined, typeName, ...locField, ...passportField, ...authorityField });
+      this.registerBinding({ name, safetyPrefix: undefined, typeName, ...locField, ...passportField, ...authorityField }, node);
     }
   }
 
@@ -3359,6 +3770,10 @@ class ValueStateChecker {
       (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name), this.moduleAliases))
         ? { typeName: "SecureString" }
         : {};
+    const secretControlField = this.secretControlDepth > 0 ||
+      (init !== undefined && derivesFromSecretControl(init, (name) => this.lookupBinding(name)))
+      ? { secretControlDerived: true }
+      : {};
     // U2/#204: a binding that holds or derives a cleartext embedding (and isn't sealed)
     // carries SemanticVector confidentiality — propagates like taint/secret.
     const embeddingField =
@@ -3393,7 +3808,12 @@ class ValueStateChecker {
     const aliasField = init?.kind === "identifier" && init.value
       ? { moduleAlias: this.moduleAliases.get(init.value) ?? init.value }
       : {};
-    this.registerBinding({ ...info, ...locField, ...taintField, ...secretField, ...embeddingField, ...passportField, ...authorityField, ...aliasField });
+    this.registerBinding({
+      ...info, ...locField, ...taintField, ...secretField, ...secretControlField, ...embeddingField,
+      ...passportField, ...authorityField, ...aliasField,
+      secretValueExpressions: init === undefined ? [] : this.captureSecretValueExpressions(init),
+      secretValueUnknown: init === undefined,
+    }, node);
     // Walk the init expression
     if (init !== undefined) this.walkNode(init);
   }
@@ -3437,12 +3857,21 @@ class ValueStateChecker {
       (this.secretControlDepth > 0 || derivesFromSecret(init, (name) => this.lookupBinding(name), this.moduleAliases))
         ? { typeName: "SecureString" }
         : {};
+    const mutSecretControlField = this.secretControlDepth > 0 ||
+      (init !== undefined && derivesFromSecretControl(init, (name) => this.lookupBinding(name)))
+      ? { secretControlDerived: true }
+      : {};
     const mutEmbeddingField =
       isEmbeddingTypeName(info.typeName) ||
       (init !== undefined && derivesFromEmbedding(init, (name) => this.lookupBinding(name)))
         ? { embeddingDerived: true }
         : {};
-    this.registerBinding({ ...info, ...mutLocField, ...mutTaintField, ...mutSecretField, ...mutEmbeddingField });
+    this.registerBinding({
+      ...info, ...mutLocField, ...mutTaintField, ...mutSecretField, ...mutSecretControlField,
+      ...mutEmbeddingField,
+      secretValueExpressions: init === undefined ? [] : this.captureSecretValueExpressions(init),
+      secretValueUnknown: init === undefined,
+    }, node);
 
     if (init !== undefined) this.walkNode(init);
   }
@@ -3468,6 +3897,9 @@ class ValueStateChecker {
       const patch: Partial<BindingInfo> = {
         tainted: isTainted,
         embeddingDerived: isEmbedding,
+        secretControlDerived: this.secretControlDepth > 0 || derivesFromSecretControl(rhs, lookup),
+        secretValueExpressions: this.captureSecretValueExpressions(rhs),
+        secretValueUnknown: false,
         // Recompute the secret marker: a secret RHS marks SecureString; a clean RHS
         // (incl. redact()) clears it without clobbering a real declared type.
         typeName: isSecret

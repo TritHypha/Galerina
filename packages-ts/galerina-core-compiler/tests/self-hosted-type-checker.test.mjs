@@ -294,13 +294,27 @@ describe("type-checker.fungi — combined & aggregate", () => {
 // if/while), emitting FUNGI-TYPE-001 (unknown declared type) and FUNGI-TYPE-002
 // (declared type ≠ literal initializer type). Builds Stmt/Expr records by hand.
 
-// True when an Int literal's value is outside the WASM i32 range — the range decision the twin cannot
-// make itself (it runs on i32 Ints), so the parser lane / this builder supplies it as a field, exactly
-// like the pre-parsed tensor shape. Non-Int or non-lit exprs are never overflowing.
+// Mirrors the parser's exact literal and unary-negation overflow decision. The self-hosted twin runs
+// on i32 Ints, so the parser places the derived result on the containing binding Stmt, not on Expr.
 function isI32Overflow(kind, litType, value) {
   if (kind !== "lit" || litType !== "Int") return false;
   const n = Number(String(value).replace(/_/g, ""));
   return Number.isFinite(n) && (n > 2147483647 || n < -2147483648);
+}
+function parserI32Overflow(expression) {
+  const fields = expression?.fields;
+  const kind = fields?.get("kind")?.value ?? "";
+  const litType = fields?.get("litType")?.value ?? "";
+  const value = fields?.get("value")?.value ?? "";
+  if (kind === "lit") return isI32Overflow(kind, litType, value);
+  if (kind === "unary" && value === "neg") {
+    const inner = fields.get("children")?.items?.[0]?.fields;
+    if (inner?.get("kind")?.value === "lit" && inner.get("litType")?.value === "Int") {
+      const innerValue = inner.get("value")?.value ?? "";
+      return isI32Overflow("lit", "Int", innerValue.startsWith("-") ? innerValue : `-${innerValue}`);
+    }
+  }
+  return false;
 }
 const expr = (kind, value = "", litType = "", children = []) =>
   vRecord({
@@ -308,12 +322,16 @@ const expr = (kind, value = "", litType = "", children = []) =>
     value: vStr(value),
     litType: vStr(litType),
     children: vList(children),
-    // FUNGI-TYPE-024: pre-parsed i32-overflow flag for Int literals (the twin can't hold the value).
-    litI32Overflow: vBool(isI32Overflow(kind, litType, value)),
   });
 
-// A match arm carries just its pattern text for exhaustiveness/reachability (`_`/`else` = wildcard).
-const arm = (pattern) => vRecord({ pattern: vStr(pattern) });
+// The parser stores each match arm as a full Stmt: pattern in `name`, pattern expression in `expr`,
+// and nested statements in `body`. `stmt` is initialized before tests invoke this closure.
+const arm = (pattern, body = []) => stmt({
+  kind: "if",
+  name: pattern,
+  expr: [expr("lit", pattern === "_" ? "true" : pattern, pattern === "_" ? "Bool" : "Int")],
+  body,
+});
 // A list-literal initializer + its element literals (for the Array<T> collection-element checks).
 const litEl = (litType) => expr("lit", "", litType);
 const listOf = (...litTypes) => expr("listLiteral", "", "", litTypes.map(litEl));
@@ -352,6 +370,7 @@ const stmt = ({ kind, name = "", typeName = "", initType = "", expr: e = [], bod
   const { base, args } = parseGeneric(typeName);
   const dt = parseTensor(typeName);
   const it = parseTensor(initType);
+  const parserBody = kind === "match" && body.length === 0 ? arms : body;
   return vRecord({
     kind: vStr(kind),
     name: vStr(name),
@@ -369,12 +388,14 @@ const stmt = ({ kind, name = "", typeName = "", initType = "", expr: e = [], bod
     // supplies it, mirroring how Stage-A resolves the RHS tensor type). `isTensor` is the absent-safe
     // routing flag (a boolean the twin tests for truthiness; the real parser leaves it unset → false).
     isTensor: vBool(dt.elem !== ""),
+    // Mirror the parser's Statement-level overflow flag (derived from the initializer expression).
+    litI32Overflow: vBool(e.some(parserI32Overflow)),
     declaredTensorElem: vStr(dt.elem),
     declaredTensorShape: vStr(dt.shape),
     initTensorElem: vStr(it.elem),
     initTensorShape: vStr(it.shape),
     expr: vList(e),
-    body: vList(body),
+    body: vList(parserBody),
     elseBody: vList(elseBody),
     // Only read for `kind === "match"` (FUNGI-TYPE-022/023). The arm SET (not a scalar flag) is the
     // faithful mirror of Stage-A `checkMatch`, which derives has-wildcard + reachability from it.
@@ -660,11 +681,13 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
   });
 
   it("mismatch nested inside a match arm body is caught (recursion)", async () => {
+    const armBody = [
+      stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("lit", "t", "String")] }),
+    ];
+    const arms = [arm("Red", armBody), arm("_")];
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
-        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("_")], body: [
-          stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("lit", "t", "String")] }),
-        ] }),
+        stmt({ kind: "match", name: "c", arms }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
@@ -904,6 +927,28 @@ describe("type-checker.fungi — FUNGI-TYPE-024 Int literal i32 overflow", () =>
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-024"]);
+  });
+
+  it("parser-shaped unary negation of an overflowing Int literal → 024", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [
+          expr("unary", "neg", "", [expr("lit", "2147483649", "Int")]),
+        ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-024"]);
+  });
+
+  it("parser-shaped unary negation of 2147483648 accepts exact i32 minimum", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [
+          expr("unary", "neg", "", [expr("lit", "2147483648", "Int")]),
+        ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
   });
 
   it("in-range Int literal → clean", async () => {

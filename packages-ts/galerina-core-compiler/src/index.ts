@@ -1303,6 +1303,7 @@ export {
 // Phase 25 — WAT Assembler (WAT → WASM binary)
 export {
   assembleWAT,
+  assembleWATModule,
   executeWASMFlow,
   injectLoopFuel,
   WASM_FLOW_DEADLINE_MS,
