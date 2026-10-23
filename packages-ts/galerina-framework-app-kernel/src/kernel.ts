@@ -30,7 +30,8 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
-import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
+import { createSecretReleaseShell, SecretReleaseRefused } from "./secret-gate.js";
+import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
@@ -627,11 +628,27 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
-  const secretGate = createSecretGate(opts.secretsProvider, {
+  // S5: the gate-9.5 VERDICT is the Fungi secret-gate WebAssembly `admit` export, loaded ONCE at
+  // boot from the pinned asset (no option can inject bytes). A missing or tampered artifact is a
+  // typed BOOT refusal (FUNGI-SECRET-008 / _HASH_MISMATCH), never a silent dark
+  // kernel and never admit-without-decider. getSecret/noteUnknown verdicts come from the same WebAssembly via the release shell below (MB-06: no ACK).
+  const fungiGateLoad = loadPinnedFungiSecretGate();
+  if (!fungiGateLoad.ok) {
+    throw Object.assign(new Error(`${fungiGateLoad.code}: the pinned Fungi secret-gate WebAssembly refused to load.`), {
+      code: fungiGateLoad.code,
+    });
+  }
+  const fungiGate = fungiGateLoad.gate;
+  // S5-R1b/R7: getSecret/noteUnknown run through a release shell whose ONLY decider is the
+  // pinned Fungi WebAssembly (deliverPreHandoff, gateNoteUnknown). TS keeps IO only.
+  const secretGate = createSecretReleaseShell(opts.secretsProvider, {
+    decider: fungiGate,
     ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
     requireBoundOperationId: true,
     requireRevocationEpoch: true,
+    bindAdmittedEpoch: true,
   });
+  const gateProvider = opts.secretsProvider;
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
@@ -896,6 +913,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let requestOutcomeSealed = false;
     let secretAccessInProgress = false;
     let secretAccessSpent = false;
+    // S5h: set only when the Fungi gate admitted every required secret after the idempotency wait.
+    let secretsAdmittedThisRequest = false;
+    // S5-R8c: raw epoch read just BEFORE the post-wait admit; the epochMint fact for every getSecret.
+    let admittedEpoch: unknown = "UNKNOWN";
     let requestActive = false;
     const secretUnavailableResponse = (): GalerinaKernelResponse =>
       errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
@@ -913,7 +934,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
       // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
       // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.
-      const secretRefusal = secretGate.admit(policy.secrets.require);
+      const secretRefusal = fungiGate.admit(gateProvider, policy.secrets.require);
       if (secretRefusal !== null) {
         // 503: an absent/faulted/unresolvable secret is a server-side UNAVAILABILITY, not a client
         // error. The handler is NEVER reached (gate 9.5 < gate 10), so no side effect can occur.
@@ -956,12 +977,26 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // Idempotency admission may await an external store. Re-check required secrets after that
       // yield so a provider that was removed, faulted, or disposed while the claim was pending
       // cannot reach developer dispatch on the basis of the earlier gate-9.5 snapshot.
-      const postWaitSecretRefusal = secretGate.admit(policy.secrets.require);
+      // S5-R8c: read the epoch BEFORE the post-wait admit, so a has() that bumps it shows as a move.
+      // Rejected: reading after admit (a fault raised inside has() would be absorbed as admitted).
+      admittedEpoch = "UNKNOWN";
+      if (policy.secrets.require.length > 0 && gateProvider !== undefined && gateProvider !== null) {
+        try {
+          const readEpoch: unknown = gateProvider.revocationEpoch;
+          if (typeof readEpoch === "function") {
+            admittedEpoch = intrinsicReflectApply(readEpoch as () => unknown, gateProvider, []);
+          }
+        } catch {
+          admittedEpoch = "UNKNOWN";
+        }
+      }
+      const postWaitSecretRefusal = fungiGate.admit(gateProvider, policy.secrets.require);
       if (postWaitSecretRefusal !== null) {
         // The reservation remains consumed. A caller must reconcile the operation and use a new
         // idempotency key; the kernel never guesses that an external store claim can be undone.
         return pipelineOutcome(errorResponse(503, postWaitSecretRefusal, "A required secret is unavailable."), policy);
       }
+      secretsAdmittedThisRequest = postWaitSecretRefusal === null;
 
       // Retain the response budget in kernel-local state before exposing `policy` to handler code.
       const responseMemoryBudgetBytes = policy.limits.memoryBytes;
@@ -1006,9 +1041,13 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         if (secretReleaseFinalized) return;
         secretReleaseFinalized = true;
         if (!secretAccessSpent) return;
+        // MB-06 (Phillip 2026-10-22, option a): a successful handoff is DELIVERY_UNKNOWN (106),
+        // matching the Fungi deliverPostHandoff verdict. The kernel never acknowledges a delivery,
+        // so `ok` (the chosen HTTP outcome) no longer selects an ACK; every spent lease ends
+        // delivery-unknown. Rejected: a released-pending-ack verdict (keeps an ACK window open).
+        void ok;
         try {
-          if (ok) secretGate.acknowledge(releaseOperationId);
-          else secretGate.noteUnknown(releaseOperationId);
+          secretGate.noteUnknown(releaseOperationId);
         } catch {
           try {
             secretGate.noteUnknown(releaseOperationId);
@@ -1073,7 +1112,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
                 // response is sealed. Later closed-capability refusals cannot revise an
                 // outcome whose matching audit event may already be accepted.
                 if (!requestOutcomeSealed) secretAccessFailed = true;
-              }, releaseOperationId);
+              }, releaseOperationId, secretsAdmittedThisRequest, admittedEpoch);
             } catch (error) {
               // Latch the fault so a handler cannot catch a missing/invalid secret-use error and
               // still return a success response. After sealing, the callback still refuses but

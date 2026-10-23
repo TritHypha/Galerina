@@ -47,8 +47,17 @@ class SelectiveThrowAck extends ReleaseCommitAuthority {
   constructor() {
     super();
     this.throwFor = new Set();
+    this.ackCalls = 0;
+    this.unknownThrowFor = new Set();
+  }
+  markUnknown(operationId) {
+    if (this.unknownThrowFor.has(operationId)) {
+      throw new Error("forced-unknown");
+    }
+    return super.markUnknown(operationId);
   }
   acknowledgeMinted(operationId) {
+    this.ackCalls += 1;
     if (this.throwFor.has(operationId)) {
       throw new Error("forced-ack");
     }
@@ -56,7 +65,7 @@ class SelectiveThrowAck extends ReleaseCommitAuthority {
   }
 }
 
-test("kernel: acknowledge throw is delivery-unknown and never acknowledged", async () => {
+test("kernel: successful delivery never calls acknowledgeMinted and is delivery-unknown (MB-06)", async () => {
   const authority = new SelectiveThrowAck();
   const kernel = createAppKernel({
     routes: [{
@@ -81,14 +90,46 @@ test("kernel: acknowledge throw is delivery-unknown and never acknowledged", asy
   authority.throwFor.add(operationId);
   const response = await kernel.handle(req("rq-ack"));
   await waitMacrotask();
-  assert.equal(response.status, 500);
-  assert.equal(errorOf(response), "internal_error");
+  // MB-06: the kernel no longer ACKs, so the armed ACK throw is never reached.
+  assert.equal(authority.ackCalls, 0);
+  assert.equal(response.status, 200);
   assert.equal(authority.status(operationId).state, "delivery-unknown");
   authority.throwFor.delete(operationId);
   assert.notEqual(authority.acknowledgeMinted(operationId), "acknowledged");
 });
 
-test("kernel: acknowledge throw on A leaves concurrent B acknowledged", async () => {
+test("kernel: delivery-unknown mark throw fails closed and is never acknowledged (MB-06)", async () => {
+  const authority = new SelectiveThrowAck();
+  const kernel = createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/pay",
+      handler: "pay",
+      auth: { mode: "public" },
+      secrets: { require: ["db.main"] },
+      audit: { runtimeReport: true },
+    }],
+    dispatch: {
+      pay: ({ getSecret }) => {
+        getSecret("db.main", () => {});
+        return { body: { ok: true } };
+      },
+    },
+    secretsProvider: countingProvider(),
+    releaseAuthority: authority,
+    auditSink: new InMemoryAuditSink(),
+  });
+  const operationId = `rq-mu\u0000${1}`;
+  authority.unknownThrowFor.add(operationId);
+  const response = await kernel.handle(req("rq-mu"));
+  await waitMacrotask();
+  assert.equal(response.status, 500);
+  assert.equal(errorOf(response), "internal_error");
+  assert.equal(authority.ackCalls, 0);
+  assert.notEqual(authority.status(operationId).state, "acknowledged");
+});
+
+test("kernel: A failure leaves concurrent B released until B finishes delivery-unknown (MB-06)", async () => {
   const authority = new SelectiveThrowAck();
   let releaseB;
   const gate = new Promise((resolve) => {
@@ -123,16 +164,17 @@ test("kernel: acknowledge throw on A leaves concurrent B acknowledged", async ()
   const operationB = `rq-B\u0000${1}`;
   assert.equal(authority.status(operationB).state, "released");
   const operationA = `rq-A\u0000${2}`;
-  authority.throwFor.add(operationA);
+  authority.unknownThrowFor.add(operationA);
   const responseA = await kernel.handle(req("rq-A"));
   await waitMacrotask();
   assert.equal(responseA.status, 500);
-  assert.equal(authority.status(operationA).state, "delivery-unknown");
+  assert.notEqual(authority.status(operationA).state, "acknowledged");
   assert.equal(authority.status(operationB).state, "released");
   releaseB();
   const responseB = await pendingB;
   await waitMacrotask();
   assert.equal(responseB.status, 200);
-  assert.equal(authority.status(operationB).state, "acknowledged");
-  assert.equal(authority.status(operationA).state, "delivery-unknown");
+  assert.equal(authority.status(operationB).state, "delivery-unknown");
+  assert.equal(authority.ackCalls, 0);
+  assert.notEqual(authority.status(operationA).state, "acknowledged");
 });

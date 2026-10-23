@@ -155,7 +155,7 @@ test("late provider callback before publication seal is error HTTP and not ackno
   assert.equal(status.state, "delivery-unknown");
 });
 
-test("clean publication and audit commit acknowledges the lease", async () => {
+test("clean publication and audit commit leaves the lease delivery-unknown, never acknowledged (MB-06)", async () => {
   const authority = new ReleaseCommitAuthority();
   const kernel = createAppKernel({
     routes: [{
@@ -180,5 +180,9 @@ test("clean publication and audit commit acknowledges the lease", async () => {
   await waitMacrotask();
   const operationId = `rq-clean-ack\u0000${1}`;
   assert.equal(response.status, 200);
-  assert.equal(authority.status(operationId).state, "acknowledged");
+  // MB-06 (Phillip 2026-10-22, option a): a successful handoff is DELIVERY_UNKNOWN (106); the
+  // kernel never acknowledges, and a later ACK cannot promote the lease to acknowledged.
+  assert.equal(authority.status(operationId).state, "delivery-unknown");
+  assert.notEqual(authority.acknowledgeMinted(operationId), "acknowledged");
+  assert.equal(authority.status(operationId).state, "delivery-unknown");
 });
