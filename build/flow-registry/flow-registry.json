@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 121,
+  "total": 141,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -16,6 +16,48 @@
       "flow": "tableForClass",
       "file": "packages/fungi/memory/src/adapter-profile.fungi",
       "line": 33
+    },
+    {
+      "qualified": "auth-verify-e2e.andHalves",
+      "unit": "auth-verify-e2e",
+      "flow": "andHalves",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 59
+    },
+    {
+      "qualified": "auth-verify-e2e.exitAfterBegin",
+      "unit": "auth-verify-e2e",
+      "flow": "exitAfterBegin",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 233
+    },
+    {
+      "qualified": "auth-verify-e2e.exitBeforeBegin",
+      "unit": "auth-verify-e2e",
+      "flow": "exitBeforeBegin",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 204
+    },
+    {
+      "qualified": "auth-verify-e2e.listedOutcome",
+      "unit": "auth-verify-e2e",
+      "flow": "listedOutcome",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 109
+    },
+    {
+      "qualified": "auth-verify-e2e.packAdapter",
+      "unit": "auth-verify-e2e",
+      "flow": "packAdapter",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 83
+    },
+    {
+      "qualified": "auth-verify-e2e.runAuthVerify",
+      "unit": "auth-verify-e2e",
+      "flow": "runAuthVerify",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 250
     },
     {
       "qualified": "auth-verify-route.admitIngress",
@@ -102,25 +144,81 @@
       "line": 50
     },
     {
+      "qualified": "c-boundary.decodeTaggedWideI32",
+      "unit": "c-boundary",
+      "flow": "decodeTaggedWideI32",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 275
+    },
+    {
       "qualified": "c-boundary.readForeignBool",
       "unit": "c-boundary",
       "flow": "readForeignBool",
       "file": "packages/fungi/memory/src/c-boundary.fungi",
-      "line": 73
+      "line": 110
+    },
+    {
+      "qualified": "c-boundary.readForeignBoundedInteger",
+      "unit": "c-boundary",
+      "flow": "readForeignBoundedInteger",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 20
+    },
+    {
+      "qualified": "c-boundary.readForeignByte",
+      "unit": "c-boundary",
+      "flow": "readForeignByte",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 102
+    },
+    {
+      "qualified": "c-boundary.readForeignI32Integer",
+      "unit": "c-boundary",
+      "flow": "readForeignI32Integer",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 78
     },
     {
       "qualified": "c-boundary.readForeignLength",
       "unit": "c-boundary",
       "flow": "readForeignLength",
       "file": "packages/fungi/memory/src/c-boundary.fungi",
-      "line": 58
+      "line": 89
     },
     {
       "qualified": "c-boundary.readForeignSafeInteger",
       "unit": "c-boundary",
       "flow": "readForeignSafeInteger",
       "file": "packages/fungi/memory/src/c-boundary.fungi",
-      "line": 17
+      "line": 70
+    },
+    {
+      "qualified": "c-boundary.readTaggedWideInteger",
+      "unit": "c-boundary",
+      "flow": "readTaggedWideInteger",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 198
+    },
+    {
+      "qualified": "c-boundary.taggedPayloadFitsI32",
+      "unit": "c-boundary",
+      "flow": "taggedPayloadFitsI32",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 139
+    },
+    {
+      "qualified": "c-boundary.taggedPayloadI32",
+      "unit": "c-boundary",
+      "flow": "taggedPayloadI32",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 180
+    },
+    {
+      "qualified": "c-boundary.u16FromBytes",
+      "unit": "c-boundary",
+      "flow": "u16FromBytes",
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "line": 131
     },
     {
       "qualified": "cleanup-evidence.admitCleanup",
@@ -515,6 +613,13 @@
       "line": 255
     },
     {
+      "qualified": "query-custody.admitQueryCustody",
+      "unit": "query-custody",
+      "flow": "admitQueryCustody",
+      "file": "packages/fungi/memory/src/query-custody.fungi",
+      "line": 20
+    },
+    {
       "qualified": "release-commit-point.ackStep",
       "unit": "release-commit-point",
       "flow": "ackStep",
@@ -638,168 +743,203 @@
       "unit": "secret-arena",
       "flow": "applyArenaClock",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 131
+      "line": 139
     },
     {
       "qualified": "secret-arena.arenaDispose",
       "unit": "secret-arena",
       "flow": "arenaDispose",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 865
+      "line": 888
     },
     {
       "qualified": "secret-arena.arenaEpoch",
       "unit": "secret-arena",
       "flow": "arenaEpoch",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 455
+      "line": 469
     },
     {
       "qualified": "secret-arena.arenaHas",
       "unit": "secret-arena",
       "flow": "arenaHas",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 317
+      "line": 325
     },
     {
       "qualified": "secret-arena.arenaPut",
       "unit": "secret-arena",
       "flow": "arenaPut",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 726
+      "line": 746
+    },
+    {
+      "qualified": "secret-arena.arenaReadBeforeInit",
+      "unit": "secret-arena",
+      "flow": "arenaReadBeforeInit",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 1047
+    },
+    {
+      "qualified": "secret-arena.arenaSetupAbort",
+      "unit": "secret-arena",
+      "flow": "arenaSetupAbort",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 990
+    },
+    {
+      "qualified": "secret-arena.arenaSlotCheck",
+      "unit": "secret-arena",
+      "flow": "arenaSlotCheck",
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "line": 1014
     },
     {
       "qualified": "secret-arena.arenaStatus",
       "unit": "secret-arena",
       "flow": "arenaStatus",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 389
+      "line": 400
     },
     {
       "qualified": "secret-arena.arenaUse",
       "unit": "secret-arena",
       "flow": "arenaUse",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 568
+      "line": 585
     },
     {
       "qualified": "secret-arena.constructArena",
       "unit": "secret-arena",
       "flow": "constructArena",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 221
+      "line": 229
     },
     {
       "qualified": "secret-arena.listedCallback",
       "unit": "secret-arena",
       "flow": "listedCallback",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 98
+      "line": 106
     },
     {
       "qualified": "secret-arena.listedState",
       "unit": "secret-arena",
       "flow": "listedState",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 28
+      "line": 33
     },
     {
       "qualified": "secret-arena.listedWipe",
       "unit": "secret-arena",
       "flow": "listedWipe",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 55
+      "line": 63
     },
     {
       "qualified": "secret-arena.mapHasToPresence",
       "unit": "secret-arena",
       "flow": "mapHasToPresence",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 928
+      "line": 954
     },
     {
       "qualified": "secret-arena.wipeWins",
       "unit": "secret-arena",
       "flow": "wipeWins",
       "file": "packages/fungi/memory/src/secret-arena.fungi",
-      "line": 82
+      "line": 90
     },
     {
       "qualified": "secret-gate.admit",
       "unit": "secret-gate",
       "flow": "admit",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 29
+      "line": 34
     },
     {
       "qualified": "secret-gate.deliverPostHandoff",
       "unit": "secret-gate",
       "flow": "deliverPostHandoff",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 257
+      "line": 262
     },
     {
       "qualified": "secret-gate.deliverPreHandoff",
       "unit": "secret-gate",
       "flow": "deliverPreHandoff",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 125
+      "line": 130
     },
     {
       "qualified": "secret-gate.gateAcknowledge",
       "unit": "secret-gate",
       "flow": "gateAcknowledge",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 506
+      "line": 511
     },
     {
       "qualified": "secret-gate.gateNoteUndelivered",
       "unit": "secret-gate",
       "flow": "gateNoteUndelivered",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 625
+      "line": 630
+    },
+    {
+      "qualified": "secret-gate.gateNoteUnknown",
+      "unit": "secret-gate",
+      "flow": "gateNoteUnknown",
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "line": 646
     },
     {
       "qualified": "secret-gate.gateStatus",
       "unit": "secret-gate",
       "flow": "gateStatus",
       "file": "packages/fungi/memory/src/secret-gate.fungi",
-      "line": 579
+      "line": 584
+    },
+    {
+      "qualified": "secrets-provider-port.portAccess",
+      "unit": "secrets-provider-port",
+      "flow": "portAccess",
+      "file": "packages/fungi/memory/src/secrets-provider-port.fungi",
+      "line": 22
     },
     {
       "qualified": "serve-gate.classifyServeRoute",
       "unit": "serve-gate",
       "flow": "classifyServeRoute",
       "file": "packages/fungi/memory/src/serve-gate.fungi",
-      "line": 164
+      "line": 166
     },
     {
       "qualified": "serve-gate.effectSecretClass",
       "unit": "serve-gate",
       "flow": "effectSecretClass",
       "file": "packages/fungi/memory/src/serve-gate.fungi",
-      "line": 79
+      "line": 81
     },
     {
       "qualified": "serve-gate.finish",
       "unit": "serve-gate",
       "flow": "finish",
       "file": "packages/fungi/memory/src/serve-gate.fungi",
-      "line": 27
+      "line": 29
     },
     {
       "qualified": "serve-gate.pathProtection",
       "unit": "serve-gate",
       "flow": "pathProtection",
       "file": "packages/fungi/memory/src/serve-gate.fungi",
-      "line": 41
+      "line": 43
     },
     {
       "qualified": "serve-gate.reachSecretClass",
       "unit": "serve-gate",
       "flow": "reachSecretClass",
       "file": "packages/fungi/memory/src/serve-gate.fungi",
-      "line": 122
+      "line": 124
     },
     {
       "qualified": "signet-grant-seal.applyPostSink",
