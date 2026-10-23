@@ -1,0 +1,72 @@
+@version 1
+/// @file: query-custody.fungi
+/// @purpose: S6 (RD-1413 O2/O3) query-custody verdict for POST /auth/verify.
+///   Closed query schema {object, version}, exact decoded byte names. No alias,
+///   no case fold: any other name refuses. Host COUNTS exact-name matches over
+///   the raw ordered pair custody it received (P20-N2, one host map) and reports
+///   whether the flat Record equals those pairs. This flow decides.
+/// custodyToken: 0 present 1 absent (Record-only, UNKNOWN) else 11
+/// objectCount / versionCount / unknownCount: SafeInteger >= 0
+/// recordToken: 0 Record equals custody 1 differs else 11
+/// Returns: 0 admit 1 custody-absent 2 duplicate 3 unknown-name
+///   4 record-mismatch 11 foreign or unlisted. Never 0 on any fault.
+/// Precedence: foreign 11, custody 1, unknown 3, duplicate 2, record 4.
+/// Rejected: alias/case-fold table (second decider); TS admitQueryOnce as sole
+///   decider (frozen TS); re-derive from the Record (repeats already erased).
+/// Sequential if-return. Nested if/else failed WAT emit.
+
+import "./c-boundary.fungi"
+
+pure flow admitQueryCustody(
+  custodyClass: Int,
+  custodyToken: Int,
+  objectClass: Int,
+  objectCount: Int,
+  versionClass: Int,
+  versionCount: Int,
+  unknownClass: Int,
+  unknownCount: Int,
+  recordClass: Int,
+  recordToken: Int
+) -> Int
+contract {
+  intent { "Closed query custody sum. Foreign input refuses 11. Record-only is UNKNOWN 1. Unknown name 3. Repeat 2. Record mismatch 4. Admit 0 only when every check passes." }
+}
+{
+  let custody: Int = readForeignBoundedInteger(custodyClass, custodyToken, 0, 1)
+  if custody != 0 {
+    return 11
+  }
+  let objects: Int = readForeignBoundedInteger(objectClass, objectCount, 0, 2147483647)
+  if objects != 0 {
+    return 11
+  }
+  let versions: Int = readForeignBoundedInteger(versionClass, versionCount, 0, 2147483647)
+  if versions != 0 {
+    return 11
+  }
+  let unknowns: Int = readForeignBoundedInteger(unknownClass, unknownCount, 0, 2147483647)
+  if unknowns != 0 {
+    return 11
+  }
+  let record: Int = readForeignBoundedInteger(recordClass, recordToken, 0, 1)
+  if record != 0 {
+    return 11
+  }
+  if custodyToken != 0 {
+    return 1
+  }
+  if unknownCount != 0 {
+    return 3
+  }
+  if objectCount > 1 {
+    return 2
+  }
+  if versionCount > 1 {
+    return 2
+  }
+  if recordToken != 0 {
+    return 4
+  }
+  return 0
+}
