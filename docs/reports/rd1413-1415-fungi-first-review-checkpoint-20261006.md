@@ -240,7 +240,7 @@ source pin with the later documentation HEAD.
 
 ### Cross-project boundary checks
 
-- SLIDE's `contracts/v2/25-V2-D-SAFE-VALUE-MEMORY-INCREMENT.md` describes a
+- SLIDE's [V2-D safe-value memory contract at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/25-V2-D-SAFE-VALUE-MEMORY-INCREMENT.md) describes a
   bounded semantic-memory model. It explicitly does not establish native
   allocation, optimized wiping, FFI/host-call effects, or protected secret
   memory. Do not treat that plan as the RD-1413/1414/1415 implementation.

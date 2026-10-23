@@ -177,8 +177,12 @@ trap currency == "" : ERR_EMPTY_CURRENCY
 
 ## `static` and `bitfield` — compile-time constants and capability registers
 
-Both are **top-level declarations** (not contract sub-blocks). From
-`examples/foundations/static-bitfield-example.fungi`:
+`bitfield` is a top-level declaration (not a contract sub-block). `static` is permitted at
+module level and inside a flow body, but its binding is module-scoped: the compiler validates and
+collects declarations in source traversal order, and a static initializer may refer only to an
+earlier admitted static. At a use site, a module static is substituted before resolving a
+same-named flow parameter or local. This precedence is part of the language contract; interpreter
+and WASM lowering must agree. From `examples/foundations/static-bitfield-example.fungi`:
 
 ```fungi
 ;; static NAME = value — a compile-time constant; the compiler substitutes the value

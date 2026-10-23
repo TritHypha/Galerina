@@ -118,3 +118,18 @@ operation. This does not prove provider-open (`O`) / irreversible sink disclosur
 (`D`) ordering, Fungi runtime/FFI/host enforcement, cleanup, or production
 exploitability. RD-1413 remains HOLD / NON_AUTHORIZING; no authority or owner
 decision changed.
+
+## Refined stale-presence regression rerun — WSL — 2026-10-14
+
+From the Galerina checkout root, ran the focused regression in WSL with real-checkout Git
+routing variables removed:
+
+```sh
+env -u GIT_DIR -u GIT_WORK_TREE node --test packages-ts/galerina-framework-app-kernel/tests/rd1413-revocation-before-delivery.test.mjs
+```
+
+Result: **2 controls passed; the revocation-between-open-and-delivery assertion failed**.
+The observed consumer received the staged `SECRET` after the provider had wiped its stored
+bytes, matching the native-Windows result above. This is a cross-environment reproduction of
+the same TypeScript/bootstrap gate behavior, not a Fungi runtime, production-provider or
+production `/auth/verify` result. No source was changed by this rerun; no GitHub Actions/CI ran.
