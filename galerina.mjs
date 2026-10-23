@@ -2989,7 +2989,15 @@ Baseline comparison (governance-cost):
 function isDirectRun() {
   const argv1 = process.argv[1];
   if (typeof argv1 !== "string" || argv1.length === 0) return false;
-  return resolve(fileURLToPath(import.meta.url)) === resolve(argv1);
+  const modulePath = resolve(fileURLToPath(import.meta.url));
+  const invokedPath = resolve(argv1);
+  if (modulePath === invokedPath) return true;
+
+  // The generic fungi.mjs launcher delegates here while preserving argv[1]
+  // so main() can apply the generic product-admission policy. Recognize only
+  // that exact sibling wrapper; arbitrary imports of this legacy CLI stay inert.
+  return basename(invokedPath).toLowerCase() === "fungi.mjs"
+    && resolve(dirname(invokedPath), "galerina.mjs") === modulePath;
 }
 
 if (isDirectRun()) {

@@ -88,6 +88,12 @@ const fixtureCases = [
     ['unknown mutator', 'Object.setPrototypeOf(target, replacement);'],
     ['freeze descriptor replacement', 'Object.defineProperty(target, "freeze", { value: emit });'],
     ['accessor descriptor', 'Object.defineProperty(target, "cause", { get: effect });'],
+    ['assign into ambient Object', 'Object.assign(Object, { freeze: replacement });'],
+    ['mutable runtime wrapper descriptor', 'function wrap(operation, name) { const runtime = { operation }; Object.defineProperty(runtime, name, { value: (...args) => operation(...args), enumerable: true, configurable: false, writable: true }); }'],
+    ['accessor runtime wrapper descriptor', 'function wrap(operation, name) { const runtime = { operation }; Object.defineProperty(runtime, name, { get: () => operation, enumerable: true, configurable: false, writable: false }); }'],
+    ['dynamic descriptor on an unverified target', 'Object.defineProperty(target, key, { value: emit, enumerable: true });'],
+    ['escaped fresh snapshot alias', 'function copy(fields, key) { const snapshot = Object.create(null); const alias = snapshot; Object.defineProperty(snapshot, key, { value: fields, enumerable: true }); return Object.freeze(snapshot); }'],
+    ['extra fresh-snapshot descriptor field', 'function copy(fields, key) { const snapshot = Object.create(null); Object.defineProperty(snapshot, key, { value: fields, enumerable: true, writable: true }); return Object.freeze(snapshot); }'],
     ['spread call shape', 'Object.entries(...input);'],
     ['unsupported call chain', 'Object.freeze.call(target, input);'],
   ].map(([name, operation]) => ({
@@ -116,6 +122,108 @@ const fixtureCases = [
       + 'const failure = new Error("detail"); Object.defineProperty(failure, "cause", { value: cause, configurable: true });\n'
       + 'new Error(C.code);',
     refs: [], defs: [1], emits: [5],
+  },
+  {
+    name: "F1 exact non-mutating calls and fresh null-record definition preserve ownership",
+    source: frozenOwner
+      + 'Object.hasOwn({}, "key"); Object.is(0, -0); Object.keys({}); Object.values({});\n'
+      + 'Object.assign(Object.create(null), {});\n'
+      + 'function copy(fields, key) { const snapshot = Object.create(null); Object.defineProperty(snapshot, key, { value: fields, enumerable: true }); return Object.freeze(snapshot); }\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [1], emits: [5],
+  },
+  {
+    name: "F1 bounded local parseShape value preserves a fresh null-record owner",
+    source: frozenOwner
+      + 'function parse(exportsRecord, name) { const output = Object.create(null); '
+      + 'const parseShape = (candidate, depth) => candidate; '
+      + 'Object.defineProperty(output, name, { value: parseShape(exportsRecord[name], 0), enumerable: true }); '
+      + 'return Object.freeze(output); }\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [1], emits: [3],
+  },
+  {
+    name: "F1 locally owned runtime method wrapper preserves frozen diagnostic ownership",
+    source: frozenOwner
+      + 'function wrap(operation, name) { const runtime = { operation }; Object.defineProperty(runtime, name, '
+      + '{ value: (...args) => operation(...args), enumerable: true, configurable: false, writable: false }); '
+      + 'return Object.freeze(runtime); }\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [1], emits: [3],
+  },
+  {
+    name: "F1 immutable captured freeze and defineProperty preserve the real frozen owner",
+    source: 'const freezeIntrinsic = Object.freeze;\n'
+      + 'const definePropertyIntrinsic = Object.defineProperty;\n'
+      + frozenOwner
+      + 'function snapshot(fields, index) { const row = []; '
+      + 'definePropertyIntrinsic(row, String(index), { value: visit(fields, index, 0), '
+      + 'enumerable: true, configurable: false, writable: false }); '
+      + 'return freezeIntrinsic(row); }\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [3], emits: [5],
+  },
+  {
+    name: "F1 captured freeze through Reflect.apply preserves frozen diagnostic ownership",
+    source: 'const applyIntrinsic = Reflect.apply;\n'
+      + 'const freezeIntrinsic = Object.freeze;\n'
+      + 'applyIntrinsic(freezeIntrinsic, Object, [{}]);\n'
+      + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [4], emits: [5],
+  },
+  {
+    name: "F1 verified data-descriptor factory preserves captured defineProperty ownership",
+    source: 'const applyIntrinsic = Reflect.apply;\n'
+      + 'const createIntrinsic = Object.create;\n'
+      + 'const definePropertyIntrinsic = Object.defineProperty;\n'
+      + 'const freezeIntrinsic = Object.freeze;\n'
+      + 'function safeDataPropertyDescriptor(value, writable, enumerable, configurable) {\n'
+      + '  const descriptor = applyIntrinsic(createIntrinsic, Object, [null]);\n'
+      + '  descriptor.value = value;\n'
+      + '  descriptor.writable = writable;\n'
+      + '  descriptor.enumerable = enumerable;\n'
+      + '  descriptor.configurable = configurable;\n'
+      + '  return descriptor;\n'
+      + '}\n'
+      + frozenOwner
+      + 'function copy(index) { const row = []; definePropertyIntrinsic(row, String(index), '
+      + 'safeDataPropertyDescriptor(visit(index, 0, 1), false, true, false)); return freezeIntrinsic(row); }\n'
+      + 'new Error(C.code);',
+    refs: [], defs: [13], emits: [15],
+  },
+  {
+    name: "F1 altered data-descriptor factory retains diagnostic fallback",
+    source: 'const definePropertyIntrinsic = Object.defineProperty;\n'
+      + 'function safeDataPropertyDescriptor(value, writable, enumerable, configurable) {\n'
+      + '  const descriptor = Object.create(null);\n'
+      + '  descriptor.value = value;\n'
+      + '  descriptor.writable = Boolean(writable);\n'
+      + '  descriptor.enumerable = enumerable;\n'
+      + '  descriptor.configurable = configurable;\n'
+      + '  return descriptor;\n'
+      + '}\n'
+      + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [], emits: [10],
+  },
+  {
+    name: "F1 arbitrary Reflect.apply receiver escape retains diagnostic fallback",
+    source: 'const applyIntrinsic = Reflect.apply;\n'
+      + 'const operation = selectOperation();\n'
+      + 'applyIntrinsic(operation, Object, [{}]);\n'
+      + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [], emits: [4],
+  },
+  {
+    name: "F1 reassigned captured freeze cannot preserve registry ownership",
+    source: 'const freezeIntrinsic = Object.freeze; freezeIntrinsic = replacement;\n'
+      + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [], emits: [2],
+  },
+  {
+    name: "F1 captured freeze passed as a value cannot preserve registry ownership",
+    source: 'const freezeIntrinsic = Object.freeze; consume(freezeIntrinsic);\n'
+      + frozenOwner + 'new Error(C.code);',
+    refs: [], defs: [], emits: [2],
   },
   {
     name: "F1 ordinary method twin preserves frozen-array registry references",
@@ -310,6 +418,112 @@ const fixtureCases = [
     refs: [], emits: [2],
   },
   {
+    name: "descriptor-derived ambient Object mutation retains diagnostic fallback",
+    source: 'const ambient = Object.getOwnPropertyDescriptor(globalThis, "Object").value;\n'
+      + 'ambient.freeze = value => (published.push(value[0]), value);\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [4],
+  },
+  {
+    name: "multi-hop ambient root cannot expose Object through a computed key",
+    source: 'const firstRoot = globalThis;\n'
+      + 'const root = firstRoot;\n'
+      + 'const ambient = root["Object"];\n'
+      + 'ambient.freeze = value => (published.push(value[0]), value);\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [6],
+  },
+  {
+    name: "block-shadowed method target cannot authorize ambient Object mutation",
+    source: 'function install(runtime, name) {\n'
+      + '  { const runtime = {}; }\n'
+      + '  Object.defineProperty(runtime, name, { value: entries => (published.push(entries[0]), entries), '
+      + 'enumerable: true, configurable: false, writable: false });\n'
+      + '}\n'
+      + 'install(({}).constructor, "freeze");\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [7],
+  },
+  {
+    name: "computed descriptor key cannot expose and mutate ambient Object",
+    source: 'const key = "Object";\n'
+      + 'const ambient = globalThis[key];\n'
+      + 'ambient.freeze = entries => (published.push(entries[0]), entries);\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [5],
+  },
+  {
+    name: "reassigned ambient root cannot expose and mutate ambient Object",
+    source: 'let root;\n'
+      + 'root = globalThis;\n'
+      + 'const ambient = Object.getOwnPropertyDescriptor(root, "Object").value;\n'
+      + 'ambient.freeze = entries => (published.push(entries[0]), entries);\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [6],
+  },
+  {
+    name: "ambient-root descriptor chain cannot expose and mutate ambient Object",
+    source: 'const root = Object.getOwnPropertyDescriptor(globalThis, "globalThis").value;\n'
+      + 'const ambient = Object.getOwnPropertyDescriptor(root, "Object").value;\n'
+      + 'ambient.freeze = entries => (published.push(entries[0]), entries);\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [5],
+  },
+  {
+    name: "destructured inner method target cannot use an outer runtime binding",
+    source: 'function install(name) {\n'
+      + '  const runtime = {};\n'
+      + '  {\n'
+      + '    const { runtime } = { runtime: ({}).constructor };\n'
+      + '    Object.defineProperty(runtime, name, { value: entries => (published.push(entries[0]), entries), '
+      + 'enumerable: true, configurable: false, writable: false });\n'
+      + '  }\n'
+      + '}\n'
+      + 'install("freeze");\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [10],
+  },
+  {
+    name: "out-of-scope loop binding cannot authorize an outer method target",
+    source: 'function install(runtime, name) {\n'
+      + '  for (const runtime = {}; false;) {}\n'
+      + '  Object.defineProperty(runtime, name, { value: entries => (published.push(entries[0]), entries), '
+      + 'enumerable: true, configurable: false, writable: false });\n'
+      + '}\n'
+      + 'install(({}).constructor, "freeze");\n'
+      + 'export const C = Object.freeze([\n'
+      + '  { code: "FUNGI-REPORT-002", meaning: "missing" },\n'
+      + ']);',
+    refs: [], defs: [], emits: [7],
+  },
+  {
+    name: "captured snapshot closure cannot retain the local-definition exemption",
+    source: 'function copy(fields, key) {\n'
+      + '  const snapshot = Object.create(null);\n'
+      + '  const capture = () => published.push(snapshot);\n'
+      + '  Object.defineProperty(snapshot, key, { value: fields, enumerable: true });\n'
+      + '  capture();\n'
+      + '  return Object.freeze(snapshot);\n'
+      + '}\n'
+      + 'export const C = Object.freeze([{ code: "FUNGI-REPORT-002", meaning: "missing" }]);\n'
+      + 'function fail() { return { code: C[0].code, message: "missing" }; }',
+    refs: [], defs: [], emits: [8],
+  },
+  {
     name: "descriptive reference annotation does not suppress numeric runtime fields",
     source: 'function fail() { return { code: "FUNGI-REPORT-002", meaning: "code-catalog-reference" }; }',
     refs: [], emits: [1],
@@ -463,6 +677,27 @@ test("code-index --check refuses missing and drifted output without writing", ()
     const drifted = run(root, ["--check"]);
     assertCheckRefusal(drifted, /code-index: generated output drift build\/code-index\/CODE_INDEX\.md/);
     assert.equal(readFileSync(markdown, "utf8"), "tampered\n");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("code-index retains frozen diagnostic ownership beside a read-only intrinsic lookup", () => {
+  const root = mkdtempSync(join(tmpdir(), "code-index-readonly-intrinsic-"));
+  try {
+    write(root, "packages-ts/example/src/runtime.ts", [
+      'export const DIAGNOSTIC = Object.freeze({ code: "FUNGI-TEST-001", name: "EXAMPLE", severity: "error" });',
+      'const exportsGetter = Object.getOwnPropertyDescriptor(WebAssembly.Instance.prototype, "exports")?.get;',
+      "",
+    ].join("\n"));
+
+    const generated = run(root);
+    assert.equal(generated.status, 0, generated.stderr);
+    const index = JSON.parse(readFileSync(join(root, "build/code-index/code-index.json"), "utf8"));
+    const item = index.find(({ code }) => code === "FUNGI-TEST-001");
+    assert.deepEqual(item?.defs, ["packages-ts/example/src/runtime.ts:1"]);
+    assert.deepEqual(item?.names, ["EXAMPLE"]);
+    assert.deepEqual(item?.severities, ["error"]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
