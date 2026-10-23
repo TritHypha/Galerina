@@ -524,6 +524,7 @@ test("S5-R8d kernel getSecret refuses when the epoch moves after the pre-handoff
     ["3,3 then 5,5 (P2)", [3, 3, 5, 5], false],
     ["3,3 then 5 at mint, back to 3 at use", [3, 3, 5, 3], false],
     ["3,3 then 0,0 (move down)", [3, 3, 0, 0], false],
+    ["5,5 then back to 3,3 (non-monotonic: only the pre-handoff binding sees it)", [5, 5, 3, 3], false],
     ["control: 3,3,3,3", [3, 3, 3, 3], true],
   ];
   for (const [label, seq, expectDelivery] of cases) {
