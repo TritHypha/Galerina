@@ -1,5 +1,489 @@
 # TODO
 
+## 2026-10-13 interpreter wide-integer refusal propagation — bounded Astra review passed
+
+- [!] Astra found that a malformed host-supplied `UInt64` refusal could be
+  normalized by nested calls and then silently discarded at statement,
+  constructor, assignment, loop-condition, binary-expression, aggregate, or
+  flow-result boundaries. The initial marker candidate reproduced the first
+  case; Astra then found marker mutation/escape, copied-result provenance loss,
+  single-conversion binary loss, record aggregation, foreach collection/where
+  swallowing, and a Bool-call path that evaluated later arguments after a
+  refusal. These now have regression cases with valid twins. The marker remains
+  frozen and sanitized; records and record updates refuse marked child values,
+  foreach refuses failed collection/guard expressions, and marked failures stop
+  call-argument evaluation regardless of the declared parameter type. Host
+  error details remain normalized rather than forwarded.
+- Focused TypeScript compiler typecheck passed. The interpreter regression plus
+  related existing interpreter and record-update tests pass **241/241 on
+  Windows and 241/241 in WSL**, with no skips. Each new failure was observed
+  before its fix; the four Astra counterexamples initially failed, and a later
+  record-update probe independently failed before that boundary was fixed.
+  Astra's next source review found two further receiver-boundary cases: field
+  access on a failed record-returning call discarded the marked refusal, and a
+  failed method receiver still allowed a later argument effect. Both were
+  reproduced before the fix. Marked receiver failures now propagate before
+  member dispatch or argument evaluation; the valid `unwrapOr` twin retains
+  eager argument evaluation. The updated four-file interpreter set was
+  **230/230 on Windows and 230/230 in WSL**, no skips. Astra's bounded review
+  of the exact updated hashes is now PASS for receiver-field refusal
+  propagation, receiver-call effect ordering, and the G5 mutation-target
+  correction (submission `01a13749-2f43-75d3-9304-fcd185f4928f`). Astra
+  independently ran the focused interpreter/record-update cases (230/230),
+  G5 (6/6), and confirmed the receiver-guard red-capability check (13 pass,
+  2 expected failures when both guards are disabled). The review notes that
+  the direct `executeFlow` fixture does not assert symbol-resolution
+  diagnostics, so it was not frontend-admission evidence. The fixture now
+  supplies its explicit `print` import and asserts an empty symbol-resolution
+  diagnostic set; its direct `executeFlow` coverage still does not constitute
+  full checked-program admission. The test file after this assertion-only
+  follow-up passes 15/15 on native Windows and 15/15 in WSL, with no skips;
+  this exact assertion change has not yet been independently reviewed. Astra's specified
+  interpreter/record-update files plus G5 passed **236/236 on Windows**. A
+  fresh WSL rerun of the receiver, record-update and G5 files passed **30/30**;
+  this narrower count is not comparable to Astra's expanded Windows set.
+  These remain
+  TypeScript/bootstrap and bounded WASM test results only.
+- The expanded memory/WASM-adjacent compiler set (interpreter refusal, secret
+  return, RD-1296 return copy and host registry, RD-1414 cleanup and
+  packed-return, runtime admission, WASM effect-grant ABI, WAT string lifetime,
+  `?` propagation, and G5 arena wipe) passes **231/231 on both Windows and WSL**,
+  no skips. This is still bootstrap and bounded WASM test evidence, not
+  composed product proof. Astra's 236/236 native-Windows result covers the
+  focused interpreter/record-update suite plus G5; it is not a full package
+  build or end-to-end Fungi/runtime/host proof.
+- The regular compiler build refused at its build-evidence step because this
+  dirty checkout contains untracked inputs; no files were staged to bypass it.
+  The complete package test glob was therefore run directly after TypeScript
+  emit: **9,016 tests, 8,740 pass, 147 fail, 12 skipped**, exit 1. Failures in
+  this dirty working tree include CEC classification, diagnostic registration,
+  Float/Float32 and fast-path literal parity, admission and parser/WASM parity,
+  memory-adjacent G5 anti-wipe oracle, and pinned WAT/Q2 historical evidence.
+  This full-suite snapshot predates the latest focused changes and is not a
+  current complete-suite result. The G5 failure was traced to a stale test
+  mutation hook targeting exported `$narrow` instead of executable
+  `$narrow_impl`; the hook now has one insertion site before the actual rebase,
+  and G5 passes **6/6** on Windows. No WAT-emitter behavior was changed for
+  that test-harness repair. The remaining complete failure inventory still
+  needs reconciliation; failures are not proven pre-existing, and no expected
+  hashes were rewritten. A separate
+  rerun of `wat-q7-k5.test.mjs` confirms 17/18 pass; its one failure is the
+  seven-stage **generated-WAT** pin for the combined lexer/parser stage, not a
+  raw `lexer.fungi` file hash. Current output SHA-256 is
+  `be720ea27f5b265797570683c88740548a1989a56e4ba42db210f8794bad82c3`
+  (460,295 bytes); the historical pin is
+  `5f7f235b944d36a7e3cbb16a7d88fe895e19fdd2d2728732235d70bc0975fdd7`
+  (425,985 bytes). Full Q4n and Q5n test files likewise fail only their
+  seven-stage WAT-pin case at this first stage (15/16 and 13/14); their named
+  historical/current zone identity groups, Q4n T12 and Q5n T14, pass 2/2 on
+  Windows and WSL. The current dirty lexer adds four explicit `Token` type
+  annotations; the parser is unchanged. The current combined source passes
+  `checkProgram` and emits the changed WAT. Replacing only the lexer with its
+  HEAD version while keeping the current parser is refused by current
+  `checkProgram` with four `FUNGI-TYPE-002` layout diagnostics on `tokens`.
+  Do not revert those annotations or rewrite historical pins without an
+  independently reviewed disposition of the old compiler/input contract.
+  This generated-WAT mismatch remains open. Continue auditing remaining
+  wrappers, return/call paths and
+  emitted-WASM parity before calling interpreter refusal propagation complete.
+  No Fungi native-runtime,
+  FFI/host-isolation or protected-operation guarantee is established, and no
+  RD-1413/1414/1415 status is changed.
+
+## 2026-10-13 value-state loop fixed-point convergence
+
+- [!] Public String/Array builders and two secret-bearing loop probes
+  reproduced `value-state while analysis did not converge within its finite
+  state bound`. Source tracing found loop-carried provenance snapshots can
+  recursively retain their own prior binding. The candidate now widens a
+  self-referential loop-carried provenance to `secretValueUnknown: true` and
+  clears only the recursive snapshot list; taint/control facts remain available
+  for fail-closed downstream checks. This is a conservative checker change, not
+  a Fungi runtime memory guarantee.
+- Regression coverage now includes public String and Array builders, a public
+  loop appending a `SecureString` into `Array<SecureString>`, and a
+  secret-controlled String loop. The secret cases must terminate analysis and
+  retain `FUNGI-SECRET-001` refusal; the secret-controlled case must also retain
+  `FUNGI-SECRET-004`. Astra's first follow-up confirmed those refusal cases but
+  found that the prior key encoded nested Maps/Sets as empty objects. The key
+  now uses a canonical recursive encoding for captured maps, sets and cycles;
+  dedicated tests distinguish nested binding facts and shadowed constructors
+  while requiring structural stability. Windows TypeScript emit and no-emit
+  typecheck passed; the complete value-state set passed 329/329 on Windows and
+  329/329 in WSL, with no skips. These remain bootstrap/compiler checks only.
+  Independent Astra review of this exact revised key and widening is pending.
+  Keep this row open for review and counterexamples; it closes no RD and proves
+  no runtime/FFI/host guarantee.
+
+### Provenance declaration-identity follow-up — 2026-10-13
+
+- [!] The same Astra reviewer found that name-based recursion truncation still
+  collapsed the three-level captures `x@10 → x@11 → x@2` and
+  `x@10 → x@11 → x@20`; this made actual join/widen results depend on branch
+  order. The reviewer also found widening compared only file/line/column,
+  unlike provenance equality's source-offset comparison.
+- [x] Added a failing-before-fix nested-capture regression, explicit
+  declaration-identity checks, cycle-equality controls, and a parsed-Fungi
+  checker test that reverses secret assignments across an `if` join and loop
+  widening while requiring the same sink refusal. Binding registration now
+  supplies a stable identity token that survives snapshots and updates;
+  provenance comparison traverses nested bindings with cycle references, and
+  widening uses the same token instead of a name or partial location. This
+  exercises one bounded checker join path; it does not prove every join shape
+  or the full nested-capture counterexample through source syntax.
+- [x] `npx tsc -p tsconfig.json` passed on Windows. The complete
+  `tests/value-state/*.test.mjs` suite passed **338/338** on Windows and **338/338**
+  in WSL, with no skips. The WSL run used the locally emitted compiler files;
+  this is checker/bootstrap evidence only.
+- [!] Astra follow-up `01a13716-dd7b-7f00-8213-1f13e7dc9c6a` returned PARTIAL
+  on two vectors. It reproduced (1) comparator truncation when distinct binding
+  snapshots share a declaration token, (2) fresh tokens on each loop replay,
+  causing the supplied structured-loop case not to converge, and (3) loop keys
+  that encoded empty token objects structurally rather than preserving token
+  identity. Added regressions first failed against the prior build. The checker
+  now detects recursion by active binding object, caches declaration identity by
+  AST declaration node across loop replays, and includes token identity in loop
+  keys. Windows TypeScript emit passed; the complete value-state suite passes
+  **341/341** on Windows and **341/341** in WSL with no skips. These are
+  compiler/bootstrap checks only. Independent review of this exact final delta
+  is pending; no Fungi runtime or RD disposition changes.
+
+## 2026-10-13 admitted WASM transitive-return lifetime
+
+- [x] **Compiler emission and bounded compiled-module path:** `buildWATModuleFromGIR`
+  derives owned-return schemas from declared return types and supported record
+  layouts supplied to the compiler path; compiler-built module identity plus
+  rendered WAT are bound in a private `WeakMap`; `assembleWATModule` appends the
+  derived section to assembled bytes. The focused test helper parses Fungi source,
+  checks parser diagnostics, requires zero symbol-resolution and type errors for
+  each Fungi-source path, then checks effects and emits GIR/WAT. Negative
+  regressions prove both an undeclared name (`FUNGI-NAME-001`) and a type-invalid
+  return (`FUNGI-TYPE-008`) are refused before later pipeline stages. The
+  twelve-test file combines Fungi-source compilation cases with synthetic
+  signed-WAT admission/refusal fixtures. Those
+  cases cover nested record compilation, signed admission, host-owned copy and guest
+  wipe, maximum depth, exact 4,096/4,097 schema-node boundary, mixed
+  scalar/record cleanup refusal, cycle refusal with cleanup, and exact custom-section
+  enumeration. It passes 12/12 on native Windows and WSL. Astra's review of the
+  preceding 11/11 revision found that resolver diagnostics were discarded; the
+  current regression and shared source-check helper address that finding. Astra
+  independently reviewed this exact 12-test revision (SHA-256
+  `37040E863F949A7FF527247CBF7F43B83AB880B02A2D2B7FCE5C24A38CC55192`),
+  confirmed both refusal checks and reran 12/12 on native Windows. Astra did not
+  rerun WSL or the combined focused suite; the combined focused Q1-return,
+  wipe-failure and owned-record-copy/wipe suite passes 114/114 on native Windows
+  and WSL.
+  The existing owned-return host-registry suite passes
+  49/49 on both environments, covering malformed/duplicate metadata, invalid
+  pointers, callable-table refusal, cleanup failure and quarantine before result
+  publication. This is compiler/bootstrap and bounded runtime evidence, not a
+  production consumer or composed `/auth/verify` guarantee. Earlier 28/28 and
+  141/141 receipts refer to earlier source/test revisions and do not replace
+  this current focused result. The review applies only to this test helper and
+  its checked compiler-stage ordering; it does not establish production
+  Fungi/FFI/host end-to-end security or close any RD. The separate broader
+  owned-result/runtime review remains pending.
+- [ ] **Compiler provenance at artifact admission:** admission snapshots and
+  verifies signed artifact bytes and structurally validates the signed schema,
+  but it does not prove that schema metadata was derived by the compiler. A
+  valid accepted signer can bind an incompatible scalar/pointer schema to an
+  `i32` result; this is not signature forgery or an unauthorized-signer bypass.
+  Resolve whether the accepted artifact signer is explicitly responsible for
+  compiler/schema correctness, or whether a separately authorized compiler
+  verifier/provenance capability is required. Do not infer either authority.
+  Astra follow-up `01a13566-a6e0-7c70-974b-8a41bc04fcd9` confirms this gap and
+  recommends a process-bound opaque compiler-output route for controlled
+  in-process use, with artifact-bound verifier attestation for portable modules;
+  both still require structural validation and owner-approved authority.
+- [ ] **Production consumer and end-to-end evidence:** migrate or identify the
+  actual consumer of the owned-result API and prove compiler → emitted WASM →
+  admitted owned result → wipe through that consumer. Reconcile the direct-row
+  versus pointer representation at the actual caller; do not add permissive
+  representation guessing. The selected `/auth/verify` operation is not yet
+  wired as protected verification and must not be represented as complete.
+  Current source recheck confirms `../examples/auth-service/deno-adapter.ts`
+  returns 503 for `POST /auth/verify`; `verifyPasswordService.fungi` keeps its
+  plaintext synthetic route under `/__fixture/auth/verify` and the compiler
+  test asserts it does not occupy the selected production route.
+- [x] **Emitted return-boundary/runtime-wrapper discriminator:**
+  `packages-ts/galerina-core-compiler/tests/rd-1414-emitted-packed-return-boundary.test.mjs`
+  (SHA-256
+  `538ABCCDCEACECFEA229919DF1E3F9F2CC5315733EA9F931AB59D01EC13A916F`)
+  executes the emitted packed-return guards for ordinary and exact-capacity
+  success plus capacity and i32-exclusive-end refusal. Its capacity case also
+  passes the emitted module through signed admission and the actual
+  `invokeAdmittedExport` wrapper: the synthetic watermark makes cleanup trap,
+  cleanup failure is reported with the original guard trap retained, and a
+  later call is refused after quarantine without a second guest entry (checked
+  by a test-only guest-call counter).
+  The focused file passed 4/4 on Windows and WSL. This is evidence of bounded
+  compiler/emitted-WASM/TypeScript-wrapper behavior and quarantine on cleanup
+  failure; it does not demonstrate successful erasure or production Fungi,
+  FFI, host, `/auth/verify`, or RD guarantees.
+- [ ] **Independent review and composed proof:** Astra independently confirmed
+  the scalar-cleanup and compiler/runtime depth/node fixes on the reviewed
+  pre-boundary-test revision. The newer exact-boundary, mixed-cleanup, cycle,
+  and emitted return-boundary/runtime-wrapper regressions have direct local
+  Windows/WSL results but are not yet included in that review. Astra submission
+  `01a13600-262b-7162-9487-cb5bf794249` passed an earlier test hash, observed a
+  no-op wipe mutation fail, and confirmed cleanup-failure/quarantine behavior.
+  Astra then found the B8FD... test counter was after the emitted arena-wipe
+  prologue and did not discriminate actual re-entry. The final test moves the
+  counter to the first executable instruction and includes a raw re-entry
+  positive control. Astra submission `01a13606-189f-7c03-8a2f-f6e39d9d7970`
+  returned PASS on exact hash
+  `538ABCCDCEACECFEA229919DF1E3F9F2CC5315733EA9F931AB59D01EC13A916F`, reran
+  4/4 on Windows, and confirmed an in-memory mutation moving the counter after
+  the prologue fails the control. WSL 4/4 is Codex-run evidence. The insertion
+  is specific to this emitted WAT format, not a general WAT parser. This PASS
+  is limited to the test discriminator and does not close the broader composed
+  proof.
+  Preserve cleanup and admission: never use raw exports or infer success from
+  zeroed readback. None of these test results establish Fungi runtime/FFI/host
+  enforcement or close an RD.
+- The original `[7, 42]` → `[0, 0]` failure was reproduced before the runtime
+  change; it is no longer the current result for the synthetic signed-WAT
+  route. The tokenizer/parser failures and direct-row-versus-pointer mismatch
+  still require exact caller/source reconciliation. Source owners are
+  `galerina-core-runtime-wasm` admission/finalization and
+  `galerina-core-compiler` WAT generation/consumers. The original synthetic
+  probe and Astra adjudication remain historical evidence in the task's
+  `invariant-gate-review-20261012` evidence set. This is not RD closure or
+  permission to disclose protected data.
+
+## 2026-10-13 CLI revocation export-dispatch witness
+
+- [x] The focused classical-signing refusal test now wraps the real
+  `WebAssembly.instantiate` result. Its positive control proves the wrapper
+  observes the real `answer` export call; its revoked control requires refusal
+  without that wrapped named-export dispatch. The test wording is limited to
+  that observable, not “no execution” generally. A disposable controlled
+  mutant delayed revoked refusal, invoked the real compiled export, discarded
+  its result, then refused; the test failed at the marker assertion
+  (`true !== false`) as intended. Exact mutant/test-copy hashes, original
+  hashes and run limits are recorded in
+  [the controlled-red receipt](reports/rd1413-cli-revocation-controlled-red-20261013.md).
+  Focused test passed 8/8 on Windows and WSL; Anti-Drift passed. This proves
+  detector sensitivity for that CLI regression only. It does not prove absence
+  of module-start/other side effects, Fungi runtime/FFI/host security, protected
+  byte custody, `/auth/verify` composition or RD-1413/1414/1415 closure.
+- [x] Astra's bounded follow-up (same worker, submission
+  `01a133d1-b0f8-7730-8f84-b84df9d9350a`) returned PASS for sensitivity to the
+  specified invoke-then-refuse regression after inspecting the retained exact
+  diff/transcript. Astra did not rerun it. Claim remains limited to attempted
+  dispatch through the wrapped `answer` export; no general Wasm, Fungi, host or
+  RD guarantee follows. Verbatim reply and evidence hashes are retained in the
+  linked report and task receipt.
+
+## 2026-10-12 WAMR probe initialization cleanup
+
+- [x] The bounded native probe now destroys WAMR after initialization succeeds
+  but native registration refuses. A linker-wrapper regression was observed
+  failing before the change and passing after it against the pinned Linux
+  product-mini Release SDK. The runner also injects initialization failure in
+  both normal and `--externref-result` modes; a destroy-after-failure mutant is
+  detected in both routes. The exact pinned WSL run reports 14 PASS lines.
+  Prior Astra follow-up `wamr-init-cleanup-adjudication-20261012-02` predates
+  these initialization-failure tests. Astra delta submission
+  `01a131cb-a939-7502-a71c-4c1f621f3c86` source-reviewed the alternate route;
+  receipt-correction submission `01a131ce-2481-7193-8d02-6aeea26cd70b` passed
+  report fidelity and the narrow lifecycle wording on the exact then-current
+  hashes. SuperGrok answer `supergrok-wamr-init-cleanup-20261012-answer-01` was
+  received, but its runner pin predates the alternate-path test; it does not
+  review the current runner bytes. See the receipt for identities and hashes.
+  Full hashes and WSL evidence are in
+  [the cleanup receipt](reports/rd1413-wamr-init-cleanup-20261012.md).
+- [!] Failed WAMR initialization does not acquire the runtime reference that
+  `wasm_runtime_destroy()` decrements; the pinned source also shows allocator
+  cleanup on the inspected environment-init failure path. Complete cleanup for
+  every real partial-init stage remains unverified and needs stage-specific
+  fault injection/resource accounting. The runner clears inherited failure-
+  injection variables before its test sequence. Production WAMR admission/
+  wiring remains unverified. This probe does not establish Fungi, runtime/FFI/
+  host security, protected-memory custody or RD closure. SuperGrok's result is
+  advisory and is not approval of the current alternate-path delta.
+
+## 2026-10-11 app-kernel startup-effect patch update
+
+- [x] A bounded app-kernel patch defers capability handler construction until
+  an explicit post-initialization import call; direct calls to the exported
+  helper's raw imports refuse before invoking the factory. The loader captures
+  the factory reference and caches both success and failure so side-effecting
+  construction is not implicitly retried. Before the first await, both
+  `fusePackage` and `fusePackages` now snapshot and validate custom registry
+  descriptors, function-name arrays and callbacks; tests exercise registry
+  mutation while loading and handler-map mutation after successful use. It also
+  snapshots own data handlers and refuses duplicate namespaces. Windows and
+  WSL typecheck, build and full package suite pass (**599/599 each**; no GitHub
+  CI). These remain TypeScript/bootstrap results. The changed exported factory
+  shape leaves external-consumer compatibility unverified. Astra's prior review
+  found raw-helper bypass, mutable descriptor selection, and retry-after-failure
+  risks; regressions now cover those paths. Astra reviewed the exact latest
+  hashes and rated both bounded vectors PASS; external consumer compatibility
+  remains NOT_VERIFIABLE. Astra confirmed the initial test-link path was a typo
+  and that it inspected the pinned files in this checkout. This does not prove
+  a general host barrier or Fungi/runtime/FFI enforcement. The verbatim review
+  receipt is retained in the Codex task workspace, with the corrected source
+  citations attached to its provenance record.
+
+## 2026-10-11 WAMR pinned-build and externref refusal adjudication
+
+- [x] **Exact pinned Release reproduction (bounded):** WAMR commit
+  `25bd7eb63e828e4bd242cc9b38d260b4b31c6605`, Linux product-mini x86_64
+  Release with `-DNDEBUG`, reference types and SIMD, produced the pinned
+  `libiwasm.a` SHA-256
+  `f21702522f6ce032193ac0529a95f841be044730a0b1c237f17ebb0d61f0104d`;
+  the official `run-rd1413-wamr-context-probe.sh` run passed. Astra's bounded
+  follow-up adjudication accepted that exact artifact/run claim (worker
+  `01a12b7c-c3a4-7341-ac42-e733629ca466`, submission
+  `01a12bdc-778b-7362-87a7-b9e0a9ca283b`). This is the pinned Linux Release
+  profile only, not all WAMR builds or production Fungi enforcement.
+- [x] **Externref refusal claim (bounded):** the fixture's `externref` result
+  is classified as `SIGNATURE_MISMATCH` before instantiation and without
+  registering or calling the imported native function. Astra accepted this
+  narrow fail-closed claim for the pinned Release profile. It does **not** prove
+  accessor correctness: a valid result kind and an unsupported-kind sentinel
+  can both yield the same mismatch. Assertion-enabled and other non-pinned
+  configurations remain unsupported/unverified.
+- [!] **Replayable provenance remains open:** retain the raw build and test
+  logs, resolved artifact path, effective configuration and compiled helper-C
+  hash with the run receipt. The current WAMR evidence does not wire the helper
+  into a production Fungi runtime, protect linear memory, or close RD-1413,
+  RD-1414 or RD-1415. The fresh WSL probe output and exact current input hashes
+  are in [the probe receipt](reports/rd1413-wamr-pinned-probe-20261011.md);
+  it rechecks the pinned SDK and runner but does not rebuild WAMR from source.
+
+## 2026-10-11 test-runner Git isolation — Windows identity cause reproduced
+
+- [x] A bounded native-Windows diagnostic ran six concurrent processes for 200
+  rename/recreate cycles each (1,200 total). It reproduced one false equality:
+  Number `ino` was `141018963333949470` for both directories, while BigInt
+  `ino` values were `141018963333949471` and `141018963333949469`. All 1,200
+  numeric inode values exceeded JavaScript's safe-integer range. This confirms
+  that Number precision can make distinct directory identities compare equal.
+- [x] A deterministic regression injects that observed Number collision while
+  exercising the real helper's rename/recreate and refusal path. Before the
+  fix it failed with “Missing expected exception”; after the fix it passes and
+  verifies the replacement sentinel survives without an ownership marker.
+  `sameFileIdentity` now receives BigInt stats from every helper stat path;
+  zero-length config checks use `0n`.
+- [x] Current focused results: cleanup tests **18/18 on native Windows**;
+  cleanup+isolation pair **24 pass, 2 WSL-only skips** in each of five
+  consecutive default-parallel Windows runs; same pair **26/26 in Ubuntu WSL**.
+  No GitHub CI ran. `git diff --check` reports no whitespace findings; Git
+  emits only configured LF-to-CRLF warnings.
+- [x] Astra worker `01a12b7c-c3a4-7341-ac42-e733629ca466` revised the bounded
+  numeric-identity collision repair to PASS in follow-up submission
+  `01a12c0d-3316-7113-93b8-6fc5cbfa0172`, after the exact-source and Windows
+  test evidence was supplied. The reviewer did not independently reopen or
+  rerun the latest bytes; this is review of the supplied verification, not a
+  second execution receipt. Original candidate submission:
+  `01a12c09-a2b8-7671-97ae-4d8521060c0b`. Current hashes: helper
+  `scripts/lib/test-git-environment.cjs`
+  `78D698B6062F8036822B6903E2A75140CB0CCBE44F84FD6ECB6B5B2F6A56D4FE`;
+  cleanup tests `packages-ts/galerina-core-compiler/tests/test-git-environment-cleanup.test.mjs`
+  `270A9384716149CE46EFF390BE92EFAC25FD28D4D3033C562F6777D89A63987B`;
+  isolation tests `packages-ts/galerina-core-compiler/tests/test-git-environment-isolation.test.mjs`
+  `D0A04096F5308D6224EC4611C01CAD1DB3E2F82AD69A6439C029DF4A1CE778AE`.
+- [!] Astra confirms the numeric precision false-accept mechanism is repaired
+  and locally regression-verified within this narrow helper scope. A same-user
+  writer can still race between final path validation and
+  `unlinkSync`/`rmdirSync`; pathname checks are not atomic ownership
+  enforcement. The broader Windows-parent Git routing boundary also remains
+  separate. This is test-helper evidence only, not Fungi/runtime security.
+  The cleanup tests have staged and unstaged bytes; the isolation test has
+  staged and unstaged bytes; the helper is untracked. No commit, push, merge or
+  integration disposition has been made.
+
+## Current WASM startup-effect candidate — 2026-10-11
+
+- [!] The selected `POST /auth/verify` is still not wired as a protected
+  operation in this checkout. `examples/auth-service/verifyPasswordService.fungi`
+  declares only synthetic `POST /__fixture/auth/verify` and marks its plaintext
+  JSON plus hard-coded bcrypt hash as fixture-only (SHA-256
+  `274C05453441DC44E19F1120919F30AC9429B3CAFF6705E96076C2B009F12B67`). The
+  Deno adapter returns 503 `Service bridge pending Phase 54` for `/auth/verify`
+  (SHA-256 `718F4DDAD8579819CE50140A0E724B74983FC6D551C3256AE02BE1BD75457D4C`).
+  The current 19/19 service tests explicitly prove fixture behavior and absence
+  of the production route; they do not prove protected verification. Build the
+  route only with the signed authority, approved protected provider and result
+  sink, bounded transient custody/cleanup and controlled synthetic data; keep
+  live deployment refused absent its approved plan.
+
+- [!] The KB's RD-0402 source says `WebAssembly.instantiate` executes start-section
+  code and therefore belongs after the admission barrier; it requires every module
+  in the fuse set to hold ALLOW before any module instantiates. This is an
+  admission-order requirement, not permission for a start function to perform
+  arbitrary host effects. Source: [RD-0402](../../ZTF-Knowledge-Bases/research/rd/RD-0402-async-priming-for-startup-parallel-across-independents-strict-ladder-within.md).
+- [!] A local TypeScript/bootstrap candidate in
+  `packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts` gates imported
+  functions in its closed `host` namespace until instantiation, memory binding
+  and export wrapping succeed. Its tests cover this single-artifact route; this
+  is not Fungi language or protected-runtime proof.
+- [!] The framework `fusePackages(dirs, ...)` path separately loads and verifies
+  every caller-supplied directory, requires a literal ALLOW for each member,
+  plans the composition, and only then instantiates members. The malformed
+  second-member verdict test in
+  `packages-ts/galerina-framework-app-kernel/tests/fuse-loader.test.mjs`
+  asserts zero instantiations. This proves ordering for the exact `dirs` list,
+  not automatic discovery of a wider dependency closure or authorization of a
+  canonical set digest/operation ID. A package omitted from `dirs` is not
+  implicitly included; a later separate call is a separate admission.
+- [!] The framework startup gate covers guest calls to imported host functions.
+  It does not establish that every host-side setup action, resource use, import
+  namespace, FFI path or other instantiation consumer is effect-free. Scope the
+  policy to the exercised guest-originated boundary unless broader enforcement
+  is implemented and tested.
+- [x] Corrected two app-kernel tests that directly imported `.ts` source: they
+  now exercise compiled `dist` output, and the module-instance test imports a
+  second URL for that built module. App-kernel typecheck, build and full tests
+  pass on Windows and WSL in this checkout. In this environment, bare `npm
+  test` stops before tests because its `tsc` command resolves to a broken global
+  shim; the same stages passed via the repository-local TypeScript compiler.
+- [!] Before treating either route as a Fungi security guarantee, audit every
+  instantiation consumer and accepted import namespace, define the intended
+  Fungi startup/effect rule, and prove it through compiler lowering, trusted
+  runtime, FFI and host paths. Clarify whether policy authorizes each member
+  independently or binds the exact composition as one unit. Obtain independent
+  review. Do not close RD-1413/1414/1415 based on bootstrap tests or the KB
+  admission rule alone.
+
+## Current memory integration actions — 2026-10-10
+
+- [x] Integrate the reviewed 84-file compiler/graph/generated-record batch into
+  `main` at `d1939459ecfa53a6d91e5ea28016d3e446d1071c`; retain the existing
+  generated-owner checks and independent graph-test receipt as scoped evidence.
+- [!] Repair the uncommitted exact-integer invariant fold against executable
+  interpreter and WASM semantics. Distinct `Int` literals above 2^53 now have
+  reproduced static-ALLOW/interpreter disagreement; signed-i32 and typed-i64
+  boundaries and CLI assembler refusal also had routed counterexamples. The
+  earlier snapshot's statement that four maintained regressions were red is
+  stale as a current status: on 2026-10-12,
+  `packages-ts/galerina-core-compiler/tests/invariant-discharge.test.mjs`
+  passed 78/78 in WSL and native Windows, and
+  `packages-ts/galerina-core-compiler/tests/cli-wasm-assembly-refusal.test.mjs`
+  passed 39/39 in WSL and 36/36 on Windows with three platform-specific cases
+  skipped. These focused results
+  cover wide-literal comparisons, interpreter/WAT parity, assembler refusal and
+  a valid assembly control; they do not establish that every earlier
+  counterexample has an exact current regression, nor that the full compiler
+  suite or broad candidate is clean. Keep this item open until each prior
+  counterexample is mapped to its current test, type-aware admission and backend
+  parity are verified across the supported paths, and failed-build behavior is
+  directly demonstrated without breaking legal Float or typed-wide paths.
+- [!] Reconcile the two dirty memory donor trees by path and layer against the
+  published commit; preserve staged, unstaged, untracked and required ignored
+  material and locks until useful work and recovery have been accounted for.
+  The latest bounded comparison has 77 nonmatching donor file entries, not 77
+  proved missing implementations.
+- [!] Adapt the proposed vault operation-status, authenticated rebinding and
+  recipient-acknowledgement contract only after exact ABI/journal authority is
+  settled; prove source-bound generation, parser admission and current product
+  artifacts separately. The first protected operation remains `POST /auth/verify`.
+- [!] Produce compiler/runtime/FFI/host/provider/sink evidence for that operation
+  with controlled synthetic data, then obtain independent owner adjudication of
+  RD-1413/1414/1415. Bootstrap tests and index refreshes do not close this item.
+
 ## Current memory-review checkpoint — 2026-10-07
 
 Current Galerina review pin: `302230b33990ef452688b0c383a683c770e99e52` on
@@ -221,11 +705,15 @@ The owner selected the zero-trust option for the remaining policy choices:
   range-checked; missing, null, NaN, stale, or inconsistent state refuses.
   External graph/Myco projections remain locator-only, never authority.
 
-These choices settle policy defaults, not missing product facts. The real
-protected `/secure` operation and its caller, object/version grant issuer and revoker,
-provider/key custodian reference, permitted recipient, plaintext origin, exact
-Amazon Linux release, and measured runtime profile still must be identified and
-verified. No key bytes are needed to identify the contract. RD-1413–1415 remain
+These 2026-10-05 notes predate the owner's 2026-10-07 route and authority answers.
+The first operation is `POST /auth/verify`, not `/secure`. Owner-directed roles
+are Phillip as policy/grant issuer, revoker and interim credential/key custodian;
+one configured app-gateway workload identity; and that authenticated requesting
+gateway as the permitted result recipient. These are requirements, not evidence
+of deployed configuration or implementation. Still pin and verify the exact
+credential object/version, signed grant and revocation chain, provider, plaintext
+ingress mode, Amazon Linux release and measured runtime profile. No key bytes are
+needed to identify the contract. RD-1413–1415 remain
 **HOLD / NON_AUTHORIZING** until one such end-to-end route passes and is
 independently reviewed. The RD metadata query returned `STALE`; this decision
 was recorded from the live Galerina owner files, not inferred from the index.
@@ -434,12 +922,12 @@ checks with 0 errors/0 warnings but still uses `fixtureHash`; it does not name
 the real caller/grant/provider/object-version/recipient chain. This remains
 candidate evidence only, not an RD or product closure.
 
-The live source confirms the route gap: `examples/auth-service/deno-adapter.ts`
+The live source confirms the route gap: [Deno auth-service adapter](../examples/auth-service/deno-adapter.ts)
 returns **503** for `/auth/verify` with “Service bridge pending Phase 54”;
 `packages-ts/galerina-framework-example-app/host/server.ts` wires only the
 public greeting route. Thus a clean `.fungi` check is not an executing
-protected request. The owner-selected `/secure` surface still needs a real
-operation and its caller, grant issuer/revoker, provider/key custodian,
+protected request. The owner-selected `POST /auth/verify` route still needs a
+real operation and its caller, grant issuer/revoker, provider/key custodian,
 object/version, and recipient bound before product wiring can be truthful.
 
 ### 2026-10-05 existing Fungi loader boundary — reusable mechanics only
@@ -528,7 +1016,7 @@ On dirty branch `codex/rd1413-1415-coupled-route-20261004` at HEAD
 `e1c2496f3f36d154a445ba9c302401ccaaf74bae`,
 `packages-ts/galerina-framework-app-kernel` was rebuilt from the current
 TypeScript source with `npm run build` (exit 0). The focused command
-`node --test tests/rd0361-secret-gate-execution.test.mjs tests/secret-gate.test.mjs tests/security-closure.test.mjs tests/rd1414-sync-deadline.test.mjs`
+`node --test packages-ts/galerina-framework-app-kernel/tests/rd0361-secret-gate-execution.test.mjs packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs`
 then passed **68/68**. It includes the 14-case Wasm-vs-`createSecretGate`
 decision differential and the current callback, timeout, and cleanup
 characterization tests. This is candidate-only behavior on the rebuilt Node
@@ -674,7 +1162,7 @@ consume that node to register a resource name as a type-like declaration and
 scope its children, but this is name resolution, not enforcement of resource
 policy or byte ownership. The type checker and value-state checker use generic
 traversal for it; GIR/WAT have no resource ownership representation. The
-matching `tests/resource-decl.test.mjs` checks lexing and AST capture only; it
+matching `packages-ts/galerina-core-compiler/tests/resource-decl.test.mjs` checks lexing and AST capture only; it
 does not assert type/value/GIR/WAT ownership behavior.
 
 Astra's read-only follow-up on this same HEAD corrected the phrase “parser-only”
@@ -797,6 +1285,19 @@ the staged/untracked worktree remains unadopted and no tests were run for it.
 Treat it as a possible ABI-admission component only, not as the missing runtime
 or evidence that the selected TypeScript adapter boundary is wired.
 
+### 2026-10-12 current-main correction — AFFINE-005 is present
+
+The 2026-10-05 entries above are historical observations of the `e1c2496`
+snapshot and must not be read as current status. The integration checkout at
+`5317ce06b2ba225fea6bbd4a93cf3e928a8578e6` contains
+`FUNGI-AFFINE-005 SECRET_LEASE_RUNTIME_UNWIRED` in
+`packages-ts/galerina-core-compiler/src/value-state-checker.ts` and its
+`authority-use-state.test.mjs` cases in committed `HEAD`. The focused test
+currently passes 107/107 on native Windows. This is compiler/bootstrap
+refusal and test evidence only; it does not implement a Fungi secret lease,
+cleanup runtime, byte arena, wipe, or end-to-end protected operation, and it
+does not close RD-1414 or the coupled RDs.
+
 ### 2026-10-05 active coupled-route execution trace — not wired to Fungi
 
 On the same dirty checkout and HEAD, the live app-kernel still imports and
@@ -838,6 +1339,28 @@ Exact source pins for this dirty candidate: `kernel.ts`
 `E6DB571BBDF8FCBCF45C3AE752FF463550969416AA6400DF2332154FF3DD0F3D`, and
 `secret_arena.rs`
 `4A8BC6BA69A2C2E67F8F92032146D0B4A84E65ACD9449588F16F0F5ABCDD6277`.
+
+### 2026-10-13 current integration VOK arena recheck — bounded live evidence
+
+The reused integration checkout is now at `823c8bc30c34a354e033f597f6477d258e0de488`.
+Its clean-at-HEAD arena files have SHA-256 `AE9F1EB85086FC40F8BBEA0B2A287855A59377CE1148D9E7D57DDA3DB13E5BB5`
+(`secret_arena.rs`), `90DBACA8440FB9654DB3CDFBFB7B0031D22C7F4F70DEF6AE149D9609D51025AB`
+(`src/tests.rs`), and `59906E96C86E18BC5E71BBA6913C6A67AE6F2BA7386E18C22E03AA860E1FF703`
+(`tests/secret_arena.rs`). Focused `secret_arena` Cargo tests passed 6/6 on
+Windows and 6/6 on WSL; WSL also reported seven platform-specific tests ignored.
+Two synthetic-data WSL tests were then explicitly enabled: the live mapping was
+observed zero before unmap (1/1), and the owned-copy counterexample passed (1/1).
+
+This confirms both halves of the boundary: cleanup zeroes the arena mapping
+before unmapping on this WSL host, while a same-crate `with_bytes_mut` callback
+can copy a marker into `Vec<u8>` and that owned copy survives cleanup. The
+callback is crate-private, but Rust visibility does not constrain copies made
+by trusted same-crate code. Exact Git search found test/doc uses and no
+production protected-operation caller for this API. Therefore this is neither
+a Fungi ownership guarantee nor the `/auth/verify` path; a narrow real Linux
+test does not establish general confidentiality, every-copy cleanup, Windows
+enforcement, or any RD closure. Resolve the production TCB/API and Fungi-owned
+handoff design before treating the arena as an application memory boundary.
 
 ### 2026-10-05 Astra confidential-runtime feasibility review — conditional, non-authorizing
 
@@ -943,7 +1466,7 @@ this patch has not had independent review. It is not product evidence.
 ### 2026-10-05 post-refusal provider-callback probe — candidate seam gap
 
 After a fresh `galerina-framework-app-kernel` typecheck and build, the existing
-`tests/secret-gate.test.mjs` passes **11/11**, but it does not exercise a
+`packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` passes **11/11**, but it does not exercise a
 provider that retains the supplied callback. Against the freshly built
 `dist/secret-gate.js`, a provider that saves the callback and returns without
 calling it causes `getSecret` to refuse; invoking the saved callback afterward
@@ -1008,7 +1531,7 @@ the focused test is
 `1010211A46B1BACC9D852D62EA44D2D9C6F65F91D21A35138368923CAC82A720`;
 and the already-built `dist/secret-gate.js` exercised here is
 `6057131C8DAC55D2F58A70F2868207A45ADFDA8E03DBD74C456177653F11A7FA`.
-Direct `node --test tests/secret-gate.test.mjs` passed **11/11**. A fresh
+Direct `node --test packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` passed **11/11**. A fresh
 read-only runtime probe against that same dist reproduced late callback
 dispatch after refusal (**1 handler call**) and sync callback dispatch before
 an ignored rejected thenable (**1 handler call, 1 unhandled rejection**). This
@@ -1021,7 +1544,7 @@ earlier fresh build and do not treat these dirty candidate bytes as committed
 the pure `admit()` decision over `SecretPresence`; its header says the
 TypeScript artifact remains executed until a separate Stage-6 execution
 switch. The package manifest records the `.fungi` file as a loaded asset, but
-that is not runtime wiring. `tests/rd0361-secret-gate-execution.test.mjs`
+that is not runtime wiring. `packages-ts/galerina-framework-app-kernel/tests/rd0361-secret-gate-execution.test.mjs`
 attempted its differential WASM check and stopped during module loading because
 `galerina-core-compiler/dist/stdlib.js` cannot resolve the local package
 `@galerina/data-json`. The sibling source package exists, but the compiler has
@@ -1155,8 +1678,12 @@ uncertain-outcome reconciliation; unconditional claim deletion could permit
 duplicate side effects. Treat this as the coupled RD-1413/RD-1415 retry blocker,
 not a separate successful product slice.
 
-- [!] **RD-1413 incoming access:** the owner has selected governed `/secure` as
-  the intended V1 route surface. Wire it as one real authenticated application
+- [!] **RD-1413 incoming access — historical route wording:** this block was
+  drafted when `/secure` was the route choice. Phillip superseded that choice
+  on 2026-10-07: the first protected operation is `POST /auth/verify`; do not
+  implement `/secure` from this historical paragraph. The source-mapped
+  duplicate-query and provider-ordering findings below remain review leads.
+  Wire the owner-selected operation as one real authenticated application
   operation with an object/version grant, protected provider/key
   owner, quota and permitted recipient. Prove duplicate object/version query-key
   and invalid-version refusals before protected acquisition on the actual
@@ -1316,7 +1843,7 @@ test claim is made here.
 Exact test pin: `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs`
 SHA-256 `BC1C2E3DE532CC6DD9CAEB8E5BCD38E25848EACBDEDB6AB483F929D5C6BC1CD7`.
 `npm run build` passed; the focused
-`node --test tests/secret-gate.test.mjs tests/security-closure.test.mjs`
+`node --test packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs`
 run passed **36/36**. The latest full app-kernel suite remains **381/393**:
 two refusal-order expectation failures and ten `@galerina/data-json`
 dependency/import failures, not baseline-classified. Do not treat the focused
@@ -1510,7 +2037,7 @@ Current dirty-source pins:
   SHA-256 `EC690F91695AE654CB85802BB36FE45148A142E327BDBF0865935AAB5A76BD91`.
 
 `npm run build` passed; the complete focused
-`node --test tests/secret-gate.test.mjs` run passed **25/25**. The full
+`node --test packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` run passed **25/25**. The full
 `npm test` passed typecheck/build and reports **384/396**: two signature-posture
 assertions and ten compiler/conversion/package tests fail, including missing
 `@galerina/data-json` imports. These failures remain unclassified against a
@@ -1563,7 +2090,7 @@ Current candidate pin for this correction:
   `32831D2DF94F7FACF86748DB273978601B28DEFA2C6842FA288D55E8BA6216C2`.
 - Regression: `packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` —
   SHA-256 `1F4A40FFC22526C94C1E188290A722F5E8FBFF1F028113191517A016637205E3`.
-- Current revalidation: app-kernel `npm run typecheck` **PASS**; `node --test tests/rd1414-sync-deadline.test.mjs tests/security-closure.test.mjs` **17/17 PASS**.
+- Current revalidation: app-kernel `npm run typecheck` **PASS**; `node --test packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs packages-ts/galerina-framework-app-kernel/tests/security-closure.test.mjs` **17/17 PASS**.
   These checks cover only the dirty TypeScript candidate. The earlier **42/42** focused
   aggregate and **398/400** package run are historical results, not rerun in this revalidation.
 
@@ -1575,7 +2102,7 @@ return success because the gate-local violation did not reach the kernel's reque
 latch. A regression reproduced **HTTP 200** before the change. The gate now reports its first
 callback-contract violation to the request owner; the request remains terminally failed even if
 provider code catches that late callback error. Rebuilt app-kernel and the focused
-`node --test tests/secret-gate.test.mjs` pass **33/33**, including the REAL SealArena-backed
+`node --test packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` pass **33/33**, including the REAL SealArena-backed
 case. Package `npm test` passes typecheck/build and reports **431/433**; two
 `fuse-compose.test.mjs` signature-posture assertions still fail earlier on
 `FUNGI-FUSE-REVOCATION-REQUIRED`. A clean-main comparison has not established their baseline.
@@ -1606,8 +2133,9 @@ is unverified. `git diff --check` passes. Latest pins:
 - `packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs` — SHA-256
   `5FA966961335D285897BA42C6A97D84282B15AC3E05800C0284100C0E6191AB8`.
 
-This follow-up is still only a dirty TypeScript candidate: no Fungi/runtime
-wiring, actual `/secure` route, physical erasure, or product custody is proven.
+This follow-up is still only a historical dirty TypeScript candidate: no
+Fungi/runtime wiring, actual selected `POST /auth/verify` route, physical
+erasure, or product custody is proven.
 The coupled RDs remain **HOLD / NON_AUTHORIZING**.
 
 This closes only the reproduced TypeScript request-latch gap. It does not prove Fungi/runtime
@@ -1693,7 +2221,7 @@ corrected delta is pending.
 
 Current dirty-source pins: `kernel.ts` SHA-256
 `6C33189F59D25269388271457E4E63C26E24248E85C1B56BF3441AD1E2BBB0B1`;
-`tests/rd1414-sync-deadline.test.mjs` SHA-256
+`packages-ts/galerina-framework-app-kernel/tests/rd1414-sync-deadline.test.mjs` SHA-256
 `C907C79FCF2EEB68E30267CD7B23F6EB7ED281ED602A3C897587B6AAFEFBA31A`.
 This remains a TypeScript candidate control. It does not preempt synchronous
 execution, establish Fungi-owned bytes or host isolation, prove a product route,
@@ -1931,7 +2459,7 @@ composed adoption remain **HOLD / NON_AUTHORIZING**.
 
 **Fresh full app-kernel rerun, 2026-10-05:** `npm test` completed typecheck and
 build, then reported **429/431** tests passing, **2 failing**, zero skipped.
-Both failures are unchanged `tests/fuse-compose.test.mjs` assertions; current
+Both failures are unchanged `packages-ts/galerina-framework-app-kernel/tests/fuse-compose.test.mjs` assertions; current
 `fuse-loader.ts` refuses first with `FUNGI-FUSE-REVOCATION-REQUIRED`, before
 the assertions' expected signature-posture errors. The test file is unchanged
 from this worktree's `HEAD`, but no clean-`HEAD` baseline run was performed, so
@@ -2001,8 +2529,10 @@ replacement case or prove Fungi/runtime behavior. Next implementation
 boundary: generation-bound atomic Fungi lease acquisition with explicit
 revocation ordering, bounded opaque ownership and fail-closed retirement; no
 TypeScript authority fallback and no plaintext through the adapter. The
-approved governed `/secure` route can be the synthetic harness, not evidence of
-the real protected operation. See the coupled report's same-name replacement
+the `/secure` route in this 2026-10-05 note is historical and was superseded by
+the owner's 2026-10-07 selection of `POST /auth/verify`; it is not current route
+authority. No protected production route is evidenced by this synthetic
+counterexample. See the coupled report's same-name replacement
 finding and next bounded action. RD-1413–1415 remain **HOLD / NON_AUTHORIZING**.
 
 ### 2026-10-05 Astra/SuperGrok architecture reviews and v0.7 design delta
@@ -3021,7 +3551,7 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
   HEAP_BASE before load. Independent review pending. Not production
   admission.
 - [!] Governed Computing Constitution is a KB DISCUSSION_DRAFT / NOT_ADOPTED at
-  `reference/galerina/galerina-governed-computing-constitution.md`. Galerina
+  the [KB Constitution draft](../../ZTF-Knowledge-Bases/reference/galerina/galerina-governed-computing-constitution.md). Galerina
   `docs/ARCHITECTURE.md` links it. Independent audit of the dirty candidate remains pending.
 
 ### Source-verified reconciliation — 2026-09-22
@@ -3434,7 +3964,7 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
   resolves one of those exact boundaries.
 - [!] C16 RD assignment remains deliberately unissued. The owner KB checkout
   refuses the range query while tracked RD sources are dirty; a clean detached
-  KB metadata rebuild still returned `STALE` because `research/RD-TODO-MAP.md`
+  KB metadata rebuild still returned `STALE` because the [KB RD-TODO map](../../ZTF-Knowledge-Bases/research/RD-TODO-MAP.md)
   pins older KB/product build points and its canonical refresh refuses the
   current dirty product TODOs. Required owner sequence: clean the product TODO
   sources, refresh the canonical RD-TODO map and custody-separated metadata
@@ -3943,7 +4473,7 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
   need an explicitly bounded callback/closure contract, hostile tests, and
   interpreter/WAT parity. The adjacent unknown-method path now refuses at
   `:2115-2122` instead of emitting a plain undefined callee; the focused
-  refusal control is in `tests/wat-phase25-arithmetic.test.mjs`. The remaining
+  refusal control is in `packages-ts/galerina-core-compiler/tests/wat-phase25-arithmetic.test.mjs`. The remaining
   Decimal/HOF traps stay unchanged. See
   the private adjudication record for RD-1233.
   Rounding plan link (2026-09-30, not done): the Decimal half of this hold is
@@ -4008,8 +4538,9 @@ inventoried, **0 OPEN**. GROK-CODING-BATCH-READY Phase A+B complete. Items
 ### AGENTS bounded capability-route refresh — 2026-09-20
 
 - [x] At AGENTS HEAD `c68276eb54cefb0a37260b60225734841603093d`,
-  `tools/audit-map.mjs --self-test` passes **5/5 fixtures** and
-  `tools/audit-map.test.mjs` passes **9/9** with no skips or TODOs.
+  `tools/audit-map.mjs --self-test` passes **5/5 fixtures** and the
+  [AGENTS audit-map test](https://github.com/TritHypha/AGENTS-SKILLS-AND-TOOLS/blob/c68276eb54cefb0a37260b60225734841603093d/tools/audit-map.test.mjs)
+  passes **9/9** with no skips or TODOs.
 - [x] The paired passive routing controls also pass: `context-route` is
   **30/30** focused tests plus self-test; `context-retrieve` is **12/12**
   focused tests plus self-test. `adaptive-effort-governor` and
@@ -4085,7 +4616,7 @@ counts or open items that a newer section explicitly supersedes.
 - [x] The owner-requested escaped path `AI\\_INDEX.md` resolves to the existing
   root `AI_INDEX.md`; the backslash escapes the Markdown underscore and is not
   a directory separator. `AI_INDEX.md`, `KNOWLEDGE-BASE-INDEX.md`, and the
-  locator-only `research/RD-TODO-MAP.md` are the canonical KB routes. No
+  locator-only [KB RD-TODO map](../../ZTF-Knowledge-Bases/research/RD-TODO-MAP.md) are the canonical KB routes. No
   duplicate `ai/_INDEX.md` warehouse was created.
 - [!] The required R&D locator gold control passes **12/12**, but the bounded
   `RD-0349..RD-0365` query returns
@@ -4409,8 +4940,9 @@ Report: `../SLIDE/docs/reports/bounded-general-executable-backend-current-2026-0
   commits mean rollback requires the recorded conflict-aware sequence rather
   than a plain one-command revert.
 - [!] The signed production-registry generator remains correctly refused
-  because private `packages-ts/galerina-registry/registry-index-v2.json` is not
-  present. Do not fabricate, copy or sign substitute registry bytes.
+  because the [registry package](../packages-ts/galerina-registry/) does not
+  contain the private output `registry-index-v2.json`. Do not fabricate, copy
+  or sign substitute registry bytes.
 - [x] Rerun Git Custody Audit after a fresh successful fetch. Its exact
   non-authorizing plan classified the active branch as an ancestor of the
   feature branch and proposed only `FAST_FORWARD`. The active
@@ -8661,7 +9193,7 @@ evidence; the first Contract 82 section owns current status and next work.
   The bounded source-to-execution implementation is green for its admitted
   profiles; complete Galerina language coverage and production activation stay
   blue. The exact internal and external gates are recorded in SLIDE's
-  `docs/reports/slide-finish-ledger-after-contract79-2026-08-08.md`. This split
+  [SLIDE finish ledger (Contract 79)](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/slide-finish-ledger-after-contract79-2026-08-08.md). This split
   adds visibility only and grants no package-conversion or retirement credit.
 - [x] Adopt RD-0754's bounded application-resident index with verified
   on-demand object loading as the post-SLIDE architecture direction for large,
@@ -10248,8 +10780,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - **Open:** general-profile production producer/switch wiring in Galerina,
   native/platform evidence and broader registered loop families. Package
   conversion remains the owner's separate lane.
-- SLIDE report:
-  `docs/reports/registered-bounded-checked-read-loop-2026-08-03.md`.
+- SLIDE report: [registered bounded checked-read loop](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/registered-bounded-checked-read-loop-2026-08-03.md).
 
 ### Exact Verified Loop `.slide` lowering green - 2026-08-03
 
@@ -10272,8 +10803,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - **Open:** registered-profile production-switch
   wiring, native/platform/physical-erasure evidence and bounded reusable
   generations. Package conversion remains the owner's separate lane.
-- SLIDE report:
-  `docs/reports/canonical-verified-loop-slide-object-2026-08-03.md`.
+- SLIDE report: [canonical verified-loop SLIDE object](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/canonical-verified-loop-slide-object-2026-08-03.md).
 - KB maths/adjudication: RD-0683.
 
 ### Verified Loop Envelope proposal implemented - 2026-08-03
@@ -10333,8 +10863,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Dynamic routing `dispatch` remains refused by frozen V2-C and identifies a
   concrete requirement for the registered general-backend successor.
 - The owner's package-conversion lane remains untouched.
-- Report: SLIDE
-  `docs/reports/v2c-semantic-verifier-closure-2026-08-03.md`.
+- Report: [SLIDE v2c semantic verifier closure](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/v2c-semantic-verifier-closure-2026-08-03.md).
 
 ### Pure-scalar structured control flow green - 2026-08-03
 
@@ -10354,8 +10883,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - This remains a reference compiler floor. Production admission, detached
   authentication, platform authority and the owner's package-conversion lane
   remain open and unchanged.
-- Report: SLIDE
-  `docs/reports/pure-scalar-control-flow-widening-completion-2026-08-03.md`.
+- Report: [SLIDE pure scalar control-flow widening completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/pure-scalar-control-flow-widening-completion-2026-08-03.md).
 
 ### Independent pure-scalar `.fungi` to `.slide` floor green - 2026-08-03
 
@@ -10376,8 +10904,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - This is reference-only source coverage, not production admission. Strings,
   mutation, loops, general effects/memory, detached authentication, platform
   authority and the owner's package-conversion lane remain open and untouched.
-- Report: SLIDE
-  `docs/reports/checked-fungi-pure-scalar-module-completion-2026-08-03.md`.
+- Report: [SLIDE checked Fungi pure scalar module completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-fungi-pure-scalar-module-completion-2026-08-03.md).
 
 ### Physical `.slide` package loading floor green - 2026-08-03
 
@@ -10416,8 +10943,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Signed source manifests/providers, native durability, complete language
   semantics, platform admission and owner-reviewed package conversion remain
   open.
-- Report: SLIDE
-  `docs/reports/checked-package-source-manifest-cli-completion-2026-08-03.md`.
+- Report: [SLIDE checked package source manifest CLI completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-package-source-manifest-cli-completion-2026-08-03.md).
 
 ### Independent multi-flow routing `.fungi` to `.slide` floor green - 2026-08-03
 
@@ -10439,8 +10965,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   admission. Effects, mutable values, general expressions/types, signed
   loading, platform authority and owner-reviewed package conversion remain
   open and unchanged.
-- Report: SLIDE
-  `docs/reports/checked-fungi-pure-routing-module-completion-2026-08-03.md`.
+- Report: [SLIDE checked Fungi pure routing module completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-fungi-pure-routing-module-completion-2026-08-03.md).
 
 ### Independent checked package build and publication floors green - 2026-08-03
 
@@ -10460,9 +10985,8 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Node power-loss durability is explicitly K3 `0`. A strict source-manifest
   CLI, full-language calls/expressions/effects, production signing/loading and
   the owner-reviewed package-conversion lane remain open. Counts are unchanged.
-- Reports: SLIDE
-  `docs/reports/checked-fungi-package-build-completion-2026-08-03.md` and
-  `docs/reports/checked-fungi-package-publication-completion-2026-08-03.md`.
+- Reports: [SLIDE checked Fungi package build completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-fungi-package-build-completion-2026-08-03.md) and
+  [checked Fungi package publication completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-fungi-package-publication-completion-2026-08-03.md).
 
 ### Independent SLIDE flat package ABI floor green - 2026-08-03
 
@@ -10480,8 +11004,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Multi-module `.fungi` compilation and a package `.slide` object remain the
   next independent backend increment. The owner-reviewed package-conversion
   lane remains untouched.
-- Report: SLIDE
-  `docs/reports/flat-package-abi-completion-2026-08-03.md`.
+- Report: [SLIDE flat package ABI completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/flat-package-abi-completion-2026-08-03.md).
 
 ### Canonical durable SLIDE V2-B effect `.slide` route green - 2026-08-03
 
@@ -10500,8 +11023,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - General package ABI/imports/resources, memory, authenticated providers,
   trusted time, native power-loss proof, signed production admission and
   owner-reviewed package conversion remain open.
-- Report: SLIDE
-  `docs/reports/durable-v2b-effect-slide-bundle-completion-2026-08-03.md`.
+- Report: [SLIDE durable v2b effect bundle completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/durable-v2b-effect-slide-bundle-completion-2026-08-03.md).
 
 ### Durable SLIDE V2-B broker reservation binding green - 2026-08-03
 
@@ -10520,8 +11042,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Canonical effect-bundle selection, native power-loss barriers, trusted time,
   authenticated providers and external evidence remain open. Package
   conversion is unchanged.
-- Report: SLIDE
-  `docs/reports/v2b-durable-effect-binding-completion-2026-08-03.md`.
+- Report: [SLIDE v2b durable effect binding completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/v2b-durable-effect-binding-completion-2026-08-03.md).
 
 ### Independent SLIDE V2-B durable nonce reference floor green - 2026-08-03
 
@@ -10538,8 +11059,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   native file and parent-directory durability barriers, trusted time and
   external crash/platform receipts remain open. Package conversion remains
   owner-reviewed and unchanged.
-- Report: SLIDE
-  `docs/reports/v2b-durable-nonce-authority-completion-2026-08-03.md`.
+- Report: [SLIDE v2b durable nonce authority completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/v2b-durable-nonce-authority-completion-2026-08-03.md).
 
 ### Checked `.fungi` to canonical `.slide` compiler floor green - 2026-08-03
 
@@ -10563,8 +11083,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   compilation. General expressions, effects, memory, ABI/imports/resources,
   production native/platform admission and owner-reviewed package conversion
   remain open and unchanged.
-- Report: SLIDE
-  `docs/reports/checked-fungi-to-slide-completion-2026-08-03.md`.
+- Report: [SLIDE checked Fungi-to-SLIDE completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/checked-fungi-to-slide-completion-2026-08-03.md).
 
 ### Canonical SLIDE V2-B effect GIR and `.slide` floor green - 2026-08-03
 
@@ -10586,8 +11105,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   admission or the general backend. Durable nonce authority, authenticated
   isolated providers, package ABI/imports/resources, native/platform evidence
   and owner-reviewed package conversion remain open and unchanged.
-- Report: SLIDE
-  `docs/reports/canonical-v2b-effect-gir-completion-2026-08-03.md`.
+- Report: [SLIDE canonical v2b effect GIR completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/canonical-v2b-effect-gir-completion-2026-08-03.md).
 
 ### Independent SLIDE V2-B effect broker floor green - 2026-08-03
 
@@ -10608,8 +11126,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - Package conversion remains owner-reviewed and unchanged at the current
   recorded roadmap count. This chapter grants no source deletion, package
   admission or terminal-retirement authority.
-- Report: SLIDE
-  `docs/reports/independent-v2b-effect-broker-completion-2026-08-03.md`.
+- Report: [SLIDE independent v2b effect broker completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/independent-v2b-effect-broker-completion-2026-08-03.md).
 
 ### Myco symmetric index-ceiling and refusal-state closure - 2026-08-02
 
@@ -10714,8 +11231,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   general memory, ABI/resources, native objects and external platforms. This
   is not production-ledger authority and does not change package-conversion
   debt.
-- **Evidence:** SLIDE report
-  `docs/reports/reference-slide-bundle-completion-2026-08-02.md` and KB
+- **Evidence:** [SLIDE reference bundle completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/reference-slide-bundle-completion-2026-08-02.md) and KB
   RD-0669.
 
 ### Portable SLIDE VEO execution floor green - 2026-08-02
@@ -10734,8 +11250,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   general backend. Effects, general memory, package ABI/imports/resources,
   serialized `.slide`, production authentication, native targets and external
   platforms remain open. Package conversion remains excluded and unchanged.
-- **SLIDE evidence:** commit `365665a` and
-  `docs/reports/portable-veo-backend-completion-2026-08-02.md`.
+- **SLIDE evidence:** commit `365665a` and [portable VEO backend completion](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/portable-veo-backend-completion-2026-08-02.md).
 
 ### Bounded verification orchestration complete - 2026-08-02
 
@@ -11472,7 +11987,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
 - **Terminal comparison remains held:** do not publish SLIDE/Wasm/Rust/Python
   comparative claims until general native SLIDE execution can run equivalent
   workloads. Detailed evidence is in
-  `../../SLIDE/docs/reports/v2g-verified-ahead-of-demand-completion-2026-08-01.md`.
+  [SLIDE report, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/v2g-verified-ahead-of-demand-completion-2026-08-01.md).
 
 ### SLIDE architecture reduction research synchronized - 2026-08-01
 
@@ -11513,7 +12028,7 @@ Completion evidence: [full gate and host-floor reconciliation](reports/full-gate
   15/15 contract files and 295/295 complete, while it remains unauthenticated,
   `UNVERIFIED` and non-authorizing. Native execution and all other OS rows
   remain unverified. See
-  `../../SLIDE/docs/reports/reference-platform-contract-2026-08-01.md`.
+  [SLIDE report, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/reports/reference-platform-contract-2026-08-01.md).
 - **Independent V2-D logical cleanup implemented:** SLIDE commit `497cb6c`
   owns SSA, array, record, variant and semantic-byte state in one private
   per-call reference region and closes every opened region in `finally`.
@@ -12213,7 +12728,7 @@ guessing.
   opened for the native folder but did not start because its setup UI was not
   confirmed; it remains pending and is not counted as a pass.
 
-Keep `../../triLowLevel-v2/TODO.md` synchronized whenever the independent
+Keep [SLIDE's TODO at verified commit `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/TODO.md) synchronized whenever the independent
 triLowLevel core, SLIDE engine, registry, importer, runtime, or release plan
 changes. A completed
 planning checkbox must never be used to imply that implementation exists.
@@ -12627,7 +13142,7 @@ planning checkbox must never be used to imply that implementation exists.
   parties use separate trust domains and never share keys or epochs. The
   current and target designs are
   `docs/architecture/audit-key-rotation-triple-lock-design-2026-07-10.md` and
-  `../../SLIDE/docs/superpowers/specs/2026-07-30-slide-key-lifecycle-and-rotation-boundary-design.md`.
+  [SLIDE key-lifecycle design, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/superpowers/specs/2026-07-30-slide-key-lifecycle-and-rotation-boundary-design.md).
   The trigger proposes, readiness and K3 gates decide, the old key remains
   available through canary/drain, and failed verification falls back and
   revokes the candidate. The cold root remains an offline recovery and
@@ -12975,8 +13490,8 @@ planning checkbox must never be used to imply that implementation exists.
   and instruction-level total trace remains next. The new simulation,
   transaction, and host-queue work follows the isolated broker/runner seams
   and does not authorize LLVM, native output, component cuts, or cache use.
-- **Synchronized plan:** `../SLIDE/docs/GALERINA-INTEGRATION-MIGRATION-PLAN.md`,
-  `../SLIDE/TODO.md`, and `../../triLowLevel-v2/TODO.md`.
+- **Synchronized plan:** [SLIDE integration migration plan, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/GALERINA-INTEGRATION-MIGRATION-PLAN.md),
+  [SLIDE TODO, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/TODO.md).
 
 ### Final acceptance request checkpoint - 2026-07-29
 
@@ -13683,7 +14198,7 @@ planning checkbox must never be used to imply that implementation exists.
   HTTPS request capabilities, lease-only broker access, Tower/Tri-Pipe
   evidence roles, K3 admission, audit-before-success, budgets, failures,
   mutations, and Galerina replace/rebuild/integrate boundaries in
-  `../../triLowLevel-v2/21-V2-B-EFFECT-CAPABILITY-INCREMENT.md`; Galerina
+  [SLIDE V2-B effect/capability contract, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/21-V2-B-EFFECT-CAPABILITY-INCREMENT.md); Galerina
   status checkpoint `83f73c0c`.
 - **Completed:** local commit `97fcf116` freezes the V2-B capability and three
   resource descriptors, then implemented a `.fungi` request-set shape gate.
@@ -13848,7 +14363,7 @@ planning checkbox must never be used to imply that implementation exists.
   semantic-memory result only: it is not a native-code certificate, final
   artifact binding, production authority, or permission to remove legacy
   paths.
-- **Completed:** `../../triLowLevel-v2/26-V2-E-FRONTEND-RECEIPT-AND-SOURCE-MAP.md`
+- **Completed:** [SLIDE V2-E frontend receipt contract, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/26-V2-E-FRONTEND-RECEIPT-AND-SOURCE-MAP.md)
   defines V2-E as a separately canonical, non-authorizing producer receipt
   over frozen V2-D. It fixes normalized-source rules, complete source-map node
   coverage, nine independently re-derived plan digests, distinct producer
@@ -13878,7 +14393,7 @@ planning checkbox must never be used to imply that implementation exists.
   every existing parse/type/effect/GIR handoff and write the exact
   keep/rebuild/replace/cut matrix before widening the frozen V2-E vector.
 - **Completed (planning):**
-  `../../triLowLevel-v2/27-GENERAL-GALERINA-FRONTEND-HANDOFF.md` records the
+  [SLIDE general Galerina frontend handoff, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/27-GENERAL-GALERINA-FRONTEND-HANDOFF.md) records the
   G3.1 trust chain and exact current seams. The critical gap is explicit:
   V2-E binds the pinned source beside the pinned V2-D body, but the body is not
   yet derived from the compiler-owned flow table. Tower stub success and
@@ -13976,25 +14491,23 @@ planning checkbox must never be used to imply that implementation exists.
   project graph is 7,367 nodes / 7,621 edges.
 - **Stop gates:** no encoder/AST/default graph fallback; no LLVM, native,
   container-signing, or driver work before semantic and memory validation.
-- **Plan/data:** `docs/architecture/slide-v2-status-and-implementation-plan-2026-07-29.md`,
-  `../../triLowLevel-v2/15-EXECUTABLE-GIR-V1.md`,
-  `../../triLowLevel-v2/18-R1-REGISTRY-V1.md`, and
-  `../../triLowLevel-v2/19-GENERAL-EXECUTABLE-GIR-SUCCESSOR.md`;
+- **Plan/data:** `docs/architecture/slide-v2-status-and-implementation-plan-2026-07-29.md`;
+  legacy artifacts `15-EXECUTABLE-GIR-V1.md` and `18-R1-REGISTRY-V1.md` were not found in the verified SLIDE main tree at `5147371` and remain unresolved historical locators; [SLIDE V2 successor contract, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/19-GENERAL-EXECUTABLE-GIR-SUCCESSOR.md);
   V2-A numeric IDs and ceilings:
-  `../../triLowLevel-v2/20-V2-A-REGISTRY-V2.md`; first effect/capability
-  increment: `../../triLowLevel-v2/21-V2-B-EFFECT-CAPABILITY-INCREMENT.md`.
+  [SLIDE V2-A registry, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/20-V2-A-REGISTRY-V2.md); first effect/capability
+  increment: [SLIDE V2-B, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/21-V2-B-EFFECT-CAPABILITY-INCREMENT.md).
   Nonce/K3 gate:
-  `../../triLowLevel-v2/23-V2-B-NONCE-STATE-AND-K3-GATE.md`; next detached
+  [SLIDE V2-B nonce/K3 contract, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/23-V2-B-NONCE-STATE-AND-K3-GATE.md); next detached
   aggregate increment:
-  `../../triLowLevel-v2/24-V2-C-IMMUTABLE-AGGREGATE-INCREMENT.md`.
+  [SLIDE V2-C, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/24-V2-C-IMMUTABLE-AGGREGATE-INCREMENT.md).
   V2-C mutation/exit audit:
   `docs/reports/slide-v2c-required-mutation-audit-2026-07-29.md`.
   V2-D logical checkpoint:
   `docs/reports/slide-v2d-memory-logical-2026-07-29.md`; registry/design:
-  `../../triLowLevel-v2/25-V2-D-SAFE-VALUE-MEMORY-INCREMENT.md`.
-- **Integration map:** `../../SLIDE/docs/GALERINA-INTEGRATION-MIGRATION-PLAN.md`
+  [SLIDE V2-D safe-value memory contract (verified at `5147371`)](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/25-V2-D-SAFE-VALUE-MEMORY-INCREMENT.md).
+- **Integration map:** [SLIDE migration plan, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/GALERINA-INTEGRATION-MIGRATION-PLAN.md)
   records each Galerina keep/rebuild/integrate/optional/cut-after-gate action.
-- **Owner questions:** `../../SLIDE/QUESTIONS-FOR-OWNER.md`.
+- **Owner questions:** [SLIDE owner questions, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/QUESTIONS-FOR-OWNER.md).
 
 ### Current naming migration
 
@@ -14065,22 +14578,37 @@ and bundle identity; Galerina is its first frontend.
 - [x] Restore deterministic generation for
   `../ZTF-Knowledge-Bases/build/kb-index/KB-INDEX.md` and refresh it from the
   same live corpus as the category index.
-- [x] Record the owner's 2026-07-29 decisions in
-  `../triLowLevel-v2/QUESTIONS-FOR-OWNER.md`: Debian/Ubuntu x86-64 first,
-  audited policy-free bootstrap shims, fixture/profile confirmation,
-  Apache-2.0, SLIDE naming, and fail-closed migration boundaries.
+- [ ] Recover and re-verify the historical 2026-07-29 owner-decision record
+  formerly referenced in the retired triLowLevel-v2 checkout as
+  `QUESTIONS-FOR-OWNER.md`; that
+  sibling checkout and exact record were not found in the checked locations.
+  The current SLIDE
+  [owner decisions at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/QUESTIONS-FOR-OWNER.md)
+  is related evidence, not a verified replacement for the historical decisions
+  listed here. Do not infer those historical choices from it.
 - [ ] Finish detached executable GIR: full bodies, control flow, memory,
   failure, effect, capability, K3-collapse, and source-map semantics.
-- [x] Draft the implementable R1 executable-GIR subset, validator order,
-  mutation corpus, and exit gate in
-  `../triLowLevel-v2/15-EXECUTABLE-GIR-V1.md`; implementation remains pending.
-- [x] Define and version the proposed public Galerina-to-SLIDE frontend receipt
-  in `../triLowLevel-v2/16-GALERINA-FRONTEND-RECEIPT.md`.
-- [x] Owner-confirm the recommended checked-Int/exhaustive-K3 fixture in
-  `../triLowLevel-v2/17-FIRST-VERTICAL-SLICE.md`.
+- [ ] Reconcile the historical R1 executable-GIR draft formerly referenced as
+  the retired triLowLevel-v2 checkout's `15-EXECUTABLE-GIR-V1.md`; the exact
+  artifact was not found
+  in the checked locations. SLIDE's
+  [V2 general executable-GIR successor at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/19-GENERAL-EXECUTABLE-GIR-SUCCESSOR.md)
+  is a later successor, not a verified copy of the missing R1 draft.
+- [ ] Reconcile the historical Galerina-to-SLIDE frontend-receipt proposal
+  formerly referenced in the retired triLowLevel-v2 checkout as
+  `16-GALERINA-FRONTEND-RECEIPT.md`;
+  the exact artifact was not found in the checked locations. SLIDE's
+  [V2-E frontend receipt contract at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/contracts/v2/26-V2-E-FRONTEND-RECEIPT-AND-SOURCE-MAP.md)
+  is related current contract evidence, not a verified copy of that proposal.
+- [ ] Recover or independently re-verify the owner confirmation formerly
+  referenced in the retired triLowLevel-v2 checkout as
+  `17-FIRST-VERTICAL-SLICE.md`; the exact
+  artifact was not found in the checked locations. The historical probe report
+  below proves a checked-Int/exhaustive-K3 probe across the then-current tiers,
+  but does not by itself prove owner confirmation.
 - [x] Add the first vertical-slice capability probe in `.fungi` and verify it
   across the current tree-walker and WAT/Wasm tiers. Evidence:
-  `docs/reports/slide-v2-g1-capability-probe-2026-07-29.md`.
+  [historical report at pinned Galerina commit `9a26c71`](https://github.com/TritHypha/Galerina/blob/9a26c71e60e491766ef351d0efe0405b0739c1b6/docs/reports/slide-v2-g1-capability-probe-2026-07-29.md).
 - [x] Inventory every AST fact still consumed after `emitGIR` and map it to
   proposed R1 nodes or an explicit unsupported exit.
 - [x] Harden current K3 runtime boundaries so an invalid fourth Verdict value
@@ -14138,7 +14666,7 @@ and bundle identity; Galerina is its first frontend.
   K3 authority (`xor(-1,-1)=+1`). A current four-deep Stage-A mutation probe
   passes; retain a TODO for the exact historical `while -> if -> if -> while`
   regression. Canonical decision:
-  `../../SLIDE/docs/NESTING-AND-XOR-DECISION.md`.
+  [SLIDE nesting/XOR decision, verified at `5147371`](https://github.com/TritHypha/SLIDE/blob/514737141a16db521d07bdf355b8e3af1b36b192/docs/NESTING-AND-XOR-DECISION.md).
 - [ ] Keep the current WebAssembly path as the implemented production/differential
   path until SLIDE release gates pass and a transition is explicitly recorded.
 
@@ -14404,7 +14932,7 @@ Full-auto loop (main); owner away for the tail. Commits below, NONE pushed (owne
   Its evidence now lives in the flat development-only Wasmtime oracle; it is
   not a production TCB or future authority path.
 - **RD-0528 compiler self-hosting I-1** — the 7 self-hosted stages get their OWN authority track (PROPOSAL; each flip owner-gated at I-4, SEPARATE from the kernel sentinel ledger): (a) R3 byte-parity re-verified **512/512**; (d) `scripts/gather-compiler-stage-hashes.mjs` — 7 build-clean + #105-admitted, deterministic sha256; ledger `docs/security/rd0528-compiler-authoritative-stages.json` (empty `twins`) + gate `scripts/audit-compiler-stage-twins.mjs` wired into phase-close; (c) **mutation-kill 7/7** in SEC-002 (`RD0528_COMPILER`, **59/59 killed · VIOLATIONS 0**); evidence pack `docs/security/rd0528-compiler-stages-evidence-pack.md`. **Prereqs NOT pre-empted:** I-2 bootstrap-seed (owner's steer: pin the current Stage-A WASM at a commit + trust register) · I-3 oracle.
-- **RD-0528 I-3 functional corpus tranche 1** (`ef246e01`) — owner ruled I-3 = FUNCTIONAL correctness, NOT `.ts`-intermediate identity. `tests/self-hosted-i3-functional-corpus.test.mjs`: NON-VACUOUS (4 must-pass + 6 must-fail with exact MEASURED codes) over the self-hosted lex→parse→typecheck pipeline, **11/11**. Findings routed to R&D (`#0048`/`#0049`): the self-hosted compiler has NO WAT/WASM backend (bootstrap fixpoint blocked) · `parser.fungi` never reports parse errors → pipeline fails OPEN on 3/6 malformed inputs.
+- **RD-0528 I-3 functional corpus tranche 1** (`ef246e01`) — owner ruled I-3 = FUNCTIONAL correctness, NOT `.ts`-intermediate identity. `packages-ts/galerina-core-compiler/tests/self-hosted-i3-functional-corpus.test.mjs`: NON-VACUOUS (4 must-pass + 6 must-fail with exact MEASURED codes) over the self-hosted lex→parse→typecheck pipeline, **11/11**. Findings routed to R&D (`#0048`/`#0049`): the self-hosted compiler has NO WAT/WASM backend (bootstrap fixpoint blocked) · `parser.fungi` never reports parse errors → pipeline fails OPEN on 3/6 malformed inputs.
 - **#141 report-blind consumers → baseline 0** (`a5a779f9` signing-path gather-t1/t2 · `20f98252` +6 audit/bench): every `assembleWAT` consumer now gates on `valid && diagnostics.length===0` before using `.wasm` — the unfaithful-STUB fail-open class is now impossible to introduce silently (a new one = a VIOLATION, exit 1). Detector **0 violations / 0 baselined**, self-test 15/15; twin sha256 unchanged (signing path preserved).
 - **redact standalone fix** (`7180bd04`): `redact(x)` emitted a call to an undefined `$host___redact` → invalid standalone module (A2 defect); now lowered INLINE to the **-2 sentinel** (`__redact` always returns -2 — value-faithful, PII-stripping, host-free). audit-wasm-validate exit 0; full compiler suite **4926/4926**.
 - **All 6 graphs green** (`308b5e4d`): project 6848n/7121e · integrity 0 · **Hardened Border 97/0** · memory clean · dev-tools 97 pkgs / 111 tools / 40 proofs.
@@ -14504,7 +15032,7 @@ Full-auto loop (main). 3 commits, none pushed. Verified green this session: runt
     grants must not be broader than the delegator's authority").
   - Codes registered in `ZTF-Knowledge-Bases/reference/language/compiler-diagnostics.md` + `galerina-governance-rules.md`.
   - `FUNGI_TENANT_001` + `FUNGI_TENANT_002` exported from `galerina-core-compiler/src/index.ts`.
-  - Tests: `tests/governance/tenant-isolation.test.mjs` 10/10 (includes A27 anti-vacuous guard).
+  - Tests: `packages-ts/galerina-core-compiler/tests/governance/tenant-isolation.test.mjs` 10/10 (includes A27 anti-vacuous guard).
   - Half C (per-tenant KEK, border-2, digital) remains gated on tmf slice 4 (M-of-N threshold custody).
   - Phase 1 DSS.wasm path: **A18 ✅ → W6 codemod → T2.3 → Phase 2 (Array<Auto>)**
 
@@ -14588,7 +15116,7 @@ of origin — owner pushes when ready).
 - `9aec26c3` Proposal P2 (inline K3 min/max): `wat-emitter.ts` binary-op &&/|| on Verdict
   and k3FoldExpr N-operand chain now emit `(select L R (i32.lt_s/gt_s L R))` instead of
   `(call $fungi_k3_min/max L R)` — eliminates 2 WASM call frames per trit-op.
-  12 new differential tests in `tests/wat-k3-inline.test.mjs`: WAT-text assertion + 9 trit-pair parity +
+  12 new differential tests in `packages-ts/galerina-core-compiler/tests/wat-k3-inline.test.mjs`: WAT-text assertion + 9 trit-pair parity +
   empty folds + 3-operand fold + chained &&. 95/95 · 7,611 · 0 fail.
 - Proposal P3 (tail-call return_call) confirmed BLOCKED: workspace wabt rejects `return_call` (too old)
   — blocker + fix design documented in BOB/architectural-redesign-proposals-2026-07.md.
@@ -14945,10 +15473,17 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       `governance-verifier.ts` (`verifyDomainGuardConformance`): `canonicalLimitName` token-strips max/ceiling,
       `parseLimitValue` normalizes bytes/time/count families, and a flow whose `limits{}` declares a value above the
       guard's `enforced_limits{}` ceiling (same canonical name + unit family) fails closed. Conservative (unknown
-      unit family → no false fire). +tests `tests/governance/guard-decl.test.mjs`.
-- [~] **B5a signed registry index** — the exact hybrid-signed one-entry index is now distributed at
-      `packages-ts/galerina-registry/registry-index-v2.json` and independently verifies. The module remains
-      fail-closed *when injected* (`fuse-loader.ts:694/951`); default-on runtime wiring is still open.
+      unit family → no false fire). +tests `packages-ts/galerina-core-compiler/tests/governance/guard-decl.test.mjs`.
+- [~] **B5a signed registry index** — the live root-level
+      `registry-index-v2.json` is absent by design:
+      the current registry regression asserts that the stale auth manifest and
+      index are not live after the package bytes change. A historical generated
+      record is retained at
+      `packages-ts/galerina-registry/generations/registry-generation-f3b432d31f10217006f88c0c39779ba5ae061e0728301b5021979af1cd63dbca.json`;
+      it is not evidence of current distribution or current package validity.
+      Re-run the authorized signing ceremony before creating a new live index.
+      The module remains fail-closed *when injected* (`fuse-loader.ts:694/951`);
+      default-on runtime wiring is still open.
 - [ ] Drive the `lint:conventions` umbrella (270 report-only findings) to 0, then drop `--soft`.
 
 ## 🔒 SECURITY — `.fungi` prod audit RD-0234/0234b — ✅ RESOLVED 2026-07-02 (owner greenlit "fix everything"; build-staging, RED-benched, NOT pushed)
@@ -14976,7 +15511,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       the flow return (`governance-verifier.ts`), honouring redact/seal. Was PLANNED-Phase-10C+, now ENFORCED.
 - [x] **L4-F1/F2 — verdict non-suppressible**: under build --production/--deterministic/check --strict a
       `// galerina-disable` / check.json `"off"` cannot silence a fail-closed ERROR (`cli.ts`). check --strict ≥ prod.
-- [x] **L6-B2 — coverage-of-coverage**: `tests/security-gate-coverage.test.mjs` feeds a violating fixture per
+- [x] **L6-B2 — coverage-of-coverage**: `packages-ts/galerina-core-compiler/tests/security-gate-coverage.test.mjs` feeds a violating fixture per
       gated checker through the SHARED gate; cli.ts now CALLS the gate (was hand-re-enumerating — the drift the
       ZT-tooling audit caught).
 - [x] **VD-2 (partial)**: `leak-proof.ts` CAPABILITY_RE gained the missing `telemetry`/`eval` namespaces.
@@ -15002,7 +15537,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       **H1 wasm-lane ✅ CLOSED (`2aa0edb`, local-unpushed):** both wasm targets joined a single-sourced
       `PRODUCTION_STRICTNESS_MODES` set so `verifyGovernance` + the production gate run before emitting — a `FUNGI-GOV-003`
       denied-field-leak now emits NO `output.wasm` (was a 100-byte runnable module); regression
-      `tests/wasm-lane-governance-gate.test.mjs`; 60/60·5,991, governance:diff NEUTRAL. **Remaining (delicate → R&D):**
+      `packages-ts/galerina-core-compiler/tests/wasm-lane-governance-gate.test.mjs`; 60/60·5,991, governance:diff NEUTRAL. **Remaining (delicate → R&D):**
       (a) single-source BOTH SINK registries from a canonical `stdlib-gates.yaml` SoT (anti-drift;
       `scripts/audit-sink-canonicality.mjs` guards drift in the interim); the SOUND deny-by-default inversions — H2
       (taint-source→qualifier + 2nd-order), H3-safelist (net-receiver denylist→host-internal safelist), M2/GNG-03 breadth

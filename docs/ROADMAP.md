@@ -1,5 +1,119 @@
 # Galerina beta v1 to SLIDE roadmap
 
+WAMR probe update (2026-10-12): the registration-refusal cleanup gap in the
+experimental native ABI probe is fixed and its injected regression passed in
+the pinned WSL profile. Astra reviewed the exact delta as PASS. This remains
+probe-only evidence; production WAMR instantiation is not verified, and no
+Fungi runtime/FFI/host enforcement, protected-memory proof or RD closure is
+established. The
+auth operation below remains fixture-only and fail-closed pending the complete
+controlled-provider/sink path. See the [current TODO](TODO.md) and
+[hash-bound cleanup receipt](reports/rd1413-wamr-init-cleanup-20261012.md).
+
+Protected-operation checkpoint (2026-10-11): the chosen `POST /auth/verify` is
+not yet wired. The `.fungi` service still provides only synthetic
+`POST /__fixture/auth/verify`; the Deno adapter returns 503 for the selected
+route. Its 19/19 service tests establish fixture behavior and explicitly assert
+that the production route is absent. Next, wire only against the approved
+signed authority, controlled protected provider and non-durable result sink;
+prove transient byte custody, cleanup and authenticated acknowledgement before
+any live-deployment plan is considered. See the exact source pins and remaining
+requirements in [TODO](TODO.md).
+
+WAMR boundary update (2026-10-11): the exact WAMR 2.4.5 Linux product-mini
+Release artifact was rebuilt at commit `25bd7eb63e828e4bd242cc9b38d260b4b31c6605`;
+its library digest matched the pin and the repository probe runner passed.
+Astra adjudicated the exact artifact/run and the bounded externref-result
+`SIGNATURE_MISMATCH` refusal as PASS for that profile only. The refusal occurs
+before instantiation and without native registration; accessor correctness,
+assertion-enabled/other builds, and replayable raw-log provenance remain open.
+This is ABI-admission evidence, not production Fungi wiring, memory protection,
+or RD closure. The fresh runner output and current source hashes are retained in
+the [WAMR probe receipt](reports/rd1413-wamr-pinned-probe-20261011.md); this
+rerun checked the pinned SDK but did not rebuild WAMR from source. See the
+current TODO checkpoint for the remaining provenance evidence.
+
+Test-runner isolation update (2026-10-11): a native-Windows parallel diagnostic
+reproduced a filesystem identity precision collision: distinct BigInt inode
+values `141018963333949471` and `141018963333949469` both appeared as Number
+`141018963333949470`. The helper now requests BigInt stat records for identity
+checks and compares empty config sizes as `0n`; a deterministic red/green test
+reproduces the false-accept condition. The cleanup suite passes 18/18 on
+Windows; the default-parallel cleanup+isolation pair passed five runs (24 pass,
+2 WSL-only skips per run) and passes 26/26 in Ubuntu WSL. Astra adjudicated the
+bounded numeric-identity repair PASS from the supplied exact-source check and
+test receipt; Astra did not independently reopen or rerun those latest bytes.
+Same-user concurrency between final pathname validation and deletion and
+Windows-parent Git routing variables not visible in Linux remain separate
+unresolved boundaries. These scoped runner tests do not prove comprehensive
+isolation or Fungi runtime/security. The candidate remains uncommitted and not
+cleared for integration; see [TODO](TODO.md) for hashes and reviewer identity.
+
+Startup-effect patch delta (2026-10-11): the app-kernel now delays capability
+handler construction until the first explicit post-initialization import call;
+direct helper use refuses, and factory success/failure is cached against
+mutation or implicit retry. Both loader paths snapshot and validate custom
+registry descriptors, name arrays and callbacks before their first await,
+closing the reproduced in-flight registry-mutation path; successful handler
+maps are also snapshotted. It refuses duplicate namespaces. The full package
+suite passes on Windows and WSL (599/599 each); this is TypeScript/bootstrap
+evidence only. Astra reviewed the exact pinned hashes and rated both bounded
+vectors PASS, while external consumer compatibility remains NOT_VERIFIABLE. The
+initial test-link path was a typo; Astra confirmed it inspected the pinned
+integration-checkout files, with corrected links retained in the Codex task
+receipt. The exported factory shape changed, so external consumer compatibility
+remains unverified.
+General host setup, resource, FFI and other
+instantiation effects, plus Fungi semantics/enforcement, still need separate
+source tracing and discriminating tests. This does not close a memory RD.
+
+## WASM startup effects — evidence and next gate (2026-10-11)
+
+The KB's [RD-0402 source](../../ZTF-Knowledge-Bases/research/rd/RD-0402-async-priming-for-startup-parallel-across-independents-strict-ladder-within.md)
+establishes that instantiation executes the module's start section and must
+follow the all-ALLOW admission barrier. In addition to the single-artifact
+TypeScript runtime route, the framework `fusePackages(dirs, ...)` path loads and
+checks each caller-supplied member, plans the composition, then instantiates;
+its malformed-verdict regression asserts that no member is instantiated when
+one member is not ALLOW. Startup tests also refuse guest calls through imported
+host functions until initialization succeeds. The full app-kernel typecheck,
+build and tests pass on Windows and WSL after correcting two tests to import the
+built package rather than TypeScript source.
+
+These are bounded bootstrap/framework guarantees: the composition is exactly
+the supplied `dirs` list (no automatic dependency closure or canonical set ID),
+and the effect gate covers guest-originated imported-function calls, not every
+host setup action, resource effect, import namespace, FFI path or instantiation
+consumer. Next: audit those paths, clarify whether ALLOW binds individual
+members or the composition as a unit, specify Fungi startup/effect semantics,
+and add discriminating compiler-to-host tests. See the [current TODO
+checkpoint](TODO.md#current-wasm-startup-effect-candidate--2026-10-11). This
+evidence does not close any memory RD.
+
+## Current memory integration milestone — 2026-10-10
+
+The reviewed compiler/graph/generated-record batch is in `main` at
+`d1939459ecfa53a6d91e5ea28016d3e446d1071c`. This improves bootstrap
+checking and source visibility; it does not implement a protected Fungi runtime
+or prove the coupled RD-1413/1414/1415 operation. The next ordered work is:
+
+1. Repair the confirmed exact-integer invariant mismatch across type-aware
+   admission, interpreter, WASM and CLI failure status. Four retained red
+   regressions show that the current patch is not mergeable; static ALLOW must
+   never bypass a predicate the admitted route executes differently.
+2. Finish path-level custody and integration of useful memory donor work,
+   including vault recovery/acknowledgement and the selected `POST /auth/verify`
+   operation, without treating archive preservation as integration.
+3. Demonstrate the same operation across compiler, trusted runtime, FFI, host,
+   provider-open/revocation, cleanup and acknowledged recipient delivery;
+   match the required SLIDE/VOK and relevant Lyth evidence before owner review.
+
+These are evidence and implementation milestones, not a release claim. Fungi's
+ownership, aliasing, allocation and effect rules may be designed more strongly
+than the TypeScript bootstrap, but must be implemented and measured at every
+claimed boundary. RD-1413/1414/1415 remain HOLD / NON_AUTHORIZING pending their
+actual end-to-end criteria and independent owner adjudication.
+
 ## Fungi-first memory review snapshot — 2026-10-06
 
 At review pin `e26b1e3ea084a1439a4c939edaa29357892a132f`, initial Astra and
@@ -4105,8 +4219,10 @@ verified at `2026-07-30T16:30:19.180Z` and has SHA-256
 The public-only one-entry index built at `2026-07-30T16:33:10.307Z` has
 SHA-256
 `15D531566E9FB71F152E34BD9C4C62D4D6FAE15DB0309CBCFA0834BE2E020383`.
-The returned signed index is byte-identical at
-`packages-ts/galerina-registry/registry-index-v2.json`. Its SHA-256 is
+The returned signed index was byte-identical at the historical output
+`registry-index-v2.json` in the [registry package directory](../packages-ts/galerina-registry/).
+That generated file is absent from the current checkout; this record retains
+its SHA-256 as historical evidence. Its SHA-256 is
 `DCF80AA0717DEBF8BEB837584FDC053E24891C0D1224FB4735900E68FC1AAF06`;
 both signature components verify, its signed payload exactly matches the
 public-only rebuild, and 7/7 tampered copies refuse. The live walkthrough now

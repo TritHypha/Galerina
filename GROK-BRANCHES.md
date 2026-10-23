@@ -163,7 +163,7 @@ Sources: local refs; `git ls-remote` for the real remote state (no fetch was run
 - **Head:** `c9f0453ae`, 2026-10-02 18:36:49 BST ?? **merge-base with main:** `0d06d6c1f` ?? **ahead/behind:** 2/138
 - **Pushed:** yes (in sync) ?? **local:** yes
 - **PR:** none
-- **Worktree:** `C:/Users/phill/Documents/GitHub/Galerina/.worktrees/grok-diag-constants-20261002` (clean)
+- **Worktree:** Retired 2026-10-10; original directory preserved at `C:/Users/phill/Documents/GitHub/Galerina-Recovery/20261010/interpreter-retirement-preflight/grok-diag-constants-20261002/original`. Branch retained; diagnostic ports remain unfinished, not merged by this retirement. See sibling `retirement.json` for custody limitations; Git marker needs repair before reuse.
 - **What is on it:** Moves older FAULT/INV/WAT/NUMERIC-OP-005/HALLMARK-006/CLI-ENV codes onto exported diagnostic constants (20 files, +1965/-127). Upstream not set. Diffstat vs merge-base: 20 files changed, 1965 insertions(+), 127 deletions(-).
 - **RD / slice:** Diagnostics constants cleanup ?? **Stack:** grok/interpreter-i2-i3-20261002 <- this; also merged into grok/wat-integration-candidate-20261003
 - **Status / delete?:** Pushed, no PR, 138 behind. Needs a decision: open a PR (after main is merged in) or retire it. Do not delete.
@@ -213,7 +213,7 @@ Sources: local refs; `git ls-remote` for the real remote state (no fetch was run
 - **Head:** `ce68d6181`, 2026-10-02 16:43:26 BST ?? **merge-base with main:** `0d06d6c1f` ?? **ahead/behind:** 1/138
 - **Pushed:** yes (in sync) ?? **local:** yes
 - **PR:** none
-- **Worktree:** `C:/Users/phill/Documents/GitHub/Galerina/.worktrees/grok-interpreter-i2-i3-20261002` (clean)
+- **Worktree:** Retired 2026-10-10; original directory preserved at `C:/Users/phill/Documents/GitHub/Galerina-Recovery/20261010/interpreter-retirement-preflight/grok-interpreter-i2-i3-20261002/original`. Branch retained; I2/I3 ports remain unfinished apart from the deadline callback published in `46bcd8c59`. See sibling `retirement.json` for custody limitations; Git marker needs repair before reuse.
 - **What is on it:** Interpreter I2 (governed fault handlers) and I3 (body-local invariants), 13 files, +1136/-14. Its upstream points at origin/main by mistake; origin/grok/... is in sync. Diffstat vs merge-base: 13 files changed, 1136 insertions(+), 14 deletions(-).
 - **RD / slice:** Interpreter I2/I3 ?? **Stack:** Base of grok/diag-constants-20261002 and grok/wat-integration-candidate-20261003
 - **Status / delete?:** Pushed, no PR, 138 behind. Needs a decision: open a PR or retire it. Do not delete.
