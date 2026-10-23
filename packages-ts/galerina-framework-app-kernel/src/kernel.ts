@@ -32,7 +32,35 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretReleaseShell, SecretReleaseRefused } from "./secret-gate.js";
 import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
-import { isQueryCustodyRoute, loadPinnedFungiQueryCustody } from "./fungi-query-custody-loader.js";
+import { isQueryCustodyRoute, loadPinnedFungiQueryCustody, snapshotQueryInput } from "./fungi-query-custody-loader.js";
+import type { QueryInputSnapshot } from "./fungi-query-custody-loader.js";
+
+/** S6 F1 (gcw-s6e): the request the handler sees on a custody route carries ONLY the verified query
+ *  snapshot. Every other field is read once into a frozen plain copy. */
+function rebindVerifiedQuery(
+  req: GalerinaKernelRequest,
+  method: HttpMethod,
+  path: string,
+  snap: QueryInputSnapshot,
+): GalerinaKernelRequest {
+  const out: Record<string, unknown> = {
+    method,
+    path,
+    headers: req.headers,
+    body: req.body,
+    query: snap.query,
+    queryCustody: snap.queryCustody,
+    requestId: req.requestId,
+    receivedAt: req.receivedAt,
+  };
+  const channelVerdict = req.channelVerdict;
+  if (channelVerdict !== undefined) out["channelVerdict"] = channelVerdict;
+  const principalScopes = req.principalScopes;
+  if (principalScopes !== undefined) out["principalScopes"] = principalScopes;
+  const principalId = req.principalId;
+  if (principalId !== undefined) out["principalId"] = principalId;
+  return Object.freeze(out) as unknown as GalerinaKernelRequest;
+}
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
@@ -767,13 +795,16 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     // ── 2.5 query custody (S6, RD-1413 O2/O3) ── before body, auth, idempotency and any provider
     // entry. The Fungi flow decides; TS only counts exact names over the raw pair custody.
     if (isQueryCustodyRoute(method, path)) {
-      const custodyVerdict = fungiQueryCustody.verdict(req);
+      // F1 (gcw-s6rc): read query + queryCustody once, verify that frozen copy, dispatch only it.
+      const querySnapshot = snapshotQueryInput(req);
+      const custodyVerdict = fungiQueryCustody.verdict(querySnapshot);
       if (custodyVerdict === "unavailable") {
         return pipelineOutcome(errorResponse(503, "internal_error", "Query custody verdict unavailable."), policy);
       }
       if (custodyVerdict !== "admit") {
         return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Query refused."), policy);
       }
+      req = rebindVerifiedQuery(req, method, path, querySnapshot);
     }
 
     // ── 3 resolve policy ── (already resolved at construction; `policy` is it)

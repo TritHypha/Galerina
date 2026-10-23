@@ -133,6 +133,78 @@ export function observeQueryCustody(request: unknown): number[] {
   ];
 }
 
+const intrinsicFreeze = Object.freeze;
+const intrinsicDefine = Object.defineProperty;
+/** Marker for a foreign value of the wrong shape. Never an object or array, so observation classes it
+ *  WrongType (10) and the Fungi verdict refuses. */
+const WRONG_SHAPE: unique symbol = Symbol("query-custody.wrong-shape");
+
+/** One frozen read of the foreign `query` and `queryCustody` (gcw-s6e, round check F1). */
+export interface QueryInputSnapshot {
+  readonly query: unknown;
+  readonly queryCustody: unknown;
+}
+
+/** An unreadable request: observing it throws, which the observation maps to classTag 2 (Absent). */
+const UNREADABLE_SNAPSHOT: QueryInputSnapshot = intrinsicFreeze(
+  intrinsicDefine({} as QueryInputSnapshot, "query", {
+    get(): never { throw new Error("query input unreadable"); },
+    enumerable: true,
+  }),
+);
+
+function snapshotRecord(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object") return raw;
+  if (intrinsicIsArray(raw)) return WRONG_SHAPE;
+  const keys = intrinsicKeys(raw as object);
+  const out: Record<string, unknown> = {};
+  for (let i = 0; i < keys.length; i += 1) {
+    const k = keys[i] as string;
+    intrinsicDefine(out, k, { value: (raw as Record<string, unknown>)[k], enumerable: true, writable: false, configurable: false });
+  }
+  return intrinsicFreeze(out);
+}
+
+function snapshotCustody(raw: unknown): unknown {
+  if (raw === undefined) return undefined;
+  if (!intrinsicIsArray(raw)) return WRONG_SHAPE;
+  const list = raw as readonly unknown[];
+  const length = list.length;
+  if (!Number.isSafeInteger(length) || length < 0 || length > I32_MAX) return WRONG_SHAPE;
+  const copy: Array<readonly [string, string]> = [];
+  for (let i = 0; i < length; i += 1) {
+    const pair = list[i];
+    if (!intrinsicIsArray(pair)) return WRONG_SHAPE;
+    const p = pair as readonly unknown[];
+    if (p.length !== 2) return WRONG_SHAPE;
+    const name = p[0];
+    const value = p[1];
+    if (typeof name !== "string" || typeof value !== "string") return WRONG_SHAPE;
+    copy[i] = intrinsicFreeze([name, value] as const);
+  }
+  return intrinsicFreeze(copy);
+}
+
+/**
+ * Read `query` and `queryCustody` from the foreign request EXACTLY ONCE each (and each Record value
+ * and custody element once) into frozen plain copies. The kernel verifies this snapshot and dispatches
+ * only this snapshot, so the query the Fungi verdict judged is the query the handler sees.
+ * Zero-trust choice (gcw-s6e): rejected re-verifying on each read (still racy) and trusting the
+ * api-server as the only caller (direct kernel.handle callers exist). Never throws.
+ */
+export function snapshotQueryInput(request: unknown): QueryInputSnapshot {
+  try {
+    const src = request as { query?: unknown; queryCustody?: unknown };
+    const rawRecord = src.query;
+    const rawCustody = src.queryCustody;
+    const query = snapshotRecord(rawRecord);
+    const queryCustody = snapshotCustody(rawCustody);
+    return intrinsicFreeze({ query, queryCustody });
+  } catch {
+    return UNREADABLE_SNAPSHOT;
+  }
+}
+
 function unavailable(): FungiQueryCustody {
   return Object.freeze({ verdict: (): QueryCustodyVerdict => "unavailable" });
 }
