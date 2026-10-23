@@ -23,6 +23,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const PKG_DIR = join(here, "..");
 const PKG_NAME = "galerina-api-protocol-rest";
 const WASM_PATH = join(PKG_DIR, "dist", `${PKG_NAME}.wasm`);
+// This is test-only admission for synthetic fixture packages, not a production registry.
+const fixtureRegistryAllow = () => ({ ok: true });
 
 // HTTP method codes on the wire ABI: 1=GET, 2=POST, 3=PUT, 4=DELETE.
 // Path codes on the wire ABI:        1=/health, 2=/orders, 3=/orders/{id}.
@@ -51,7 +53,7 @@ test("the built REST adapter fuses (zero-touch auto-signed) and invoke('main') r
       join(PKG_DIR, "governance", `signing-key-${keyId}.pub.pem`),
       join(admittedRoot, `signing-key-${keyId}.pub.pem`),
     );
-    const component = await fusePackage(PKG_DIR, { governanceDir: admittedRoot, warn });
+    const component = await fusePackage(PKG_DIR, { governanceDir: admittedRoot, registryCheck: fixtureRegistryAllow, warn });
 
     assert.equal(component.name, PKG_NAME);
     assert.equal(component.seam, "protocol.inbound");
@@ -69,7 +71,7 @@ test("the built REST adapter fuses (zero-touch auto-signed) and invoke('main') r
 // ── 2 — the full REST dispatch matrix routes correctly through the fused wasm ──
 test("the fused adapter dispatches the full (method, path) REST matrix", async () => {
   const { warn } = capturingWarn();
-  const component = await fusePackage(PKG_DIR, { allowUnsigned: true, warn });
+  const component = await fusePackage(PKG_DIR, { allowUnsigned: true, registryCheck: fixtureRegistryAllow, warn });
 
   // dispatch(method, path) → HTTP status. Deny-by-default for unknown routes/verbs.
   const cases = [
@@ -110,7 +112,7 @@ test("a tampered .wasm (sha256 mismatch vs signed descriptor) is rejected before
     writeFileSync(tamperedWasm, Buffer.concat([original, Buffer.from([0x00])]));
 
     await assert.rejects(
-      () => fusePackage(pkg, { allowUnsigned: true, warn: () => {} }),
+      () => fusePackage(pkg, { allowUnsigned: true, registryCheck: fixtureRegistryAllow, warn: () => {} }),
       /FUNGI-FUSE-HASH-MISMATCH/,
       "tampered wasm must be refused with a hash-mismatch fusion error",
     );
@@ -141,14 +143,14 @@ test("an unsigned/placeholder manifest is refused unless allowUnsigned is set", 
 
     // Fail-closed without allowUnsigned.
     await assert.rejects(
-      () => fusePackage(pkg, { warn: () => {} }),
+      () => fusePackage(pkg, { registryCheck: fixtureRegistryAllow, warn: () => {} }),
       /FUNGI-FUSE-UNSIGNED/,
       "unsigned manifest must be refused fail-closed when allowUnsigned is not set",
     );
 
     // With allowUnsigned it admits the unsigned manifest, but must announce it.
     const { warn, lines } = capturingWarn();
-    const component = await fusePackage(pkg, { allowUnsigned: true, warn });
+    const component = await fusePackage(pkg, { allowUnsigned: true, registryCheck: fixtureRegistryAllow, warn });
     assert.equal(component.invoke("main"), 201);
     assert.ok(
       lines.some((l) => l.includes("FUNGI-FUSE-UNSIGNED-ALLOWED")),

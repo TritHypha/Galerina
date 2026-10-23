@@ -75,6 +75,31 @@ test("audit events are emitted and visible after a tick (default in-memory sink)
   assert.equal(typeof events[0].at, "number");
 });
 
+test("authorization preflight preserves mandatory runtime-audit evidence before body ingress", async () => {
+  const sink = new InMemoryAuditSink({ capacity: 1 });
+  let handlerRan = false;
+  const k = createAppKernel({
+    routes: [{
+      method: "POST", path: "/secure", handler: "secure",
+      audit: { runtimeReport: true },
+    }],
+    dispatch: { secure: () => { handlerRan = true; return { status: 200 }; } },
+    auditSink: sink,
+  });
+
+  const refusal = k.preflightAuthorization(req({ method: "POST", path: "/secure", requestId: "rq-preflight-denied" }));
+  assert.equal(refusal.status, 401);
+  assert.equal(handlerRan, false);
+  await tick();
+  const [event] = sink.drained();
+  assert.equal(event.requestId, "rq-preflight-denied");
+  assert.equal(event.method, "POST");
+  assert.equal(event.path, "/secure");
+  assert.equal(event.status, 401);
+  assert.equal(event.errorCode, "unauthorized");
+  assert.equal(event.origin, "kernel");
+});
+
 test("in-memory audit acceptance survives scheduler failure and retries before the next reservation", async () => {
   const sink = new InMemoryAuditSink({ capacity: 1 });
   const originalQueueMicrotask = Object.getOwnPropertyDescriptor(globalThis, "queueMicrotask");

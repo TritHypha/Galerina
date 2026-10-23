@@ -114,6 +114,16 @@ export interface PrincipalResolution {
   readonly principalScopes?: readonly string[];
 }
 
+export type AuthorizationPhase = "preflight" | "dispatch";
+
+/** Immutable request facts exposed to authorization hooks; deliberately excludes body, socket, and stream APIs. */
+export interface ApiRequestContext {
+  readonly method: string;
+  readonly path: string;
+  readonly query: Readonly<Record<string, string>>;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
 /**
  * Opt-in mutual-TLS mode. Supplying `tls` makes `createApiServer` stand up an HTTPS
  * server and derive the channel verdict from the peer certificate via the S1 cert-gate.
@@ -191,8 +201,8 @@ export interface CreateApiServerOptions {
    */
   readonly tls?: ApiServerTlsOptions;
   /**
-   * OPTIONAL resolver for the TLSTP S1 channel/identity verdict. Given the raw request
-   * (e.g. its TLS socket's peer certificate), return a K3 `Verdict` that the kernel folds
+   * OPTIONAL resolver for an additional TLSTP S1 channel/identity verdict. Given an immutable,
+   * stream-free request context and the authorization phase, return a K3 `Verdict` that the kernel folds
    * into admission, FAIL-CLOSED (only +1/ALLOW admits; 0/−1 deny). Without `tls`, this
    * supplies the channel verdict. With `tls`, it is an additional fail-closed policy
    * factor composed with the built-in certificate gate.
@@ -207,26 +217,34 @@ export interface CreateApiServerOptions {
    * Default: unset → no channel verdict is supplied → the adapter behaves exactly as
    * before, leaving admission entirely to the kernel's own auth gate (no behaviour change).
    *
-   * The resolver is trusted transport code and receives the raw request object. It MUST
-   * inspect transport metadata only and MUST NOT read, resume, pipe, or otherwise consume
-   * the request body. This interface does not sandbox the resolver.
+   * The resolver receives only immutable method/path/query/header snapshots. It is invoked once
+   * for `preflight` before body buffering and again for `dispatch` after buffering. It MUST be
+   * read-only and safe to invoke twice; consume one-shot authority through an explicit lease
+   * protocol instead. The adapter does not expose the raw request, body stream, or socket here.
    *
    * Fail-closed contract: if the resolver THROWS, the channel is DENIED (−1) — it is never
    * silently downgraded to the header path. Returning `undefined` is the explicit "no
    * opinion → defer to the kernel's auth path" signal when TLS is absent, or "no
    * additional opinion" when TLS supplies the certificate verdict.
    */
-  readonly resolveChannelVerdict?: (req: http.IncomingMessage) => Verdict | undefined;
+  readonly resolveChannelVerdict?: (
+    context: ApiRequestContext,
+    phase: AuthorizationPhase,
+  ) => Verdict | undefined;
   /**
    * Resolve the authenticated application principal after the independent channel factor reaches
    * ALLOW. A throw, malformed value, accessor, proxy, duplicate/invalid scope, or explicit undefined
    * denies the channel. Without TLS, a required-auth route therefore needs both an ALLOW channel
    * verdict and this exact principal evidence. With TLS, omitting this resolver uses the admitted
    * leaf-certificate SHA-256 digest as the principal ID and grants no application scopes.
-   * This trusted resolver runs before body buffering and MUST NOT consume the request body;
-   * the raw request interface does not sandbox that callback.
+   * This resolver receives only immutable method/path/query/header snapshots. It is invoked
+   * during preflight and again immediately before dispatch; it MUST be read-only and safe to
+   * invoke twice. One-shot authority requires an explicit lease protocol.
    */
-  readonly resolvePrincipal?: (req: http.IncomingMessage) => PrincipalResolution | undefined;
+  readonly resolvePrincipal?: (
+    context: ApiRequestContext,
+    phase: AuthorizationPhase,
+  ) => PrincipalResolution | undefined;
   /**
    * Optional webhook HMAC + atomic replay gate. Evaluated after the channel
    * factor and before `kernel.handle`, so invalid HMAC never decodes or
@@ -341,6 +359,26 @@ function lowercaseHeaders(
     out[key] = Array.isArray(value) ? value.join(", ") : value;
   }
   return out;
+}
+
+function snapshotAuthorizationContext(
+  req: http.IncomingMessage,
+  method: string,
+  path: string,
+  query: Record<string, string>,
+): ApiRequestContext {
+  const headers = Object.create(null) as Record<string, string>;
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (value === undefined) continue;
+    headers[name.toLowerCase()] = Array.isArray(value) ? value.join(", ") : value;
+  }
+  const querySnapshot = Object.freeze(Object.assign(Object.create(null), query)) as Readonly<Record<string, string>>;
+  return Object.freeze(Object.assign(Object.create(null), {
+    method,
+    path,
+    query: querySnapshot,
+    headers: Object.freeze(headers),
+  }));
 }
 
 class RequestTargetError extends Error {
@@ -526,32 +564,28 @@ function makeCertGateResolver(
  * JavaScript caller cannot bypass the typed contract by returning an out-of-domain number.
  */
 function composeTlsAndCustomVerdicts(
-  certResolver: (req: http.IncomingMessage) => Verdict,
-  customResolver: (req: http.IncomingMessage) => Verdict | undefined,
-): (req: http.IncomingMessage) => Verdict {
-  return (req) => {
-    const certVerdict = certResolver(req);
-    const customVerdict = customResolver(req);
-    const certIsValid =
-      certVerdict === Verdict.ALLOW ||
-      certVerdict === Verdict.INDETERMINATE ||
-      certVerdict === Verdict.DENY;
-    const customIsValid =
-      customVerdict === undefined ||
-      customVerdict === Verdict.ALLOW ||
-      customVerdict === Verdict.INDETERMINATE ||
-      customVerdict === Verdict.DENY;
+  certVerdict: Verdict,
+  customVerdict: Verdict | undefined,
+): Verdict {
+  const certIsValid =
+    certVerdict === Verdict.ALLOW ||
+    certVerdict === Verdict.INDETERMINATE ||
+    certVerdict === Verdict.DENY;
+  const customIsValid =
+    customVerdict === undefined ||
+    customVerdict === Verdict.ALLOW ||
+    customVerdict === Verdict.INDETERMINATE ||
+    customVerdict === Verdict.DENY;
 
-    if (!certIsValid || !customIsValid) return Verdict.DENY;
-    if (certVerdict === Verdict.DENY || customVerdict === Verdict.DENY) return Verdict.DENY;
-    if (
-      certVerdict === Verdict.INDETERMINATE ||
-      customVerdict === Verdict.INDETERMINATE
-    ) {
-      return Verdict.INDETERMINATE;
-    }
-    return Verdict.ALLOW;
-  };
+  if (!certIsValid || !customIsValid) return Verdict.DENY;
+  if (certVerdict === Verdict.DENY || customVerdict === Verdict.DENY) return Verdict.DENY;
+  if (
+    certVerdict === Verdict.INDETERMINATE ||
+    customVerdict === Verdict.INDETERMINATE
+  ) {
+    return Verdict.INDETERMINATE;
+  }
+  return Verdict.ALLOW;
 }
 
 /** Map `ApiServerTlsOptions` into Node `https.ServerOptions`. Named options take precedence
@@ -586,21 +620,29 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
     );
   }
   const { kernel } = opts;
+  if (typeof kernel.preflightAuthorization !== "function") {
+    throw new Error("createApiServer: kernel must expose fail-closed route authorization preflight");
+  }
   const maxBodyBytes =
     opts.maxBodyBytes !== undefined ? opts.maxBodyBytes : DEFAULT_MAX_BODY_BYTES;
 
   // TLS certificate admission is mandatory whenever TLS is configured. A custom resolver
   // is an additional factor, never a replacement. With neither configured, preserve the
   // plain-HTTP kernel-auth path.
-  const resolveChannelVerdict: ((req: http.IncomingMessage) => Verdict | undefined) | undefined =
-    opts.tls !== undefined
-      ? opts.resolveChannelVerdict !== undefined
-        ? composeTlsAndCustomVerdicts(
-            makeCertGateResolver(opts.tls),
-            opts.resolveChannelVerdict,
-          )
-        : makeCertGateResolver(opts.tls)
-      : opts.resolveChannelVerdict;
+  const certResolver = opts.tls !== undefined ? makeCertGateResolver(opts.tls) : undefined;
+  const customResolveChannelVerdict = opts.resolveChannelVerdict;
+  const resolveChannelVerdict:
+    | ((req: http.IncomingMessage, context: ApiRequestContext, phase: AuthorizationPhase)
+      => Verdict | undefined)
+    | undefined = certResolver !== undefined || customResolveChannelVerdict !== undefined
+      ? (req, context, phase) => {
+          const certVerdict = certResolver?.(req);
+          const customVerdict = customResolveChannelVerdict?.(context, phase);
+          if (customResolveChannelVerdict === undefined) return certVerdict;
+          if (certVerdict === undefined) return customVerdict;
+          return composeTlsAndCustomVerdicts(certVerdict, customVerdict);
+        }
+      : undefined;
 
   const onRequest = (req: http.IncomingMessage, res: http.ServerResponse): void => {
     void handleRequest(
@@ -727,51 +769,86 @@ function principalFromAdmittedTls(req: http.IncomingMessage): PrincipalResolutio
 async function handleRequest(
   kernel: AppKernel,
   maxBodyBytes: number,
-  resolveChannelVerdict: ((req: http.IncomingMessage) => Verdict | undefined) | undefined,
-  resolvePrincipal: ((req: http.IncomingMessage) => PrincipalResolution | undefined) | undefined,
+  resolveChannelVerdict:
+    | ((req: http.IncomingMessage, context: ApiRequestContext, phase: AuthorizationPhase)
+      => Verdict | undefined)
+    | undefined,
+  resolvePrincipal:
+    | ((context: ApiRequestContext, phase: AuthorizationPhase) => PrincipalResolution | undefined)
+    | undefined,
   deriveTlsPrincipal: boolean,
   webhook: ApiServerWebhookOptions | undefined,
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ): Promise<void> {
-  // Resolve explicit transport-wide identity evidence before reading the body.
-  // A non-ALLOW channel result constrains every route (including public routes), so
-  // refusing here is equivalent to the kernel's mandatory channel gate and avoids
-  // copying a denied request body into an application buffer. The kernel still
-  // independently verifies the same evidence later in its fixed pipeline.
-  let channelVerdict: Verdict | undefined;
-  if (resolveChannelVerdict !== undefined) {
-    try {
-      channelVerdict = resolveChannelVerdict(req);
-    } catch {
-      channelVerdict = Verdict.DENY;
-    }
-  }
+  // Snapshot route dispatch inputs before trusted resolver callbacks or any async body wait.
+  // The same method must govern both preflight and the eventual kernel request.
+  const requestMethod = normaliseMethod(req.method);
 
-  let principal: PrincipalResolution | undefined;
-  if (channelVerdict === Verdict.ALLOW) {
-    try {
-      if (resolvePrincipal !== undefined) {
-        const untrusted = resolvePrincipal(req);
-        if (untrusted === undefined) throw new Error("principal resolver returned no identity");
-        principal = snapshotPrincipalResolution(untrusted);
-      } else if (deriveTlsPrincipal) {
-        principal = principalFromAdmittedTls(req);
+  // Normalise the route target before body buffering so the kernel can check the
+  // route's auth requirements at the ingress boundary. Keep the parsed values and
+  // reuse them after buffering so route matching cannot drift between the two steps.
+  let path: string;
+  let query: Record<string, string>;
+  try {
+    ({ path, query } = parseUrl(req.url));
+  } catch (err) {
+    req.pause();
+    if (!res.headersSent && !res.writableEnded) {
+      if (err instanceof DuplicateQueryKeyError) {
+        res.writeHead(400, { "content-type": "application/json", connection: "close" });
+        res.end(DUPLICATE_QUERY_BODY);
+      } else if (err instanceof RequestTargetError || err instanceof TypeError) {
+        res.writeHead(400, {
+          "content-type": "application/json",
+          connection: "close",
+        });
+        res.end(JSON.stringify({ error: "bad_request", message: "Malformed request target." }));
+      } else {
+        res.writeHead(500, { "content-type": "application/json", connection: "close" });
+        res.end(INTERNAL_ERROR_BODY);
       }
-    } catch {
-      channelVerdict = Verdict.DENY;
-      principal = undefined;
     }
+    return;
   }
 
+  const authorizationContext = snapshotAuthorizationContext(req, requestMethod, path, query);
+  const resolveAuthorization = (
+    phase: AuthorizationPhase,
+  ): { channelVerdict: Verdict | undefined; principal: PrincipalResolution | undefined } => {
+    let currentChannelVerdict: Verdict | undefined;
+    try {
+      currentChannelVerdict = resolveChannelVerdict?.(req, authorizationContext, phase);
+    } catch {
+      currentChannelVerdict = Verdict.DENY;
+    }
+
+    let currentPrincipal: PrincipalResolution | undefined;
+    if (currentChannelVerdict === Verdict.ALLOW) {
+      try {
+        if (resolvePrincipal !== undefined) {
+          const untrusted = resolvePrincipal(authorizationContext, phase);
+          if (untrusted === undefined) throw new Error("principal resolver returned no identity");
+          currentPrincipal = snapshotPrincipalResolution(untrusted);
+        } else if (deriveTlsPrincipal) {
+          currentPrincipal = principalFromAdmittedTls(req);
+        }
+      } catch {
+        currentChannelVerdict = Verdict.DENY;
+        currentPrincipal = undefined;
+      }
+    }
+    return { channelVerdict: currentChannelVerdict, principal: currentPrincipal };
+  };
+
+  // Run the first authorization phase before consuming the body. Callbacks receive only
+  // immutable parsed metadata, never the live IncomingMessage stream or socket.
+  let { channelVerdict, principal } = resolveAuthorization("preflight");
   const transportRefused = channelVerdict !== undefined && channelVerdict !== Verdict.ALLOW;
   const webhookChannelRefused = webhook !== undefined
     && resolveChannelVerdict !== undefined
     && channelVerdict !== Verdict.ALLOW;
   if (transportRefused || webhookChannelRefused) {
-    // Do not consume application body bytes, and prevent reuse of a connection that
-    // may still have a request body in flight. Node's parser may have queued bytes
-    // internally; this adapter neither copies nor delivers them on this refusal path.
     req.pause();
     if (!res.headersSent && !res.writableEnded) {
       res.writeHead(401, {
@@ -779,6 +856,44 @@ async function handleRequest(
         connection: "close",
       });
       res.end(webhookChannelRefused ? WEBHOOK_UNAUTHORIZED_BODY : CHANNEL_UNAUTHORIZED_BODY);
+    }
+    return;
+  }
+
+  // Undefined does not grant access; required-route authorization is checked by the kernel.
+  const requestId = randomUUID();
+  let preflightRefusal: GalerinaKernelResponse | undefined;
+  try {
+    preflightRefusal = kernel.preflightAuthorization({
+      method: requestMethod,
+      path,
+      requestId,
+      ...(channelVerdict !== undefined ? { channelVerdict } : {}),
+      ...(principal !== undefined ? {
+        principalId: principal.principalId,
+        principalScopes: principal.principalScopes ?? Object.freeze([]),
+      } : {}),
+    });
+  } catch {
+    req.pause();
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(500, { "content-type": "application/json", connection: "close" });
+      res.end(INTERNAL_ERROR_BODY);
+    }
+    return;
+  }
+  if (preflightRefusal !== undefined) {
+    req.pause();
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(preflightRefusal.status, {
+        ...preflightRefusal.headers,
+        connection: "close",
+      });
+      if (preflightRefusal.body !== undefined && preflightRefusal.body.length > 0) {
+        res.end(Buffer.from(preflightRefusal.body));
+      } else {
+        res.end();
+      }
     }
     return;
   }
@@ -810,36 +925,18 @@ async function handleRequest(
     return;
   }
 
-  // (3) Normalise into a GalerinaKernelRequest.
-  let path: string;
-  let query: Record<string, string>;
-  try {
-    ({ path, query } = parseUrl(req.url));
-  } catch (err) {
-    if (err instanceof DuplicateQueryKeyError) {
-      // Fail closed on an ambiguous query: the kernel, webhook HMAC and replay claim never run.
-      if (!res.headersSent && !res.writableEnded) {
-        res.writeHead(400, { "content-type": "application/json" });
-        res.end(DUPLICATE_QUERY_BODY);
-      }
-      return;
-    }
-    if (err instanceof RequestTargetError || err instanceof TypeError) {
-      if (!res.headersSent && !res.writableEnded) {
-        res.writeHead(400, { "content-type": "application/json" });
-        res.end(JSON.stringify({ error: "bad_request", message: "Malformed request target." }));
-      }
-      return;
-    }
-    throw err;
-  }
+  // Re-resolve dynamic authority after the body wait. A grant revoked while the
+  // client was uploading must not be carried forward from the preflight snapshot.
+  ({ channelVerdict, principal } = resolveAuthorization("dispatch"));
+
+  // (3) Normalise into a GalerinaKernelRequest using the route target validated above.
   const kreq: GalerinaKernelRequest = {
-    method: normaliseMethod(req.method),
+    method: requestMethod,
     path,
-    headers: lowercaseHeaders(req.headers),
+    headers: authorizationContext.headers,
     body,
-    query,
-    requestId: randomUUID(),
+    query: authorizationContext.query,
+    requestId,
     receivedAt: Date.now(),
     ...(channelVerdict !== undefined ? { channelVerdict } : {}),
     ...(principal !== undefined ? {
@@ -847,6 +944,34 @@ async function handleRequest(
       principalScopes: principal.principalScopes ?? Object.freeze([]),
     } : {}),
   };
+
+  // Re-run route authorization on the refreshed dispatch identity before any
+  // webhook HMAC/replay side effect or kernel work. The earlier preflight only
+  // justified reading the bounded request body; it is not dispatch authority.
+  let dispatchRefusal: GalerinaKernelResponse | undefined;
+  try {
+    dispatchRefusal = kernel.preflightAuthorization(kreq);
+  } catch {
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(500, { "content-type": "application/json", connection: "close" });
+      res.end(INTERNAL_ERROR_BODY);
+    }
+    return;
+  }
+  if (dispatchRefusal !== undefined) {
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(dispatchRefusal.status, {
+        ...dispatchRefusal.headers,
+        connection: "close",
+      });
+      if (dispatchRefusal.body !== undefined && dispatchRefusal.body.length > 0) {
+        res.end(Buffer.from(dispatchRefusal.body));
+      } else {
+        res.end();
+      }
+    }
+    return;
+  }
 
   // (4) Optional webhook HMAC + atomic replay claim on authenticated raw bytes.
   // A configured channel factor must ALLOW before replay identity is consumed.

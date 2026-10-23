@@ -43,23 +43,71 @@ function buildKernel() {
 function buildSecureKernel(ran) {
   return createAppKernel({
     routes: [
-      { method: "GET", path: "/secure", handler: "secure" },
-      { method: "POST", path: "/secure", handler: "secure" },
+      { method: "GET", path: "/secure", handler: "secure", requestType: "SecureRequest" },
+      { method: "POST", path: "/secure", handler: "secure", requestType: "SecureRequest" },
     ], // default auth: required
+    requestValidators: {
+      SecureRequest(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value)
+          && typeof value.password === "string";
+      },
+    },
     dispatch: { secure: () => { ran.value = true; return { status: 200, body: { ok: true } }; } },
   });
 }
 
 /** Spin up a secure-kernel adapter with the given options, run fn, always close. */
-async function withSecureServer(opts, fn) {
+async function withSecureServer(opts, fn, beforeListen) {
   const ran = { value: false };
   const server = createApiServer({ kernel: buildSecureKernel(ran), allowInsecureLoopback: true, ...opts });
+  beforeListen?.(server);
   const { port } = await listen(server, 0);
   try {
     return await fn(port, ran);
   } finally {
     await new Promise((r) => server.close(() => r(undefined)));
   }
+}
+
+/** Observe the adapter's actual IncomingMessage data-listener registration and delivery. */
+function observeRequestBodyConsumers(server) {
+  const observations = [];
+  server.prependListener("request", (req) => {
+    const observation = {
+      dataListenerRegistrations: 0,
+      dataListenerRemovals: 0,
+      bytesDelivered: 0,
+      request: req,
+    };
+    observations.push(observation);
+    const originalOn = req.on;
+    const originalRemoveListener = req.removeListener;
+    const wrappedListeners = new Map();
+    req.on = function observedOn(event, listener) {
+      if (event !== "data" || typeof listener !== "function") {
+        return originalOn.call(this, event, listener);
+      }
+      observation.dataListenerRegistrations += 1;
+      const wrapped = function observedData(chunk) {
+        observation.bytesDelivered += Buffer.isBuffer(chunk)
+          ? chunk.byteLength
+          : Buffer.byteLength(chunk);
+        return listener.call(this, chunk);
+      };
+      wrappedListeners.set(listener, wrapped);
+      return originalOn.call(this, event, wrapped);
+    };
+    req.removeListener = function observedRemoveListener(event, listener) {
+      if (event === "data" && wrappedListeners.has(listener)) {
+        observation.dataListenerRemovals += 1;
+        const wrapped = wrappedListeners.get(listener);
+        wrappedListeners.delete(listener);
+        return originalRemoveListener.call(this, event, wrapped);
+      }
+      return originalRemoveListener.call(this, event, listener);
+    };
+  });
+  return observations;
 }
 
 /** Fire a single request through the socket and collect the full response. */
@@ -115,13 +163,14 @@ function startRequestWithIncompleteBody(port, { method, path, headers = {}, body
   return {
     req,
     response,
-    finish: () => req.end(Buffer.alloc(1024 - Buffer.byteLength(bodyPrefix), 0x20)),
+    finish: () => setImmediate(() => req.end(Buffer.alloc(1024 - Buffer.byteLength(bodyPrefix), 0x20))),
   };
 }
 
 /** Spin up the adapter, run `fn(port)`, always close the server. */
-async function withServer(opts, fn) {
+async function withServer(opts, fn, beforeListen) {
   const server = createApiServer({ kernel: buildKernel(), allowInsecureLoopback: true, ...opts });
+  beforeListen?.(server);
   const { port } = await listen(server, 0);
   try {
     return await fn(port);
@@ -232,12 +281,14 @@ test("channel verdict DENY (−1) → 401 on an auth-required route, handler NOT
 });
 
 test("explicit channel DENY refuses before the adapter consumes a request body", async () => {
-  let bodyAlreadyConsumedAtDecision = null;
-  let incomingRequest;
+  let resolverHadStreamAccess = null;
+  let requestContext;
+  let bodyObservations;
   await withSecureServer({
-    resolveChannelVerdict: (req) => {
-      incomingRequest = req;
-      bodyAlreadyConsumedAtDecision = req.readableEnded;
+    resolveChannelVerdict: (context) => {
+      requestContext = context;
+      resolverHadStreamAccess = ["read", "on", "pause", "resume", "pipe", "socket"]
+        .some((name) => name in context);
       return Verdict.DENY;
     },
   }, async (port, ran) => {
@@ -254,20 +305,29 @@ test("explicit channel DENY refuses before the adapter consumes a request body",
       message: "Channel/identity verdict denied admission.",
     });
     assert.equal(res.headers.connection, "close");
-    assert.equal(bodyAlreadyConsumedAtDecision, false);
-    assert.equal(incomingRequest.listenerCount("data"), 0);
+    assert.equal(resolverHadStreamAccess, false);
+    assert.equal(requestContext.path, "/secure");
     assert.equal(ran.value, false);
+    assert.equal(bodyObservations.length, 1);
+    assert.equal(bodyObservations[0].dataListenerRegistrations, 0);
+    assert.equal(bodyObservations[0].dataListenerRemovals, 0);
+    assert.equal(bodyObservations[0].bytesDelivered, 0);
+    assert.equal(bodyObservations[0].request.listenerCount("data"), 0);
+  }, (server) => {
+    bodyObservations = observeRequestBodyConsumers(server);
   });
 });
 
 test("an explicit principal-resolution refusal also precedes request-body consumption", async () => {
-  let bodyAlreadyConsumedAtDecision = null;
-  let incomingRequest;
+  let resolverHadStreamAccess = null;
+  let requestContext;
+  let bodyObservations;
   await withSecureServer({
     resolveChannelVerdict: () => Verdict.ALLOW,
-    resolvePrincipal: (req) => {
-      incomingRequest = req;
-      bodyAlreadyConsumedAtDecision = req.readableEnded;
+    resolvePrincipal: (context) => {
+      requestContext = context;
+      resolverHadStreamAccess = ["read", "on", "pause", "resume", "pipe", "socket"]
+        .some((name) => name in context);
       return undefined;
     },
   }, async (port, ran) => {
@@ -284,18 +344,55 @@ test("an explicit principal-resolution refusal also precedes request-body consum
       message: "Channel/identity verdict denied admission.",
     });
     assert.equal(res.headers.connection, "close");
-    assert.equal(bodyAlreadyConsumedAtDecision, false);
-    assert.equal(incomingRequest.listenerCount("data"), 0);
+    assert.equal(resolverHadStreamAccess, false);
+    assert.equal(requestContext.path, "/secure");
+    assert.equal(ran.value, false);
+    assert.equal(bodyObservations.length, 1);
+    assert.equal(bodyObservations[0].dataListenerRegistrations, 0);
+    assert.equal(bodyObservations[0].dataListenerRemovals, 0);
+    assert.equal(bodyObservations[0].bytesDelivered, 0);
+    assert.equal(bodyObservations[0].request.listenerCount("data"), 0);
+  }, (server) => {
+    bodyObservations = observeRequestBodyConsumers(server);
+  });
+});
+
+test("createApiServer refuses a kernel without route-authorization preflight", () => {
+  assert.throws(() => createApiServer({
+    kernel: { async handle() { return { status: 200, headers: {} }; } },
+    allowInsecureLoopback: true,
+  }), /route authorization preflight/i);
+});
+
+test("required-auth POST without resolvers refuses before consuming the request body", async () => {
+  await withSecureServer({}, async (port, ran) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/secure",
+      headers: JSON_HEADERS,
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const refusedBeforeBody = await Promise.race([
+      pending.response.then(() => true, () => true),
+      new Promise((resolve) => setTimeout(() => resolve(false), 100)),
+    ]);
+    if (!refusedBeforeBody) pending.finish();
+    const res = await pending.response;
+    assert.equal(refusedBeforeBody, true,
+      "required-auth refusal must not wait for the client to finish uploading its body");
+    assert.equal(res.status, 401);
+    assert.equal(res.headers.connection, "close");
     assert.equal(ran.value, false);
   });
 });
 
-test("an admitted request enters body buffering and completes after the body arrives", async () => {
-  let incomingRequest;
+test("an admitted request completes after the body arrives", async () => {
+  let requestContext;
+  let bodyObservations;
   await withServer({
     resolveChannelVerdict: () => Verdict.ALLOW,
-    resolvePrincipal: (req) => {
-      incomingRequest = req;
+    resolvePrincipal: (context) => {
+      requestContext = context;
       return { principalId: "principal-a", principalScopes: [] };
     },
   }, async (port) => {
@@ -306,15 +403,248 @@ test("an admitted request enters body buffering and completes after the body arr
       bodyPrefix: JSON.stringify({ amount: 100 }),
     });
     const waitStartedAt = Date.now();
-    while (incomingRequest === undefined && Date.now() - waitStartedAt < 1000) {
+    while (requestContext === undefined && Date.now() - waitStartedAt < 1000) {
       await new Promise((resolve) => setTimeout(resolve, 5));
     }
-    assert.ok(incomingRequest, "server should resolve identity while the body is incomplete");
-    assert.ok(incomingRequest.listenerCount("data") > 0);
+    assert.ok(requestContext, "server should resolve identity while the body is incomplete");
+    assert.equal(requestContext.path, "/charge");
     pending.finish();
     const res = await pending.response;
     assert.equal(res.status, 200, res.body);
+    assert.equal(bodyObservations.length, 1);
+    assert.equal(bodyObservations[0].dataListenerRegistrations, 1);
+    assert.equal(bodyObservations[0].dataListenerRemovals, 1);
+    assert.equal(bodyObservations[0].bytesDelivered, 1024);
+    assert.equal(bodyObservations[0].request.listenerCount("data"), 0);
+  }, (server) => {
+    bodyObservations = observeRequestBodyConsumers(server);
   });
+});
+
+test("preflight ALLOW on a protected POST still buffers then rechecks in the kernel", async () => {
+  let requestContext;
+  await withSecureServer({
+    resolveChannelVerdict: () => Verdict.ALLOW,
+    resolvePrincipal: (context) => {
+      requestContext = context;
+      return { principalId: "principal-a", principalScopes: [] };
+    },
+  }, async (port, ran) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/secure",
+      headers: { ...JSON_HEADERS, "idempotency-key": "secure-positive-control" },
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const waitStartedAt = Date.now();
+    while (requestContext === undefined && Date.now() - waitStartedAt < 1000) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    assert.ok(requestContext, "server should resolve identity while the body is incomplete");
+    assert.equal(requestContext.path, "/secure");
+    pending.finish();
+    const res = await pending.response;
+    assert.equal(res.status, 200, res.body);
+    assert.equal(ran.value, true);
+  });
+});
+
+test("authorization resolvers receive frozen request metadata without stream or socket access", async () => {
+  const seen = [];
+  await withSecureServer({
+    resolveChannelVerdict(context, phase) {
+      seen.push({ context, phase, resolver: "channel", receiver: this });
+      return Verdict.ALLOW;
+    },
+    resolvePrincipal(context, phase) {
+      seen.push({ context, phase, resolver: "principal" });
+      return { principalId: "principal-a", principalScopes: [] };
+    },
+  }, async (port, ran) => {
+    const res = await request(port, {
+      method: "POST",
+      path: "/secure",
+      headers: { ...JSON_HEADERS, "idempotency-key": "metadata-resolver-test" },
+      body: JSON.stringify({ password: "synthetic-only" }),
+    });
+    assert.equal(res.status, 200, res.body);
+    assert.equal(ran.value, true);
+  });
+
+  assert.equal(seen.length, 4);
+  assert.deepEqual(seen.map(({ resolver, phase }) => `${resolver}:${phase}`), [
+    "channel:preflight", "principal:preflight", "channel:dispatch", "principal:dispatch",
+  ]);
+  for (const { context } of seen) {
+    assert.equal(Object.isFrozen(context), true);
+    assert.equal(context.method, "POST");
+    assert.equal(context.path, "/secure");
+    assert.equal(typeof context.headers["content-type"], "string");
+    assert.equal(Object.isFrozen(context.headers), true);
+    for (const forbidden of ["read", "on", "pause", "resume", "pipe", "socket", "rawHeaders"]) {
+      assert.equal(forbidden in context, false, `resolver context must not expose ${forbidden}`);
+    }
+  }
+  assert.equal(seen.every(({ context }) => context === seen[0].context), true,
+    "preflight and dispatch must share the same immutable request snapshot");
+  assert.equal(seen.filter(({ resolver }) => resolver === "channel")
+    .every(({ receiver }) => receiver === undefined), true,
+  "channel resolver must not receive the privileged server options as its this receiver");
+});
+
+test("resolver and kernel observe the same frozen, null-prototype query snapshot", async () => {
+  const poisonKey = "rd1413InheritedQueryProbe";
+  let requestContext;
+  let kernelRequest;
+  const ran = { value: false };
+  const coreKernel = buildSecureKernel(ran);
+  const kernel = {
+    preflightAuthorization: (request) => coreKernel.preflightAuthorization(request),
+    async handle(request) {
+      kernelRequest = request;
+      return coreKernel.handle(request);
+    },
+  };
+  const server = createApiServer({
+    kernel,
+    allowInsecureLoopback: true,
+    resolveChannelVerdict(context, phase) {
+      requestContext = context;
+      if (phase === "preflight") {
+        Object.defineProperty(Object.prototype, poisonKey, {
+          configurable: true,
+          value: "inherited-poison",
+        });
+      }
+      return Verdict.ALLOW;
+    },
+    resolvePrincipal: () => ({ principalId: "principal-a", principalScopes: [] }),
+  });
+  const { port } = await listen(server, 0);
+  try {
+    const res = await request(port, {
+      method: "POST",
+      path: "/secure?known=present",
+      headers: { ...JSON_HEADERS, "idempotency-key": "query-snapshot-test" },
+      body: JSON.stringify({ password: "synthetic-only" }),
+    });
+    assert.equal(res.status, 200, res.body);
+    assert.equal(ran.value, true);
+    assert.equal(Object.getPrototypeOf(requestContext), null);
+    assert.equal(Object.getPrototypeOf(requestContext.query), null);
+    assert.equal(Object.isFrozen(requestContext.query), true);
+    assert.equal(requestContext[poisonKey], undefined);
+    assert.equal(requestContext.query[poisonKey], undefined);
+    assert.equal(kernelRequest.query, requestContext.query);
+    assert.equal(Object.getPrototypeOf(kernelRequest.query), null);
+    assert.equal(kernelRequest.query[poisonKey], undefined);
+    assert.deepEqual({ ...kernelRequest.query }, { known: "present" });
+  } finally {
+    delete Object.prototype[poisonKey];
+    await new Promise((resolve) => server.close(() => resolve(undefined)));
+  }
+});
+
+test("authorization is re-resolved after body buffering before protected dispatch", async () => {
+  let currentChannelVerdict = Verdict.ALLOW;
+  let incomingRequest;
+  const phases = [];
+  await withSecureServer({
+    resolveChannelVerdict(_context, phase) {
+      phases.push(phase);
+      return currentChannelVerdict;
+    },
+    resolvePrincipal(context) {
+      incomingRequest = context;
+      return { principalId: "principal-a", principalScopes: [] };
+    },
+  }, async (port, ran) => {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/secure",
+      headers: { ...JSON_HEADERS, "idempotency-key": "revalidate-after-body" },
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const waitStartedAt = Date.now();
+    while ((incomingRequest === undefined || phases.length === 0) && Date.now() - waitStartedAt < 1000) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    assert.ok(incomingRequest, "preflight should resolve while the body is incomplete");
+    await new Promise((resolve) => setImmediate(resolve));
+    currentChannelVerdict = Verdict.DENY;
+    pending.finish();
+    const res = await pending.response;
+    assert.equal(res.status, 401);
+    assert.equal(ran.value, false);
+  });
+
+  assert.equal(incomingRequest.path, "/secure");
+  assert.deepEqual(phases, ["preflight", "dispatch"]);
+});
+
+test("route method is snapshotted before body buffering and reused for dispatch", async () => {
+  let requestContext;
+  let mutationWasRefused = false;
+  const seen = [];
+  const coreKernel = createAppKernel({
+    routes: [
+      { method: "GET", path: "/mutable-method", handler: "protected" },
+      {
+        method: "POST", path: "/mutable-method", handler: "public",
+        requestType: "Input", auth: { mode: "public" },
+      },
+    ],
+    requestValidators: {
+      Input(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value)
+          && typeof value.password === "string";
+      },
+    },
+    dispatch: {
+      protected: () => ({ status: 200, body: { route: "protected" } }),
+      public: () => ({ status: 200, body: { route: "public" } }),
+    },
+  });
+  const kernel = {
+    preflightAuthorization: (request) => coreKernel.preflightAuthorization(request),
+    async handle(request) {
+      seen.push({ method: request.method, bodyLength: request.body.byteLength });
+      return coreKernel.handle(request);
+    },
+  };
+  const server = createApiServer({
+    kernel,
+    allowInsecureLoopback: true,
+    resolveChannelVerdict(context) {
+      requestContext = context;
+      if (context.method === "POST") {
+        mutationWasRefused = Reflect.set(context, "method", "GET") === false;
+      }
+      return undefined;
+    },
+  });
+  const { port } = await listen(server, 0);
+  try {
+    const pending = startRequestWithIncompleteBody(port, {
+      method: "POST",
+      path: "/mutable-method",
+      headers: { ...JSON_HEADERS, "idempotency-key": "stable-method-test" },
+      bodyPrefix: JSON.stringify({ password: "synthetic-only" }),
+    });
+    const waitStartedAt = Date.now();
+    while (requestContext === undefined && Date.now() - waitStartedAt < 1000) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    assert.ok(requestContext, "body buffering follows the POST route preflight");
+    pending.finish();
+    const res = await pending.response;
+    assert.equal(res.status, 200, res.body);
+    assert.deepEqual(seen, [{ method: "POST", bodyLength: 1024 }]);
+    assert.equal(res.body, JSON.stringify({ route: "public" }));
+    assert.equal(mutationWasRefused, true);
+  } finally {
+    await new Promise((resolve) => server.close(() => resolve(undefined)));
+  }
 });
 
 test("channel verdict INDETERMINATE (0) → 401 (fail-closed), handler NOT run", async () => {

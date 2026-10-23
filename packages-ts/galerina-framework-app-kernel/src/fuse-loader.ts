@@ -893,17 +893,29 @@ async function instantiateComponent(
     (result as { instance?: WebAssembly.Instance }).instance ?? (result as WebAssembly.Instance);
   const exportsObj = instance.exports as Record<string, unknown>;
   const name = admitted.name;
+  let invocationActive = false;
   return {
     name,
     seam: admitted.descriptor.seam,
     capabilities: admitted.descriptor.capabilities,
     invoke(exportName: string, ...args: number[]): number {
+      if (invocationActive) {
+        return fuseError(
+          "FUNGI-FUSE-REENTRANT-001",
+          `fused component '${name}' refused same-instance re-entry while an export was active`,
+        );
+      }
       const fn = exportsObj[exportName];
       if (typeof fn !== "function") {
         return fuseError("FUNGI-FUSE-NO-EXPORT", `fused component '${name}' has no exported function '${exportName}'`);
       }
-      const ret = (fn as (...a: number[]) => number | void)(...args);
-      return typeof ret === "number" ? ret : 0;
+      invocationActive = true;
+      try {
+        const ret = (fn as (...a: number[]) => number | void)(...args);
+        return typeof ret === "number" ? ret : 0;
+      } finally {
+        invocationActive = false;
+      }
     },
   };
 }

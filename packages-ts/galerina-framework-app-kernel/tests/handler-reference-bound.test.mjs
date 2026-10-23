@@ -5,7 +5,7 @@ import {
   FUNGI_APPK_HRC_001,
   HANDLER_REFERENCE_MAX_ROUTES,
   checkHandlerReferences,
-} from "../src/handler-reference-check.ts";
+} from "../dist/index.js";
 
 const ok = async () => ({ status: 200, body: { ok: true } });
 

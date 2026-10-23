@@ -748,6 +748,34 @@ ${source}`;
     assert.doesNotMatch(release.parameters, /recipient\s*:/);
   });
 
+  it("specifies one revocation/open/disclosure ordering domain", () => {
+    const source = SECRETS_GATEWAY_WIT;
+    const acquireDoc = source.match(
+      /((?:^[ \t]*\/\/\/.*\r?\n)+)[ \t]*acquire-password-lease:/m,
+    )?.[1];
+    const releaseDoc = source.match(
+      /((?:^[ \t]*\/\/\/.*\r?\n)+)[ \t]*release-verification-result:/m,
+    )?.[1];
+
+    assert.ok(acquireDoc, "provider acquisition needs an adjacent ordering contract");
+    const acquireText = acquireDoc.replace(/^\s*\/\/\/\s?/gm, "").replace(/\s+/g, " ");
+    assert.match(acquireText, /O is the protected provider-open/i);
+    assert.match(acquireText, /R, a verified revocation/i);
+    assert.match(acquireText, /committed by the secret-realm host as effective/i);
+    assert.match(acquireText, /stale or unavailable revocation fence/i);
+    assert.match(acquireText, /signature creation, network send, or queue arrival is not R/i);
+    assert.match(acquireText, /R\s*<\s*O/i, "revocation before open must refuse without reading bytes");
+    assert.match(acquireText, /O\s*<\s*R\s*<\s*D/i, "revocation after open must fence later disclosure");
+    assert.match(acquireText, /same authoritative serialization domain/i);
+
+    assert.ok(releaseDoc, "disclosure needs an adjacent ordering contract");
+    const releaseText = releaseDoc.replace(/^\s*\/\/\/\s?/gm, "").replace(/\s+/g, " ");
+    assert.match(releaseText, /D is the recipient-bound disclosure/i);
+    assert.match(releaseText, /O\s*<\s*D\s*<\s*R/i, "a completed pre-revocation disclosure cannot be recalled");
+    assert.match(releaseText, /authenticated acknowledgement/i);
+    assert.match(releaseText, /recovery is status-only/i);
+  });
+
   it("keeps charge reservation distinct from allocation, retention, and unresolved cleanup", () => {
     const accounting = assertMemoryAccountingContract(SECRETS_GATEWAY_WIT);
     assert.match(SECRETS_GATEWAY_WIT, /block stays quarantined until a complete full-extent wipe is proven by a terminal cleanup receipt/i);

@@ -1,9 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { describe, it } from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   FUNGI_APPK_RPT_001,
@@ -12,7 +8,7 @@ import {
   checkRoutePatternConflicts,
   compileRoutePattern,
   matchRoutePattern,
-} from "../src/route-pattern.ts";
+} from "../dist/index.js";
 
 function compiled(path) {
   const r = compileRoutePattern(path);
@@ -80,11 +76,7 @@ describe("checkRoutePatternConflicts container boundary", () => {
   });
 
   it("refuses an issued pattern from a second module instance (per-instance ownership)", async () => {
-    const src = fileURLToPath(new URL("../src/route-pattern.ts", import.meta.url));
-    const dir = mkdtempSync(join(tmpdir(), "rpt-instance-"));
-    const dup = join(dir, "route-pattern.ts");
-    copyFileSync(src, dup);
-    const other = await import(pathToFileURL(dup).href);
+    const other = await import(new URL("../dist/route-pattern.js?second-instance", import.meta.url).href);
     const local = compiled("/users/:id");
     const foreign = other.compileRoutePattern("/posts/:id");
     assert.equal(foreign.ok, true);

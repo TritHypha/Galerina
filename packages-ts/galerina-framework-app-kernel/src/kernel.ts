@@ -480,6 +480,13 @@ export interface CreateAppKernelOptions {
 }
 
 export interface AppKernel {
+  /**
+   * Refuse a known route on channel, principal, or scope grounds before an ingress adapter
+   * buffers a request body. `undefined` means only "no authorization refusal found": it is
+   * not an admission grant, and `handle` MUST repeat the full authorization check.
+   */
+  preflightAuthorization(req: Pick<GalerinaKernelRequest,
+    "method" | "path" | "requestId" | "channelVerdict" | "principalId" | "principalScopes">): GalerinaKernelResponse | undefined;
   handle(req: GalerinaKernelRequest): Promise<GalerinaKernelResponse>;
 }
 
@@ -520,6 +527,57 @@ function errorResponse(status: number, code: KernelErrorCode, message: string): 
   };
   weakMapSet(kernelRefusalCodes, response, code);
   return response;
+}
+
+type KernelAuthorizationInput = Pick<GalerinaKernelRequest,
+  "channelVerdict" | "principalId" | "principalScopes">;
+
+/** One auth fold shared by the ingress preflight and the normal request pipeline. */
+function authorizationRefusal(
+  policy: EffectiveRoutePolicy,
+  req: KernelAuthorizationInput,
+): GalerinaKernelResponse | undefined {
+  if (
+    req.channelVerdict !== undefined &&
+    !decideAtBoundary(req.channelVerdict).authorized
+  ) {
+    return errorResponse(401, "unauthorized", "Channel/identity verdict denied admission.");
+  }
+
+  if (policy.auth.mode === "required") {
+    if (req.channelVerdict === undefined) {
+      return errorResponse(401, "unauthorized", "A channel/identity verdict is required (header presence is not sufficient).");
+    }
+    if (
+      req.principalId === undefined ||
+      req.principalId.trim().length === 0 ||
+      new TextEncoder().encode(req.principalId).byteLength > 256
+    ) {
+      return errorResponse(401, "unauthorized", "An authenticated principal identity is required.");
+    }
+  }
+
+  if (policy.auth.scopes.length > 0) {
+    const principalScopes = req.principalScopes ?? [];
+    let missingScope = false;
+    for (let requiredIndex = 0; requiredIndex < policy.auth.scopes.length; requiredIndex += 1) {
+      let present = false;
+      for (let principalIndex = 0; principalIndex < principalScopes.length; principalIndex += 1) {
+        if (principalScopes[principalIndex] === policy.auth.scopes[requiredIndex]) {
+          present = true;
+          break;
+        }
+      }
+      if (!present) {
+        missingScope = true;
+        break;
+      }
+    }
+    if (req.channelVerdict === undefined || missingScope) {
+      return errorResponse(403, "forbidden", "The authenticated principal lacks a required route scope.");
+    }
+  }
+  return undefined;
 }
 
 const KERNEL_POSTURES: ReadonlySet<string> = new Set(["off", "auto", "on"]);
@@ -659,6 +717,50 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const rateWindows = new Map<string, { count: number; resetAt: number }>();
   const maxRateWindows = 10_000;
 
+  function preflightAuthorization(
+    req: Pick<GalerinaKernelRequest,
+      "method" | "path" | "requestId" | "channelVerdict" | "principalId" | "principalScopes">,
+  ): GalerinaKernelResponse | undefined {
+    const methods = mapGet(byPath, req.path);
+    if (methods === undefined) return undefined;
+    const policy = mapGet(methods, req.method);
+    if (policy === undefined) return undefined;
+    const response = authorizationRefusal(policy, req);
+    if (response === undefined) return undefined;
+
+    const event: AuditEvent = {
+      requestId: req.requestId,
+      method: req.method,
+      path: req.path,
+      status: response.status,
+      errorCode: weakMapGet(kernelRefusalCodes, response),
+      origin: "kernel",
+      appliedDefaults: policy.appliedDefaults,
+      relaxations: policy.relaxations,
+      at: wallClockNow(),
+      ...(resolvedPosture ? { resolvedPosture } : {}),
+    };
+    if (policy.audit.runtimeReport === true) {
+      let reservation: AuditReservation | undefined;
+      try {
+        const candidate = auditSink.reserve();
+        if (candidate === undefined || candidate === null || typeof candidate !== "object") {
+          return errorResponse(503, "audit_unavailable", "Required runtime audit evidence capacity is unavailable.");
+        }
+        reservation = candidate;
+        auditSink.commit(reservation, event);
+      } catch {
+        if (reservation !== undefined) {
+          try { auditSink.cancel(reservation); } catch { /* Fail closed; do not retry authority. */ }
+        }
+        return errorResponse(503, "audit_unavailable", "Required runtime audit evidence could not be accepted.");
+      }
+    } else {
+      try { auditSink.emit(event); } catch { /* Best-effort audit cannot change the refusal. */ }
+    }
+    return response;
+  }
+
   /** Internal pipeline result: the response plus the matched policy (for audit provenance). */
   interface PipelineOutcome {
     readonly response: GalerinaKernelResponse;
@@ -731,48 +833,8 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     // application auth mode is public. `public` means no application credential is required;
     // it never means an explicitly untrusted TLS/channel peer can bypass its configured gate.
     // Only ALLOW (+1) admits. INDETERMINATE (0), DENY (−1), and invalid values refuse.
-    if (
-      req.channelVerdict !== undefined &&
-      !decideAtBoundary(req.channelVerdict).authorized
-    ) {
-      return pipelineOutcome(errorResponse(401, "unauthorized", "Channel/identity verdict denied admission."), policy);
-    }
-
-    if (policy.auth.mode === "required") {
-      if (req.channelVerdict !== undefined) {
-        // The mandatory channel fold above already proved ALLOW.
-      } else {
-        return pipelineOutcome(errorResponse(401, "unauthorized", "A channel/identity verdict is required (header presence is not sufficient)."), policy);
-      }
-      if (
-        req.principalId === undefined ||
-        req.principalId.trim().length === 0 ||
-        new TextEncoder().encode(req.principalId).byteLength > 256
-      ) {
-        return pipelineOutcome(errorResponse(401, "unauthorized", "An authenticated principal identity is required."), policy);
-      }
-    }
-
-    if (policy.auth.scopes.length > 0) {
-      let missingScope = false;
-      const principalScopes = req.principalScopes ?? [];
-      for (let requiredIndex = 0; requiredIndex < policy.auth.scopes.length; requiredIndex += 1) {
-        let present = false;
-        for (let principalIndex = 0; principalIndex < principalScopes.length; principalIndex += 1) {
-          if (principalScopes[principalIndex] === policy.auth.scopes[requiredIndex]) {
-            present = true;
-            break;
-          }
-        }
-        if (!present) {
-          missingScope = true;
-          break;
-        }
-      }
-      if (req.channelVerdict === undefined || missingScope) {
-        return pipelineOutcome(errorResponse(403, "forbidden", "The authenticated principal lacks a required route scope."), policy);
-      }
-    }
+    const authRefusal = authorizationRefusal(policy, req);
+    if (authRefusal !== undefined) return pipelineOutcome(authRefusal, policy);
 
     // ── 7 rate ── counted BEFORE decode/validate (S7): a malformed or invalid body still uses up
     // the route's rate budget, so a 422 flood cannot bypass the limiter.
@@ -1199,5 +1261,5 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     }
   }
 
-  return { handle };
+  return { preflightAuthorization, handle };
 }

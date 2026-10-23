@@ -506,6 +506,52 @@ test("explicit host import calls remain available after successful initializatio
   }
 });
 
+test("a fused component refuses same-instance re-entry from a host capability callback", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let component;
+  let callbackCount = 0;
+  let nestedRefusal;
+  try {
+    component = await fusePackage(pkg, effectOptions(() => {
+      callbackCount += 1;
+      if (callbackCount === 1) {
+        try {
+          component.invoke("run");
+          nestedRefusal = "nested invocation unexpectedly ran";
+        } catch (error) {
+          nestedRefusal = error instanceof Error ? error.message : String(error);
+        }
+      }
+      return 7;
+    }));
+
+    assert.equal(component.invoke("run"), 0, "outer invocation completes after refusing nested entry");
+    assert.match(nestedRefusal, /FUNGI-FUSE-REENTRANT-001/);
+    assert.equal(callbackCount, 1, "nested guest code cannot invoke the host capability a second time");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a fused component releases its invocation guard after a host capability throws", async () => {
+  const { root, pkg } = effectPackage({ start: false });
+  let component;
+  let calls = 0;
+  try {
+    component = await fusePackage(pkg, effectOptions(() => {
+      calls += 1;
+      if (calls === 1) throw new Error("synthetic provider failure");
+      return 7;
+    }));
+
+    assert.throws(() => component.invoke("run"), /synthetic provider failure/);
+    assert.equal(component.invoke("run"), 0, "a later explicit call can run after the prior trap unwinds");
+    assert.equal(calls, 2);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // ── 1 — the built demo package fuses, and invoke('main') runs the governed wasm ──
 test("requireSignature without a revocation check refuses production fusion", async () => {
   assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");

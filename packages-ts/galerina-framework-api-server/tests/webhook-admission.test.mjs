@@ -41,6 +41,41 @@ function request(port, { method, path, headers = {}, body }) {
   });
 }
 
+/** Begin a declared request body, send only its prefix, and let the test finish it later. */
+function startRequestWithIncompleteBody(port, { method, path, headers = {}, body, prefixBytes }) {
+  let resolveResponse;
+  let rejectResponse;
+  const response = new Promise((resolve, reject) => {
+    resolveResponse = resolve;
+    rejectResponse = reject;
+  });
+  // Mark socket failures handled immediately; awaiting `response` still receives the rejection.
+  void response.catch(() => undefined);
+  const req = http.request({
+    host: "127.0.0.1",
+    port,
+    method,
+    path,
+    headers: { ...headers, "content-length": String(body.byteLength) },
+  }, (res) => {
+    const chunks = [];
+    res.on("data", (chunk) => chunks.push(chunk));
+    res.on("end", () => resolveResponse({
+      status: res.statusCode,
+      body: Buffer.concat(chunks).toString("utf8"),
+    }));
+  });
+  req.on("error", rejectResponse);
+  req.setTimeout(2000, () => req.destroy(new Error("incomplete upload timed out")));
+  req.flushHeaders();
+  req.write(body.subarray(0, prefixBytes));
+  return {
+    req,
+    response,
+    finish: () => setImmediate(() => req.end(body.subarray(prefixBytes))),
+  };
+}
+
 describe("admitWebhookReplay — HMAC before replay/decode", () => {
   it("claims replay after a valid HMAC and does not decode on HMAC failure", async () => {
     const store = new MemoryReplayStore({ now: () => 10_000 });
@@ -198,6 +233,189 @@ describe("admitWebhookReplay — HMAC before replay/decode", () => {
 });
 
 describe("createApiServer webhook gate", () => {
+  it("rechecks revoked authority after an incomplete signed upload before HMAC, replay, or dispatch", async () => {
+    const ran = { value: 0 };
+    const events = [];
+    let claims = 0;
+    let authorized = true;
+    const phases = [];
+    const store = new MemoryReplayStore({ now: () => 10_000 });
+    const replayStore = {
+      claim(...args) {
+        claims += 1;
+        return store.claim(...args);
+      },
+    };
+    const body = Buffer.from(JSON.stringify({ amount: 321 }), "utf8");
+    const kernel = createAppKernel({
+      routes: [{
+        method: "POST",
+        path: "/charge",
+        handler: "charge",
+        requestType: "ChargeRequest",
+        auth: { mode: "required", scopes: ["orders:write"] },
+      }],
+      requestValidators: {
+        ChargeRequest(value) {
+          return value !== null && typeof value === "object" && !Array.isArray(value)
+            && Number.isFinite(value.amount);
+        },
+      },
+      dispatch: {
+        charge: () => { ran.value += 1; return { status: 200, body: { ok: true } }; },
+      },
+    });
+    const server = createApiServer({
+      kernel,
+      allowInsecureLoopback: true,
+      resolveChannelVerdict: () => Verdict.ALLOW,
+      resolvePrincipal(_context, phase) {
+        phases.push(phase);
+        return {
+          principalId: "gateway-a",
+          principalScopes: authorized ? ["orders:write"] : [],
+        };
+      },
+      webhook: {
+        secret: SECRET,
+        signatureHeader: "x-hub-signature-256",
+        eventIdHeader: "x-event-id",
+        replayStore,
+        replayTtlSeconds: 30,
+        signaturePrefix: "sha256=",
+        hooks: {
+          onHmac: (ok) => events.push(ok ? "hmac-ok" : "hmac-fail"),
+          onReplayClaim: (result) => events.push(`replay-${result}`),
+        },
+      },
+    });
+    const { port } = await listen(server, 0);
+    let pending;
+    try {
+      pending = startRequestWithIncompleteBody(port, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": "idemp-upload-revoked",
+          "x-hub-signature-256": signature(body),
+          "x-event-id": "evt-upload-revoked",
+        },
+        body,
+        prefixBytes: 8,
+      });
+      const preflightDeadline = Date.now() + 1000;
+      while (phases.length === 0 && Date.now() < preflightDeadline) {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+      assert.deepEqual(phases, ["preflight"], "preflight must occur while upload remains incomplete");
+      authorized = false;
+      pending.finish();
+      const denied = await pending.response;
+      assert.equal(denied.status, 403);
+      assert.deepEqual(phases, ["preflight", "dispatch"]);
+      assert.equal(claims, 0, "revoked authority must not consume replay identity");
+      assert.deepEqual(events, [], "revoked authority must not invoke webhook admission hooks");
+      assert.equal(ran.value, 0, "revoked authority must not dispatch the protected handler");
+
+      // Paired ALLOW control: a distinct valid signed event reaches each downstream stage.
+      authorized = true;
+      phases.length = 0;
+      const allowedBody = Buffer.from(JSON.stringify({ amount: 322 }), "utf8");
+      const allowed = await request(port, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": "idemp-upload-allowed",
+          "x-hub-signature-256": signature(allowedBody),
+          "x-event-id": "evt-upload-allowed",
+        },
+        body: allowedBody,
+      });
+      assert.equal(allowed.status, 200);
+      assert.deepEqual(phases, ["preflight", "dispatch"]);
+      assert.equal(claims, 1);
+      assert.deepEqual(events, ["hmac-ok", "replay-claimed"]);
+      assert.equal(ran.value, 1);
+    } finally {
+      pending?.req.destroy();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+
+  it("refuses revoked route scope before consuming a webhook replay identity", async () => {
+    const ran = { value: false };
+    let claims = 0;
+    const store = new MemoryReplayStore({ now: () => 10_000 });
+    const replayStore = {
+      claim(...args) {
+        claims += 1;
+        return store.claim(...args);
+      },
+    };
+    const body = Buffer.from(JSON.stringify({ amount: 321 }), "utf8");
+    const phases = [];
+    const kernel = createAppKernel({
+      routes: [{
+        method: "POST",
+        path: "/charge",
+        handler: "charge",
+        requestType: "ChargeRequest",
+        auth: { mode: "required", scopes: ["orders:write"] },
+      }],
+      requestValidators: {
+        ChargeRequest(value) {
+          return value !== null && typeof value === "object" && !Array.isArray(value)
+            && Number.isFinite(value.amount);
+        },
+      },
+      dispatch: {
+        charge: () => { ran.value = true; return { status: 200, body: { ok: true } }; },
+      },
+    });
+    const server = createApiServer({
+      kernel,
+      allowInsecureLoopback: true,
+      resolveChannelVerdict: () => Verdict.ALLOW,
+      resolvePrincipal(_context, phase) {
+        phases.push(phase);
+        return {
+          principalId: "gateway-a",
+          principalScopes: phase === "preflight" ? ["orders:write"] : [],
+        };
+      },
+      webhook: {
+        secret: SECRET,
+        signatureHeader: "x-hub-signature-256",
+        eventIdHeader: "x-event-id",
+        replayStore,
+        replayTtlSeconds: 30,
+        signaturePrefix: "sha256=",
+      },
+    });
+    const { port } = await listen(server, 0);
+    try {
+      const response = await request(port, {
+        method: "POST",
+        path: "/charge",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": "revoked-scope-positive-control",
+          "x-hub-signature-256": signature(body),
+          "x-event-id": "evt-revoked-scope",
+        },
+        body,
+      });
+      assert.equal(response.status, 403);
+      assert.equal(claims, 0, "revoked route authority must not consume replay identity");
+      assert.equal(ran.value, false);
+      assert.deepEqual(phases, ["preflight", "dispatch"]);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+
   it("does not dispatch the kernel handler on invalid HMAC or replay", async () => {
     const ran = { value: false };
     const store = new MemoryReplayStore({ now: () => 10_000 });

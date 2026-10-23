@@ -1,10 +1,12 @@
 // e2e.test.mjs — the canonical scaffold -> fuse -> kernel -> serve proof for the
-// "hello, governed world" app. Nothing is mocked:
+// "hello, governed world" app. The socket, kernel and WASM execution are real;
+// central registry admission uses an explicit test-only ALLOW fixture and is not
+// evidence of production registry authorization.
 //
 //   scaffold  `galerina new app <tmp>` emits this exact golden layout (asserted).
-//   fuse      fusePackage admits the SIGNED greeting.wasm fail-closed (sha256 pin +
-//             Ed25519 signature VERIFIED — no allowUnsigned) and invoke("main") runs
-//             the governed wasm, returning the HTTP status 200.
+//   fuse      fusePackage runs the greeting WASM under explicit test-only unsigned
+//             mode plus a test registry ALLOW. It does not prove signed production
+//             admission or registry authority.
 //   kernel    createAppKernel routes GET /hello to the fused compute; the secure
 //             defaults still 404 an unknown path and 401 an auth-required route with
 //             no channel verdict (zero-trust, fail-closed).
@@ -15,11 +17,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, existsSync, readFileSync, cpSync, writeFileSync } from "node:fs";
+import { createHash, generateKeyPairSync } from "node:crypto";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync, copyFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { createAppKernel, fusePackage } from "../../galerina-framework-app-kernel/dist/index.js";
 import {
@@ -31,6 +33,15 @@ import {
 } from "../dist/server.js";
 
 const SCAFFOLDER = fileURLToPath(new URL("../../../scripts/galerina-new.mjs", import.meta.url));
+const fixtureRegistryAllow = () => ({ ok: true });
+
+async function withUnsignedFixtureOptions(run) {
+  return run({
+    governanceDir: paths.governanceDir,
+    allowUnsigned: true,
+    registryCheck: fixtureRegistryAllow,
+  });
+}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function withTempDir(fn) {
@@ -95,13 +106,49 @@ test("scaffold: `galerina new app` emits the runnable golden layout", () => {
 });
 
 // ── fuse ──────────────────────────────────────────────────────────────────────
-test("fuse: the SIGNED greeting wasm is admitted VERIFIED (no allowUnsigned) and invoke('main') => 200", async () => {
-  // No allowUnsigned: this only passes because the manifest's Ed25519 signature
-  // verifies against the repo governance public key — real signed admission.
-  const greeting = await fusePackage(paths.greetingDir, { governanceDir: paths.governanceDir, warn: () => {} });
-  assert.equal(greeting.name, "greeting");
-  assert.deepEqual(greeting.capabilities, [], "fused with NO capabilities (deny-by-default)");
-  assert.equal(greeting.invoke("main"), 200, "the governed compute returns HTTP 200");
+test("fuse: explicit dev/test admission runs the greeting WASM without claiming signature proof", async () => {
+  await withUnsignedFixtureOptions(async (fixtureOptions) => {
+    const registryRequests = [];
+    const greeting = await fusePackage(paths.greetingDir, {
+      ...fixtureOptions,
+      registryCheck: (request) => {
+        registryRequests.push(request);
+        return { ok: true };
+      },
+      warn: () => {},
+    });
+    const manifest = JSON.parse(readFileSync(join(paths.greetingDir, "dist", "greeting.lmanifest.json"), "utf8"));
+    assert.deepEqual(registryRequests, [{
+      name: manifest.fuse.name,
+      version: manifest.fuse.version,
+      sourceHash: manifest.fuse.wasmSha256,
+      keyId: manifest.governanceSignature.keyId,
+    }], "central admission receives the exact package identity and artifact digest once");
+    assert.equal(greeting.name, "greeting");
+    assert.deepEqual(greeting.capabilities, [], "fused with NO capabilities (deny-by-default)");
+    assert.equal(greeting.invoke("main"), 200, "the governed compute returns HTTP 200");
+  });
+});
+
+test("fuse: the host forwards the exact greeting identity to the injected registry", async () => {
+  await withUnsignedFixtureOptions(async (fixtureOptions) => {
+    const registryRequests = [];
+    const greeting = await fuseGreeting({
+      ...fixtureOptions,
+      registryCheck: (request) => {
+        registryRequests.push(request);
+        return { ok: true };
+      },
+    });
+    const manifest = JSON.parse(readFileSync(join(paths.greetingDir, "dist", "greeting.lmanifest.json"), "utf8"));
+    assert.deepEqual(registryRequests, [{
+      name: manifest.fuse.name,
+      version: manifest.fuse.version,
+      sourceHash: manifest.fuse.wasmSha256,
+      keyId: manifest.governanceSignature.keyId,
+    }], "the host forwards the exact package identity and artifact digest once");
+    assert.equal(greeting.invoke("main"), 200);
+  });
 });
 
 test("fuse: when App.manifest pins the greeting dep, the sha256 matches the built wasm byte-for-byte", () => {
@@ -119,12 +166,7 @@ test("fuse: when App.manifest pins the greeting dep, the sha256 matches the buil
   }
 });
 
-test("fuse: a REVOKED signing key is refused at app fusion (revocation gate wired, fail-closed)", async () => {
-  // The greeting is signed by the repo's ACTIVE key. This stands up a SEPARATE governance
-  // dir that REVOKES that exact signer, then proves fuseGreeting refuses to fuse it — i.e.
-  // the host injects the revocation gate. Without the injection the kernel runs NO
-  // revocation check (Gate 2b only fires when a revocationCheck is passed), so this fusion
-  // would WRONGLY succeed — which is the fail-open this test guards against.
+test("fuse: a package key in a valid signed fixture revocation registry is refused", async () => {
   const greetingManifest = JSON.parse(
     readFileSync(join(paths.greetingDir, "dist", "greeting.lmanifest.json"), "utf8"),
   );
@@ -133,52 +175,166 @@ test("fuse: a REVOKED signing key is refused at app fusion (revocation gate wire
 
   const base = mkdtempSync(join(tmpdir(), "galerina-revoke-"));
   try {
-    // Full COPY of the repo governance dir (pubkeys + registry module + trust anchor) so
-    // signature verification still has the signer's public key…
     const govDir = join(base, "governance");
-    cpSync(paths.governanceDir, govDir, { recursive: true });
+    mkdirSync(govDir);
+    copyFileSync(join(paths.governanceDir, "revocation-registry.mjs"), join(govDir, "revocation-registry.mjs"));
 
-    // …but with the greeting's own signer added to the revocation list. That signer is also
-    // the registry's pinned signer, so assertRegistryTrustworthy fails closed ("signed by a
-    // REVOKED key") and the host's revocation gate refuses the fuse — fail-closed.
-    const regPath = join(govDir, "revocations.json");
-    const reg = JSON.parse(readFileSync(regPath, "utf8"));
-    reg.revoked.push({
-      keyId: signerKeyId, algorithm: "ed25519", revokedAt: "2026-06-24",
-      reason: "test: revoke the greeting signer to assert the app-fusion revocation gate",
-    });
-    writeFileSync(regPath, JSON.stringify(reg, null, 2));
+    const fixtureRootKeyId = "e2e-fixture-root";
+    const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+    const registryModule = await import(pathToFileURL(join(govDir, "revocation-registry.mjs")).href);
+    const registry = registryModule.signRegistryObject({
+      schemaVersion: 1,
+      appendOnly: true,
+      revoked: [{
+        keyId: signerKeyId, algorithm: "ed25519", revokedAt: "2026-06-24",
+        reason: "test-only revocation fixture; no production key or authority",
+      }],
+    }, privateKey.export({ format: "pem", type: "pkcs8" }).toString(), fixtureRootKeyId);
+    writeFileSync(
+      join(govDir, `signing-key-${fixtureRootKeyId}.pub.pem`),
+      publicKey.export({ format: "pem", type: "spki" }).toString(),
+    );
+    writeFileSync(join(govDir, "revocations.json"), JSON.stringify(registry, null, 2));
+    writeFileSync(
+      join(govDir, "trust-anchor.json"),
+      JSON.stringify({ registrySigningRootKeyId: `mismatched-${fixtureRootKeyId}` }, null, 2),
+    );
 
     await assert.rejects(
-      () => fuseGreeting({ governanceDir: govDir }),
-      (err) => /REVOK|REVOCATION/i.test(err.message),
-      "fuseGreeting must refuse to fuse a package whose signing key is revoked",
+      () => fuseGreeting({ governanceDir: govDir, allowUnsigned: true, registryCheck: fixtureRegistryAllow }),
+      /FUNGI-FUSE-REVOCATION-UNTRUSTED/,
+      "a signed test registry with a mismatched pinned root is refused",
+    );
+
+    writeFileSync(
+      join(govDir, "trust-anchor.json"),
+      JSON.stringify({ registrySigningRootKeyId: fixtureRootKeyId }, null, 2),
+    );
+
+    await assert.rejects(
+      () => fuseGreeting({ governanceDir: govDir, allowUnsigned: true, registryCheck: fixtureRegistryAllow }),
+      /FUNGI-FUSE-KEY-REVOKED/,
+      "a trusted test registry must refuse the package key even when its package signature is treated as unsigned",
     );
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
 });
 
+test("fuse: denied, malformed, or throwing registry decisions refuse before WASM instantiation", async () => {
+  const instantiate = WebAssembly.instantiate;
+  let instantiateCalls = 0;
+  WebAssembly.instantiate = function (...args) {
+    instantiateCalls += 1;
+    return Reflect.apply(instantiate, this, args);
+  };
+  try {
+    const cases = [
+      ["deny", () => ({ ok: false, reason: "fixture denial" }), /FUNGI-FUSE-REGISTRY-DENIED/],
+      ["malformed", () => ({ ok: "true" }), /FUNGI-FUSE-REGISTRY-DENIED/],
+      ["throw", () => { throw new Error("fixture authority failure"); }, /fixture authority failure/],
+    ];
+    for (const [label, registryCheck, expected] of cases) {
+      await assert.rejects(
+        () => fuseGreeting({ governanceDir: paths.governanceDir, allowUnsigned: true, registryCheck }),
+        expected,
+        `${label} central-registry decision must refuse fusion`,
+      );
+    }
+    assert.equal(instantiateCalls, 0, "no denied or invalid registry decision reaches WASM instantiation");
+  } finally {
+    WebAssembly.instantiate = instantiate;
+  }
+});
+
+test("fuse: the host refuses without an injected central ALLOW authority", async () => {
+  await assert.rejects(
+    () => fuseGreeting(),
+    /FUNGI-FUSE-REGISTRY-REQUIRED/,
+    "the example host must not invent or default a package-registry ALLOW",
+  );
+});
+
+test("fuse: allowUnsigned does not bypass an existing untrusted revocation registry", async () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "galerina-untrusted-governance-"));
+  const governanceDir = join(rootDir, "governance");
+  mkdirSync(governanceDir);
+  writeFileSync(
+    join(governanceDir, "revocation-registry.mjs"),
+    'export function assertRegistryTrustworthy() { throw new Error("test: untrusted registry"); }\n' +
+      'export function isKeyRevoked() { return false; }\n',
+  );
+  try {
+    await assert.rejects(
+      () => fuseGreeting({ governanceDir, allowUnsigned: true, registryCheck: fixtureRegistryAllow }),
+      /FUNGI-FUSE-REVOCATION-UNTRUSTED/,
+      "dev unsigned mode may not turn a present but untrusted registry into an absent revocation gate",
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("fuse: allowUnsigned does not bypass a missing registry inside an existing governance directory", async () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "galerina-incomplete-governance-"));
+  const governanceDir = join(rootDir, "governance");
+  mkdirSync(governanceDir);
+  try {
+    await assert.rejects(
+      () => fuseGreeting({ governanceDir, allowUnsigned: true, registryCheck: fixtureRegistryAllow }),
+      /FUNGI-FUSE-REVOCATION-UNTRUSTED/,
+      "an existing but incomplete governance directory is not equivalent to an absent development directory",
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("fuse: explicit unsigned development admission remains available when governance is absent", async () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "galerina-no-governance-"));
+  const governanceDir = join(rootDir, "governance");
+  const originalWarn = console.warn;
+  const warnings = [];
+  console.warn = (message) => warnings.push(String(message));
+  try {
+    const greeting = await fuseGreeting({
+      governanceDir,
+      allowUnsigned: true,
+      registryCheck: fixtureRegistryAllow,
+    });
+    assert.equal(greeting.invoke("main"), 200);
+    assert.ok(
+      warnings.some((message) => message.includes("governance directory absent")),
+      "the development-only governance absence is explicit in the warning",
+    );
+  } finally {
+    console.warn = originalWarn;
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 // ── kernel ──────────────────────────────────────────────────────────────────────
 test("kernel: GET /hello dispatches to the fused compute; unknown path 404s (fail-closed routing)", async () => {
   const config = loadConfig(paths.configPath);
-  const greeting = await fuseGreeting();
-  const kernel = createGreetingKernel(config, greeting);
+  await withUnsignedFixtureOptions(async (fixtureOptions) => {
+    const greeting = await fuseGreeting(fixtureOptions);
+    const kernel = createGreetingKernel(config, greeting);
 
-  const ok = await kernel.handle({
-    method: "GET", path: "/hello", headers: {}, body: new Uint8Array(),
-    query: {}, requestId: "t1", receivedAt: 0,
-  });
-  assert.equal(ok.status, 200);
-  assert.deepEqual(JSON.parse(new TextDecoder().decode(ok.body)), {
-    message: "hello, governed world", status: 200,
-  });
+    const ok = await kernel.handle({
+      method: "GET", path: "/hello", headers: {}, body: new Uint8Array(),
+      query: {}, requestId: "t1", receivedAt: 0,
+    });
+    assert.equal(ok.status, 200);
+    assert.deepEqual(JSON.parse(new TextDecoder().decode(ok.body)), {
+      message: "hello, governed world", status: 200,
+    });
 
-  const missing = await kernel.handle({
-    method: "GET", path: "/nope", headers: {}, body: new Uint8Array(),
-    query: {}, requestId: "t2", receivedAt: 0,
+    const missing = await kernel.handle({
+      method: "GET", path: "/nope", headers: {}, body: new Uint8Array(),
+      query: {}, requestId: "t2", receivedAt: 0,
+    });
+    assert.equal(missing.status, 404, "an undeclared route is refused, not served");
   });
-  assert.equal(missing.status, 404, "an undeclared route is refused, not served");
 });
 
 test("kernel: an auth-required route 401s with no channel verdict (zero-trust default)", async () => {
@@ -200,17 +356,22 @@ test("kernel: an auth-required route 401s with no channel verdict (zero-trust de
 // ── serve ─────────────────────────────────────────────────────────────────────
 test("serve: a REAL HTTP GET /hello through the api-server returns 200 + the greeting JSON", async () => {
   const config = loadConfig(paths.configPath);
-  // Ephemeral port for the test.
-  const started = await startServer({ ...config, http: { ...config.http, port: 0 } });
-  try {
-    const res = await request(started.port, { method: "GET", path: "/hello" });
-    assert.equal(res.status, 200);
-    assert.match(res.headers["content-type"] ?? "", /application\/json/);
-    assert.deepEqual(JSON.parse(res.body), { message: "hello, governed world", status: 200 });
+  await withUnsignedFixtureOptions(async (fixtureOptions) => {
+    // Ephemeral port for the test.
+    const started = await startServer(
+      { ...config, http: { ...config.http, port: 0 } },
+      fixtureOptions,
+    );
+    try {
+      const res = await request(started.port, { method: "GET", path: "/hello" });
+      assert.equal(res.status, 200);
+      assert.match(res.headers["content-type"] ?? "", /application\/json/);
+      assert.deepEqual(JSON.parse(res.body), { message: "hello, governed world", status: 200 });
 
-    const missing = await request(started.port, { method: "GET", path: "/nope" });
-    assert.equal(missing.status, 404, "the transport funnels everything through the kernel's routing");
-  } finally {
-    await started.close();
-  }
+      const missing = await request(started.port, { method: "GET", path: "/nope" });
+      assert.equal(missing.status, 404, "the transport funnels everything through the kernel's routing");
+    } finally {
+      await started.close();
+    }
+  });
 });

@@ -53,7 +53,7 @@ export const CORE_RUNTIME_HANDOFF_SCHEMA = "galerina.app-kernel.core-runtime-han
  * import: a filesystem drift test pins the string. Mismatch binds deny-all on
  * the producer seam.
  */
-export const CORE_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v1";
+export const CORE_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v2";
 
 /** Unplugged executor only. A live executor identity is OWNER-REVISIT. */
 export const CORE_RUNTIME_EXECUTOR_BINDINGS = Object.freeze(["deny_all"] as const);

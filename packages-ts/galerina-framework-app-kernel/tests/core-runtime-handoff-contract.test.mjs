@@ -57,7 +57,9 @@ describe("core-runtime handoff contract - pinned to shipped siblings", () => {
     const m = runtime.match(/export const GOVERNED_RUNTIME_SEAM_VERSION = "([^"]+)";/);
     assert.ok(m, "core-runtime declares GOVERNED_RUNTIME_SEAM_VERSION");
     assert.equal(m[1], CORE_RUNTIME_SEAM_VERSION);
-    assert.equal(CORE_RUNTIME_SEAM_VERSION, "galerina.runtime.seam.v1");
+    assert.equal(CORE_RUNTIME_SEAM_VERSION, "galerina.runtime.seam.v2");
+    const fungiAsset = readFileSync(new URL("../../galerina-core-runtime/src/self-hosted/governed-runtime-seam-version.fungi", import.meta.url), "utf8");
+    assert.match(fungiAsset, /return "galerina\.runtime\.seam\.v2"/);
   });
 
   it("mirrors DEFAULT_RUNTIME_EFFECT_POLICY from core-runtime source", () => {

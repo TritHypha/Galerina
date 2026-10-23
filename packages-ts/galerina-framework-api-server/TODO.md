@@ -4,6 +4,47 @@ Current sequencing: [pre-.fungi work register](../../docs/PRE-FUNGI-WORK-REGISTE
 W08/W09. The admitted HTTP adapter, historical manifest scaffold and deferred
 durable replay adapter remain distinct; no new authority follows from prose.
 
+## RD-1413 ingress follow-through — 2026-10-14 (working tree only)
+
+**Component behavior implemented, independently reviewed with HOLD, not integrated:** the adapter
+normalizes the target before body buffering and calls the kernel's shared
+route-authorization fold. A matched route denied for channel, principal or
+scopes is refused before body collection. After buffering, the adapter resolves
+authority again and rechecks route authorization before webhook HMAC/replay
+claim or kernel dispatch. Resolver metadata and the kernel query use the same
+frozen, null-prototype snapshots; the channel callback is invoked without the
+privileged options object as its receiver. The API-server suite is **86/86** on
+native Windows on 2026-10-14 (`npm test`: typecheck, build, and 86 local tests;
+no GitHub Actions/CI). Earlier 85/85 Windows and WSL receipts predate the new
+regression. Astra submission `01a138d2-5c1a-7573-a317-094cc0a14887` reviewed
+the six-file source candidate at diff SHA-256
+`79FF76F2351A603A4C290037A318A2921C53F38E341EACD6CE71178071410F5C` and
+returned **HOLD**, not a confirmed bypass. Since that review, denial tests now
+observe zero adapter `data`-listener registrations and delivered bytes for
+channel and principal refusals, with a 1,024-byte admitted-body positive
+control. A combined synthetic test revokes scope during an incomplete signed
+upload and asserts zero HMAC-hook, replay-claim and handler effects, paired with
+a distinct signed ALLOW control; the focused webhook suite is **8/8** and the
+full package suite is **86/86** on Windows. A controlled mutation removing the
+post-upload authority refresh made the combined regression return 200 instead
+of 403 (and TypeScript rejected the mutated source); the original source was
+restored and the full suite passed again. Still required before source
+acceptance: a replay-before-recheck mutation must prove the downstream-effect
+assertions go red, and the required kernel preflight implementation/build
+provenance and semantic equivalence to dispatch auth must be established. These
+tests do not establish provider-open/revocation/release serialization. The
+earlier app-kernel suite is **604/605** on Windows: the sole
+failure is the intentional RD-1413 copy-survival counterexample. WSL reported
+that same counterexample plus two child-process timeouts in unrelated hostile
+intrinsics/deadline tests (602/605 passed); those timeouts are not treated as
+passes. No GitHub Actions/CI was run.
+
+This is TypeScript/bootstrap ingress evidence only. The selected production
+`POST /auth/verify` remains unwired (the example is fixture-only and the Deno
+adapter returns 503); this does not prove Fungi runtime/FFI/host enforcement,
+protected-byte custody, revocation ordering or composed RD closure. The change
+remains uncommitted in a mixed working tree. Preserve unrelated dirt.
+
 
 ## Integration checkpoint — 2026-10-08
 
@@ -101,12 +142,19 @@ OpenAPI generator.
     focused suite: 18/18; package suite: 76/76 Windows (typecheck + build + tests).
     This corroborates source ordering; it does not exclude transient listener
     registration or lower-layer parser/TLS buffering.
-[HOLD] Without an explicit transport-wide channel result, route-specific kernel
-    auth still occurs after body buffering. The selected production
-    `POST /auth/verify` is not loaded/wired here; this transport change is not
-    protected-ingress clearance or Fungi runtime/FFI/host proof. Resolver callbacks
-    receive a raw request and are trusted code; the no-body-read contract is not
-    sandbox-enforced.
+[PARTIAL] The no-global-resolver case is now covered by kernel-backed route
+    preflight before body buffering, with normal kernel recheck afterward.
+    Current unreviewed follow-through: custom authorization resolvers receive
+    a frozen method/path/query/header snapshot with no stream/socket reference;
+    they run in both `preflight` and `dispatch` phases so dynamic channel and
+    principal decisions are re-read after body buffering. The adapter suite
+    passes 82/82 on WSL and native Windows (typecheck, build, tests). This is
+    a breaking callback-contract change and remains pending independent review.
+    The selected production `POST /auth/verify` is still not loaded/wired here;
+    this transport change is not protected-operation clearance or Fungi
+    runtime/FFI/host proof. Re-evaluation does not serialize revocation with
+    provider-open or result delivery; those still require an operation-bound
+    lease and composed provider evidence.
 [x] Adapter body cap and explicit request/header/idle timeouts are wired:
     `bufferBody`, `BodyCapExceeded`, and the explicit server timeout settings in
     `src/index.ts`. Current package receipt above supersedes older test counts.

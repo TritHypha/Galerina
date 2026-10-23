@@ -92,6 +92,7 @@ function realKernel(ran) {
 /** Stub kernel that records the exact normalised request it was handed. */
 function recordingKernel(seen) {
   return {
+    preflightAuthorization() { return undefined; },
     async handle(kreq) {
       seen.push(kreq);
       return { status: 200, headers: { "content-type": "application/json" }, body: new TextEncoder().encode("{}") };

@@ -17,12 +17,14 @@
 
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { access } from "node:fs/promises";
 
 import {
   createAppKernel,
   fusePackage,
   type AppKernel,
   type FusedComponent,
+  type FusePackageOptions,
   type RouteDeclaration,
   type HandlerDispatch,
 } from "../../galerina-framework-app-kernel/dist/index.js";
@@ -54,6 +56,11 @@ export interface FuseOptions {
    * present) may set it to boot in development.
    */
   readonly allowUnsigned?: boolean;
+  /**
+   * Host-supplied central package admission. Omission deliberately refuses fusion;
+   * the example host has no production registry authority of its own.
+   */
+  readonly registryCheck?: FusePackageOptions["registryCheck"];
 }
 
 /**
@@ -86,9 +93,20 @@ async function loadRevocationGate(
     return (keyId: string): boolean => isKeyRevoked(keyId, rootDir) === true;
   } catch (e) {
     const msg = (e as Error).message;
-    if (allowUnsigned) {
-      console.warn(`⚠️  revocation gate skipped (dev/allowUnsigned): ${msg}`);
-      return undefined;
+    const errorCode = (e as NodeJS.ErrnoException).code;
+    if (allowUnsigned && errorCode === "ERR_MODULE_NOT_FOUND") {
+      try {
+        await access(governanceDir);
+      } catch (directoryError) {
+        if ((directoryError as NodeJS.ErrnoException).code !== "ENOENT") {
+          throw new Error(
+            `FUNGI-FUSE-REVOCATION-UNTRUSTED: cannot establish whether governance exists at ${governanceDir} ` +
+              `(${(directoryError as Error).message}) — refusing to fuse (fail-closed).`,
+          );
+        }
+        console.warn(`⚠️  revocation gate skipped (dev/allowUnsigned; governance directory absent): ${msg}`);
+        return undefined;
+      }
     }
     throw new Error(
       `FUNGI-FUSE-REVOCATION-UNTRUSTED: cannot establish the revocation gate from ${governanceDir} ` +
@@ -113,6 +131,7 @@ export async function fuseGreeting(opts: FuseOptions = {}): Promise<FusedCompone
   return fusePackage(paths.greetingDir, {
     governanceDir,
     ...(revocationCheck ? { revocationCheck } : {}),
+    ...(opts.registryCheck ? { registryCheck: opts.registryCheck } : {}),
     ...(opts.allowUnsigned === true ? { allowUnsigned: true } : {}),
   });
 }

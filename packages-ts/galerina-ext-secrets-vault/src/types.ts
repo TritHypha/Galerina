@@ -111,6 +111,17 @@ interface secrets-gateway {
     request: borrow<authenticated-request>,
   ) -> result<signet-grant, refusal>;
 
+  /// O is the protected provider-open linearization point: the secret-realm host
+  /// atomically validates the current signed grant, object version and revocation
+  /// fence in the same authoritative serialization domain used to commit R, a
+  /// verified revocation. R occurs only when the signed revocation is verified and
+  /// committed by the secret-realm host as effective; signature creation, network
+  /// send, or queue arrival is not R. A stale or unavailable revocation fence refuses
+  /// O before reading or releasing provider bytes. R < O also refuses without a read.
+  /// If O < R < D, the host invalidates the lease, refuses disclosure, and requires
+  /// cleanup or quarantine; this operation cannot be retried under the spent lease.
+  /// A guest-side lock or an independently processed remote revocation is not this
+  /// ordering mechanism. WIT states the contract; it does not implement enforcement.
   acquire-password-lease: func(
     request: borrow<authenticated-request>,
     grant: borrow<signet-grant>,
@@ -123,9 +134,14 @@ interface secrets-gateway {
     lease: secret-lease,
   ) -> result<cleanup-receipt, refusal>;
 
-  /// Revalidate the same request/grant, current revocation and completed
-  /// cleanup at commit. Recipient/output come only from the secret-realm-minted
-  /// request binding, never from guest arguments.
+  /// D is the recipient-bound disclosure linearization point. Revalidate the
+  /// same request/grant, current revocation fence, and completed cleanup in the
+  /// same authoritative serialization domain before irreversible handoff.
+  /// If O < D < R, exactly one pre-revocation disclosure may complete; a later
+  /// revocation cannot recall it. Delivery is successful only with an authenticated
+  /// acknowledgement bound to this operation. Without it, recovery is status-only:
+  /// never automatically redisclose or retry under the consumed lease. Recipient/
+  /// output comes only from the secret-realm-minted request binding, never guest args.
   release-verification-result: func(
     request: borrow<authenticated-request>,
     grant: borrow<signet-grant>,

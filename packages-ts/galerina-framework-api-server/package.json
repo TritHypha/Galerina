@@ -1,7 +1,7 @@
 {
   "name": "@galerina/framework-api-server",
   "version": "1.0.0-beta.2",
-  "description": "Galerina HTTP API-server adapter: resolves configured global channel/principal evidence before body buffering, applies a hard body cap, then hands requests to the non-bypassable App Kernel for independent route-policy enforcement.",
+  "description": "Galerina HTTP API-server adapter: resolves configured global channel/principal evidence and performs kernel-backed route-authorization preflight before body buffering, applies a hard body cap, then hands requests to the non-bypassable App Kernel for independent route-policy enforcement.",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
