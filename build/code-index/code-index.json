@@ -21947,13 +21947,13 @@
     "code": "FUNGI-LINEAR-001",
     "namespace": "FUNGI",
     "family": "LINEAR",
-    "occurrences": 8,
+    "occurrences": 10,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/linear-lease-checker.ts:13"
     ],
     "emits": [],
-    "tests": 5,
+    "tests": 7,
     "refs": 2,
     "docs": 0,
     "names": [
@@ -21971,20 +21971,22 @@
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:36",
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:40",
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:35",
-      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:39"
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:39",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:50",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:48"
     ]
   },
   {
     "code": "FUNGI-LINEAR-002",
     "namespace": "FUNGI",
     "family": "LINEAR",
-    "occurrences": 7,
+    "occurrences": 17,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/linear-lease-checker.ts:22"
     ],
     "emits": [],
-    "tests": 5,
+    "tests": 15,
     "refs": 1,
     "docs": 0,
     "names": [
@@ -22001,7 +22003,17 @@
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:24",
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:28",
       "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:23",
-      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:27"
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:27",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:29",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:33",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:37",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:41",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:45",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:28",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:32",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:36",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:40",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:44"
     ]
   },
   {
@@ -22036,7 +22048,7 @@
     "code": "FUNGI-LINEAR-004",
     "namespace": "FUNGI",
     "family": "LINEAR",
-    "occurrences": 5,
+    "occurrences": 8,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/linear-lease-checker.ts:40"
@@ -22044,7 +22056,7 @@
     "emits": [
       "packages-ts/galerina-core-compiler/src/parser.ts:6806"
     ],
-    "tests": 0,
+    "tests": 3,
     "refs": 3,
     "docs": 0,
     "names": [
@@ -22059,7 +22071,10 @@
       "def packages-ts/galerina-core-compiler/src/linear-lease-checker.ts:40",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6796",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:6806",
-      "ref packages-ts/galerina-core-compiler/src/parser.ts:6807"
+      "ref packages-ts/galerina-core-compiler/src/parser.ts:6807",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:54",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:55",
+      "test packages/fungi/memory/tests/s7-product-custody/s7f-linear-lease-gaps.test.mjs:53"
     ]
   },
   {
