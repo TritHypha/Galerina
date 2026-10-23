@@ -411,3 +411,62 @@ test("S5-R7c createSecretReleaseShell obeys the decider and has no default decid
   assert.throws(() => s4.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-op-4"));
   assert.equal(uses, before, "unlisted pre verdict refuses before provider.use");
 });
+// S5-R8 (gcw-s5i): kill the two surviving round-h mutants. M10 = kernel wired to an admit-all stub
+// decider; M12 = shell treats any non-false presence fact as currently valid. Both tests pass on
+// 35513230 and must go red under their mutant. Synthetic data only.
+// Zero-trust choice: the WebAssembly epoch domain [0, 2147483647] (non -0 integer) is the authority;
+// a TS readEpoch that accepts 2^31 or -0 is not a second opinion. Rejected: an identity check that
+// the kernel passed the loader gate (structural, misses a wrapper stub); widening the WebAssembly
+// domain to match TS (lets an out-of-domain epoch reach a lease).
+const APP_KERNEL_INDEX_JS = join(AK, "dist", "index.js");
+
+test("S5-R8a kernel getSecret obeys the WebAssembly pre-handoff verdict (an epoch leaving the domain after admission never delivers)", async () => {
+  assert.equal(existsSync(APP_KERNEL_INDEX_JS), true, "app-kernel not built: " + APP_KERNEL_INDEX_JS);
+  const { createAppKernel } = await import(pathToFileURL(APP_KERNEL_INDEX_JS).href);
+  // Gate 9.5 admits on epoch 3; the epoch then leaves the WebAssembly domain once the handler runs.
+  // TS readEpoch accepts both bad values (safe, non-negative); only deliverPreHandoff refuses them.
+  for (const [label, epoch] of [["epoch 2^31 above the WebAssembly i32 domain", 2 ** 31], ["negative zero epoch", -0]]) {
+    let consumerCalled = false;
+    let uses = 0;
+    let inHandler = false;
+    const kernel = createAppKernel({
+      routes: [{ method: "GET", path: "/syn", handler: "syn", auth: { mode: "public" }, secrets: { require: ["SYN_A"] } }],
+      dispatch: {
+        syn: ({ getSecret }) => {
+          inHandler = true;
+          getSecret("SYN_A", () => { consumerCalled = true; });
+          return { body: { ok: true } };
+        },
+      },
+      secretsProvider: {
+        has: (n) => n === "SYN_A",
+        use: (_n, fn) => { uses += 1; fn(new Uint8Array([9, 9])); },
+        revocationEpoch: () => (inHandler ? epoch : 3),
+      },
+    });
+    const res = await kernel.handle({ method: "GET", path: "/syn", headers: {}, body: new Uint8Array(0), query: {}, requestId: "rq-s5-r8a", receivedAt: 0 });
+    assert.equal(inHandler, true, label + ": admission passed and the handler ran");
+    assert.equal(consumerCalled, false, label + ": consumer never receives bytes");
+    assert.equal(uses, 0, label + ": provider.use never reached");
+    assert.notEqual(res.status, 200, label + ": request does not succeed");
+  }
+});
+
+test("S5-R8b shell treats only the literal true presence fact as currently valid", async () => {
+  const L = await loader();
+  const res = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)), expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, true, "load: " + res.code);
+  const G = await import(pathToFileURL(SECRET_GATE_JS).href);
+  let uses = 0;
+  const provider = { has: (n) => n === "SYN_A", use: (_n, fn) => { uses += 1; fn(new Uint8Array([5])); }, revocationEpoch: () => 3 };
+  const shell = G.createSecretReleaseShell(provider, { decider: res.gate, requireBoundOperationId: true, requireRevocationEpoch: true });
+  const notTrue = [["missing", undefined], ["one", 1], ["string true", "true"], ["object", {}], ["boxed true", Object(true)]];
+  let i = 0;
+  for (const [label, observed] of notTrue) {
+    i += 1;
+    assert.throws(() => shell.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-r8b-" + i, observed), label + " refuses");
+    assert.equal(uses, 0, label + ": provider.use not reached");
+  }
+  shell.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-r8b-ok", true);
+  assert.equal(uses, 1, "literal true admits through the WebAssembly");
+});
