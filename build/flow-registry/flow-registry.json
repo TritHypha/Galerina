@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 141,
+  "total": 142,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -25,18 +25,25 @@
       "line": 59
     },
     {
+      "qualified": "auth-verify-e2e.arenaListedExit",
+      "unit": "auth-verify-e2e",
+      "flow": "arenaListedExit",
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "line": 204
+    },
+    {
       "qualified": "auth-verify-e2e.exitAfterBegin",
       "unit": "auth-verify-e2e",
       "flow": "exitAfterBegin",
       "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
-      "line": 233
+      "line": 247
     },
     {
       "qualified": "auth-verify-e2e.exitBeforeBegin",
       "unit": "auth-verify-e2e",
       "flow": "exitBeforeBegin",
       "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
-      "line": 204
+      "line": 218
     },
     {
       "qualified": "auth-verify-e2e.listedOutcome",
@@ -57,7 +64,7 @@
       "unit": "auth-verify-e2e",
       "flow": "runAuthVerify",
       "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
-      "line": 250
+      "line": 264
     },
     {
       "qualified": "auth-verify-route.admitIngress",
