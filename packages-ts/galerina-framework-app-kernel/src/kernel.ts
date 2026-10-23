@@ -982,6 +982,22 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     };
 
     try {
+      // ── 9.4 idempotency key presence (S6-R4 ordering, gcw-s6f) ── a missing or empty key is a pure
+      // request-shape refusal, so it is decided BEFORE gate 9.5 enters the secrets provider. The header
+      // is read ONCE here and that value is the one claimed at 9.75 (no second foreign read).
+      // Zero-trust choice: refuse before any external entry. Rejected: (a) keep the 409 after 9.5 (the
+      // provider is touched for a request that can never dispatch); (b) also move the store claim
+      // before 9.5 (a later secret refusal would burn the key, which the 9.75 contract forbids);
+      // (c) move the check before gate 9 concurrency (changes 429 precedence for no zero-trust gain:
+      // the slot is kernel-local and released in finally).
+      let idempotencyKey: string | undefined;
+      if (policy.idempotency.enabled) {
+        idempotencyKey = header(req.headers, policy.idempotency.header);
+        if (idempotencyKey === undefined || idempotencyKey.length === 0) {
+          return pipelineOutcome(errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy);
+        }
+      }
+
       // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
       // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
       // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.
@@ -1006,7 +1022,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // refuses; IdempotencyStore has no ownership-bound rollback, so reusing it could replay an
       // reservation without proving that this exact claim can be safely undone.
       if (policy.idempotency.enabled) {
-        const key = header(req.headers, policy.idempotency.header);
+        const key = idempotencyKey; // read once at 9.4
         if (key === undefined || key.length === 0) {
           return pipelineOutcome(errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy);
         }
