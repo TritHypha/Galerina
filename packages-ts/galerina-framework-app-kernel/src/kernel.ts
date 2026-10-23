@@ -32,6 +32,35 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretReleaseShell, SecretReleaseRefused } from "./secret-gate.js";
 import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
+import { isQueryCustodyRoute, loadPinnedFungiQueryCustody, snapshotQueryInput } from "./fungi-query-custody-loader.js";
+import type { QueryInputSnapshot } from "./fungi-query-custody-loader.js";
+
+/** S6 F1 (gcw-s6e): the request the handler sees on a custody route carries ONLY the verified query
+ *  snapshot. Every other field is read once into a frozen plain copy. */
+function rebindVerifiedQuery(
+  req: GalerinaKernelRequest,
+  method: HttpMethod,
+  path: string,
+  snap: QueryInputSnapshot,
+): GalerinaKernelRequest {
+  const out: Record<string, unknown> = {
+    method,
+    path,
+    headers: req.headers,
+    body: req.body,
+    query: snap.query,
+    queryCustody: snap.queryCustody,
+    requestId: req.requestId,
+    receivedAt: req.receivedAt,
+  };
+  const channelVerdict = req.channelVerdict;
+  if (channelVerdict !== undefined) out["channelVerdict"] = channelVerdict;
+  const principalScopes = req.principalScopes;
+  if (principalScopes !== undefined) out["principalScopes"] = principalScopes;
+  const principalId = req.principalId;
+  if (principalId !== undefined) out["principalId"] = principalId;
+  return Object.freeze(out) as unknown as GalerinaKernelRequest;
+}
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
@@ -216,6 +245,10 @@ export interface GalerinaKernelRequest {
   readonly headers: Readonly<Record<string, string>>;
   readonly body: Uint8Array;
   readonly query: Readonly<Record<string, string>>;
+  /** S6 (RD-1413): raw ordered decoded query pairs as received by the transport, before any
+   *  flattening. Required for POST /auth/verify: without it the flat `query` cannot prove there was
+   *  no repeated or unknown name, so the Fungi query-custody verdict treats it as UNKNOWN and refuses. */
+  readonly queryCustody?: readonly (readonly [string, string])[];
   readonly requestId: string;
   readonly receivedAt: number;
   /** Optional channel/identity verdict from the transport (e.g. the TLSTP S1 cert-gate K3 fold).
@@ -639,6 +672,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     });
   }
   const fungiGate = fungiGateLoad.gate;
+  // S6: the POST /auth/verify query verdict is the pinned Fungi query-custody WebAssembly. An
+  // unloadable artifact leaves that one route refused (503), never admitted.
+  const fungiQueryCustody = loadPinnedFungiQueryCustody();
   // S5-R1b/R7: getSecret/noteUnknown run through a release shell whose ONLY decider is the
   // pinned Fungi WebAssembly (deliverPreHandoff, gateNoteUnknown). TS keeps IO only.
   const secretGate = createSecretReleaseShell(opts.secretsProvider, {
@@ -754,6 +790,21 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     const policy = mapGet(methods, method);
     if (policy === undefined) {
       return pipelineOutcome(errorResponse(405, "method_not_allowed", `Method '${method}' not allowed for '${path}'.`), undefined);
+    }
+
+    // ── 2.5 query custody (S6, RD-1413 O2/O3) ── before body, auth, idempotency and any provider
+    // entry. The Fungi flow decides; TS only counts exact names over the raw pair custody.
+    if (isQueryCustodyRoute(method, path)) {
+      // F1 (gcw-s6rc): read query + queryCustody once, verify that frozen copy, dispatch only it.
+      const querySnapshot = snapshotQueryInput(req);
+      const custodyVerdict = fungiQueryCustody.verdict(querySnapshot);
+      if (custodyVerdict === "unavailable") {
+        return pipelineOutcome(errorResponse(503, "internal_error", "Query custody verdict unavailable."), policy);
+      }
+      if (custodyVerdict !== "admit") {
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Query refused."), policy);
+      }
+      req = rebindVerifiedQuery(req, method, path, querySnapshot);
     }
 
     // ── 3 resolve policy ── (already resolved at construction; `policy` is it)
@@ -931,6 +982,22 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     };
 
     try {
+      // ── 9.4 idempotency key presence (S6-R4 ordering, gcw-s6f) ── a missing or empty key is a pure
+      // request-shape refusal, so it is decided BEFORE gate 9.5 enters the secrets provider. The header
+      // is read ONCE here and that value is the one claimed at 9.75 (no second foreign read).
+      // Zero-trust choice: refuse before any external entry. Rejected: (a) keep the 409 after 9.5 (the
+      // provider is touched for a request that can never dispatch); (b) also move the store claim
+      // before 9.5 (a later secret refusal would burn the key, which the 9.75 contract forbids);
+      // (c) move the check before gate 9 concurrency (changes 429 precedence for no zero-trust gain:
+      // the slot is kernel-local and released in finally).
+      let idempotencyKey: string | undefined;
+      if (policy.idempotency.enabled) {
+        idempotencyKey = header(req.headers, policy.idempotency.header);
+        if (idempotencyKey === undefined || idempotencyKey.length === 0) {
+          return pipelineOutcome(errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy);
+        }
+      }
+
       // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
       // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
       // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.
@@ -955,7 +1022,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // refuses; IdempotencyStore has no ownership-bound rollback, so reusing it could replay an
       // reservation without proving that this exact claim can be safely undone.
       if (policy.idempotency.enabled) {
-        const key = header(req.headers, policy.idempotency.header);
+        const key = idempotencyKey; // read once at 9.4
         if (key === undefined || key.length === 0) {
           return pipelineOutcome(errorResponse(409, "conflict", `Header '${policy.idempotency.header}' is required.`), policy);
         }

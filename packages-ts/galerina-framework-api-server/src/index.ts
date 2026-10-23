@@ -355,6 +355,7 @@ class RequestTargetError extends Error {
 function parseUrl(rawUrl: string | undefined): {
   path: string;
   query: Record<string, string>;
+  queryCustody: readonly (readonly [string, string])[];
 } {
   const raw = rawUrl ?? "/";
   if (raw.startsWith("//") || raw.includes("\\") || raw.includes("\0")) {
@@ -369,8 +370,12 @@ function parseUrl(rawUrl: string | undefined): {
   if (url.protocol !== "http:" || url.hostname !== "x" || url.port !== "" || url.username !== "" || url.password !== "") {
     throw new RequestTargetError();
   }
-  const query = admitQueryOnce(url.searchParams);
-  return { path: url.pathname, query };
+  // S6: one snapshot of the raw ordered decoded pairs feeds both the flat Record and the custody
+  // the kernel hands to the Fungi query-custody verdict (POST /auth/verify).
+  const pairs: (readonly [string, string])[] = [];
+  for (const [name, value] of url.searchParams) pairs.push(Object.freeze([name, value] as const));
+  const query = admitQueryOnce(pairs);
+  return { path: url.pathname, query, queryCustody: Object.freeze(pairs) };
 }
 
 function normaliseMethod(raw: string | undefined): HttpMethod {
@@ -813,8 +818,9 @@ async function handleRequest(
   // (3) Normalise into a GalerinaKernelRequest.
   let path: string;
   let query: Record<string, string>;
+  let queryCustody: readonly (readonly [string, string])[];
   try {
-    ({ path, query } = parseUrl(req.url));
+    ({ path, query, queryCustody } = parseUrl(req.url));
   } catch (err) {
     if (err instanceof DuplicateQueryKeyError) {
       // Fail closed on an ambiguous query: the kernel, webhook HMAC and replay claim never run.
@@ -839,6 +845,7 @@ async function handleRequest(
     headers: lowercaseHeaders(req.headers),
     body,
     query,
+    queryCustody,
     requestId: randomUUID(),
     receivedAt: Date.now(),
     ...(channelVerdict !== undefined ? { channelVerdict } : {}),

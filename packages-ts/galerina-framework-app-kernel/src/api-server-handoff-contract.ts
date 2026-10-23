@@ -51,7 +51,10 @@ export const KERNEL_HANDOFF_METHODS = Object.freeze(["GET", "POST", "PUT", "PATC
 
 /** GalerinaKernelRequest fields (kernel.ts). A test pins this list to the kernel.ts source. */
 export const KERNEL_HANDOFF_REQUEST_REQUIRED_FIELDS = Object.freeze(["method", "path", "headers", "body", "query", "requestId", "receivedAt"] as const);
-export const KERNEL_HANDOFF_REQUEST_OPTIONAL_FIELDS = Object.freeze(["channelVerdict", "principalScopes", "principalId"] as const);
+// S6 (gcw-s6d): queryCustody = the raw ordered decoded query pairs (before flattening) the Fungi
+// query-custody verdict needs on POST /auth/verify. Optional in the handoff shape; the kernel, not this
+// data check, refuses its absence on that route.
+export const KERNEL_HANDOFF_REQUEST_OPTIONAL_FIELDS = Object.freeze(["queryCustody", "channelVerdict", "principalScopes", "principalId"] as const);
 
 /** GalerinaKernelResponse fields (kernel.ts). */
 export const KERNEL_HANDOFF_RESPONSE_REQUIRED_FIELDS = Object.freeze(["status", "headers"] as const);
@@ -181,6 +184,31 @@ function checkScopes(value: unknown, out: ApiServerHandoffDiagnostic[]): void {
   }
 }
 
+/** S6: a dense plain array of [name, value] string pairs, bounded like the flat query record. */
+function checkQueryCustody(value: unknown, out: ApiServerHandoffDiagnostic[]): void {
+  const L = KERNEL_HANDOFF_LIMITS;
+  const bad = (): void => { out.push(diag(FUNGI_APPK_ASH_003, "queryCustody must be a dense bounded array of [name, value] string pairs.", "queryCustody")); };
+  try {
+    if (!Array.isArray(value) || isProxy(value) || Object.getPrototypeOf(value) !== Array.prototype) return bad();
+    const length: unknown = Object.getOwnPropertyDescriptor(value, "length")?.value;
+    if (typeof length !== "number" || length > L.maxQueryEntries) return bad();
+    for (let i = 0; i < length; i += 1) {
+      const d = Object.getOwnPropertyDescriptor(value, String(i));
+      const pair: unknown = d !== undefined && "value" in d ? d.value : undefined;
+      if (!Array.isArray(pair) || isProxy(pair) || Object.getPrototypeOf(pair) !== Array.prototype) return bad();
+      const n = Object.getOwnPropertyDescriptor(pair, "length")?.value;
+      const nd = Object.getOwnPropertyDescriptor(pair, "0");
+      const vd = Object.getOwnPropertyDescriptor(pair, "1");
+      const name: unknown = nd !== undefined && "value" in nd ? nd.value : undefined;
+      const entry: unknown = vd !== undefined && "value" in vd ? vd.value : undefined;
+      if (n !== 2 || typeof name !== "string" || typeof entry !== "string") return bad();
+      if (name.length === 0 || name.length > L.maxQueryValueLength || hasControl(name) || entry.length > L.maxQueryValueLength) return bad();
+    }
+  } catch {
+    bad();
+  }
+}
+
 const finish = (out: ApiServerHandoffDiagnostic[]): ApiServerHandoffCheck =>
   out.length === 0
     ? Object.freeze({ ok: true as const, schema: API_SERVER_HANDOFF_SCHEMA })
@@ -219,6 +247,7 @@ export function checkKernelHandoffRequest(value: unknown): ApiServerHandoffCheck
   checkStringRecord(v.get("headers"), L.maxHeaders, L.maxHeaderNameLength, L.maxHeaderValueLength, true, "headers", out, FUNGI_APPK_ASH_003);
   if (!isBytes(v.get("body"))) out.push(diag(FUNGI_APPK_ASH_002, "body must be a Uint8Array of already-read bytes.", "body"));
   checkStringRecord(v.get("query"), L.maxQueryEntries, L.maxQueryValueLength, L.maxQueryValueLength, false, "query", out, FUNGI_APPK_ASH_003);
+  if (v.has("queryCustody")) checkQueryCustody(v.get("queryCustody"), out);
   const requestId = v.get("requestId");
   if (typeof requestId !== "string" || requestId.length === 0 || requestId.length > L.maxRequestIdLength || !/^[A-Za-z0-9._:-]+$/.test(requestId)) {
     out.push(diag(FUNGI_APPK_ASH_002, "requestId must be a short opaque token.", "requestId"));

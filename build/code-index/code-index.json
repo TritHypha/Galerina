@@ -23060,8 +23060,8 @@
       "MB-06"
     ],
     "allSites": [
-      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:634",
-      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1044",
+      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:667",
+      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1111",
       "ref packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:523",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:183",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:158",
@@ -32534,7 +32534,7 @@
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:272",
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:275",
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:289",
-      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:633",
+      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:666",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:182",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:572",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:576",
