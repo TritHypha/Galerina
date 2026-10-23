@@ -1,8 +1,8 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1506,
+  "total": 1508,
   "counts": {
-    "ref": 349,
+    "ref": 351,
     "inline": 444,
     "phantom": 76,
     "live": 230,
@@ -11187,7 +11187,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 24,
+      "tests": 34,
       "docs": 10
     },
     {
@@ -11609,7 +11609,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 59,
+      "tests": 60,
       "docs": 19
     },
     {
@@ -11618,11 +11618,13 @@
       "namespace": "FUNGI",
       "status": "inline",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
-      "emits": 9,
-      "tests": 62,
-      "docs": 4
+      "emits": 11,
+      "tests": 71,
+      "docs": 5
     },
     {
       "code": "FUNGI-NAME-003",
@@ -15269,6 +15271,30 @@
       "emits": 1,
       "tests": 2,
       "docs": 3
+    },
+    {
+      "code": "FUNGI-SECRET-008",
+      "family": "SECRET",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-SECRET-009",
+      "family": "SECRET",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
     },
     {
       "code": "FUNGI-SECRET-999",

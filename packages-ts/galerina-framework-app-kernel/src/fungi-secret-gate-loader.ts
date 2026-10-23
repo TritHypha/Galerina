@@ -9,8 +9,8 @@
 // Zero-trust choices (preflight-s5-01-8f5158ff, option A):
 // - The artifact is pinned by SHA-256 (SECRET_GATE_ADMIT_SHA256). A missing, empty or non-byte
 //   artifact, a missing/ill-formed pin, a module that imports anything, or one without a 10-arg
-//   `admit` export is APPK_SECRET_GATE_ARTIFACT_UNKNOWN; a hash mismatch is
-//   APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH. A refused load exposes no gate.
+//   `admit` export is FUNGI-SECRET-008; a hash mismatch is
+//   FUNGI-SECRET-009. A refused load exposes no gate.
 // - The kernel loads ONLY the pinned asset through loadPinnedFungiSecretGate(); there is no kernel
 //   option to inject artifact bytes (rejected: a test hook is a lying-artifact door).
 // - Bytes are copied once before hashing; the hashed copy is the compiled copy (no TOCTOU).
@@ -29,8 +29,8 @@ import { createHash } from "node:crypto";
 export const SECRET_GATE_ADMIT_SHA256 = "5b11c9d4e8ae92cdfdd930a112211c1996b791a2beaf24560699fb4416da37cd";
 
 export type SecretGateArtifactRefusalCode =
-  | "APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH"
-  | "APPK_SECRET_GATE_ARTIFACT_UNKNOWN";
+  | "FUNGI-SECRET-009"
+  | "FUNGI-SECRET-008";
 
 /** Structural provider view the loader observes. Matches secret-gate.ts SecretsProvider. */
 export interface ObservedSecretsProvider {
@@ -247,32 +247,32 @@ function makeGate(admitExport: AdmitExport, noteUnknownExport: AdmitExport, preE
 export function loadFungiSecretGate(input: { readonly wasmBytes?: unknown; readonly expectedSha256?: unknown }): FungiSecretGateLoad {
   const source = input === undefined || input === null ? undefined : input.wasmBytes;
   const pin = input === undefined || input === null ? undefined : input.expectedSha256;
-  if (!(source instanceof Uint8Array) || source.byteLength === 0) return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
-  if (typeof pin !== "string" || !/^[0-9a-f]{64}$/.test(pin)) return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+  if (!(source instanceof Uint8Array) || source.byteLength === 0) return refused("FUNGI-SECRET-008");
+  if (typeof pin !== "string" || !/^[0-9a-f]{64}$/.test(pin)) return refused("FUNGI-SECRET-008");
   const bytes = new Uint8Array(source); // one copy: hashed bytes are compiled bytes
   const actual = createHash("sha256").update(bytes).digest("hex");
-  if (actual !== pin) return refused("APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH");
+  if (actual !== pin) return refused("FUNGI-SECRET-009");
   let admitExport: unknown;
   let noteUnknownExport: unknown;
   let preExport: unknown;
   try {
     const mod = new WebAssembly.Module(bytes);
-    if (WebAssembly.Module.imports(mod).length !== 0) return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    if (WebAssembly.Module.imports(mod).length !== 0) return refused("FUNGI-SECRET-008");
     const instance = new WebAssembly.Instance(mod, {});
     admitExport = (instance.exports as Record<string, unknown>)["admit"];
     noteUnknownExport = (instance.exports as Record<string, unknown>)["gateNoteUnknown"];
     preExport = (instance.exports as Record<string, unknown>)["deliverPreHandoff"];
   } catch {
-    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    return refused("FUNGI-SECRET-008");
   }
   if (typeof admitExport !== "function" || (admitExport as AdmitExport).length !== 10) {
-    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    return refused("FUNGI-SECRET-008");
   }
   if (typeof noteUnknownExport !== "function" || (noteUnknownExport as AdmitExport).length !== 2) {
-    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    return refused("FUNGI-SECRET-008");
   }
   if (typeof preExport !== "function" || (preExport as AdmitExport).length !== 16) {
-    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    return refused("FUNGI-SECRET-008");
   }
   return Object.freeze({
     ok: true as const,
@@ -286,7 +286,7 @@ export function loadPinnedFungiSecretGate(): FungiSecretGateLoad {
   try {
     wasmBytes = new Uint8Array(readFileSync(new URL("../assets/secret-gate-admit.wasm", import.meta.url)));
   } catch {
-    return refused("APPK_SECRET_GATE_ARTIFACT_UNKNOWN");
+    return refused("FUNGI-SECRET-008");
   }
   return loadFungiSecretGate({ wasmBytes, expectedSha256: SECRET_GATE_ADMIT_SHA256 });
 }

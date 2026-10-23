@@ -18,7 +18,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | referenced | 175 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 232 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 76 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 349 | referenced only (no def/emit) |
+| ref | 351 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -1657,7 +1657,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-NAME-001 | inline | — | — |
-| FUNGI-NAME-002 | inline | — | — |
+| FUNGI-NAME-002 | inline | — | error |
 | FUNGI-NAME-003 | live | CROSS_MODULE_SHADOW | warning |
 
 ### NAMING (5)
@@ -2220,7 +2220,7 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-SEC-SRN-004 | dead | — | — |
 | FUNGI-SEC-SRN-005 | dead | — | — |
 
-### SECRET (8)
+### SECRET (10)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -2231,6 +2231,8 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | FUNGI-SECRET-005 | inline | SECRET_SENT_TO_NETWORK | error |
 | FUNGI-SECRET-006 | inline | — | — |
 | FUNGI-SECRET-007 | inline | SECRET_SENT_TO_MODEL | error |
+| FUNGI-SECRET-008 | ref | — | — |
+| FUNGI-SECRET-009 | ref | — | — |
 | FUNGI-SECRET-999 | ref | — | — |
 
 ### SEM (14)

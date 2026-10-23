@@ -7530,6 +7530,16 @@
       "code": "GATE-X-001",
       "meaning": "UNKNOWN",
       "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-008",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-SECRET-009",
+      "meaning": "UNKNOWN",
+      "status": "active"
     }
   ]
 }

@@ -630,7 +630,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
   // S5: the gate-9.5 VERDICT is the Fungi secret-gate WebAssembly `admit` export, loaded ONCE at
   // boot from the pinned asset (no option can inject bytes). A missing or tampered artifact is a
-  // typed BOOT refusal (APPK_SECRET_GATE_ARTIFACT_UNKNOWN / _HASH_MISMATCH), never a silent dark
+  // typed BOOT refusal (FUNGI-SECRET-008 / _HASH_MISMATCH), never a silent dark
   // kernel and never admit-without-decider. getSecret/noteUnknown verdicts come from the same WebAssembly via the release shell below (MB-06: no ACK).
   const fungiGateLoad = loadPinnedFungiSecretGate();
   if (!fungiGateLoad.ok) {

@@ -157,7 +157,7 @@ test("S5-R2c tampered artifact refuses at load with a typed code", async () => {
   t[t.length - 1] ^= 0x01;
   const res = L.loadFungiSecretGate({ wasmBytes: t, expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
   assert.equal(res.ok, false);
-  assert.equal(res.code, "APPK_SECRET_GATE_ARTIFACT_HASH_MISMATCH");
+  assert.equal(res.code, "FUNGI-SECRET-009");
   assert.equal("gate" in res, false, "a refused load exposes no gate");
 });
 
@@ -179,7 +179,7 @@ test("S5-R3 missing or empty artifact refuses with typed UNKNOWN", async () => {
   for (const wasmBytes of [undefined, null, new Uint8Array(0), "secret-gate-admit.wasm"]) {
     const res = L.loadFungiSecretGate({ wasmBytes, expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
     assert.equal(res.ok, false, String(wasmBytes));
-    assert.equal(res.code, "APPK_SECRET_GATE_ARTIFACT_UNKNOWN", String(wasmBytes));
+    assert.equal(res.code, "FUNGI-SECRET-008", String(wasmBytes));
   }
   const noPin = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)) });
   assert.equal(noPin.ok, false, "a load without an expected hash refuses");
@@ -469,4 +469,26 @@ test("S5-R8b shell treats only the literal true presence fact as currently valid
   }
   shell.getSecret(["SYN_A"], "SYN_A", () => undefined, undefined, "syn-r8b-ok", true);
   assert.equal(uses, 1, "literal true admits through the WebAssembly");
+});
+
+// ---------------- S5-R9: every loader refusal code is a registered FUNGI-* code (gcw-s5j) ----------------
+// Owner ruling 2026-10-22 22:38: the two artifact codes join the FUNGI-SECRET family.
+// Zero-trust choice: assert against the GENERATED registry and the append-only code history, not a
+// hand list in this test, so an unregistered emit can never pass. Rejected: keeping APPK_* as a second
+// namespace (unscanned by the registry) and an exemption list.
+test("S5-R9a loader refusal codes are FUNGI-SECRET-008/009 and both are registered", () => {
+  const src = readFileSync(LOADER_TS, "utf8");
+  assert.equal(/APPK_SECRET_GATE_ARTIFACT/.test(src), false, "no unregistered APPK_* artifact code is emitted");
+  const emitted = [...new Set([...src.matchAll(/refused\("([A-Z0-9_-]+)"\)/g)].map((m) => m[1]))].sort();
+  assert.deepEqual(emitted, ["FUNGI-SECRET-008", "FUNGI-SECRET-009"]);
+  const reg = JSON.parse(readFileSync(join(REPO, "build", "code-registry", "registry.json"), "utf8"));
+  const hist = JSON.parse(readFileSync(join(REPO, "scripts", "baselines", "code-history.json"), "utf8"));
+  for (const code of emitted) {
+    const row = reg.entries.find((e) => e.code === code);
+    assert.ok(row, `${code} is in build/code-registry/registry.json`);
+    assert.notEqual(row.status, "dead", `${code} is not a retired/dead code`);
+    const h = hist.records.filter((r) => r.code === code);
+    assert.equal(h.length, 1, `${code} has exactly one code-history row`);
+    assert.equal(h[0].status, "active");
+  }
 });
