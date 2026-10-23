@@ -21944,6 +21944,70 @@
     ]
   },
   {
+    "code": "FUNGI-LINEAR-001",
+    "namespace": "FUNGI",
+    "family": "LINEAR",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 5,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "aliases": [],
+    "allSites": [
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:6",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:36",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:40",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:35",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:39"
+    ]
+  },
+  {
+    "code": "FUNGI-LINEAR-002",
+    "namespace": "FUNGI",
+    "family": "LINEAR",
+    "occurrences": 5,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 5,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "aliases": [],
+    "allSites": [
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:6",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:24",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:28",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:23",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:27"
+    ]
+  },
+  {
+    "code": "FUNGI-LINEAR-003",
+    "namespace": "FUNGI",
+    "family": "LINEAR",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 3,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "aliases": [],
+    "allSites": [
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:6",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:32",
+      "test packages/fungi/memory/tests/s7-product-custody/s7e-linear-lease.test.mjs:31"
+    ]
+  },
+  {
     "code": "FUNGI-LINT-001",
     "namespace": "FUNGI",
     "family": "LINT",
