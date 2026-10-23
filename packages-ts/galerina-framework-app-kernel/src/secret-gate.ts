@@ -158,6 +158,30 @@ export function createSecretGate(
     readonly requireRevocationEpoch?: boolean;
   } = {},
 ): SecretGate {
+  return buildSecretGate(provider, options, undefined);
+}
+
+/** Host observations handed to the decider before any provider callback (S5-R7). */
+interface ShellPreHandoffFacts {
+  readonly declared: boolean;
+  readonly providerPresent: boolean;
+  readonly epochPresent: boolean;
+  readonly epochMint: unknown;
+  readonly epochUse: unknown;
+  readonly epochMoved: boolean;
+  readonly revoked: boolean;
+  readonly currentlyValid: boolean;
+}
+
+function buildSecretGate(
+  provider: SecretsProvider | undefined,
+  options: {
+    readonly authority?: ReleaseCommitAuthority;
+    readonly requireBoundOperationId?: boolean;
+    readonly requireRevocationEpoch?: boolean;
+  },
+  preHandoff: ((facts: ShellPreHandoffFacts) => unknown) | undefined,
+): SecretGate {
   const authority = options.authority ?? new ReleaseCommitAuthority();
   const requireBoundOperationId = options.requireBoundOperationId === true;
   const requireRevocationEpoch = options.requireRevocationEpoch === true;
@@ -207,6 +231,51 @@ export function createSecretGate(
     const opId = typeof operationId === "string"
       ? operationId
       : `oneshot:${(oneshot += 1)}`;
+    if (preHandoff !== undefined) {
+      // S5-R7: the decider (the Fungi WebAssembly deliverPreHandoff in the kernel) rules BEFORE
+      // any lease is minted or the provider is opened. TS only reports what it saw; an epoch read
+      // that throws or is not a function is reported raw and the decider refuses it.
+      let epochPresent = typeof provider.revocationEpoch === "function";
+      let epochMint: unknown = "UNKNOWN";
+      let epochUse: unknown = "UNKNOWN";
+      if (epochPresent) {
+        try {
+          epochMint = provider.revocationEpoch?.();
+          epochUse = provider.revocationEpoch?.();
+        } catch {
+          epochPresent = false;
+        }
+      }
+      // Validity is observed only when the epoch was observable: an epochless provider is already
+      // refused by the decider, and an extra presence call would hand a hostile provider one more
+      // re-entry point (pinned by secret-gate.test.mjs call counts). Unobserved = not valid.
+      let currentlyValid = false;
+      if (epochPresent) {
+        try {
+          currentlyValid = provider.has(name) === true;
+        } catch {
+          currentlyValid = false;
+        }
+      }
+      let verdict: unknown;
+      try {
+        verdict = preHandoff(Object.freeze({
+          declared: true,
+          providerPresent: true,
+          epochPresent,
+          epochMint,
+          epochUse,
+          epochMoved: !Object.is(epochMint, epochUse),
+          revoked: false,
+          currentlyValid,
+        }));
+      } catch {
+        verdict = "refuse";
+      }
+      if (verdict !== "admit") {
+        throw new SecretReleaseRefused("fenced", "SecretGate: pre-handoff verdict refused");
+      }
+    }
     const epochAtMint = readEpoch(provider, requireRevocationEpoch);
     const lease = authority.mint(opId, epochAtMint);
     const prior = authority.stateOf(lease.leaseId);
@@ -425,4 +494,86 @@ export function createSecretGate(
   }
 
   return { admit, getSecret, acknowledge, status, noteUnknown, auditEvents };
+}
+
+/** The decider a release shell obeys. In the kernel this is the pinned Fungi secret-gate WebAssembly. */
+export interface SecretReleaseDecider {
+  preHandoffVerdict(facts: unknown): unknown;
+  noteUnknownVerdict(leaseState: unknown): unknown;
+}
+
+/** S5: getSecret/noteUnknown with every verdict taken from the decider. No admit, no acknowledge (MB-06). */
+export interface SecretReleaseShell {
+  getSecret: SecretGate["getSecret"];
+  status: SecretGate["status"];
+  noteUnknown: SecretGate["noteUnknown"];
+  auditEvents: SecretGate["auditEvents"];
+}
+
+const SHELL_LEASE_INDEX: readonly string[] = ["unused", "released", "acknowledged", "fenced", "delivery-unknown"];
+
+/**
+ * S5 release shell: TS keeps the IO (provider calls, staging, wipe, lease records) and asks the
+ * decider for every verdict. There is no default decider: construction without one throws.
+ * A pre verdict other than the literal "admit" refuses before the provider is opened. A
+ * noteUnknown verdict other than the literal "no-op" fails toward delivery-unknown.
+ * Rejected: a TS fallback decider (two deciders = bypass); leaving a lease released on an
+ * unlisted verdict; renaming createSecretGate (TS would still decide).
+ */
+export function createSecretReleaseShell(
+  provider: SecretsProvider | undefined,
+  options: {
+    readonly decider: SecretReleaseDecider;
+    readonly authority?: ReleaseCommitAuthority;
+    readonly requireBoundOperationId?: boolean;
+    readonly requireRevocationEpoch?: boolean;
+  },
+): SecretReleaseShell {
+  const decider: unknown = options === null || typeof options !== "object" ? undefined : options.decider;
+  if (decider === null || typeof decider !== "object") {
+    throw new TypeError("SecretReleaseShell: a decider is required (there is no default)");
+  }
+  const preVerdict = (decider as { preHandoffVerdict?: unknown }).preHandoffVerdict;
+  const unknownVerdict = (decider as { noteUnknownVerdict?: unknown }).noteUnknownVerdict;
+  if (typeof preVerdict !== "function" || typeof unknownVerdict !== "function") {
+    throw new TypeError("SecretReleaseShell: decider must expose preHandoffVerdict and noteUnknownVerdict");
+  }
+  const authority = options.authority ?? new ReleaseCommitAuthority();
+  const inner = buildSecretGate(
+    provider,
+    {
+      authority,
+      requireBoundOperationId: options.requireBoundOperationId === true,
+      requireRevocationEpoch: options.requireRevocationEpoch === true,
+    },
+    (facts) => intrinsicApply(preVerdict as (f: unknown) => unknown, decider, [facts]),
+  );
+
+  function noteUnknown(operationId: string): void {
+    let lease: unknown = "UNKNOWN";
+    try {
+      const state = authority.status(operationId).state;
+      for (let index = 0; index < SHELL_LEASE_INDEX.length; index += 1) {
+        if (SHELL_LEASE_INDEX[index] === state) lease = index;
+      }
+    } catch {
+      lease = "UNKNOWN";
+    }
+    let verdict: unknown;
+    try {
+      verdict = intrinsicApply(unknownVerdict as (l: unknown) => unknown, decider, [lease]);
+    } catch {
+      verdict = "UNKNOWN";
+    }
+    if (verdict === "no-op") return;
+    // "delivery-unknown", UNKNOWN, a trap or anything unlisted: fail toward delivery-unknown.
+    authority.markUnknown(operationId);
+  }
+
+  return Object.freeze({
+    getSecret: inner.getSecret,
+    status: inner.status,
+    noteUnknown,
+    auditEvents: inner.auditEvents,
+  });
 }

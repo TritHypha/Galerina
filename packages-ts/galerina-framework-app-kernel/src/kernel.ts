@@ -30,7 +30,7 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
 // SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
-import { createSecretGate, SecretReleaseRefused } from "./secret-gate.js";
+import { createSecretReleaseShell, SecretReleaseRefused } from "./secret-gate.js";
 import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
@@ -628,15 +628,10 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
   // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
   // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
-  const secretGate = createSecretGate(opts.secretsProvider, {
-    ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
-    requireBoundOperationId: true,
-    requireRevocationEpoch: true,
-  });
   // S5: the gate-9.5 VERDICT is the Fungi secret-gate WebAssembly `admit` export, loaded ONCE at
   // boot from the pinned asset (no option can inject bytes). A missing or tampered artifact is a
   // typed BOOT refusal (APPK_SECRET_GATE_ARTIFACT_UNKNOWN / _HASH_MISMATCH), never a silent dark
-  // kernel and never admit-without-decider. The TS gate above still serves getSecret/noteUnknown only (MB-06: no ACK).
+  // kernel and never admit-without-decider. getSecret/noteUnknown verdicts come from the same WebAssembly via the release shell below (MB-06: no ACK).
   const fungiGateLoad = loadPinnedFungiSecretGate();
   if (!fungiGateLoad.ok) {
     throw Object.assign(new Error(`${fungiGateLoad.code}: the pinned Fungi secret-gate WebAssembly refused to load.`), {
@@ -644,6 +639,14 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     });
   }
   const fungiGate = fungiGateLoad.gate;
+  // S5-R1b/R7: getSecret/noteUnknown run through a release shell whose ONLY decider is the
+  // pinned Fungi WebAssembly (deliverPreHandoff, gateNoteUnknown). TS keeps IO only.
+  const secretGate = createSecretReleaseShell(opts.secretsProvider, {
+    decider: fungiGate,
+    ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
+    requireBoundOperationId: true,
+    requireRevocationEpoch: true,
+  });
   const gateProvider = opts.secretsProvider;
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
