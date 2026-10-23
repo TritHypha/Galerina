@@ -32,6 +32,7 @@ import { resolveEffectiveRoutePolicy, RATE_PER_MINUTE_FORM, type EffectivePostur
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretReleaseShell, SecretReleaseRefused } from "./secret-gate.js";
 import { loadPinnedFungiSecretGate } from "./fungi-secret-gate-loader.js";
+import { isQueryCustodyRoute, loadPinnedFungiQueryCustody } from "./fungi-query-custody-loader.js";
 import type { ReleaseCommitAuthority, SecretsProvider } from "./secret-gate.js";
 
 function isSecretReleaseRefused(error: unknown): error is SecretReleaseRefused {
@@ -216,6 +217,10 @@ export interface GalerinaKernelRequest {
   readonly headers: Readonly<Record<string, string>>;
   readonly body: Uint8Array;
   readonly query: Readonly<Record<string, string>>;
+  /** S6 (RD-1413): raw ordered decoded query pairs as received by the transport, before any
+   *  flattening. Required for POST /auth/verify: without it the flat `query` cannot prove there was
+   *  no repeated or unknown name, so the Fungi query-custody verdict treats it as UNKNOWN and refuses. */
+  readonly queryCustody?: readonly (readonly [string, string])[];
   readonly requestId: string;
   readonly receivedAt: number;
   /** Optional channel/identity verdict from the transport (e.g. the TLSTP S1 cert-gate K3 fold).
@@ -639,6 +644,9 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     });
   }
   const fungiGate = fungiGateLoad.gate;
+  // S6: the POST /auth/verify query verdict is the pinned Fungi query-custody WebAssembly. An
+  // unloadable artifact leaves that one route refused (503), never admitted.
+  const fungiQueryCustody = loadPinnedFungiQueryCustody();
   // S5-R1b/R7: getSecret/noteUnknown run through a release shell whose ONLY decider is the
   // pinned Fungi WebAssembly (deliverPreHandoff, gateNoteUnknown). TS keeps IO only.
   const secretGate = createSecretReleaseShell(opts.secretsProvider, {
@@ -754,6 +762,18 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     const policy = mapGet(methods, method);
     if (policy === undefined) {
       return pipelineOutcome(errorResponse(405, "method_not_allowed", `Method '${method}' not allowed for '${path}'.`), undefined);
+    }
+
+    // ── 2.5 query custody (S6, RD-1413 O2/O3) ── before body, auth, idempotency and any provider
+    // entry. The Fungi flow decides; TS only counts exact names over the raw pair custody.
+    if (isQueryCustodyRoute(method, path)) {
+      const custodyVerdict = fungiQueryCustody.verdict(req);
+      if (custodyVerdict === "unavailable") {
+        return pipelineOutcome(errorResponse(503, "internal_error", "Query custody verdict unavailable."), policy);
+      }
+      if (custodyVerdict !== "admit") {
+        return pipelineOutcome(errorResponse(422, "unprocessable_entity", "Query refused."), policy);
+      }
     }
 
     // ── 3 resolve policy ── (already resolved at construction; `policy` is it)
