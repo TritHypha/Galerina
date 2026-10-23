@@ -32513,11 +32513,11 @@
     "code": "FUNGI-SECRET-008",
     "namespace": "FUNGI",
     "family": "SECRET",
-    "occurrences": 14,
+    "occurrences": 16,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 3,
+    "tests": 5,
     "refs": 11,
     "docs": 0,
     "names": [],
@@ -32537,7 +32537,9 @@
       "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:633",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:182",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:572",
-      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:576"
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:576",
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:657",
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:669"
     ]
   },
   {

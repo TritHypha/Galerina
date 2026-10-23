@@ -585,3 +585,102 @@ test("S5-R9a loader refusal codes are FUNGI-SECRET-008/009 and both are register
     assert.equal(h[0].status, "active");
   }
 });
+
+// ---------------- S5-R10 (gcw-s5m): kill the round-check survivors SW1, SDA, SAO, SAR, SAR2 ----------------
+// Each test is GREEN on ec1c7701 and must go RED under its mutant. Synthetic data and synthetic
+// hand-assembled WebAssembly only (no imports, no secrets). M11 (kernel admitted flag forced true)
+// is recorded as an equivalent mutant: getSecret is created only after the post-wait admit returns
+// null, so the flag is true on every reachable path (proof in the gcw-s5m note).
+// Zero-trust choice: test the loader's structural guards against a self-consistent, hash-pinned
+// foreign artifact, because the pin alone cannot tell a well-formed lying module from the real one.
+// Rejected: relying on the shipped artifact only (it never traps and always has the right arity,
+// so the guards would stay untested dead weight).
+function uleb(n) {
+  const out = [];
+  do { let b = n & 0x7f; n >>>= 7; if (n !== 0) b |= 0x80; out.push(b); } while (n !== 0);
+  return out;
+}
+function section(id, content) { return [id, ...uleb(content.length), ...content]; }
+// specs: [{ name, params, body: number[] }], every param and result is i32.
+function synthWasm(specs) {
+  const types = [...uleb(specs.length)];
+  for (const s of specs) types.push(0x60, ...uleb(s.params), ...new Array(s.params).fill(0x7f), 1, 0x7f);
+  const funcs = [...uleb(specs.length), ...specs.map((_, i) => i)];
+  const exps = [...uleb(specs.length)];
+  specs.forEach((s, i) => { const nb = [...Buffer.from(s.name, "utf8")]; exps.push(...uleb(nb.length), ...nb, 0x00, ...uleb(i)); });
+  const code = [...uleb(specs.length)];
+  for (const s of specs) { const body = [0x00, ...s.body, 0x0b]; code.push(...uleb(body.length), ...body); }
+  return new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    ...section(1, types), ...section(3, funcs), ...section(7, exps), ...section(10, code)]);
+}
+const I32_100 = [0x41, 0xe4, 0x00]; // i32.const 100 (ADMIT_PACKED)
+const I32_108 = [0x41, 0xec, 0x00]; // i32.const 108 (NO_OP_PACKED)
+const TRAP = [0x00]; // unreachable
+function synthGate(over = {}) {
+  return synthWasm([
+    { name: "admit", params: 10, body: I32_100, ...(over.admit ?? {}) },
+    { name: "gateNoteUnknown", params: 2, body: I32_108, ...(over.note ?? {}) },
+    { name: "deliverPreHandoff", params: 16, body: I32_100, ...(over.pre ?? {}) },
+  ]);
+}
+function loadSynth(L, wasm) { return L.loadFungiSecretGate({ wasmBytes: wasm, expectedSha256: sha256(wasm) }); }
+
+test("S5-R10a synthetic well-formed artifact loads (control for the structural guards)", async () => {
+  const L = await loader();
+  const res = loadSynth(L, synthGate());
+  assert.equal(res.ok, true, "control load: " + res.code);
+  assert.equal(res.gate.noteUnknownVerdict(1), "no-op");
+  assert.equal(res.gate.preHandoffVerdict(SYN_PRE_OK), "admit");
+});
+
+test("S5-R10b a -0 epoch or lease is outside the WebAssembly domain (kills SW1)", async () => {
+  const L = await loader();
+  const res = L.loadFungiSecretGate({ wasmBytes: new Uint8Array(readFileSync(ASSET)), expectedSha256: L.SECRET_GATE_ADMIT_SHA256 });
+  assert.equal(res.ok, true, "load: " + res.code);
+  assert.equal(res.gate.preHandoffVerdict({ ...SYN_PRE_OK, epochMint: 0, epochUse: 0 }), "admit", "control: epoch 0 is in domain");
+  assert.notEqual(res.gate.preHandoffVerdict({ ...SYN_PRE_OK, epochMint: -0, epochUse: -0 }), "admit", "-0 epoch never admits");
+  assert.notEqual(res.gate.preHandoffVerdict({ ...SYN_PRE_OK, epochMint: 0, epochUse: -0 }), "admit", "-0 use epoch never admits");
+  assert.equal(res.gate.noteUnknownVerdict(0), "no-op", "control: lease 0");
+  assert.equal(res.gate.noteUnknownVerdict(-0), "UNKNOWN", "-0 lease is typed UNKNOWN");
+});
+
+test("S5-R10c a trapping noteUnknown export is typed UNKNOWN, never no-op (kills SDA)", async () => {
+  const L = await loader();
+  const res = loadSynth(L, synthGate({ note: { body: TRAP } }));
+  assert.equal(res.ok, true, "self-consistent trapping artifact loads: " + res.code);
+  for (const s of [0, 1, 4]) assert.equal(res.gate.noteUnknownVerdict(s), "UNKNOWN", "trap at lease " + s);
+  const pre = loadSynth(L, synthGate({ pre: { body: TRAP } }));
+  assert.equal(pre.ok, true);
+  assert.equal(pre.gate.preHandoffVerdict(SYN_PRE_OK), "refuse", "a trapping pre-handoff export refuses");
+});
+
+test("S5-R10d wrong-arity exports refuse at load with FUNGI-SECRET-008 (kills SAR, SAR2)", async () => {
+  const L = await loader();
+  const cases = [
+    ["deliverPreHandoff 15", { pre: { params: 15 } }],
+    ["deliverPreHandoff 17", { pre: { params: 17 } }],
+    ["gateNoteUnknown 1", { note: { params: 1 } }],
+    ["gateNoteUnknown 3", { note: { params: 3 } }],
+    ["admit 9", { admit: { params: 9 } }],
+  ];
+  for (const [label, over] of cases) {
+    const res = loadSynth(L, synthGate(over));
+    assert.equal(res.ok, false, label + " must refuse");
+    assert.equal(res.code, "FUNGI-SECRET-008", label);
+    assert.equal("gate" in res, false, label + ": a refused load exposes no gate");
+  }
+});
+
+test("S5-R10e the release shell needs BOTH decider verdict functions (kills SAO)", async () => {
+  assert.equal(existsSync(SECRET_GATE_JS), true, "app-kernel not built: " + SECRET_GATE_JS);
+  const G = await import(pathToFileURL(SECRET_GATE_JS).href);
+  const p = { has: (n) => n === "SYN_A", use: (n, fn) => fn(new Uint8Array([7])), revocationEpoch: () => 3 };
+  for (const decider of [
+    { preHandoffVerdict: () => "admit" },
+    { noteUnknownVerdict: () => "no-op" },
+    { preHandoffVerdict: () => "admit", noteUnknownVerdict: "no-op" },
+    { preHandoffVerdict: "admit", noteUnknownVerdict: () => "no-op" },
+  ]) {
+    assert.throws(() => G.createSecretReleaseShell(p, { decider }), TypeError, JSON.stringify(Object.keys(decider)));
+  }
+});
