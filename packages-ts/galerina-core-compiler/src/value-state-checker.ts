@@ -34,6 +34,7 @@
 //              do NOT clear taint; taint propagates into both branches.
 // =============================================================================
 
+import { checkLinearValues } from "./linear-lease-checker.js";
 import { type AstNode, type SourceLocation, type TypeReferenceStructure } from "./parser.js";
 import { GENERIC_ARITY, genericArgumentKind } from "./generic-argument-kinds.js";
 import { decodeFlowDecl } from "./flow-name.js"; // Q2: governed-aware shadow-floor scan
@@ -4487,7 +4488,10 @@ export function checkValueStates(
   // gates cannot declassify taint there. The shared taint analysis admits only an
   // exact Task-1 validator-authority match backed by Task-2 EffectFree evidence.
   const requirementDiags = requirementAnalysis.diagnostics;
-  const extraDiags = [...requirementDiags, ...numericDiags, ...shadowDiags];
+  // S7-R2 FUNGI-LINEAR-001..003: must-close linear values (closure item 1414-LEASE), fail-closed.
+  // Runs on the parsed AST: the requirement-taint analysis clone does not carry the parser-only `linear` flag.
+  const linearDiags = checkLinearValues(ast);
+  const extraDiags = [...requirementDiags, ...numericDiags, ...shadowDiags, ...linearDiags];
   if (extraDiags.length === 0) return result;
   return { ...result, diagnostics: [...result.diagnostics, ...extraDiags] };
 }

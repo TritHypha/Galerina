@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 1508,
+  "total": 1512,
   "counts": {
     "ref": 351,
     "inline": 444,
     "phantom": 76,
-    "live": 230,
-    "referenced": 175,
+    "live": 231,
+    "referenced": 178,
     "dead": 232
   },
   "aliases": [
@@ -10573,6 +10573,70 @@
       "docs": 1
     },
     {
+      "code": "FUNGI-LINEAR-001",
+      "family": "LINEAR",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "LINEAR_USE_AFTER_CLOSE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-LINEAR-002",
+      "family": "LINEAR",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "LINEAR_NOT_CLOSED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 5,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-LINEAR-003",
+      "family": "LINEAR",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "LINEAR_CLOSED_TWICE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-LINEAR-004",
+      "family": "LINEAR",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "LINEAR_TYPE_SHAPE_REFUSED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-LINT-001",
       "family": "LINT",
       "namespace": "FUNGI",
@@ -11259,7 +11323,7 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 3,
       "docs": 4
     },
     {

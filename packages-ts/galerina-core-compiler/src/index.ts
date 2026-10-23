@@ -734,6 +734,15 @@ export {
   type SinkRequirement,
 } from "./value-state-checker.js";
 
+export {
+  checkLinearValues,
+  collectLinearTypes,
+  FUNGI_LINEAR_001,
+  FUNGI_LINEAR_002,
+  FUNGI_LINEAR_003,
+  FUNGI_LINEAR_004,
+} from "./linear-lease-checker.js";
+
 /** FUNGI-AFFINE-002: a generic Authority<Tag> binding was transferred more than once. */
 export const FUNGI_AFFINE_002 = {
   code: "FUNGI-AFFINE-002",
