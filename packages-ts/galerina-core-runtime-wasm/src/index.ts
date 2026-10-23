@@ -17,7 +17,7 @@ export {
 } from "./wasm-runtime.js";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
-  Observer, HostRuntime, AdmissionResult, RecordCopyField, WasmEffectGrantAbiEntry,
+  Observer, HostRuntime, AdmissionResult, RecordCopyField, OwnedReturnShape, WasmEffectGrantAbiEntry,
 } from "./wasm-runtime.js";
 
 // The injectable seam adapters — what core-runtime's createGovernedRuntimeExecutor INJECTS (never imports) to

@@ -2,5 +2,5 @@
 /// Non-authorizing sandbox candidate; TypeScript remains the oracle.
 /// TypeScript oracle: packages-galerina/galerina-core-runtime/src/index.ts#GOVERNED_RUNTIME_SEAM_VERSION
 pure flow governedRuntimeSeamVersion() -> String {
-  return "galerina.runtime.seam.v1"
+  return "galerina.runtime.seam.v2"
 }

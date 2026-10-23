@@ -37,11 +37,11 @@ const rejecting = mode === "async-declared"
 const deps = {
   hashArtifact: fakeHash,
   artifactSource: { seamVersion: V, artifactBytesFor: () => BYTES },
-  admissionVerifier: { seamVersion: V, verifyAttestation: () => true },
+  admissionVerifier: { seamVersion: V, verifyAttestation: () => false, prepareInvocation: () => Object.freeze(Object.create(null)) },
   lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: () => { instantiated += 1; return { ok: true, result: 42 }; } },
 };
 if (mode !== "valid") {
-  if (cap === "verifyAttestation") deps.admissionVerifier = { seamVersion: V, verifyAttestation: rejecting };
+  if (cap === "prepareInvocation") deps.admissionVerifier = { seamVersion: V, verifyAttestation: () => true, prepareInvocation: rejecting };
   if (cap === "artifactBytesFor") deps.artifactSource = { seamVersion: V, artifactBytesFor: rejecting };
   if (cap === "hashArtifact") deps.hashArtifact = rejecting;
   if (cap === "admitInstantiation") {
@@ -78,13 +78,13 @@ const observe = (capability, mode) => {
 
 // Every rejected-promise path that can be refused before the VM: expectedInstantiated = 0.
 for (const [capability, mode, expectedInstantiated, expectedCapabilityCalls] of [
-  ["verifyAttestation", "async-declared", 0, 0],
+  ["prepareInvocation", "async-declared", 0, 0],
   ["artifactBytesFor", "async-declared", 0, 0],
   ["hashArtifact", "async-declared", 0, 0],
   ["admitInstantiation", "async-declared", 0, 0],
   ["instantiateAndCall", "async-declared", 0, 0],
   ["legacyExecutor", "async-declared", 0, 0],
-  ["verifyAttestation", "returns-rejected", 0, 1],
+  ["prepareInvocation", "returns-rejected", 0, 1],
   ["artifactBytesFor", "returns-rejected", 0, 1],
   ["hashArtifact", "returns-rejected", 0, 1],
   ["admitInstantiation", "returns-rejected", 0, 1],
@@ -134,7 +134,7 @@ test("a hostile thenable verifier result is denied without the seam invoking its
   const exec = createGovernedRuntimeExecutor({
     hashArtifact: fakeHash,
     artifactSource: { seamVersion: V, artifactBytesFor: () => BYTES },
-    admissionVerifier: { seamVersion: V, verifyAttestation: () => hostile },
+    admissionVerifier: { seamVersion: V, verifyAttestation: () => true, prepareInvocation: () => hostile },
     lowLevel: { seamVersion: V, admitInstantiation: () => true, instantiateAndCall: () => { instantiated += 1; return { ok: true, result: 42 }; } },
   });
   let verdict;

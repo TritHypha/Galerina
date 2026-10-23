@@ -26,15 +26,22 @@ const req = (over = {}) => ({ seamVersion: V, artifactSha256: SHA, attestation: 
 
 // A fully-wired, all-admitting composition — the happy path and the base every deny-case perturbs.
 const wired = (over = {}) => {
-  const calls = { instantiate: 0, verifyArg: null };
+  const calls = { instantiate: 0, prepareArg: null, lowLevelInput: null };
   const deps = {
     hashArtifact: fakeHash,
     artifactSource: { seamVersion: V, artifactBytesFor: (sha) => (sha === SHA ? BYTES : undefined) },
-    admissionVerifier: { seamVersion: V, verifyAttestation: (input) => { calls.verifyArg = input; return input.attestation === "att-ok"; } },
+    admissionVerifier: {
+      seamVersion: V,
+      verifyAttestation: () => false,
+      prepareInvocation: (input) => {
+        calls.prepareArg = input;
+        return input.attestation === "att-ok" ? Object.freeze(Object.create(null)) : false;
+      },
+    },
     lowLevel: {
       seamVersion: V,
       admitInstantiation: () => true,
-      instantiateAndCall: () => { calls.instantiate += 1; return { ok: true, result: 42 }; },
+      instantiateAndCall: (input) => { calls.instantiate += 1; calls.lowLevelInput = input; return { ok: true, result: 42 }; },
     },
     ...over,
   };
@@ -47,6 +54,7 @@ test("★ happy path: integrity + a verified attestation → admit, carrying the
   assert.equal(v.outcome, "admit");
   assert.equal(v.result, 42);
   assert.equal(calls.instantiate, 1);
+  assert.deepEqual(Object.keys(calls.lowLevelInput), ["invocationPermit"], "execution receives only the permit, not substitutable call inputs");
 });
 
 test("under-wired: an empty composition DENIES (deny-by-default, no capability can fall open)", () => {
@@ -59,6 +67,24 @@ test("under-wired: EACH single missing dependency denies", () => {
     const { exec } = wired({ [drop]: undefined });
     assert.equal(exec.admitAndExecute(req()).outcome, "deny", `missing ${drop} must deny`);
   }
+});
+
+test("a Boolean-only admission verifier is refused before it or the executor can run", () => {
+  const calls = { verify: 0, prepare: 0, admit: 0, execute: 0 };
+  const { exec } = wired({
+    admissionVerifier: {
+      seamVersion: V,
+      verifyAttestation: () => { calls.verify += 1; return true; },
+    },
+    lowLevel: {
+      seamVersion: V,
+      admitInstantiation: () => { calls.admit += 1; return true; },
+      instantiateAndCall: () => { calls.execute += 1; return { ok: true, result: 42 }; },
+    },
+  });
+  const verdict = exec.admitAndExecute(req());
+  assert.equal(verdict.outcome, "deny");
+  assert.deepEqual(calls, { verify: 0, prepare: 0, admit: 0, execute: 0 });
 });
 
 test("request seam-version skew → deny (never runs a mismatched request)", () => {
@@ -96,18 +122,18 @@ test("★ a bare/empty attestation is REFUSED (a trust-me claim is not admission
   assert.equal(calls.instantiate, 0);
 });
 
-test("★ admission is verified INSIDE, bound to the freshly-COMPUTED hash + the re-hashed bytes (anti-replay / anti-TOCTOU)", () => {
+test("★ preparation is bound to the freshly-COMPUTED hash, exact bytes, export and args (anti-replay / anti-TOCTOU)", () => {
   const { exec, calls } = wired();
   exec.admitAndExecute(req());
-  assert.deepEqual(calls.verifyArg, { attestation: "att-ok", artifactSha256: SHA, exportName: "runTwin", artifactBytes: BYTES },
-    "verifyAttestation must be called with the computed artifact hash AND the exact re-hashed bytes it is bound to (so it can hard-gate export presence on the admitted module)");
+  assert.deepEqual(calls.prepareArg, { attestation: "att-ok", artifactSha256: SHA, exportName: "runTwin", artifactBytes: BYTES, args: [1, 2] },
+    "permit preparation must bind the full invocation to the computed artifact hash and exact re-hashed bytes");
 });
 
-test("★ a non-verifying attestation denies and never reaches the VM (admission before execution)", () => {
-  const { exec, calls } = wired({ admissionVerifier: { seamVersion: V, verifyAttestation: () => false } });
+test("★ a non-preparing attestation denies and never reaches the VM (admission before execution)", () => {
+  const { exec, calls } = wired({ admissionVerifier: { seamVersion: V, verifyAttestation: () => true, prepareInvocation: () => false } });
   const v = exec.admitAndExecute(req());
   assert.equal(v.outcome, "deny");
-  assert.match(v.reason, /did not verify/);
+  assert.match(v.reason, /did not issue an opaque permit/i);
   assert.equal(calls.instantiate, 0, "an unadmitted artifact must never touch the low-level executor");
 });
 
@@ -125,7 +151,7 @@ test("the composed executor pins the current seam version", () => {
 test("hostile: mutating the source buffer after return cannot change hashed or executed bytes", () => {
   const leaked = new Uint8Array([7, 7, 7]);
   let hashedFirst = null;
-  let executedFirst = null;
+  let preparedFirst = null;
   const { exec, calls } = wired({
     artifactSource: {
       seamVersion: V,
@@ -136,13 +162,20 @@ test("hostile: mutating the source buffer after return cannot change hashed or e
       hashedFirst = bytes[0];
       return fakeHash(bytes);
     },
+    admissionVerifier: {
+      seamVersion: V,
+      verifyAttestation: () => false,
+      prepareInvocation: ({ artifactBytes }) => {
+        preparedFirst = artifactBytes[0];
+        return Object.freeze(Object.create(null));
+      },
+    },
     lowLevel: {
       seamVersion: V,
       admitInstantiation: () => true,
-      instantiateAndCall: ({ artifactBytes }) => {
+      instantiateAndCall: (input) => {
         calls.instantiate += 1;
-        executedFirst = artifactBytes[0];
-        assert.notEqual(artifactBytes, leaked);
+        assert.deepEqual(Object.keys(input), ["invocationPermit"]);
         return { ok: true, result: 42 };
       },
     },
@@ -151,8 +184,7 @@ test("hostile: mutating the source buffer after return cannot change hashed or e
   assert.equal(v.outcome, "admit");
   assert.equal(leaked[0], 99);
   assert.equal(hashedFirst, 7);
-  assert.equal(executedFirst, 7);
-  assert.equal(calls.verifyArg.artifactBytes[0], 7);
+  assert.equal(preparedFirst, 7);
 });
 
 test("zero-trust default, owner may revisit: the low-level admit step denying means NO VM instance (expectedInstantiated = 0)", () => {

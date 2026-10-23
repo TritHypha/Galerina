@@ -235,7 +235,7 @@ function createRuntimeDiagnostic(
 
 /** The pinned seam version. A provider whose version differs is REFUSED (fail-closed) — never run a
  *  mismatched executor. */
-export const GOVERNED_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v1";
+export const GOVERNED_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v2";
 
 /** An admit request: a pre-built, pre-signed twin artifact (hash-pinned) + a signed admission attestation +
  *  the already-marshalled call. There is deliberately no source/`.fungi` field — the seam never compiles; it
@@ -317,38 +317,19 @@ export interface GovernedRuntimeArtifactSource {
   artifactBytesFor(artifactSha256: string): Uint8Array | undefined;
 }
 
-/** Injected admission verifier: checks the request's SIGNED #105 attestation against the artifact hash (the
- *  #105 admission decision). A signature primitive, not a trust-me boolean — the executor calls it INSIDE, in
- *  the same moment as the integrity re-hash, so no forgeable `admitted` claim crosses the seam and no TOCTOU
- *  window opens between "admitted" and execute. Bound to the artifact hash → an attestation for artifact X
- *  cannot be replayed to admit artifact Y. Crypto stays injected (like `hashArtifact`) so core-runtime holds
- *  no import; the real verify is a vetted, hash-pinned native-floor artifact. An absent verifier ⇒ deny. */
+/** Required execution authority. Boolean verification alone is not an admission capability: preparation must
+ *  verify and snapshot the exact artifact, export and arguments into an opaque one-shot permit consumed by the
+ *  paired executor. Crypto remains injected so core-runtime stays dependency-free. */
 export interface GovernedAdmissionVerifier {
   readonly seamVersion: string;
-  /**
-   * Returns true ONLY if `attestation` is a valid signature admitting THIS MODULE — the signature binds
-   * `domain ∥ artifactSha256 ∥ profile` (the whole-module hash + provenance profile), NOT a single export —
-   * AND `exportName` is a defined export of that hash-verified module.
-   *
-   * Why the module hash already binds the export (R&D ruling 2026-07-18): a module's export SECTION is part
-   * of the bytes sha256 covers, so admitting a module cryptographically admits its whole export TABLE — you
-   * cannot swap the module (hash mismatch) nor conjure an export it does not define. Admission is therefore
-   * PER-MODULE = all-of-that-module's-exports-equally-admitted; there is no representable "admit foo but not
-   * bar" for one signed module. Per-export admission of a MULTI-export module would need a per-export
-   * pre-image (`domain ∥ hash ∥ export ∥ profile`) — a deferred, owner-gated attestation-contract change; it
-   * adds no security for today's one-governed-export-per-module artifacts.
-   *
-   * The export-presence check is a HARD fail-closed gate, not advisory: a valid signature over a module that
-   * does NOT define `exportName` returns FALSE. (Verifying the signature but then calling an unchecked export
-   * is the one way this could drift open.) `artifactBytes` is the hash-verified module the caller is about to
-   * run — the composition passes the exact bytes it re-hashed — so the presence check is on the admitted bytes.
-   */
-  verifyAttestation(input: {
+  /** Verifies and snapshots the exact invocation for the paired executor. */
+  prepareInvocation(input: {
     readonly attestation: string;
     readonly artifactSha256: string;
     readonly exportName: string;
     readonly artifactBytes: Uint8Array;
-  }): boolean;
+    readonly args: readonly unknown[];
+  }): object | false;
 }
 
 /** The one border-crossing capability: instantiate verified bytes and call an export. This wraps the
@@ -369,11 +350,10 @@ export interface LowLevelWasmExecutor {
     readonly exportName: string;
     readonly args: readonly unknown[];
   }): boolean;
-  /** The instantiate step. Runs ONLY after `admitInstantiation` returned exact `true` for the same input. */
+    /** The instantiate step. Runs ONLY after exact `true`; the permit binds the same artifact/export/args checked above. */
   instantiateAndCall(input: {
-    readonly artifactBytes: Uint8Array;
-    readonly exportName: string;
-    readonly args: readonly unknown[];
+    /** Opaque, verifier-minted, one-shot permit; no duplicate call inputs are accepted at execution time. */
+    readonly invocationPermit: object;
   }): { readonly ok: true; readonly result?: unknown } | { readonly ok: false; readonly reason: string };
 }
 
@@ -391,6 +371,44 @@ function denyVerdict(reason: string): GovernedRuntimeVerdict {
   return { outcome: "deny", reason };
 }
 
+function snapshotGovernedRuntimeRequest(value: unknown): GovernedRuntimeRequest | undefined {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return undefined;
+  const allowed = new Set(["seamVersion", "artifactSha256", "attestation", "exportName", "args"]);
+  const keys = Reflect.ownKeys(value);
+  if (keys.some((key) => typeof key !== "string" || !allowed.has(key))) return undefined;
+  const record: Record<string, unknown> = Object.create(null);
+  for (const key of keys as string[]) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) return undefined;
+    record[key] = descriptor.value;
+  }
+  if (
+    typeof record.seamVersion !== "string"
+    || typeof record.artifactSha256 !== "string"
+    || typeof record.attestation !== "string"
+    || typeof record.exportName !== "string"
+    || !Array.isArray(record.args)
+  ) return undefined;
+  const sourceArgs = record.args;
+  const length = sourceArgs.length;
+  if (!Number.isSafeInteger(length) || length < 0 || Reflect.ownKeys(sourceArgs).length !== length + 1) return undefined;
+  const args: unknown[] = [];
+  for (let index = 0; index < length; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(sourceArgs, String(index));
+    if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) return undefined;
+    args.push(descriptor.value);
+  }
+  return Object.freeze({
+    seamVersion: record.seamVersion,
+    artifactSha256: record.artifactSha256,
+    attestation: record.attestation,
+    exportName: record.exportName,
+    args: Object.freeze(args),
+  });
+}
+
 const ignoreSettlement = (): void => {};
 
 /** Zero-trust default (owner may revisit): a capability that returns a native Promise has already failed the
@@ -406,6 +424,26 @@ function consumeAsyncRejection(value: unknown): void {
     Promise.prototype.then.call(value as Promise<unknown>, ignoreSettlement, ignoreSettlement);
   } catch {
     // Not a native promise (or a hostile species constructor): nothing of ours to consume.
+  }
+}
+
+function isNativePromise(value: unknown): boolean {
+  try {
+    Promise.prototype.then.call(value as Promise<unknown>, ignoreSettlement, ignoreSettlement);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isOpaqueInvocationPermit(value: unknown): value is object {
+  if (typeof value !== "object" || value === null) return false;
+  try {
+    return Object.getPrototypeOf(value) === null
+      && Object.isFrozen(value)
+      && Reflect.ownKeys(value).length === 0;
+  } catch {
+    return false;
   }
 }
 
@@ -444,7 +482,9 @@ function isRefusedCapability(fn: unknown): boolean {
 export function createGovernedRuntimeExecutor(
   deps: GovernedRuntimeExecutorDeps = {},
 ): GovernedRuntimeExecutor {
-  const evaluate = (request: GovernedRuntimeRequest): GovernedRuntimeVerdict => {
+  const evaluate = (requestInput: GovernedRuntimeRequest): GovernedRuntimeVerdict => {
+    const request = snapshotGovernedRuntimeRequest(requestInput);
+    if (request === undefined) return denyVerdict("governed request must be a plain, data-only record with a dense argument array.");
     if (request.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) {
       return denyVerdict(
         `request seam version '${request.seamVersion}' does not match '${GOVERNED_RUNTIME_SEAM_VERSION}'.`,
@@ -473,19 +513,19 @@ export function createGovernedRuntimeExecutor(
     // rejected) Promise never reaches the VM. Capturing once also closes a getter swap between this check
     // and the call below.
     let artifactBytesFor: GovernedRuntimeArtifactSource["artifactBytesFor"];
-    let verifyAttestation: GovernedAdmissionVerifier["verifyAttestation"];
+    let prepareInvocation: GovernedAdmissionVerifier["prepareInvocation"];
     let admitInstantiation: LowLevelWasmExecutor["admitInstantiation"];
     let instantiateAndCall: LowLevelWasmExecutor["instantiateAndCall"];
     let capabilitiesRefused: boolean;
     try {
       artifactBytesFor = artifactSource.artifactBytesFor;
-      verifyAttestation = admissionVerifier.verifyAttestation;
+      prepareInvocation = admissionVerifier.prepareInvocation;
       admitInstantiation = lowLevel.admitInstantiation;
       instantiateAndCall = lowLevel.instantiateAndCall;
       capabilitiesRefused =
         isRefusedCapability(hashArtifact) ||
         isRefusedCapability(artifactBytesFor) ||
-        isRefusedCapability(verifyAttestation) ||
+        isRefusedCapability(prepareInvocation) ||
         isRefusedCapability(admitInstantiation) ||
         isRefusedCapability(instantiateAndCall);
     } catch {
@@ -514,7 +554,7 @@ export function createGovernedRuntimeExecutor(
     const ownedBytes = Uint8Array.from(bytes);
     let computed: string;
     try {
-      computed = hashArtifact(ownedBytes);
+      computed = hashArtifact(Uint8Array.from(ownedBytes));
     } catch {
       return denyVerdict("artifact hash capability failed — deny (fail-closed).");
     }
@@ -535,21 +575,28 @@ export function createGovernedRuntimeExecutor(
     // EXACT `true` only: an async verifier returns a Promise (truthy) and would otherwise admit unverified.
     let attested: unknown;
     try {
-      attested = verifyAttestation.call(admissionVerifier, { attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: ownedBytes });
+      attested = prepareInvocation.call(admissionVerifier, {
+        attestation: request.attestation,
+        artifactSha256: computed,
+        exportName: request.exportName,
+        artifactBytes: Uint8Array.from(ownedBytes),
+        args: Array.from(request.args),
+      });
     } catch {
       attested = false;
     }
-    if (attested !== true) {
+    if (!isOpaqueInvocationPermit(attested)) {
       consumeAsyncRejection(attested);
-      return denyVerdict(
-        `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
-      );
+      return denyVerdict(`invocation preparation did not issue an opaque permit for '${computed}' / export '${request.exportName}'.`);
+    }
+    if (isNativePromise(attested)) {
+      return denyVerdict("invocation preparation returned an asynchronous result — deny before instantiation.");
     }
     // Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). The low-level
     // executor's SYNCHRONOUS admit step decides allow/deny with no VM instance; only an exact `true` lets the
     // request reach instantiation. A plain function that returns a (rejected) Promise here is denied and its
     // rejection consumed, and `instantiateAndCall` is never entered.
-    const lowLevelInput = { artifactBytes: ownedBytes, exportName: request.exportName, args: request.args };
+    const lowLevelInput = { invocationPermit: attested as object };
     let instantiationAdmitted: unknown;
     try {
       // The admit step gets its OWN copy of the bytes and args, so it cannot mutate what is later instantiated.

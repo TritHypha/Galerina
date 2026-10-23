@@ -24,6 +24,7 @@
 import {
   sign as edSign, verify as edVerify, generateKeyPairSync, createHash,
 } from "node:crypto";
+import { types as nodeTypes } from "node:util";
 // RD-0389 record-marshalling ABI (ARG direction): the record staging base + field size are the
 // SAME constants the emitter lays records out with, so a host-staged record and a module-built one
 // share one layout (single source of truth — no drift). Used only inside allocRecord (call-time).
@@ -35,6 +36,149 @@ import {
   HOST_MONEY_MINOR_UNITS, admitMoneyAmount, isExactTrapLabel, parseDec,
   decAdd, decSub, decMul, decNeg, decCompare, decDiv, decRem, decFromInt,
 } from "./decimal-core.js";
+
+// Capture the platform accessor before guest-controlled or granted host callbacks run. Reads
+// must not dispatch through a mutable WebAssembly.Memory.prototype getter during execution.
+const WASM_MEMORY_BUFFER_GETTER = Object.getOwnPropertyDescriptor(WebAssembly.Memory.prototype, "buffer")?.get;
+const WASM_REFLECT_APPLY = Reflect.apply;
+// Capture output-construction intrinsics before callbacks or callers can replace them.
+// Owned-return snapshots must not dispatch through mutable Array/Object methods before wipe.
+const WASM_OBJECT_FREEZE = Object.freeze;
+const WASM_OBJECT_DEFINE_PROPERTY = Object.defineProperty;
+const WASM_OBJECT_CREATE = Object.create;
+const WASM_ARRAY_IS_ARRAY = Array.isArray;
+const WASM_MAP_GET = Map.prototype.get;
+const WASM_MAP_SET = Map.prototype.set;
+const WASM_WEAKMAP_GET = WeakMap.prototype.get;
+const WASM_WEAKMAP_SET = WeakMap.prototype.set;
+const WASM_JSON_PARSE = JSON.parse;
+const WASM_JSON_STRINGIFY = JSON.stringify;
+const WASM_TEXT_DECODER_CONSTRUCTOR = TextDecoder;
+const WASM_TEXT_DECODER_DECODE = TextDecoder.prototype.decode;
+const WASM_NUMBER_IS_INTEGER = Number.isInteger;
+const WASM_NUMBER_IS_SAFE_INTEGER = Number.isSafeInteger;
+const WASM_ARRAYBUFFER_BYTE_LENGTH_GETTER = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "byteLength")?.get;
+const WASM_SHARED_ARRAYBUFFER_BYTE_LENGTH_GETTER = typeof SharedArrayBuffer === "undefined"
+  ? undefined
+  : Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype, "byteLength")?.get;
+const WASM_INT32_ARRAY_CONSTRUCTOR = Int32Array;
+const WASM_UINT8_ARRAY_CONSTRUCTOR = Uint8Array;
+const WASM_TYPED_ARRAY_LENGTH_GETTER = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Int32Array.prototype),
+  "length",
+)?.get;
+
+function safeDataPropertyDescriptor(
+  value: unknown,
+  writable: boolean,
+  enumerable: boolean,
+  configurable: boolean,
+): PropertyDescriptor {
+  const descriptor = WASM_REFLECT_APPLY(WASM_OBJECT_CREATE, Object, [null]) as PropertyDescriptor;
+  descriptor.value = value;
+  descriptor.writable = writable;
+  descriptor.enumerable = enumerable;
+  descriptor.configurable = configurable;
+  return descriptor;
+}
+
+function readWasmMemoryBuffer(memory: WebAssembly.Memory): ArrayBufferLike {
+  const getter = WASM_MEMORY_BUFFER_GETTER;
+  if (typeof getter !== "function") {
+    throw new Error("FUNGI-WASM-MEMORY-001: trusted WebAssembly.Memory buffer accessor is unavailable");
+  }
+  return WASM_REFLECT_APPLY(getter, memory, []) as ArrayBufferLike;
+}
+
+function decodeWasmUtf8(bytes: Uint8Array): string {
+  const decoder = new WASM_TEXT_DECODER_CONSTRUCTOR("utf-8", { fatal: true, ignoreBOM: true });
+  return WASM_REFLECT_APPLY(WASM_TEXT_DECODER_DECODE, decoder, [bytes]) as string;
+}
+
+function wasmByteSubarray(bytes: Uint8Array, start: number, end: number): Uint8Array {
+  if (typeof WASM_TYPED_ARRAY_LENGTH_GETTER !== "function") {
+    throw new Error("FUNGI-WASM-MEMORY-001: trusted typed-array length accessor is unavailable");
+  }
+  const byteLength = WASM_REFLECT_APPLY(WASM_TYPED_ARRAY_LENGTH_GETTER, bytes, []) as number;
+  const length = end - start;
+  if (!WASM_NUMBER_IS_SAFE_INTEGER(start) || !WASM_NUMBER_IS_SAFE_INTEGER(end)
+    || start < 0 || length < 0 || end > byteLength) {
+    throw new Error("FUNGI-WASM-MEMORY-001: byte slice is outside the validated input");
+  }
+  // TypedArray.prototype.subarray consults this.constructor[Symbol.species]. A
+  // previously captured method therefore still dispatches through mutable
+  // species. Copy by indexed reads into a fresh captured-constructor buffer.
+  const copy = new WASM_UINT8_ARRAY_CONSTRUCTOR(length);
+  for (let index = 0; index < length; index += 1) {
+    const byte = bytes[start + index];
+    if (typeof byte !== "number") {
+      throw new Error("FUNGI-WASM-MEMORY-001: byte slice contains an unavailable element");
+    }
+    copy[index] = byte;
+  }
+  return copy;
+}
+
+function isWasmMemory(value: unknown): value is WebAssembly.Memory {
+  const getter = WASM_MEMORY_BUFFER_GETTER;
+  if (typeof getter !== "function" || value === null || typeof value !== "object") return false;
+  try {
+    WASM_REFLECT_APPLY(getter, value, []);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function readWasmBufferByteLength(buffer: ArrayBufferLike): number {
+  const arrayBufferGetter = WASM_ARRAYBUFFER_BYTE_LENGTH_GETTER;
+  if (typeof arrayBufferGetter !== "function") {
+    throw new Error("FUNGI-WASM-MEMORY-001: trusted ArrayBuffer byteLength accessor is unavailable");
+  }
+  try {
+    return WASM_REFLECT_APPLY(arrayBufferGetter, buffer, []) as number;
+  } catch {
+    const sharedArrayBufferGetter = WASM_SHARED_ARRAYBUFFER_BYTE_LENGTH_GETTER;
+    if (typeof sharedArrayBufferGetter !== "function") {
+      throw new Error("FUNGI-WASM-MEMORY-001: trusted SharedArrayBuffer byteLength accessor is unavailable");
+    }
+    try {
+      return WASM_REFLECT_APPLY(sharedArrayBufferGetter, buffer, []) as number;
+    } catch {
+      throw new Error("FUNGI-WASM-MEMORY-001: memory buffer has no trusted byte length");
+    }
+  }
+}
+
+function readWasmWordView(memory: WebAssembly.Memory): { view: Int32Array; wordLength: number } {
+  const buffer = readWasmMemoryBuffer(memory);
+  const byteLength = readWasmBufferByteLength(buffer);
+  if (!Number.isSafeInteger(byteLength) || byteLength < 0 || (byteLength & 3) !== 0) {
+    throw new Error("FUNGI-WASM-MEMORY-001: memory byte length is not a valid word multiple");
+  }
+  const view = new WASM_INT32_ARRAY_CONSTRUCTOR(buffer);
+  const lengthGetter = WASM_TYPED_ARRAY_LENGTH_GETTER;
+  if (typeof lengthGetter !== "function") {
+    throw new Error("FUNGI-WASM-MEMORY-001: trusted typed-array length accessor is unavailable");
+  }
+  const wordLength = WASM_REFLECT_APPLY(lengthGetter, view, []) as number;
+  if (wordLength !== byteLength / 4) {
+    throw new Error("FUNGI-WASM-MEMORY-001: typed-array length does not match trusted memory length");
+  }
+  return { view, wordLength };
+}
+
+function copyWasmMemorySnapshot(memory: WebAssembly.Memory): Uint8Array {
+  const buffer = readWasmMemoryBuffer(memory);
+  const byteLength = readWasmBufferByteLength(buffer);
+  if (!Number.isSafeInteger(byteLength) || byteLength < 0) {
+    throw new Error("FUNGI-WASM-MEMORY-001: memory byte length is invalid");
+  }
+  const source = new WASM_UINT8_ARRAY_CONSTRUCTOR(buffer);
+  const snapshot = new WASM_UINT8_ARRAY_CONSTRUCTOR(byteLength);
+  for (let index = 0; index < byteLength; index++) snapshot[index] = source[index]!;
+  return snapshot;
+}
 
 export const MAX_WASM_ARRAYS = 4096;
 export const MAX_WASM_ARRAY_ITEMS = 1_000_000;
@@ -114,6 +258,110 @@ export function signWasm(
   return { sha256, signature: Buffer.from(sig).toString("base64"), profile };
 }
 
+function snapshotPlainDataRecord(
+  value: unknown,
+  allowedKeys: ReadonlySet<string>,
+  requiredKeys: readonly string[],
+): Readonly<Record<string, unknown>> | undefined {
+  if (
+    value === null
+    || typeof value !== "object"
+    || Array.isArray(value)
+    || nodeTypes.isProxy(value)
+  ) return undefined;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return undefined;
+  const keys = Reflect.ownKeys(value);
+  if (keys.some((key) => typeof key !== "string" || !allowedKeys.has(key))) return undefined;
+  const snapshot: Record<string, unknown> = Object.create(null);
+  for (const key of keys as string[]) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) return undefined;
+    snapshot[key] = descriptor.value;
+  }
+  if (requiredKeys.some((key) => !Object.hasOwn(snapshot, key))) return undefined;
+  return Object.freeze(snapshot);
+}
+
+function snapshotStringArray(value: unknown): readonly string[] | undefined {
+  if (!Array.isArray(value) || nodeTypes.isProxy(value) || Object.getPrototypeOf(value) !== Array.prototype) {
+    return undefined;
+  }
+  const lengthDescriptor = Object.getOwnPropertyDescriptor(value, "length");
+  const length = lengthDescriptor?.value;
+  if (!Number.isSafeInteger(length) || (length as number) < 0 || Reflect.ownKeys(value).length !== (length as number) + 1) {
+    return undefined;
+  }
+  const copied: string[] = [];
+  for (let index = 0; index < (length as number); index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable || typeof descriptor.value !== "string") {
+      return undefined;
+    }
+    copied.push(descriptor.value);
+  }
+  return Object.freeze(copied);
+}
+
+function snapshotFiniteNumberArray(value: unknown): readonly number[] | undefined {
+  if (!Array.isArray(value) || nodeTypes.isProxy(value) || Object.getPrototypeOf(value) !== Array.prototype) return undefined;
+  const lengthDescriptor = Object.getOwnPropertyDescriptor(value, "length");
+  const length = lengthDescriptor?.value;
+  if (!Number.isSafeInteger(length) || (length as number) < 0 || Reflect.ownKeys(value).length !== (length as number) + 1) {
+    return undefined;
+  }
+  const copied: number[] = [];
+  for (let index = 0; index < (length as number); index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable
+      || typeof descriptor.value !== "number" || !Number.isFinite(descriptor.value)) return undefined;
+    copied.push(descriptor.value);
+  }
+  return Object.freeze(copied);
+}
+
+function snapshotAdmissionPolicy(value: AdmissionPolicy): AdmissionPolicy | undefined {
+  const record = snapshotPlainDataRecord(
+    value,
+    new Set(["requireSigned", "publicKeyPem", "allowedHashes", "requireCertifiedProfile"]),
+    [],
+  );
+  if (record === undefined) return undefined;
+  const requireSigned = record.requireSigned;
+  const requireCertifiedProfile = record.requireCertifiedProfile;
+  const publicKeyPem = record.publicKeyPem;
+  if (requireSigned !== undefined && typeof requireSigned !== "boolean") return undefined;
+  if (requireCertifiedProfile !== undefined && typeof requireCertifiedProfile !== "boolean") return undefined;
+  if (publicKeyPem !== undefined && typeof publicKeyPem !== "string") return undefined;
+  const allowedHashes = record.allowedHashes === undefined ? undefined : snapshotStringArray(record.allowedHashes);
+  if (record.allowedHashes !== undefined && allowedHashes === undefined) return undefined;
+  return Object.freeze({
+    ...(requireSigned === undefined ? {} : { requireSigned }),
+    ...(requireCertifiedProfile === undefined ? {} : { requireCertifiedProfile }),
+    ...(publicKeyPem === undefined ? {} : { publicKeyPem }),
+    ...(allowedHashes === undefined ? {} : { allowedHashes }),
+  });
+}
+
+function snapshotWasmAttestation(value: WasmAttestation): WasmAttestation | undefined {
+  const record = snapshotPlainDataRecord(
+    value,
+    new Set(["sha256", "signature", "profile"]),
+    ["sha256", "profile"],
+  );
+  if (record === undefined) return undefined;
+  if (
+    typeof record.sha256 !== "string"
+    || (record.profile !== "dev" && record.profile !== "certified")
+    || (record.signature !== undefined && typeof record.signature !== "string")
+  ) return undefined;
+  return Object.freeze({
+    sha256: record.sha256,
+    profile: record.profile,
+    ...(record.signature === undefined ? {} : { signature: record.signature }),
+  });
+}
+
 /**
  * Verify a wasm attestation against a policy. Fails CLOSED — a missing attestation,
  * a hash mismatch, an unpinned hash, a bad signature, or a profile shortfall all
@@ -129,21 +377,26 @@ export function verifyWasm(
   // the profile INTO the signature, an unsigned "certified" claim is unverifiable — force
   // `requireSigned` here (mirrors bridge-attestation.ts verifyAttestationHybrid, which
   // forces requireSigned even if the caller omitted it). Certified ⇒ signed, always.
-  const effectivePolicy: AdmissionPolicy =
-    policy.requireCertifiedProfile ? { ...policy, requireSigned: true } : policy;
   const hash = wasmHash(wasm);
   if (!attestation) return { ok: false, reason: "no attestation provided", hash };
-  if (attestation.sha256 !== hash) {
-    return { ok: false, reason: `attestation hash ${attestation.sha256} ≠ binary hash ${hash}`, hash };
+  const safePolicy = snapshotAdmissionPolicy(policy);
+  if (safePolicy === undefined) return { ok: false, reason: "invalid admission policy data shape", hash };
+  const safeAttestation = snapshotWasmAttestation(attestation);
+  if (safeAttestation === undefined) return { ok: false, reason: "invalid attestation data shape", hash };
+  const effectivePolicy: AdmissionPolicy = safePolicy.requireCertifiedProfile
+    ? { ...safePolicy, requireSigned: true }
+    : safePolicy;
+  if (safeAttestation.sha256 !== hash) {
+    return { ok: false, reason: `attestation hash ${safeAttestation.sha256} ≠ binary hash ${hash}`, hash };
   }
-  if (effectivePolicy.requireCertifiedProfile && attestation.profile !== "certified") {
-    return { ok: false, reason: `certified profile required, attestation is "${attestation.profile}"`, hash };
+  if (effectivePolicy.requireCertifiedProfile && safeAttestation.profile !== "certified") {
+    return { ok: false, reason: `certified profile required, attestation is "${safeAttestation.profile}"`, hash };
   }
   if (effectivePolicy.allowedHashes && effectivePolicy.allowedHashes.length > 0 && !effectivePolicy.allowedHashes.includes(hash)) {
     return { ok: false, reason: `binary hash not pinned: ${hash}`, hash };
   }
   if (effectivePolicy.requireSigned) {
-    if (!attestation.signature) return { ok: false, reason: "signature required but absent", hash };
+    if (!safeAttestation.signature) return { ok: false, reason: "signature required but absent", hash };
     if (!effectivePolicy.publicKeyPem) return { ok: false, reason: "no public key configured to verify signature", hash };
     try {
       // #173: verify over (domain ∥ recomputed-hash ∥ attestation.profile). `hash` is the recomputed
@@ -151,9 +404,9 @@ export function verifyWasm(
       // pre-image and the signature fails — closing the re-label privilege escalation.
       const ok = edVerify(
         null,
-        admissionPreimage(hash, attestation.profile),
+        admissionPreimage(hash, safeAttestation.profile),
         { key: effectivePolicy.publicKeyPem, dsaEncoding: "ieee-p1363" },
-        Buffer.from(attestation.signature, "base64"),
+        Buffer.from(safeAttestation.signature, "base64"),
       );
       if (!ok) return { ok: false, reason: "signature verification failed", hash };
     } catch (e) {
@@ -163,14 +416,29 @@ export function verifyWasm(
   return { ok: true, hash };
 }
 
+/** Governed adapters require signed admission even when a development caller's general policy omits it. */
+export function verifyWasmSigned(
+  wasm: Uint8Array,
+  attestation: WasmAttestation | undefined,
+  policy: AdmissionPolicy,
+): AdmissionVerdict {
+  const safePolicy = snapshotAdmissionPolicy(policy);
+  if (safePolicy === undefined) return { ok: false, reason: "invalid admission policy data shape", hash: wasmHash(wasm) };
+  return verifyWasm(wasm, attestation, { ...safePolicy, requireSigned: true });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Observability (dev lens only — never affects enforcement)
+// Observability (trusted host callbacks; not an effect-free security boundary)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface Observer {
   /** Each host-import call: name, args, return value. */
   readonly onHostCall?: (name: string, args: readonly number[], ret: number | undefined) => void;
-  /** Attestation refusal — fired BEFORE any instantiation, with the rejected binary. */
+  /**
+   * Trusted host diagnostic callback, invoked for a refused admission. It runs outside guest
+   * import gating and may itself perform effects or re-enter another admitted runtime. Never
+   * treat this callback as effect-free, and never supply an untrusted observer here.
+   */
   readonly onViolation?: (reason: string, wasm: Uint8Array) => void;
   /** A WASM trap (e.g. `unreachable`) — receives a snapshot of linear memory. */
   readonly onTrap?: (err: unknown, memory: Uint8Array | null) => void;
@@ -207,7 +475,7 @@ export interface HostRuntime {
   readDecimal(handle: number): string | undefined;
   /** Intern a canonical decimal string, returning its handle. */
   internDecimal(text: string): number;
-  /** Bind the instance's exported memory after instantiation (for record reads). */
+  /** Bind test/helper memory before admission, or the admitted instance's memory internally. */
   bindMemory(memory: WebAssembly.Memory): void;
   /** Read field `slot` (0-based i32 slots) of a record at linear-memory `ptr`. */
   readRecordField(ptr: number, slot: number): number;
@@ -246,16 +514,41 @@ export interface HostRuntime {
   snapshotMemory(): Uint8Array | null;
 }
 
-const FACTORY_HOST_RUNTIMES = new WeakSet<HostRuntime>();
+type HostRuntimeAdmissionLifecycle = {
+  state: "ready" | "admitting" | "admitted" | "quarantined";
+  memoryBoundBeforeAdmission: boolean;
+  internalBindPermit: boolean;
+  activeCall: boolean;
+};
+
+const FACTORY_HOST_RUNTIMES = new WeakMap<HostRuntime, HostRuntimeAdmissionLifecycle>();
+const FACTORY_OWNED_RETURN_COPIERS = new WeakMap<HostRuntime, OwnedReturnCopier>();
 
 type OptionKind = "i32" | "f64";
 type OptionEntry = { readonly kind: OptionKind; readonly value: number };
+
+/** Must match Galerina's admitted generic type nesting bound in the compiler lexer. */
+const MAX_OPTION_FLOAT_EQUALITY_DEPTH = 8;
 
 /** Schema for one record field when copying array-of-record values. Nested
  *  `record` fields occupy one i32 pointer slot and recurse. */
 export type RecordCopyField =
   | { readonly kind: "i32" }
   | { readonly kind: "record"; readonly fields: readonly RecordCopyField[] };
+
+/** Attested schema for an owned value returned across the WASM boundary. */
+export type OwnedReturnShape =
+  | { readonly kind: "i32" }
+  | { readonly kind: "record"; readonly fields: readonly OwnedReturnShape[] }
+  | { readonly kind: "array"; readonly element: OwnedReturnShape }
+  | { readonly kind: "result"; readonly ok: OwnedReturnShape; readonly err: OwnedReturnShape };
+
+function ownedReturnShapeRequiresCleanup(shape: OwnedReturnShape): boolean {
+  return shape.kind !== "i32";
+}
+
+type OwnedReturnSchemas = Readonly<Record<string, OwnedReturnShape>>;
+type OwnedReturnCopier = (shape: OwnedReturnShape, value: number) => unknown;
 
 export const MAX_RECORD_COPY_DEPTH = 8;
 export const MAX_RECORD_COPY_NODES = 4096;
@@ -296,9 +589,15 @@ function encodeWasmName(value: string): number[] {
   return [...encodeWasmU32(bytes.length), ...bytes];
 }
 
+type WasmI32FunctionSignature = {
+  readonly name?: string;
+  readonly params: readonly "i32"[];
+  readonly results: readonly "i32"[];
+};
+
 const effectGrantSignatureModules = new Map<string, WebAssembly.Module>();
 
-function effectGrantSignatureModule(entry: WasmEffectGrantAbiEntry): WebAssembly.Module {
+function effectGrantSignatureModule(entry: WasmI32FunctionSignature): WebAssembly.Module {
   const key = `${entry.params.join(",")}->${entry.results.join(",")}`;
   const existing = effectGrantSignatureModules.get(key);
   if (existing) return existing;
@@ -333,7 +632,7 @@ function effectGrantSignatureModule(entry: WasmEffectGrantAbiEntry): WebAssembly
 }
 
 function typeEffectGrantHandler(
-  entry: WasmEffectGrantAbiEntry,
+  entry: WasmI32FunctionSignature,
   handler: (...args: number[]) => number,
 ): (...args: number[]) => number {
   const bridge = new WebAssembly.Instance(effectGrantSignatureModule(entry), {
@@ -341,7 +640,7 @@ function typeEffectGrantHandler(
   });
   const callback = bridge.exports.callback;
   if (typeof callback !== "function") {
-    throw new TypeError(`Wasm effect-grant signature bridge did not export '${entry.name}'`);
+    throw new TypeError(`Wasm typed host-import bridge did not export '${entry.name ?? "function"}'`);
   }
   return callback as (...args: number[]) => number;
 }
@@ -378,16 +677,203 @@ function admitCopyFields(fields: readonly RecordCopyField[], depth: number): voi
   }
 }
 
+function snapshotReturnLayouts(
+  layouts: Readonly<Record<string, readonly RecordCopyField[]>> | undefined,
+): Readonly<Record<string, readonly RecordCopyField[]>> | undefined {
+  if (layouts === undefined) return undefined;
+  if (layouts === null || typeof layouts !== "object") {
+    refuseHostCopy("return layouts must be a plain record");
+  }
+  if (nodeTypes.isProxy(layouts)) refuseHostCopy("return layouts cannot contain Proxy objects");
+  const prototype = Object.getPrototypeOf(layouts);
+  if (prototype !== Object.prototype && prototype !== null) {
+    refuseHostCopy("return layouts must be a plain record");
+  }
+
+  const snapshot = Object.create(null) as Record<string, readonly RecordCopyField[]>;
+  const layoutKeys = Reflect.ownKeys(layouts);
+  if (layoutKeys.length > MAX_RECORD_COPY_NODES) {
+    refuseHostCopy(`return layout export count exceeded node bound ${MAX_RECORD_COPY_NODES}`);
+  }
+
+  let nodes = 0;
+  const readDataProperty = (value: object, key: PropertyKey): unknown => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !("value" in descriptor)) {
+      refuseHostCopy("return layout contains a missing or accessor-backed property");
+    }
+    return descriptor.value;
+  };
+
+  const copyFields = (fields: unknown, depth: number): readonly RecordCopyField[] => {
+    if (depth > MAX_RECORD_COPY_DEPTH) {
+      refuseHostCopy(`nested record copy exceeded depth ${MAX_RECORD_COPY_DEPTH}`);
+    }
+    if (!Array.isArray(fields)) refuseHostCopy("layout fields must be plain arrays");
+    if (nodeTypes.isProxy(fields)) refuseHostCopy("layout fields cannot contain Proxy objects");
+    if (Object.getPrototypeOf(fields) !== Array.prototype) {
+      refuseHostCopy("layout fields must be plain arrays");
+    }
+    const length = readDataProperty(fields, "length");
+    if (!Number.isSafeInteger(length) || (length as number) < 1 || (length as number) > 64) {
+      refuseHostCopy(`layout fieldCount=${String(length)}`);
+    }
+    const keys = Reflect.ownKeys(fields);
+    if (keys.length !== (length as number) + 1) {
+      refuseHostCopy("layout arrays must be dense and have no extra properties");
+    }
+
+    const copied: RecordCopyField[] = [];
+    for (let index = 0; index < (length as number); index += 1) {
+      const field = readDataProperty(fields, String(index));
+      if (field === null || typeof field !== "object") refuseHostCopy("invalid layout field");
+      if (nodeTypes.isProxy(field)) refuseHostCopy("layout fields cannot contain Proxy objects");
+      const fieldPrototype = Object.getPrototypeOf(field);
+      if (fieldPrototype !== Object.prototype && fieldPrototype !== null) {
+        refuseHostCopy("layout fields must be plain records");
+      }
+      const fieldKeys = Reflect.ownKeys(field);
+      const kind = readDataProperty(field, "kind");
+      nodes += 1;
+      if (nodes > MAX_RECORD_COPY_NODES) {
+        refuseHostCopy(`return layout exceeded node bound ${MAX_RECORD_COPY_NODES}`);
+      }
+      if (kind === "i32" && fieldKeys.length === 1) {
+        copied.push(Object.freeze({ kind: "i32" }));
+        continue;
+      }
+      if (kind === "record" && fieldKeys.length === 2) {
+        const nested = copyFields(readDataProperty(field, "fields"), depth + 1);
+        copied.push(Object.freeze({ kind: "record", fields: nested }));
+        continue;
+      }
+      refuseHostCopy("invalid layout field shape");
+    }
+    return Object.freeze(copied);
+  };
+
+  for (const key of layoutKeys) {
+    if (typeof key !== "string") refuseHostCopy("return layout export names must be strings");
+    const fields = copyFields(readDataProperty(layouts, key), 0);
+    admitCopyFields(fields, 0);
+    Object.defineProperty(snapshot, key, { value: fields, enumerable: true });
+  }
+  return Object.freeze(snapshot);
+}
+
+const OWNED_RETURN_SECTION = "fungi.owned-returns.v1";
+const MAX_OWNED_RETURN_SCHEMA_BYTES = 65_536;
+const MAX_OWNED_RETURN_EXPORTS = 256;
+
+function snapshotOwnedReturnSchemas(value: unknown): OwnedReturnSchemas {
+  const refuse = (detail: string): never => refuseHostCopy(`owned-return schema ${detail}`);
+  if (value === null || typeof value !== "object" || Array.isArray(value)) refuse("must be an object");
+  const schema = value as Record<string, unknown>;
+  if (Object.keys(schema).sort().join(",") !== "exports,version" || schema.version !== 1) {
+    refuse("has unsupported version or fields");
+  }
+  const exportsValue = schema.exports;
+  if (exportsValue === null || typeof exportsValue !== "object" || Array.isArray(exportsValue)) {
+    refuse("exports must be an object");
+  }
+  const exportsRecord = exportsValue as Record<string, unknown>;
+  const names = Object.keys(exportsRecord);
+  if (names.length === 0 || names.length > MAX_OWNED_RETURN_EXPORTS) refuse("export count is outside bounds");
+  const output = Object.create(null) as Record<string, OwnedReturnShape>;
+  let nodes = 0;
+  const parseShape = (candidate: unknown, depth: number): OwnedReturnShape => {
+    if (depth > MAX_RECORD_COPY_DEPTH) refuse(`exceeds depth ${MAX_RECORD_COPY_DEPTH}`);
+    if (candidate === null || typeof candidate !== "object" || Array.isArray(candidate)) refuse("contains invalid shape");
+    const shape = candidate as Record<string, unknown>;
+    const kind = shape.kind;
+    nodes += 1;
+    if (nodes > MAX_RECORD_COPY_NODES) refuse("exceeds node bound");
+    if (kind === "i32" && Object.keys(shape).length === 1) return Object.freeze({ kind });
+    if (kind === "record" && Object.keys(shape).sort().join(",") === "fields,kind") {
+      const fields = shape.fields;
+      if (!Array.isArray(fields) || fields.length < 1 || fields.length > 64) {
+        return refuse("record fields are outside bounds");
+      }
+      return Object.freeze({
+        kind,
+        fields: Object.freeze((fields as unknown[]).map((field: unknown) => parseShape(field, depth + 1))),
+      });
+    }
+    if (kind === "array" && Object.keys(shape).sort().join(",") === "element,kind") {
+      return Object.freeze({ kind, element: parseShape(shape.element, depth + 1) });
+    }
+    if (kind === "result" && Object.keys(shape).sort().join(",") === "err,kind,ok") {
+      return Object.freeze({ kind, ok: parseShape(shape.ok, depth + 1), err: parseShape(shape.err, depth + 1) });
+    }
+    return refuse("contains unknown kind or fields");
+  };
+  for (const name of names) {
+    if (name.length === 0 || name.startsWith("__fungi_")) refuse(`uses reserved export '${name}'`);
+    Object.defineProperty(output, name, { value: parseShape(exportsRecord[name], 0), enumerable: true });
+  }
+  return Object.freeze(output);
+}
+
+function parseOwnedReturnSchemas(wasm: Uint8Array): OwnedReturnSchemas | undefined {
+  if (wasm.length < 8 || wasm[0] !== 0 || wasm[1] !== 0x61 || wasm[2] !== 0x73 || wasm[3] !== 0x6d) {
+    refuseHostCopy("WASM header is invalid");
+  }
+  let offset = 8;
+  let found: OwnedReturnSchemas | undefined;
+  while (offset < wasm.length) {
+    const sectionId = wasm[offset++];
+    if (sectionId === undefined) refuseHostCopy("section id is truncated");
+    const cursor = { offset };
+    const length = readWasmU32(wasm, cursor, wasm.length);
+    if (length === undefined || length > wasm.length - cursor.offset) refuseHostCopy("section length is invalid");
+    const end = cursor.offset + length;
+    if (sectionId === 0) {
+      const name = skipWasmName(wasm, cursor, end);
+      if (name === OWNED_RETURN_SECTION) {
+        if (found !== undefined) refuseHostCopy("contains duplicate metadata sections");
+        const payloadLength = end - cursor.offset;
+        if (payloadLength < 1 || payloadLength > MAX_OWNED_RETURN_SCHEMA_BYTES) {
+          refuseHostCopy("payload is empty or exceeds byte bound");
+        }
+        try {
+          const text = decodeWasmUtf8(wasmByteSubarray(wasm, cursor.offset, end));
+          const parsed = WASM_JSON_PARSE(text) as unknown;
+          if (WASM_JSON_STRINGIFY(parsed) !== text) {
+            refuseHostCopy("metadata must use canonical JSON encoding");
+          }
+          found = snapshotOwnedReturnSchemas(parsed);
+        } catch (error) {
+          if (error instanceof Error && error.message.startsWith("FUNGI-WASM-HOST-001:")) throw error;
+          refuseHostCopy(`cannot decode metadata: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+    }
+    offset = end;
+  }
+  return found;
+}
+
 function zeroCopyShape(fields: readonly RecordCopyField[]): unknown[] {
   return fields.map((field) => (field.kind === "i32" ? 0 : zeroCopyShape(field.fields)));
 }
 
 function freezeCopyRow(row: readonly unknown[]): readonly unknown[] {
-  return Object.freeze(row.map((cell) => (Array.isArray(cell) ? freezeCopyRow(cell) : cell)));
+  const copied: unknown[] = [];
+  for (let index = 0; index < row.length; index++) {
+    const cell = row[index];
+    const value = WASM_ARRAY_IS_ARRAY(cell) ? freezeCopyRow(cell as readonly unknown[]) : cell;
+    WASM_REFLECT_APPLY(WASM_OBJECT_DEFINE_PROPERTY, Object, [
+      copied,
+      index,
+      safeDataPropertyDescriptor(value, true, true, true),
+    ]);
+  }
+  return WASM_REFLECT_APPLY(WASM_OBJECT_FREEZE, Object, [copied]) as readonly unknown[];
 }
 
 function copyGuestRecord(
   view: Int32Array,
+  wordLength: number,
   ptr: number,
   fields: readonly RecordCopyField[],
   depth: number,
@@ -405,7 +891,7 @@ function copyGuestRecord(
   if ((ptr & 3) !== 0) refuseHostCopy(`record pointer ${String(ptr)} is not an aligned heap record`);
   if (visiting.has(ptr)) refuseHostCopy("cyclic record pointer");
   const start = ptr >>> 2;
-  if (start < 0 || view.length - start < fields.length) {
+  if (start < 0 || wordLength - start < fields.length) {
     refuseHostCopy("short memory for nested record copy");
   }
   visiting.add(ptr);
@@ -413,8 +899,14 @@ function copyGuestRecord(
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i]!;
     const word = view[start + i]!;
-    if (field.kind === "i32") row.push(word);
-    else row.push(copyGuestRecord(view, word, field.fields, depth + 1, visiting, nodes));
+    const value = field.kind === "i32"
+      ? word
+      : copyGuestRecord(view, wordLength, word, field.fields, depth + 1, visiting, nodes);
+    WASM_REFLECT_APPLY(WASM_OBJECT_DEFINE_PROPERTY, Object, [
+      row,
+      i,
+      safeDataPropertyDescriptor(value, true, true, true),
+    ]);
   }
   visiting.delete(ptr);
   return row;
@@ -459,8 +951,10 @@ export function createHostRuntime(
   grants?: {
     /**
      * #105 sanctioned effect grants (deny-by-default). A module whose DECLARED effects put
-     * host imports in its import table (e.g. the DSS supervisor's "audit.write") links ONLY
-     * if the admitting caller explicitly supplies a handler for that exact effect name here.
+     * host imports in its import table (e.g. "audit.write" or "audit.log") link ONLY
+     * if the admitting caller explicitly supplies a handler keyed by the declared effect
+     * name or the exact allow-listed import name here. A canonical effect handler grants
+     * every mapped import; an explicit import-name handler overrides only that import.
      * No handler → the import stays outside the closed set → admission refuses with
      * CRITICAL_SECURITY_VIOLATION, exactly as before (this parameter cannot weaken that).
      * Every granted call is routed through the observer tap, so the audit layer sees it.
@@ -468,7 +962,22 @@ export function createHostRuntime(
     readonly effectHandlers?: Readonly<Record<string, (a: number, b: number) => number>>;
   },
 ): HostRuntime {
+  const admissionLifecycle: HostRuntimeAdmissionLifecycle = {
+    state: "ready",
+    memoryBoundBeforeAdmission: false,
+    internalBindPermit: false,
+    activeCall: false,
+  };
+  const refuseGuestMemoryDuringCall = (operation: string): void => {
+    if (admissionLifecycle.activeCall || admissionLifecycle.state === "quarantined") {
+      throw new Error(`FUNGI-WASM-MEMORY-001: ${operation} refused while admitted guest memory is active or quarantined`);
+    }
+  };
   const strings: string[] = [];
+  // Canonicalize only immutable host-created values. Seeded slots are caller-owned
+  // inputs and may be overwritten, so they must never be returned as derived values.
+  const canonicalStringHandles = new Map<string, number>();
+  const immutableStringHandles = new Set<number>();
   const arrays: number[][] = [];
   const internArrayItems = (items: number[]): number => {
     if (arrays.length >= MAX_WASM_ARRAYS) {
@@ -488,11 +997,15 @@ export function createHostRuntime(
     if (s.length > MAX_WASM_STRING_CHARS) {
       throw new Error("String intern exceeds the host char bound");
     }
+    const existing = canonicalStringHandles.get(s);
+    if (existing !== undefined) return existing;
     if (strings.length >= MAX_WASM_STRINGS) {
       throw new Error("String store exceeds the host bound");
     }
     const id = strings.length;
     strings.push(s);
+    canonicalStringHandles.set(s, id);
+    immutableStringHandles.add(id);
     return id;
   };
   const results: { tag: "ok" | "err"; value: number }[] = [];
@@ -501,6 +1014,7 @@ export function createHostRuntime(
   // `-1` remains the wire-level None value for compatibility; every Some is a non-negative
   // handle whose payload is stored here. Raw array access stays separate for counted loops.
   const options: OptionEntry[] = [];
+  const optionHandles = new Map<string, number>();
   const moneys: { currency: string; amountStr: string }[] = [];
   const decimals: string[] = [];
   const internResult = (entry: { tag: "ok" | "err"; value: number }): number => {
@@ -512,11 +1026,20 @@ export function createHostRuntime(
     return id;
   };
   const internOption = (entry: OptionEntry): number => {
+    // Options are immutable value wrappers. Reuse the existing handle for an identical
+    // payload so repeated transient Some values do not consume the host's lifetime bound.
+    // Keep the payload ABI lane in the key; preserve the observable distinction between
+    // Float +0 and -0. All accepted Float payloads are finite at their import boundary.
+    const valueKey = entry.kind === "f64" && Object.is(entry.value, -0) ? "-0" : String(entry.value);
+    const key = `${entry.kind}:${valueKey}`;
+    const existing = optionHandles.get(key);
+    if (existing !== undefined) return existing;
     if (options.length >= MAX_WASM_HOST_RECORDS) {
       throw new Error("Option store exceeds the host bound");
     }
     const id = options.length;
     options.push({ kind: entry.kind, value: entry.value });
+    optionHandles.set(key, id);
     return id;
   };
   const internMoney = (currency: string, amountStr: string): number => {
@@ -599,7 +1122,92 @@ export function createHostRuntime(
     return entry;
   };
 
+  const optionF64ValuesEqual = (left: number, right: number): boolean => {
+    if (left === -1 && right === -1) return true;
+    if (left === -1 || right === -1) {
+      typedOptionEntry(left === -1 ? right : left, "f64");
+      return false;
+    }
+    return typedOptionEntry(left, "f64").value === typedOptionEntry(right, "f64").value;
+  };
+
+  const optionOptionF64ValuesEqual = (left: number, right: number): boolean => {
+    if (left === -1 && right === -1) return true;
+    if (left === -1 || right === -1) {
+      const inner = typedOptionEntry(left === -1 ? right : left, "i32").value;
+      optionF64ValuesEqual(-1, inner);
+      return false;
+    }
+    const leftInner = typedOptionEntry(left, "i32").value;
+    const rightInner = typedOptionEntry(right, "i32").value;
+    return optionF64ValuesEqual(leftInner, rightInner);
+  };
+
+  const deeplyNestedOptionF64ValuesEqual = (left: number, right: number, depth: number): boolean => {
+    if (!Number.isInteger(depth) || depth < 3 || depth > MAX_OPTION_FLOAT_EQUALITY_DEPTH) {
+      throw new Error(`Option<Float> equality depth is outside the host bound (${MAX_OPTION_FLOAT_EQUALITY_DEPTH})`);
+    }
+    const compare = (leftHandle: number, rightHandle: number, remaining: number): boolean => {
+      if (remaining === 1) return optionF64ValuesEqual(leftHandle, rightHandle);
+      if (leftHandle === -1 && rightHandle === -1) return true;
+      if (leftHandle === -1 || rightHandle === -1) {
+        const present = leftHandle === -1 ? rightHandle : leftHandle;
+        const inner = typedOptionEntry(present, "i32").value;
+        compare(-1, inner, remaining - 1);
+        return false;
+      }
+      const leftInner = typedOptionEntry(leftHandle, "i32").value;
+      const rightInner = typedOptionEntry(rightHandle, "i32").value;
+      return compare(leftInner, rightInner, remaining - 1);
+    };
+    return compare(left, right, depth);
+  };
+
+  const internStringOptionFromHandle = (x: number): number => {
+    const value = admittedString(x);
+    if (value.length > MAX_WASM_STRING_CHARS) {
+      throw new Error("String intern exceeds the host char bound");
+    }
+    const existingString = canonicalStringHandles.get(value);
+    if (existingString !== undefined) {
+      const existingOption = optionHandles.get(`i32:${String(existingString)}`);
+      if (existingOption !== undefined) return existingOption;
+      if (options.length >= MAX_WASM_HOST_RECORDS) {
+        throw new Error("Option store exceeds the host bound");
+      }
+    } else {
+      // Check both bounded stores before mutating either one.
+      if (options.length >= MAX_WASM_HOST_RECORDS) {
+        throw new Error("Option store exceeds the host bound");
+      }
+      if (strings.length >= MAX_WASM_STRINGS) {
+        throw new Error("String store exceeds the host bound");
+      }
+    }
+    const stableStringHandle = existingString ?? internStringValue(value);
+    return internOption({ kind: "i32", value: stableStringHandle });
+  };
+
+  const stringArrayAt = (id: number): number[] => {
+    const entry = arrays[id];
+    if (!Number.isInteger(id) || id < 0 || entry === undefined) {
+      throw new Error(`unknown array handle ${id} (fail-closed)`);
+    }
+    return entry;
+  };
+
+  const deepOptionEqualityImports: Record<string, (...a: number[]) => number> = {};
+  for (let depth = 3; depth <= MAX_OPTION_FLOAT_EQUALITY_DEPTH; depth++) {
+    const name = `__option_eq_f64_depth_${depth}_v2`;
+    deepOptionEqualityImports[name] = (left: number, right: number) => tap(
+      name,
+      [left, right],
+      deeplyNestedOptionF64ValuesEqual(left, right, depth) ? 1 : 0,
+    ) as number;
+  }
+
   const host: Record<string, (...a: number[]) => number | void> = {
+    ...deepOptionEqualityImports,
     __array_create: () => {
       const id = internArrayItems([]);
       return tap("__array_create", [], id) as number;
@@ -750,15 +1358,30 @@ export function createHostRuntime(
       const option = i >= 0 && i < a.length ? internOption({ kind: "i32", value: a[i]! | 0 }) : -1;
       return tap("__array_get_option_v2", [id, i], option) as number;
     },
+    __array_get_option_string_v2: (id: number, i: number) => {
+      const a = stringArrayAt(id);
+      const option = i >= 0 && i < a.length ? internStringOptionFromHandle(a[i]!) : -1;
+      return tap("__array_get_option_string_v2", [id, i], option) as number;
+    },
     __array_first_option_v2: (id: number) => {
       const a = arrays[id] ?? [];
       const option = a.length > 0 ? internOption({ kind: "i32", value: a[0]! | 0 }) : -1;
       return tap("__array_first_option_v2", [id], option) as number;
     },
+    __array_first_option_string_v2: (id: number) => {
+      const a = stringArrayAt(id);
+      const option = a.length > 0 ? internStringOptionFromHandle(a[0]!) : -1;
+      return tap("__array_first_option_string_v2", [id], option) as number;
+    },
     __array_last_option_v2: (id: number) => {
       const a = arrays[id] ?? [];
       const option = a.length > 0 ? internOption({ kind: "i32", value: a[a.length - 1]! | 0 }) : -1;
       return tap("__array_last_option_v2", [id], option) as number;
+    },
+    __array_last_option_string_v2: (id: number) => {
+      const a = stringArrayAt(id);
+      const option = a.length > 0 ? internStringOptionFromHandle(a[a.length - 1]!) : -1;
+      return tap("__array_last_option_string_v2", [id], option) as number;
     },
     __str_char_at_option_v2: (strHandle: number, idx: number) => {
       const cps = [...(strings[strHandle] ?? "")];
@@ -777,7 +1400,20 @@ export function createHostRuntime(
       const handle = internOption({ kind: "i32", value: x | 0 });
       return tap("__option_some_v2", [x], handle) as number;
     },
+    // String payloads are values, not caller-owned string-slot identities. Snapshot
+    // their current contents into the immutable canonical string store before the
+    // Option is retained, so later host reseeding cannot mutate an existing Some.
+    __option_some_string_v2: (x: number) => {
+      const handle = internStringOptionFromHandle(x);
+      return tap("__option_some_string_v2", [x], handle) as number;
+    },
     __option_none_v2: () => tap("__option_none_v2", [], -1) as number,
+    __option_eq_f64_v2: (left: number, right: number) => {
+      return tap("__option_eq_f64_v2", [left, right], optionF64ValuesEqual(left, right) ? 1 : 0) as number;
+    },
+    __option_eq_option_f64_v2: (left: number, right: number) => {
+      return tap("__option_eq_option_f64_v2", [left, right], optionOptionF64ValuesEqual(left, right) ? 1 : 0) as number;
+    },
     __option_is_some_v2: (opt: number) => tap("__option_is_some_v2", [opt], opt === -1 ? 0 : (optionEntry(opt), 1)) as number,
     __option_is_none_v2: (opt: number) => tap("__option_is_none_v2", [opt], opt === -1 ? 1 : (optionEntry(opt), 0)) as number,
     __option_value_v2: (opt: number) => tap("__option_value_v2", [opt], typedOptionEntry(opt, "i32").value) as number,
@@ -847,7 +1483,7 @@ export function createHostRuntime(
         throw new Error("Array.range: cardinality exceeds the host bound");
       }
       const guestWords = memory !== null
-        ? Math.floor(memory.buffer.byteLength / 4)
+        ? readWasmWordView(memory).wordLength
         : UNBOUND_GUEST_WORDS;
       if (count > guestWords) {
         throw new Error("Array.range: cardinality exceeds guest memory");
@@ -901,25 +1537,123 @@ export function createHostRuntime(
       tap("__decimal_from_int", [n], pushDecimal(hostDecOrThrow(decFromInt(n)))) as number,
   };
 
-  // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-
-  // default. The stdlib bridge can never be shadowed by a grant — bridge names win.
-  const grantAbiByName = new Map(WASM_EFFECT_GRANT_ABI.map((entry) => [entry.name, entry]));
-  for (const [effect, fn] of Object.entries(grants?.effectHandlers ?? {})) {
-    const abi = grantAbiByName.get(effect);
-    if (!abi) {
-      throw makeEffectGrantDiag(`effect grant '${effect}' is not in the closed non-secret WASM effect-grant ABI [${[...grantAbiByName.keys()].join(", ")}]`);
+  // Sanctioned effect grants: explicit, per-admission, deny-by-default. Canonical effect
+  // keys grant every ABI import implementing that effect; an explicit import-name key may
+  // override one import to preserve callers that intentionally grant aliases separately.
+  // The stdlib bridge can never be shadowed by a grant — bridge names win.
+  const grantAbiEffects = new Set(WASM_EFFECT_GRANT_ABI.map((entry) => entry.effect));
+  const grantAbiNames = new Set(WASM_EFFECT_GRANT_ABI.map((entry) => entry.name));
+  const effectHandlers = grants?.effectHandlers ?? {};
+  // Snapshot own enumerable grant entries once: inherited properties are not authority,
+  // and accessor-backed values must not change between validation and installation.
+  const validatedEffectHandlers = new Map(Object.entries(effectHandlers));
+  for (const [grantName, fn] of validatedEffectHandlers) {
+    if (!grantAbiEffects.has(grantName) && !grantAbiNames.has(grantName)) {
+      throw makeEffectGrantDiag(`effect grant '${grantName}' is not in the closed non-secret WASM effect-grant ABI [${[...new Set([...grantAbiEffects, ...grantAbiNames])].join(", ")}]`);
     }
     if (typeof fn !== "function") {
-      throw makeEffectGrantDiag(`effect grant '${effect}' handler is not a function`);
+      throw makeEffectGrantDiag(`effect grant '${grantName}' handler is not a function`);
     }
-    if (Object.prototype.hasOwnProperty.call(host, effect)) continue;
-    host[effect] = typeEffectGrantHandler(abi, (a: number, b: number) =>
-      tap(effect, [a, b], fn(a, b)) as number,
+  }
+  for (const abi of WASM_EFFECT_GRANT_ABI) {
+    if (Object.prototype.hasOwnProperty.call(host, abi.name)) continue;
+    const fn = validatedEffectHandlers.get(abi.name) ?? validatedEffectHandlers.get(abi.effect);
+    if (!fn) continue;
+    host[abi.name] = typeEffectGrantHandler(abi, (a: number, b: number) =>
+      tap(abi.name, [a, b], fn(a, b)) as number,
     );
   }
 
+  // Kept out of the public HostRuntime surface. The admission wrapper receives this
+  // closure from a WeakMap, so guest-controlled code cannot substitute registry readers.
+  const copyOwnedReturn: OwnedReturnCopier = (rootShape, rootValue) => {
+    if (memory === null) refuseHostCopy("cannot snapshot before admitted memory is bound");
+    const { view, wordLength } = readWasmWordView(memory);
+    const visiting = new Set<string>();
+    const nodes = { count: 0 };
+    const visit = (shape: OwnedReturnShape, value: number, depth: number): unknown => {
+      if (depth > MAX_RECORD_COPY_DEPTH) refuseHostCopy(`snapshot exceeds depth ${MAX_RECORD_COPY_DEPTH}`);
+      nodes.count += 1;
+      if (nodes.count > MAX_RECORD_COPY_NODES) refuseHostCopy("snapshot exceeds node bound");
+      if (!WASM_NUMBER_IS_INTEGER(value) || value < -0x8000_0000 || value > 0x7fff_ffff) {
+        refuseHostCopy("snapshot contains a non-i32 registry value");
+      }
+      if (shape.kind === "i32") return value;
+      if (shape.kind === "record") {
+        if (!WASM_NUMBER_IS_SAFE_INTEGER(value) || value < WAT_HEAP_BASE || (value & 3) !== 0) {
+          refuseHostCopy("record pointer is not aligned inside the guest heap");
+        }
+        const identity = `record:${value}`;
+        if (visiting.has(identity)) refuseHostCopy("snapshot contains a record cycle");
+        const start = value >>> 2;
+        if (wordLength - start < shape.fields.length) refuseHostCopy("record extends beyond guest memory");
+        visiting.add(identity);
+        try {
+          const row: unknown[] = [];
+          for (let index = 0; index < shape.fields.length; index += 1) {
+            WASM_OBJECT_DEFINE_PROPERTY(
+              row,
+              String(index),
+              safeDataPropertyDescriptor(visit(shape.fields[index]!, view[start + index]!, depth + 1), false, true, false),
+            );
+          }
+          return WASM_OBJECT_FREEZE(row);
+        } finally {
+          visiting.delete(identity);
+        }
+      }
+      if (shape.kind === "array") {
+        const items = arrays[value];
+        if (items === undefined || value < 0) refuseHostCopy("unknown array registry handle");
+        const identity = `array:${value}`;
+        if (visiting.has(identity)) refuseHostCopy("snapshot contains an array cycle");
+        if (items.length > MAX_WASM_ARRAY_ITEMS) refuseHostCopy("array exceeds host cardinality bound");
+        visiting.add(identity);
+        try {
+          const copied: unknown[] = [];
+          for (let index = 0; index < items.length; index += 1) {
+            WASM_OBJECT_DEFINE_PROPERTY(
+              copied,
+              String(index),
+              safeDataPropertyDescriptor(visit(shape.element, items[index]!, depth + 1), false, true, false),
+            );
+          }
+          return WASM_OBJECT_FREEZE(copied);
+        } finally {
+          visiting.delete(identity);
+        }
+      }
+      const entry = results[value];
+      if (entry === undefined || value < 0) refuseHostCopy("unknown Result registry handle");
+      const identity = `result:${value}`;
+      if (visiting.has(identity)) refuseHostCopy("snapshot contains a Result cycle");
+      visiting.add(identity);
+      try {
+        return WASM_OBJECT_FREEZE({
+          tag: entry.tag,
+          value: visit(entry.tag === "ok" ? shape.ok : shape.err, entry.value, depth + 1),
+        });
+      } finally {
+        visiting.delete(identity);
+      }
+    };
+    return visit(rootShape, rootValue, 0);
+  };
+
+  const refuseQuarantinedRuntime = (operation: string): void => {
+    if (admissionLifecycle.state === "quarantined") {
+      throw new Error(`FUNGI-WASM-QUARANTINED-001: ${operation} refused after host-runtime quarantine`);
+    }
+  };
+  const guardedImports: Record<string, (...args: number[]) => number | void> = Object.create(null);
+  for (const [name, handler] of Object.entries(host)) {
+    guardedImports[name] = (...args: number[]) => {
+      refuseQuarantinedRuntime(`host import ${name}`);
+      return WASM_REFLECT_APPLY(handler, host, args) as number | void;
+    };
+  }
   const runtime: HostRuntime = {
-    imports: Object.freeze({ host: Object.freeze(host) }),
+    imports: Object.freeze({ host: Object.freeze(guardedImports) }),
     internString(s: string): number {
       return internStringValue(s);
     },
@@ -939,6 +1673,9 @@ export function createHostRuntime(
       if (handle === strings.length) {
         strings.push(s);
       } else {
+        if (immutableStringHandles.has(handle)) {
+          throw new Error(`cannot overwrite immutable interned string handle ${handle}`);
+        }
         strings[handle] = s;
       }
     },
@@ -963,12 +1700,32 @@ export function createHostRuntime(
       return internDecimalValue(text);
     },
     bindMemory(m: WebAssembly.Memory) {
+      if (admissionLifecycle.state === "quarantined") {
+        throw new Error("cannot bind memory on a quarantined host runtime");
+      }
+      if (admissionLifecycle.state === "admitting" && !admissionLifecycle.internalBindPermit) {
+        throw new Error("cannot externally bind memory while host admission is in progress");
+      }
+      if (admissionLifecycle.state === "admitted" && memory === null) {
+        throw new Error("cannot add memory after host admission");
+      }
+      if (admissionLifecycle.state === "admitted" && memory !== m) {
+        throw new Error("cannot change memory after host admission");
+      }
+      if (memory !== null && memory !== m) {
+        throw new Error("host runtime memory binding is immutable");
+      }
+      if (admissionLifecycle.state === "ready") {
+        admissionLifecycle.memoryBoundBeforeAdmission = true;
+      }
+      const nextRangeFuel = readWasmWordView(m).wordLength;
       memory = m;
-      rangeFuel = Math.floor(m.buffer.byteLength / 4);
+      rangeFuel = nextRangeFuel;
     },
     readRecordField(ptr: number, slot: number): number {
+      refuseGuestMemoryDuringCall("readRecordField");
       if (memory === null) throw new Error("readRecordField before bindMemory");
-      return new Int32Array(memory.buffer)[(ptr >>> 2) + slot] ?? 0;
+      return readWasmWordView(memory).view[(ptr >>> 2) + slot] ?? 0;
     },
     internArray(items: readonly number[]): number {
       if (items.length > MAX_WASM_ARRAY_ITEMS) {
@@ -977,6 +1734,7 @@ export function createHostRuntime(
       return internArrayItems(items.map((x) => x | 0));
     },
     copyArrayRecords(handle: number, fieldCount: number): readonly (readonly number[])[] {
+      refuseGuestMemoryDuringCall("copyArrayRecords");
       if (memory === null) {
         throw new Error("FUNGI-WASM-HOST-001: copyArrayRecords before bindMemory");
       }
@@ -992,13 +1750,13 @@ export function createHostRuntime(
       if (totalWords > MAX_WASM_ARRAY_ITEMS) {
         throw new Error(`FUNGI-WASM-HOST-001: copied words ${totalWords} exceed host bound`);
       }
-      const view = new Int32Array(memory.buffer);
+      const { view, wordLength } = readWasmWordView(memory);
       for (const ptr of ptrs) {
         if (!Number.isSafeInteger(ptr) || ptr < WAT_HEAP_BASE || (ptr & 3) !== 0) {
           throw new Error(`FUNGI-WASM-HOST-001: record pointer ${String(ptr)} is not an aligned heap record`);
         }
         const start = ptr >>> 2;
-        if (start < 0 || view.length - start < fieldCount) {
+        if (start < 0 || wordLength - start < fieldCount) {
           throw new Error("FUNGI-WASM-HOST-001: short memory for array-of-record copy");
         }
       }
@@ -1012,6 +1770,7 @@ export function createHostRuntime(
       return Object.freeze(out.map((row) => Object.freeze(row)));
     },
     copyArrayRecordsLayout(handle: number, fields: readonly RecordCopyField[]): readonly unknown[] {
+      refuseGuestMemoryDuringCall("copyArrayRecordsLayout");
       if (memory === null) refuseHostCopy("copyArrayRecordsLayout before bindMemory");
       admitCopyFields(fields, 0);
       const stored = arrays[handle];
@@ -1019,22 +1778,23 @@ export function createHostRuntime(
         refuseHostCopy(`unknown array handle ${String(handle)}`);
       }
       const ptrs = stored.slice();
-      const view = new Int32Array(memory.buffer);
+      const { view, wordLength } = readWasmWordView(memory);
       const nodes = { count: 0 };
       const out: unknown[] = [];
       for (const ptr of ptrs) {
-        out.push(copyGuestRecord(view, ptr, fields, 0, new Set(), nodes));
+        out.push(copyGuestRecord(view, wordLength, ptr, fields, 0, new Set(), nodes));
       }
       return Object.freeze(out.map((row) => freezeCopyRow(row as unknown[])));
     },
     allocRecord(fields: readonly number[]): number {
+      refuseGuestMemoryDuringCall("allocRecord");
       if (memory === null) throw new Error("allocRecord before bindMemory — instantiate the module first (fail-closed)");
       if (fields.length === 0) throw new Error("allocRecord: a record must have ≥1 field (fail-closed)");
-      const words = new Int32Array(memory.buffer);
+      const { view: words, wordLength } = readWasmWordView(memory);
       const start = recordBump >>> 2;
       // Bounds-check BEFORE any write — a staged record that would spill past linear memory traps at
       // construction rather than corrupting memory or silently truncating (RD-0389 §5 fail-closed).
-      if (start + fields.length > words.length) {
+      if (start + fields.length > wordLength) {
         throw new Error("allocRecord: record staging overflowed linear memory (fail-closed)");
       }
       for (let i = 0; i < fields.length; i++) words[start + i] = fields[i]! | 0;
@@ -1043,10 +1803,25 @@ export function createHostRuntime(
       return ptr;
     },
     snapshotMemory(): Uint8Array | null {
-      return memory === null ? null : new Uint8Array(memory.buffer.slice(0));
+      refuseGuestMemoryDuringCall("snapshotMemory");
+      if (memory === null) return null;
+      return copyWasmMemorySnapshot(memory);
     },
   };
-  FACTORY_HOST_RUNTIMES.add(runtime);
+  for (const [name, operation] of Object.entries(runtime)) {
+    if (name === "imports" || typeof operation !== "function") continue;
+    Object.defineProperty(runtime, name, {
+      value: (...args: unknown[]) => {
+        refuseQuarantinedRuntime(`host runtime operation ${name}`);
+        return WASM_REFLECT_APPLY(operation, runtime, args);
+      },
+      enumerable: true,
+      configurable: false,
+      writable: false,
+    });
+  }
+  FACTORY_HOST_RUNTIMES.set(runtime, admissionLifecycle);
+  FACTORY_OWNED_RETURN_COPIERS.set(runtime, copyOwnedReturn);
   return Object.freeze(runtime);
 }
 
@@ -1063,8 +1838,10 @@ export interface AdmissionResult {
 /**
  * Admit and instantiate a wasm module. Verifies the attestation FIRST (fail-closed,
  * before host linking), then instantiates with ONLY the closed host import object.
- * Throws `CRITICAL_SECURITY_VIOLATION: …` on any attestation failure — and fires
- * `observe.onViolation` with the rejected binary before throwing.
+ * A HostRuntime is single-admission: each admitted instance owns its host-side registries and
+ * memory binding. A runtime is consumed by an admission attempt and quarantined on failure.
+ * Throws `CRITICAL_SECURITY_VIOLATION: …` on rejection. The trusted `observe.onViolation`
+ * callback may itself have effects; guest-import denial does not constrain that host callback.
  */
 function snapshotWasmBytes(wasm: Uint8Array): Uint8Array {
   if (
@@ -1085,12 +1862,30 @@ export async function admitAndInstantiate(opts: {
   observe?: Observer;
   /** Optional per-export nested return layout for wrapped secret finalize. */
   returnLayouts?: Readonly<Record<string, readonly RecordCopyField[]>>;
+  /** Require signed custom-section metadata for every public function result. */
+  requireOwnedReturnSchemas?: boolean;
 }): Promise<AdmissionResult> {
   // Capture once: callers may mutate options or expose a changing accessor while
   // compilation is pending. Validate and use this same identity throughout.
   const host = opts.host;
+  const requireOwnedReturnSchemas = opts.requireOwnedReturnSchemas;
+  if (requireOwnedReturnSchemas !== undefined && typeof requireOwnedReturnSchemas !== "boolean") {
+    refuseHostCopy("strict owned-return policy must be a boolean");
+  }
   const wasm = snapshotWasmBytes(opts.wasm);
-  const verdict = verifyWasm(wasm, opts.attestation, opts.policy);
+  const ownedReturnSchemas = parseOwnedReturnSchemas(wasm);
+  const capturedPolicy = snapshotAdmissionPolicy(opts.policy);
+  if (capturedPolicy === undefined) {
+    const reason = "invalid admission policy data shape";
+    const hash = wasmHash(wasm);
+    opts.observe?.onViolation?.(reason, wasm);
+    throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${hash})`);
+  }
+  const ownedReturnRequiresSignature = requireOwnedReturnSchemas === true || ownedReturnSchemas !== undefined;
+  const effectivePolicy = ownedReturnRequiresSignature
+    ? Object.freeze({ ...capturedPolicy, requireSigned: true })
+    : capturedPolicy;
+  const verdict = verifyWasm(wasm, opts.attestation, effectivePolicy);
   if (!verdict.ok) {
     // Attestation First: dump state and refuse BEFORE any host function is linked.
     opts.observe?.onViolation?.(verdict.reason ?? "attestation failed", wasm);
@@ -1099,29 +1894,83 @@ export async function admitAndInstantiate(opts: {
   if (wasmHash(wasm) !== verdict.hash) {
     throw new Error("CRITICAL_SECURITY_VIOLATION: admitted bytes changed before instantiate");
   }
-  if (!FACTORY_HOST_RUNTIMES.has(host)) {
+  const lifecycle = FACTORY_HOST_RUNTIMES.get(host);
+  if (lifecycle === undefined) {
     const reason = "host runtime was not created by createHostRuntime";
     opts.observe?.onViolation?.(reason, wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
   }
+  if (lifecycle.state !== "ready" || lifecycle.memoryBoundBeforeAdmission) {
+    const reason = "host runtime is already claimed or consumed, or was pre-bound outside admission";
+    opts.observe?.onViolation?.(reason, wasm);
+    throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
+  }
+  // Claim synchronously before the first await or any guest-controlled layout access. A
+  // concurrent or re-entrant admission cannot observe/share this host's mutable registries.
+  lifecycle.state = "admitting";
   // Instantiate with ONLY the closed host import object. A LinkError here means the
   // module declared a host import the closed set does NOT provide — i.e. it tried to
   // reach a capability outside its grant. Fail CLOSED: classify it as a CRITICAL
   // security violation (fire onViolation, then throw) rather than leaking a raw
   // LinkError that a caller might mistake for an ordinary runtime fault (#105).
   let wasmResult: unknown;
+  let returnLayouts: Readonly<Record<string, readonly RecordCopyField[]>> | undefined;
+  const effectGate = { active: false, startupImportAttempted: false, quarantined: false };
   try {
+    // Capture caller-controlled copy/wipe policy synchronously before compilation yields.
+    returnLayouts = snapshotReturnLayouts(opts.returnLayouts);
+    if (ownedReturnSchemas !== undefined && returnLayouts !== undefined && Object.keys(returnLayouts).length > 0) {
+      refuseHostCopy("attested metadata cannot be combined with caller-supplied legacy layouts");
+    }
     const compiled = await WebAssembly.compile(wasm as Uint8Array<ArrayBuffer>);
+    const moduleExports = WebAssembly.Module.exports(compiled);
+    const publicFunctions = moduleExports
+      .filter((entry) => entry.kind === "function" && !SECRET_HELPER_EXPORTS.has(entry.name));
+    if (requireOwnedReturnSchemas === true && ownedReturnSchemas === undefined) {
+      refuseHostCopy("strict admission requires attested owned-return metadata");
+    }
+    if ((requireOwnedReturnSchemas === true || ownedReturnSchemas !== undefined)
+      && moduleExports.some((entry) => entry.kind === "table")) {
+      refuseHostCopy("strict owned-return schemas refuse exported callable tables");
+    }
+    if (ownedReturnSchemas !== undefined) {
+      if (publicFunctions.some((entry) => ownedReturnSchemas?.[entry.name] === undefined)) {
+        refuseHostCopy("metadata requires a schema for every public function export");
+      }
+      if (!publicFunctions.length || !publicFunctions.every((entry) => {
+        const signature = parseWasmFunctionSignature(wasm, entry.name);
+        return signature !== undefined && signature.results.length === 1 && signature.results[0] === 0x7f;
+      })) {
+        refuseHostCopy("metadata requires each public function to return one i32 owned handle");
+      }
+      const requiresOwnedCleanup = Object.keys(ownedReturnSchemas).some((name) =>
+        ownedReturnShapeRequiresCleanup(ownedReturnSchemas[name]!),
+      );
+      if (requiresOwnedCleanup
+        && !WebAssembly.Module.exports(compiled).some((entry) => entry.name === "__fungi_wipe_owned" && entry.kind === "function")) {
+        refuseHostCopy("attested owned-return metadata requires the owned-memory cleanup export");
+      }
+    }
+    for (const [name] of Object.entries(ownedReturnSchemas ?? {})) {
+      const signature = parseWasmFunctionSignature(wasm, name);
+      if (signature === undefined || signature.results.length !== 1 || signature.results[0] !== 0x7f) {
+        refuseHostCopy(`export '${name}' must return exactly one i32 registry or pointer handle`);
+      }
+    }
     const provided = host.imports as unknown as Record<string, Record<string, unknown>>;
-    for (const imp of WebAssembly.Module.imports(compiled)) {
+    const moduleImports = WebAssembly.Module.imports(compiled);
+    for (const imp of moduleImports) {
+      // The closed host surface exposes functions only. Reject kind substitution for
+      // every import, not just named effect grants: a function-valued JS capability
+      // supplied as an externref/global is still a capability escape.
+      if (imp.kind !== "function") {
+        throw new WebAssembly.LinkError(
+          `unsupported host import kind: ${imp.module}.${imp.name} is ${imp.kind}, expected function`,
+        );
+      }
       const effectGrant = WASM_EFFECT_GRANT_ABI.find(
         (entry) => entry.module === imp.module && entry.name === imp.name,
       );
-      if (effectGrant !== undefined && imp.kind !== "function") {
-        throw new WebAssembly.LinkError(
-          `effect grant import kind mismatch: ${imp.module}.${imp.name} is declared ${imp.kind}, expected function`,
-        );
-      }
       const namespace = Object.prototype.hasOwnProperty.call(provided, imp.module)
         ? provided[imp.module]
         : undefined;
@@ -1131,19 +1980,89 @@ export async function admitAndInstantiate(opts: {
         );
       }
     }
-    wasmResult = await WebAssembly.instantiate(compiled, host.imports);
+    if (!hasOnlyNumericFunctionImportSignatures(wasm)) {
+      throw new Error("FUNGI-WASM-REFERENCE-001: host function imports must use numeric-only parameters and results");
+    }
+
+    // WebAssembly runs a module's start function as part of instantiation. Keep
+    // every host function import closed until instantiation and admission have
+    // fully succeeded; startup must be guest-local and cannot mutate host state,
+    // emit output, or escape through an effect before a later trap.
+    const gatedHost = Object.assign(Object.create(null) as Record<string, unknown>, provided.host);
+    for (const imp of moduleImports) {
+      const effectGrant = WASM_EFFECT_GRANT_ABI.find(
+        (entry) => entry.module === imp.module && entry.name === imp.name,
+      );
+      if (imp.kind !== "function") continue;
+      const handler = gatedHost[imp.name];
+      if (typeof handler !== "function") {
+        throw new WebAssembly.LinkError(`host function import ${imp.module}.${imp.name} is not a function`);
+      }
+      const guardedHandler = (...args: number[]) => {
+        if (effectGate.quarantined) {
+          throw new Error("FUNGI-WASM-QUARANTINED-001: host effect refused after cleanup failure");
+        }
+        if (!effectGate.active) {
+          effectGate.startupImportAttempted = true;
+          const kind = effectGrant === undefined ? "host import" : "host effect";
+          throw new Error(`${kind} ${imp.module}.${imp.name} invoked before module admission completed`);
+        }
+        return (handler as (...values: number[]) => number)(...args);
+      };
+      gatedHost[imp.name] = effectGrant === undefined
+        ? guardedHandler
+        : typeEffectGrantHandler(effectGrant, guardedHandler);
+    }
+    const instantiationImports = { ...host.imports, host: Object.freeze(gatedHost) } as WebAssembly.Imports;
+    wasmResult = await WebAssembly.instantiate(compiled, instantiationImports);
   } catch (err) {
+    lifecycle.state = "quarantined";
     const reason = err instanceof WebAssembly.LinkError
       ? `module import/link failed: ${err.message}`
       : `instantiation failed: ${err instanceof Error ? err.message : String(err)}`;
     opts.observe?.onViolation?.(reason, wasm);
     throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
   }
+  if (effectGate.startupImportAttempted) {
+    lifecycle.state = "quarantined";
+    const reason = "module startup attempted a host import before initialization completed";
+    opts.observe?.onViolation?.(reason, wasm);
+    throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
+  }
   const instance = (wasmResult as { instance?: WebAssembly.Instance }).instance
     ?? (wasmResult as WebAssembly.Instance);
-  const mem = (instance.exports as Record<string, unknown>)["memory"];
-  if (mem instanceof WebAssembly.Memory) host.bindMemory(mem);
-  return { instance: wrapAdmittedExports(instance, opts.returnLayouts), host, hash: verdict.hash };
+  const mem = requireWasmInstanceExports(instance)["memory"];
+  try {
+    // Build every potentially-throwing export wrapper before committing the host's memory
+    // binding. A malformed/accessor-backed layout therefore cannot leave a rejected guest's
+    // memory visible through the host or replace a previously admitted instance's memory.
+    const ownedReturnCopier = FACTORY_OWNED_RETURN_COPIERS.get(host);
+    if (ownedReturnSchemas !== undefined && ownedReturnCopier === undefined) {
+      refuseHostCopy("factory-owned copier is unavailable");
+    }
+    const wrappedInstance = wrapAdmittedExports(instance, returnLayouts, () => {
+      effectGate.quarantined = true;
+      effectGate.active = false;
+      lifecycle.state = "quarantined";
+    }, lifecycle, ownedReturnSchemas, ownedReturnCopier);
+    if (isWasmMemory(mem)) {
+      lifecycle.internalBindPermit = true;
+      try {
+        host.bindMemory(mem);
+      } finally {
+        lifecycle.internalBindPermit = false;
+      }
+    }
+    lifecycle.state = "admitted";
+    effectGate.active = true;
+    ADMITTED_RAW_INSTANCES.add(instance);
+    return { instance: wrappedInstance, host, hash: verdict.hash };
+  } catch (err) {
+    lifecycle.state = "quarantined";
+    const reason = `admission finalization failed: ${err instanceof Error ? err.message : String(err)}`;
+    opts.observe?.onViolation?.(reason, wasm);
+    throw new Error(`CRITICAL_SECURITY_VIOLATION: ${reason} (hash=${verdict.hash})`);
+  }
 }
 
 const SECRET_HELPER_EXPORTS = new Set([
@@ -1153,36 +2072,740 @@ const SECRET_HELPER_EXPORTS = new Set([
   "__fungi_ret_words_get",
 ]);
 const RAW_ADMITTED_INSTANCES = new WeakMap<WebAssembly.Instance, WebAssembly.Instance>();
+const ADMITTED_RAW_INSTANCES = new WeakSet<WebAssembly.Instance>();
+const ADMITTED_SECRET_HELPER_FUNCTIONS = new WeakMap<WebAssembly.Instance, ReadonlyMap<Function, string>>();
+
+type WasmFunctionSignature = Readonly<{ params: readonly number[]; results: readonly number[] }>;
+const WASM_NUMERIC_IMPORT_TYPES = new Set([0x7f, 0x7e, 0x7d, 0x7c]);
+
+function readWasmU32(bytes: Uint8Array, cursor: { offset: number }, end: number): number | undefined {
+  let value = 0;
+  for (let shift = 0; shift <= 28; shift += 7) {
+    if (cursor.offset >= end) return undefined;
+    const byte = bytes[cursor.offset++];
+    if (byte === undefined) return undefined;
+    if (shift === 28 && (byte & 0xf0) !== 0) return undefined;
+    value += (byte & 0x7f) * 2 ** shift;
+    if ((byte & 0x80) === 0) return value;
+  }
+  return undefined;
+}
+
+function skipWasmName(bytes: Uint8Array, cursor: { offset: number }, end: number): string | undefined {
+  const length = readWasmU32(bytes, cursor, end);
+  if (length === undefined || length > end - cursor.offset) return undefined;
+  try {
+    const value = decodeWasmUtf8(wasmByteSubarray(bytes, cursor.offset, cursor.offset + length));
+    cursor.offset += length;
+    return value;
+  } catch {
+    return undefined;
+  }
+}
+
+function readWasmValueType(bytes: Uint8Array, cursor: { offset: number }, end: number): number | undefined {
+  if (cursor.offset >= end) return undefined;
+  const type = bytes[cursor.offset++];
+  if (type === undefined) return undefined;
+  if ([0x7f, 0x7e, 0x7d, 0x7c, 0x7b, 0x70, 0x6f].includes(type)) return type;
+  // Typed references carry an s33 heap type. Consume it, but mark the type as unsupported by this ABI.
+  if (type === 0x63 || type === 0x64) {
+    for (let index = 0; index < 5; index += 1) {
+      if (cursor.offset >= end) return undefined;
+      const byte = bytes[cursor.offset++];
+      if (byte === undefined) return undefined;
+      if ((byte & 0x80) === 0) return 0xff;
+    }
+  }
+  return undefined;
+}
+
+function hasOnlyNumericFunctionImportSignatures(wasm: Uint8Array): boolean {
+  if (wasm.length < 8 || wasm[0] !== 0 || wasm[1] !== 0x61 || wasm[2] !== 0x73 || wasm[3] !== 0x6d) {
+    return false;
+  }
+  const types: WasmFunctionSignature[] = [];
+  const importedFunctionTypes: number[] = [];
+  let offset = 8;
+
+  while (offset < wasm.length) {
+    const sectionId = wasm[offset++];
+    if (sectionId === undefined) return false;
+    const sectionCursor = { offset };
+    const sectionLength = readWasmU32(wasm, sectionCursor, wasm.length);
+    if (sectionLength === undefined || sectionLength > wasm.length - sectionCursor.offset) return false;
+    const end = sectionCursor.offset + sectionLength;
+    const cursor = { offset: sectionCursor.offset };
+
+    if (sectionId === 1) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return false;
+      for (let index = 0; index < count; index += 1) {
+        if (cursor.offset >= end || wasm[cursor.offset++] !== 0x60) return false;
+        const paramCount = readWasmU32(wasm, cursor, end);
+        if (paramCount === undefined || paramCount > end - cursor.offset) return false;
+        const params: number[] = [];
+        for (let param = 0; param < paramCount; param += 1) {
+          const valueType = readWasmValueType(wasm, cursor, end);
+          if (valueType === undefined) return false;
+          params.push(valueType);
+        }
+        const resultCount = readWasmU32(wasm, cursor, end);
+        if (resultCount === undefined || resultCount > end - cursor.offset) return false;
+        const results: number[] = [];
+        for (let result = 0; result < resultCount; result += 1) {
+          const valueType = readWasmValueType(wasm, cursor, end);
+          if (valueType === undefined) return false;
+          results.push(valueType);
+        }
+        types.push({ params, results });
+      }
+      if (cursor.offset !== end) return false;
+    } else if (sectionId === 2) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return false;
+      for (let index = 0; index < count; index += 1) {
+        if (skipWasmName(wasm, cursor, end) === undefined || skipWasmName(wasm, cursor, end) === undefined
+          || cursor.offset >= end) return false;
+        const kind = wasm[cursor.offset++];
+        // This admission boundary currently exposes function imports only. The caller also
+        // checks kinds via the engine API; refuse here because this parser cannot validate
+        // non-function import signatures or authority-bearing reference values.
+        if (kind !== 0) return false;
+        const typeIndex = readWasmU32(wasm, cursor, end);
+        if (typeIndex === undefined) return false;
+        importedFunctionTypes.push(typeIndex);
+      }
+      if (cursor.offset !== end) return false;
+    }
+
+    offset = end;
+  }
+
+  return importedFunctionTypes.every((typeIndex) => {
+    const signature = types[typeIndex];
+    return signature !== undefined
+      && signature.params.every((type) => WASM_NUMERIC_IMPORT_TYPES.has(type))
+      && signature.results.every((type) => WASM_NUMERIC_IMPORT_TYPES.has(type));
+  });
+}
+
+function parseWasmFunctionSignature(wasm: Uint8Array, exportName: string): WasmFunctionSignature | undefined {
+  if (wasm.length < 8 || wasm[0] !== 0 || wasm[1] !== 0x61 || wasm[2] !== 0x73 || wasm[3] !== 0x6d) return undefined;
+  const types: WasmFunctionSignature[] = [];
+  const importedFunctionTypes: number[] = [];
+  const definedFunctionTypes: number[] = [];
+  let exportedFunctionIndex: number | undefined;
+  let offset = 8;
+
+  while (offset < wasm.length) {
+    const sectionId = wasm[offset++];
+    const sectionCursor = { offset };
+    const sectionLength = readWasmU32(wasm, sectionCursor, wasm.length);
+    if (sectionLength === undefined || sectionLength > wasm.length - sectionCursor.offset) return undefined;
+    const end = sectionCursor.offset + sectionLength;
+    const cursor = { offset: sectionCursor.offset };
+
+    if (sectionId === 1) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return undefined;
+      for (let index = 0; index < count; index += 1) {
+        if (cursor.offset >= end || wasm[cursor.offset++] !== 0x60) return undefined;
+        const paramCount = readWasmU32(wasm, cursor, end);
+        if (paramCount === undefined || paramCount > end - cursor.offset) return undefined;
+        const params: number[] = [];
+        for (let param = 0; param < paramCount; param += 1) {
+          const valueType = readWasmValueType(wasm, cursor, end);
+          if (valueType === undefined) return undefined;
+          params.push(valueType);
+        }
+        const resultCount = readWasmU32(wasm, cursor, end);
+        if (resultCount === undefined || resultCount > end - cursor.offset) return undefined;
+        const results: number[] = [];
+        for (let result = 0; result < resultCount; result += 1) {
+          const valueType = readWasmValueType(wasm, cursor, end);
+          if (valueType === undefined) return undefined;
+          results.push(valueType);
+        }
+        types.push(Object.freeze({ params: Object.freeze(params), results: Object.freeze(results) }));
+      }
+      if (cursor.offset !== end) return undefined;
+    } else if (sectionId === 2) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return undefined;
+      for (let index = 0; index < count; index += 1) {
+        if (skipWasmName(wasm, cursor, end) === undefined || skipWasmName(wasm, cursor, end) === undefined
+          || cursor.offset >= end) return undefined;
+        const kind = wasm[cursor.offset++];
+        // This synchronous ABI currently admits only function imports.
+        if (kind !== 0) return undefined;
+        const typeIndex = readWasmU32(wasm, cursor, end);
+        if (typeIndex === undefined) return undefined;
+        importedFunctionTypes.push(typeIndex);
+      }
+      if (cursor.offset !== end) return undefined;
+    } else if (sectionId === 3) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return undefined;
+      for (let index = 0; index < count; index += 1) {
+        const typeIndex = readWasmU32(wasm, cursor, end);
+        if (typeIndex === undefined) return undefined;
+        definedFunctionTypes.push(typeIndex);
+      }
+      if (cursor.offset !== end) return undefined;
+    } else if (sectionId === 7) {
+      const count = readWasmU32(wasm, cursor, end);
+      if (count === undefined || count > end - cursor.offset) return undefined;
+      for (let index = 0; index < count; index += 1) {
+        const name = skipWasmName(wasm, cursor, end);
+        if (name === undefined || cursor.offset >= end) return undefined;
+        const kind = wasm[cursor.offset++];
+        const functionIndex = readWasmU32(wasm, cursor, end);
+        if (functionIndex === undefined) return undefined;
+        if (name === exportName && kind === 0) exportedFunctionIndex = functionIndex;
+      }
+      if (cursor.offset !== end) return undefined;
+    }
+
+    offset = end;
+  }
+
+  if (exportedFunctionIndex === undefined) return undefined;
+  const typeIndex = [...importedFunctionTypes, ...definedFunctionTypes][exportedFunctionIndex];
+  if (typeIndex === undefined) return undefined;
+  return types[typeIndex];
+}
+
+function isSupportedSynchronousWasmSignature(
+  signature: WasmFunctionSignature | undefined,
+  argumentCount: number,
+): signature is WasmFunctionSignature {
+  if (signature === undefined || signature.params.length !== argumentCount || signature.results.length > 1) return false;
+  const jsNumberParams = new Set([0x7f, 0x7d, 0x7c]);
+  const numericResults = new Set([0x7f, 0x7e, 0x7d, 0x7c]);
+  return signature.params.every((type) => jsNumberParams.has(type))
+    && signature.results.every((type) => numericResults.has(type));
+}
+
+type PreparedSynchronousWasmInvocation = {
+  readonly module: WebAssembly.Module;
+  readonly exportName: string;
+  readonly args: readonly number[];
+  readonly host: HostRuntime;
+  readonly lifecycle: HostRuntimeAdmissionLifecycle;
+  readonly hash: string;
+};
+
+/**
+ * Private-pairing authority for the synchronous core-runtime seam. Preparation verifies signed admission and
+ * snapshots/compiles the exact invocation. Only a frozen token held in this authority's WeakMap can cross into
+ * synchronous instantiation; the token is consumed before guest startup. This is deliberately not re-exported
+ * from the package barrel. The asynchronous public `admitAndInstantiate` path remains the primary full runtime.
+ */
+export function createWasmInvocationAuthority(policy: AdmissionPolicy): {
+  prepare(input: {
+    readonly wasm: Uint8Array;
+    readonly attestation: WasmAttestation;
+    readonly artifactSha256: string;
+    readonly exportName: string;
+    readonly args: readonly unknown[];
+  }): object | false;
+  execute(permit: object): { readonly ok: true; readonly result?: unknown } | { readonly ok: false; readonly reason: string };
+} {
+  const preparedInvocations = new WeakMap<object, PreparedSynchronousWasmInvocation>();
+  const safePolicy = snapshotAdmissionPolicy(policy);
+  const signedPolicy = safePolicy === undefined ? undefined : Object.freeze({ ...safePolicy, requireSigned: true });
+
+  return {
+    prepare(input): object | false {
+      if (signedPolicy === undefined) return false;
+      try {
+        const record = snapshotPlainDataRecord(
+          input,
+          new Set(["wasm", "attestation", "artifactSha256", "exportName", "args"]),
+          ["wasm", "attestation", "artifactSha256", "exportName", "args"],
+        );
+        if (record === undefined) return false;
+        const sourceWasm = record.wasm;
+        const sourceAttestation = record.attestation;
+        const artifactSha256 = record.artifactSha256;
+        const exportName = record.exportName;
+        const sourceArgs = record.args;
+        if (
+          nodeTypes.isProxy(sourceWasm)
+          || !(sourceWasm instanceof Uint8Array)
+          || typeof artifactSha256 !== "string"
+          || typeof exportName !== "string"
+          || !Array.isArray(sourceArgs)
+        ) return false;
+        const wasm = Uint8Array.from(sourceWasm);
+        // This one-shot synchronous seam has no owned-return finalizer yet. Do not
+        // silently ignore a signed descriptor and execute the legacy result path.
+        if (parseOwnedReturnSchemas(wasm) !== undefined) return false;
+        const attestation = snapshotWasmAttestation(sourceAttestation as WasmAttestation);
+        if (attestation === undefined) return false;
+        const verdict = verifyWasm(wasm, attestation, signedPolicy);
+        if (!verdict.ok || verdict.hash !== artifactSha256) return false;
+
+        const frozenArgs = snapshotFiniteNumberArray(sourceArgs);
+        if (frozenArgs === undefined) return false;
+        const module = new WebAssembly.Module(wasm as BufferSource);
+        if (!WebAssembly.Module.exports(module).some((entry) => entry.name === exportName && entry.kind === "function")) {
+          return false;
+        }
+        if (!hasOnlyNumericFunctionImportSignatures(wasm)) return false;
+        if (!isSupportedSynchronousWasmSignature(parseWasmFunctionSignature(wasm, exportName), frozenArgs.length)) {
+          return false;
+        }
+
+        const host = createHostRuntime();
+        const lifecycle = FACTORY_HOST_RUNTIMES.get(host);
+        if (lifecycle === undefined || lifecycle.state !== "ready" || lifecycle.memoryBoundBeforeAdmission) return false;
+        const provided = host.imports as Record<string, Record<string, unknown>>;
+        for (const imported of WebAssembly.Module.imports(module)) {
+          if (imported.kind !== "function") return false;
+          const namespace = Object.prototype.hasOwnProperty.call(provided, imported.module)
+            ? provided[imported.module]
+            : undefined;
+          if (namespace === undefined || !Object.prototype.hasOwnProperty.call(namespace, imported.name)
+            || typeof namespace[imported.name] !== "function") return false;
+        }
+
+        // Claim this fresh host before publishing its one-shot permit.
+        lifecycle.state = "admitting";
+        const permit = Object.freeze(Object.create(null)) as object;
+        preparedInvocations.set(permit, Object.freeze({
+          module,
+          exportName,
+          args: frozenArgs,
+          host,
+          lifecycle,
+          hash: verdict.hash,
+        }));
+        return permit;
+      } catch {
+        return false;
+      }
+    },
+
+    execute(permit): { readonly ok: true; readonly result?: unknown } | { readonly ok: false; readonly reason: string } {
+      const prepared = preparedInvocations.get(permit);
+      if (prepared === undefined) return { ok: false, reason: "missing, foreign, or already-consumed invocation permit" };
+      // Burn first: startup, import, binding or guest failures cannot replay this authorization.
+      preparedInvocations.delete(permit);
+      const { module, exportName, args, host, lifecycle } = prepared;
+      let instance: WebAssembly.Instance | undefined;
+      const effectGate = { active: false, startupImportAttempted: false, quarantined: false };
+      try {
+        const provided = host.imports as Record<string, Record<string, unknown>>;
+        const importObject = Object.create(null) as Record<string, Record<string, (...args: number[]) => number>>;
+        for (const imported of WebAssembly.Module.imports(module)) {
+          if (imported.kind !== "function") throw new WebAssembly.LinkError("only function imports are admitted");
+          const namespace = Object.prototype.hasOwnProperty.call(provided, imported.module)
+            ? provided[imported.module]
+            : undefined;
+          const handler = namespace !== undefined && Object.prototype.hasOwnProperty.call(namespace, imported.name)
+            ? namespace[imported.name]
+            : undefined;
+          if (typeof handler !== "function") throw new WebAssembly.LinkError(`host function ${imported.module}.${imported.name} is not provided`);
+          const effectGrant = WASM_EFFECT_GRANT_ABI.find((entry) => entry.module === imported.module && entry.name === imported.name);
+          const guardedHandler = (...values: number[]) => {
+            if (effectGate.quarantined) throw new Error("FUNGI-WASM-QUARANTINED-001: host effect refused after cleanup failure");
+            if (!effectGate.active) {
+              effectGate.startupImportAttempted = true;
+              throw new Error(`host import ${imported.module}.${imported.name} invoked before module admission completed`);
+            }
+            return (handler as (...args: number[]) => number)(...values);
+          };
+          let importNamespace = importObject[imported.module];
+          if (importNamespace === undefined) {
+            importNamespace = Object.create(null) as Record<string, (...args: number[]) => number>;
+            importObject[imported.module] = importNamespace;
+          }
+          importNamespace[imported.name] = effectGrant === undefined
+            ? guardedHandler
+            : typeEffectGrantHandler(effectGrant, guardedHandler);
+        }
+        for (const namespace of Object.values(importObject)) Object.freeze(namespace);
+        const imports = Object.freeze(importObject) as WebAssembly.Imports;
+        instance = new WebAssembly.Instance(module, imports);
+        if (effectGate.startupImportAttempted) throw new Error("module startup attempted a host import before admission completed");
+
+        const exports = getWasmInstanceExports(instance);
+        if (exports === undefined) throw new TypeError("newly instantiated WASM module did not produce a genuine instance");
+        const memory = exports["memory"];
+        const wrapped = wrapAdmittedExports(instance, undefined, () => {
+          effectGate.quarantined = true;
+          effectGate.active = false;
+          lifecycle.state = "quarantined";
+        }, lifecycle);
+        if (isWasmMemory(memory)) {
+          lifecycle.internalBindPermit = true;
+          try {
+            host.bindMemory(memory);
+          } finally {
+            lifecycle.internalBindPermit = false;
+          }
+        }
+        lifecycle.state = "admitted";
+        effectGate.active = true;
+        ADMITTED_RAW_INSTANCES.add(instance);
+        const result = invokeAdmittedExport(wrapped, exportName, args);
+        if (!result.ok) return result;
+        return { ok: true, result: result.result };
+      } catch (error) {
+        lifecycle.state = "quarantined";
+        effectGate.active = false;
+        effectGate.quarantined = true;
+        return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+      }
+    },
+  };
+}
+
+interface AdmittedExportCallState {
+  active: boolean;
+  quarantined: boolean;
+  lifecycle?: HostRuntimeAdmissionLifecycle;
+  onQuarantine?: () => void;
+}
+const ADMITTED_EXPORT_CALL_STATES = new WeakMap<WebAssembly.Instance, AdmittedExportCallState>();
+const ADMITTED_RETURN_LAYOUTS = new WeakMap<
+  WebAssembly.Instance,
+  Readonly<Record<string, readonly RecordCopyField[]>> | undefined
+>();
+const ADMITTED_OWNED_RETURN_SCHEMAS = new WeakMap<WebAssembly.Instance, OwnedReturnSchemas | undefined>();
+const ADMITTED_OWNED_RETURN_COPIERS = new WeakMap<WebAssembly.Instance, OwnedReturnCopier | undefined>();
+const WASM_INSTANCE_EXPORTS_GETTER = Object.getOwnPropertyDescriptor(
+  WebAssembly.Instance.prototype,
+  "exports",
+)?.get;
+const WASM_GLOBAL_VALUE_GETTER = Object.getOwnPropertyDescriptor(WebAssembly.Global.prototype, "value")?.get;
+const WASM_TABLE_GET = WebAssembly.Table.prototype.get;
+const WASM_TABLE_LENGTH_GETTER = Object.getOwnPropertyDescriptor(WebAssembly.Table.prototype, "length")?.get;
+const APPLY_INTRINSIC = Reflect.apply;
+
+function admittedExportCallState(
+  instance: WebAssembly.Instance,
+  onQuarantine?: () => void,
+  lifecycle?: HostRuntimeAdmissionLifecycle,
+): AdmittedExportCallState {
+  const existing = ADMITTED_EXPORT_CALL_STATES.get(instance);
+  if (existing !== undefined) {
+    if (onQuarantine !== undefined) existing.onQuarantine = onQuarantine;
+    if (lifecycle !== undefined) existing.lifecycle = lifecycle;
+    return existing;
+  }
+  const state: AdmittedExportCallState = { active: false, quarantined: false };
+  if (onQuarantine !== undefined) state.onQuarantine = onQuarantine;
+  if (lifecycle !== undefined) state.lifecycle = lifecycle;
+  ADMITTED_EXPORT_CALL_STATES.set(instance, state);
+  return state;
+}
+
+function setAdmittedCallActive(callState: AdmittedExportCallState, active: boolean): void {
+  callState.active = active;
+  if (callState.lifecycle !== undefined) callState.lifecycle.activeCall = active;
+}
+
+function refuseQuarantinedInstance(callState: AdmittedExportCallState): void {
+  if (callState.quarantined) {
+    throw new Error("FUNGI-WASM-QUARANTINED-001: instance refused after owned-memory cleanup failure");
+  }
+}
+
+function quarantineAdmittedInstance(callState: AdmittedExportCallState): void {
+  if (callState.quarantined) return;
+  callState.quarantined = true;
+  if (callState.lifecycle !== undefined) callState.lifecycle.state = "quarantined";
+  callState.onQuarantine?.();
+}
+
+function getWasmInstanceExports(
+  instance: WebAssembly.Instance,
+): Record<string, unknown> | undefined {
+  if (typeof WASM_INSTANCE_EXPORTS_GETTER !== "function") return undefined;
+  try {
+    return APPLY_INTRINSIC(WASM_INSTANCE_EXPORTS_GETTER, instance, []) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
+}
+
+function requireWasmInstanceExports(instance: WebAssembly.Instance): Record<string, unknown> {
+  const exports = getWasmInstanceExports(instance);
+  if (exports === undefined) throw new TypeError("a genuine WebAssembly.Instance is required");
+  return exports;
+}
+
+function wrapReadOnlyAdmittedGlobal(value: WebAssembly.Global, name: string): WebAssembly.Global {
+  if (typeof WASM_GLOBAL_VALUE_GETTER !== "function") {
+    throw new Error(`FUNGI-WASM-GLOBAL-001: WebAssembly.Global.value is unavailable for export '${name}'`);
+  }
+  return new Proxy(value, {
+    get(target, property) {
+      if (property === "value") return APPLY_INTRINSIC(WASM_GLOBAL_VALUE_GETTER, target, []);
+      if (property === Symbol.toStringTag) return "WebAssembly.Global";
+      return undefined;
+    },
+    set(_target, property) {
+      throw new Error(`FUNGI-WASM-GLOBAL-001: host mutation of exported global '${name}' (${String(property)}) is refused`);
+    },
+    defineProperty() {
+      return false;
+    },
+    deleteProperty() {
+      return false;
+    },
+    setPrototypeOf() {
+      return false;
+    },
+  });
+}
+
+function wrapOpaqueAdmittedMemory(value: WebAssembly.Memory, name: string): WebAssembly.Memory {
+  return new Proxy(value, {
+    get(_target, property) {
+      if (property === "buffer" || property === "grow") {
+        throw new Error(`FUNGI-WASM-MEMORY-001: host access to admitted memory '${name}' is refused`);
+      }
+      if (property === Symbol.toStringTag) return "WebAssembly.Memory";
+      return undefined;
+    },
+    set() {
+      throw new Error(`FUNGI-WASM-MEMORY-001: host mutation of admitted memory '${name}' is refused`);
+    },
+    defineProperty() {
+      return false;
+    },
+    deleteProperty() {
+      return false;
+    },
+    setPrototypeOf() {
+      return false;
+    },
+  });
+}
+
+function wrapAdmittedFunction(
+  instanceExports: Record<string, unknown>,
+  callState: AdmittedExportCallState,
+  value: (...args: unknown[]) => unknown,
+  layout?: readonly RecordCopyField[],
+  ownedReturnShape?: OwnedReturnShape,
+  ownedReturnCopier?: OwnedReturnCopier,
+): (...args: unknown[]) => unknown {
+  return (...args: unknown[]) => {
+    refuseQuarantinedInstance(callState);
+    if (callState.active) {
+      throw new Error("FUNGI-WASM-REENTRANT-001: nested admitted export refused while a prior export is active");
+    }
+    setAdmittedCallActive(callState, true);
+    const cleanup = createCleanupAttempt();
+    try {
+      const result = value(...args);
+      return finalizeSecretExportResultWithAttempt(
+        instanceExports,
+        result,
+        layout,
+        cleanup,
+        ownedReturnShape,
+        ownedReturnCopier,
+        () => quarantineAdmittedInstance(callState),
+      );
+    } catch (err) {
+      if (!cleanup.attempted) {
+        try {
+          wipeOwnedSecrets(instanceExports, cleanup, () => quarantineAdmittedInstance(callState));
+        } catch (cleanupErr) {
+          quarantineAdmittedInstance(callState);
+          throw combineCleanupFailure(err, cleanupErr);
+        }
+      }
+      if (cleanup.failed) quarantineAdmittedInstance(callState);
+      throw err;
+    } finally {
+      setAdmittedCallActive(callState, false);
+    }
+  };
+}
+
+function wrapAdmittedHelper(
+  value: (...args: unknown[]) => unknown,
+  name: string,
+  callState: AdmittedExportCallState,
+  instanceExports: Record<string, unknown>,
+): (...args: unknown[]) => unknown {
+  return (...args: unknown[]) => {
+    refuseQuarantinedInstance(callState);
+    if (callState.active) {
+      throw new Error(`FUNGI-WASM-REENTRANT-001: secret helper '${name}' refused while an admitted export is active`);
+    }
+    setAdmittedCallActive(callState, true);
+    try {
+      const result = value(...args);
+      const valid = name === "__fungi_wipe_owned"
+        ? result === undefined
+        : typeof result === "number" && Number.isInteger(result);
+      if (!valid) {
+        throw new Error(`FUNGI-WASM-REFERENCE-001: secret helper '${name}' returned a non-scalar or invalid result`);
+      }
+      return result;
+    } catch (err) {
+      if (name === "__fungi_wipe_owned") {
+        quarantineAdmittedInstance(callState);
+      } else {
+        const cleanup = createCleanupAttempt();
+        try {
+          wipeOwnedSecrets(instanceExports, cleanup, () => quarantineAdmittedInstance(callState));
+        } catch (cleanupErr) {
+          quarantineAdmittedInstance(callState);
+          throw combineCleanupFailure(err, cleanupErr);
+        }
+        quarantineAdmittedInstance(callState);
+      }
+      throw err;
+    } finally {
+      setAdmittedCallActive(callState, false);
+    }
+  };
+}
+
+function wrapAdmittedTable(
+  table: WebAssembly.Table,
+  instanceExports: Record<string, unknown>,
+  callState: AdmittedExportCallState,
+  helperFunctions: ReadonlyMap<Function, string>,
+): WebAssembly.Table {
+  return new Proxy(table, {
+    get(target, property, receiver) {
+      if (property === "get") {
+        return (index: number): unknown => {
+          const value = APPLY_INTRINSIC(WASM_TABLE_GET, target, [index]) as unknown;
+          if (typeof value !== "function") return value;
+          const helperName = WASM_REFLECT_APPLY(WASM_MAP_GET, helperFunctions, [value]) as string | undefined;
+          return helperName === undefined
+            ? wrapAdmittedFunction(instanceExports, callState, value as (...args: unknown[]) => unknown)
+            : wrapAdmittedHelper(value as (...args: unknown[]) => unknown, helperName, callState, instanceExports);
+        };
+      }
+      if (property === "set") {
+        return (index: number, value: unknown): void => {
+          refuseQuarantinedInstance(callState);
+          void index;
+          void value;
+          throw new Error("FUNGI-WASM-TABLE-001: host table mutation refused after artifact admission");
+        };
+      }
+      if (property === "grow") {
+        return (delta: number, value?: unknown): number => {
+          refuseQuarantinedInstance(callState);
+          void delta;
+          void value;
+          throw new Error("FUNGI-WASM-TABLE-001: host table mutation refused after artifact admission");
+        };
+      }
+      if (property === "length") {
+        if (WASM_TABLE_LENGTH_GETTER === undefined) {
+          throw new Error("FUNGI-WASM-TABLE-001: table length is unavailable in this host runtime");
+        }
+        return APPLY_INTRINSIC(WASM_TABLE_LENGTH_GETTER, target, []) as number;
+      }
+      if (property === Symbol.toStringTag) return "WebAssembly.Table";
+      return undefined;
+    },
+    set() {
+      return false;
+    },
+    defineProperty() {
+      return false;
+    },
+    deleteProperty() {
+      return false;
+    },
+    setPrototypeOf() {
+      return false;
+    },
+  });
+}
 
 function wrapAdmittedExports(
   instance: WebAssembly.Instance,
   returnLayouts?: Readonly<Record<string, readonly RecordCopyField[]>>,
+  onQuarantine?: () => void,
+  lifecycle?: HostRuntimeAdmissionLifecycle,
+  ownedReturnSchemas?: OwnedReturnSchemas,
+  ownedReturnCopier?: OwnedReturnCopier,
 ): WebAssembly.Instance {
+  const instanceExports = requireWasmInstanceExports(instance);
+  if (returnLayouts !== undefined) {
+    for (const name of Object.keys(returnLayouts)) {
+      if (typeof instanceExports[name] !== "function") {
+        throw new Error(`FUNGI-WASM-RET-001: declared return layout names missing export '${name}'`);
+      }
+    }
+    if (Object.keys(returnLayouts).length > 0 && typeof instanceExports["__fungi_wipe_owned"] !== "function") {
+      throw new Error("FUNGI-WASM-RET-001: declared result layout requires owned-memory cleanup");
+    }
+  }
+  const callState = admittedExportCallState(instance, onQuarantine, lifecycle);
+  const helperFunctions = new Map<Function, string>();
+  for (const name of SECRET_HELPER_EXPORTS) {
+    const value = instanceExports[name];
+    if (typeof value === "function") {
+      const existingName = WASM_REFLECT_APPLY(WASM_MAP_GET, helperFunctions, [value]) as string | undefined;
+      if (existingName !== undefined && existingName !== name) {
+        throw new Error("FUNGI-WASM-REFERENCE-001: reserved secret helper exports must not alias the same function");
+      }
+      WASM_REFLECT_APPLY(WASM_MAP_SET, helperFunctions, [value, name]);
+    }
+  }
+  WASM_REFLECT_APPLY(WASM_WEAKMAP_SET, ADMITTED_SECRET_HELPER_FUNCTIONS, [instance, helperFunctions]);
   const wrappedExports: Record<string, unknown> = Object.create(null);
-  for (const [name, value] of Object.entries(instance.exports)) {
+  for (const [name, value] of Object.entries(instanceExports)) {
+    if (SECRET_HELPER_EXPORTS.has(name) && typeof value !== "function") {
+      throw new Error(`FUNGI-WASM-REFERENCE-001: reserved secret helper export '${name}' must be a function`);
+    }
+    if (isWasmMemory(value)) {
+      wrappedExports[name] = wrapOpaqueAdmittedMemory(value, name);
+      continue;
+    }
+    if (value instanceof WebAssembly.Global) {
+      if (typeof WASM_GLOBAL_VALUE_GETTER !== "function") {
+        throw new Error(`FUNGI-WASM-GLOBAL-001: WebAssembly.Global.value is unavailable for export '${name}'`);
+      }
+      const globalValue = APPLY_INTRINSIC(WASM_GLOBAL_VALUE_GETTER, value, []);
+      if (typeof globalValue !== "number" && typeof globalValue !== "bigint") {
+        throw new Error(`FUNGI-WASM-REFERENCE-001: reference-valued global export '${name}' is not admitted`);
+      }
+      wrappedExports[name] = wrapReadOnlyAdmittedGlobal(value, name);
+      continue;
+    }
+    const helperName = typeof value === "function"
+      ? WASM_REFLECT_APPLY(WASM_MAP_GET, helperFunctions, [value]) as string | undefined
+      : undefined;
+    if (SECRET_HELPER_EXPORTS.has(name) || helperName !== undefined) {
+      wrappedExports[name] = wrapAdmittedHelper(
+        value as (...args: unknown[]) => unknown,
+        helperName ?? name,
+        callState,
+        instanceExports,
+      );
+      continue;
+    }
     if (typeof value === "function" && !SECRET_HELPER_EXPORTS.has(name)) {
       const layout = returnLayouts?.[name];
-      wrappedExports[name] = (...args: unknown[]) => {
-        const cleanup = createCleanupAttempt();
-        try {
-          const result = (value as (...a: unknown[]) => unknown)(...args);
-          return finalizeSecretExportResultWithAttempt(
-            instance,
-            result,
-            layout,
-            cleanup,
-          );
-        } catch (err) {
-          if (!cleanup.attempted) {
-            try {
-              wipeOwnedSecrets(instance.exports as Record<string, unknown>, cleanup);
-            } catch (cleanupErr) {
-              throw combineCleanupFailure(err, cleanupErr);
-            }
-          }
-          throw err;
-        }
-      };
+      const ownedReturnShape = ownedReturnSchemas?.[name];
+      wrappedExports[name] = wrapAdmittedFunction(
+        instanceExports,
+        callState,
+        value as (...args: unknown[]) => unknown,
+        layout,
+        ownedReturnShape,
+        ownedReturnCopier,
+      );
+    } else if (value instanceof WebAssembly.Table) {
+      wrappedExports[name] = wrapAdmittedTable(value, instanceExports, callState, helperFunctions);
     } else {
       wrappedExports[name] = value;
     }
@@ -1194,6 +2817,9 @@ function wrapAdmittedExports(
     },
   }) as WebAssembly.Instance;
   RAW_ADMITTED_INSTANCES.set(wrapped, instance);
+  ADMITTED_RETURN_LAYOUTS.set(wrapped, returnLayouts);
+  ADMITTED_OWNED_RETURN_SCHEMAS.set(wrapped, ownedReturnSchemas);
+  ADMITTED_OWNED_RETURN_COPIERS.set(wrapped, ownedReturnCopier);
   return wrapped;
 }
 
@@ -1206,10 +2832,17 @@ interface CleanupAttempt {
 }
 
 function createCleanupAttempt(): CleanupAttempt {
-  return { attempted: false, failed: false };
+  // Declare every mutable field as an own data property. In particular, cleanup
+  // failure reporting must not dispatch through an inherited `failure` setter
+  // before the admitted instance is quarantined.
+  return { attempted: false, failed: false, failure: undefined };
 }
 
-function wipeOwnedSecrets(exports: Record<string, unknown>, attempt: CleanupAttempt): void {
+function wipeOwnedSecrets(
+  exports: Record<string, unknown>,
+  attempt: CleanupAttempt,
+  onCleanupFailure?: () => void,
+): void {
   if (attempt.attempted) {
     if (attempt.failed) throw attempt.failure;
     return;
@@ -1219,11 +2852,14 @@ function wipeOwnedSecrets(exports: Record<string, unknown>, attempt: CleanupAtte
   if (typeof wipe !== "function") return;
   try {
     (wipe as () => void)();
-  } catch (cause) {
-    const detail = cause instanceof Error ? cause.message : String(cause);
-    const failure = new Error(`FUNGI-WASM-CLEANUP-001: owned-memory cleanup failed (${detail})`);
-    Object.defineProperty(failure, "cause", { value: cause, configurable: true });
+  } catch {
+    // Mark failure before diagnostic construction: a replaced Error constructor must not leave
+    // the cleanup attempt looking successful. Keep a primitive fallback if construction throws.
+    const message = "FUNGI-WASM-CLEANUP-001: owned-memory cleanup failed after guest trap or host cleanup error";
     attempt.failed = true;
+    attempt.failure = message;
+    onCleanupFailure?.();
+    const failure = new Error(message);
     attempt.failure = failure;
     throw failure;
   }
@@ -1253,37 +2889,100 @@ export function finalizeSecretExportResult(
   result: unknown,
   layout?: readonly RecordCopyField[],
 ): unknown {
-  return finalizeSecretExportResultWithAttempt(instance, result, layout, createCleanupAttempt());
+  const rawInstance = RAW_ADMITTED_INSTANCES.get(instance) ?? instance;
+  const callState = ADMITTED_EXPORT_CALL_STATES.get(rawInstance);
+  if (callState !== undefined) {
+    refuseQuarantinedInstance(callState);
+    if (callState.active) {
+      throw new Error("FUNGI-WASM-REENTRANT-001: secret result finalization refused while an admitted export is active");
+    }
+  }
+  try {
+    if (callState !== undefined) setAdmittedCallActive(callState, true);
+    return finalizeSecretExportResultWithAttempt(
+      requireWasmInstanceExports(rawInstance),
+      result,
+      layout,
+      createCleanupAttempt(),
+      undefined,
+      undefined,
+      callState === undefined ? undefined : () => quarantineAdmittedInstance(callState),
+    );
+  } finally {
+    if (callState !== undefined) setAdmittedCallActive(callState, false);
+  }
 }
 
 function finalizeSecretExportResultWithAttempt(
-  instance: WebAssembly.Instance,
+  exports: Record<string, unknown>,
   result: unknown,
   layout: readonly RecordCopyField[] | undefined,
   cleanup: CleanupAttempt,
+  ownedReturnShape?: OwnedReturnShape,
+  ownedReturnCopier?: OwnedReturnCopier,
+  onCleanupFailure?: () => void,
 ): unknown {
-  const exports = instance.exports as Record<string, unknown>;
   const wipe = exports["__fungi_wipe_owned"];
-  if (typeof wipe !== "function") return result;
-  let finalized = result;
+  const scalarResult = result === undefined || typeof result === "number" || typeof result === "bigint";
+  if (!scalarResult) {
+    const detail = typeof result === "function" ? "function-valued" : "reference or multi-value";
+    let refusal: unknown;
+    try {
+      refusal = new Error(`FUNGI-WASM-REFERENCE-001: ${detail} export results are not admitted`);
+    } catch (diagnosticErr) {
+      refusal = diagnosticErr;
+    }
+    if (typeof wipe !== "function") throw refusal;
+    try {
+      wipeOwnedSecrets(exports, cleanup, onCleanupFailure);
+    } catch (cleanupErr) {
+      throw combineCleanupFailure(refusal, cleanupErr);
+    }
+    throw refusal;
+  }
+  if (typeof wipe !== "function") {
+    if (layout !== undefined || (ownedReturnShape !== undefined && ownedReturnShapeRequiresCleanup(ownedReturnShape))) {
+      refuseIncompleteSecretCopy("declared return schema has no owned-memory cleanup export");
+    }
+    return result;
+  }
+  let finalized: unknown = result;
   let copyFailure: unknown;
   let copyFailed = false;
   try {
-    const heapResult = exports["__fungi_ret_is_heap_get"];
-    const resultIsHeapPointer = typeof heapResult === "function" && (heapResult as () => number)() === 1;
-    if (
-      resultIsHeapPointer
-      && typeof result === "number"
-      && Number.isSafeInteger(result)
-      && result >= WAT_HEAP_BASE
-      && (result & 3) === 0
-    ) {
+    if (ownedReturnShape !== undefined) {
+      if (typeof result !== "number" || ownedReturnCopier === undefined) {
+        refuseIncompleteSecretCopy("attested owned-return metadata has no runtime copier or scalar handle");
+      }
+      if (layout !== undefined) refuseIncompleteSecretCopy("attested and legacy return layouts cannot overlap");
+      finalized = ownedReturnCopier(ownedReturnShape, result);
+    } else {
+      const heapResult = exports["__fungi_ret_is_heap_get"];
+      const resultIsHeapPointer = typeof heapResult === "function" && (heapResult as () => number)() === 1;
+      if (layout !== undefined && !resultIsHeapPointer) {
+        refuseIncompleteSecretCopy("declared return layout requires a heap-result tag");
+      }
+      if (layout !== undefined && (
+        typeof result !== "number"
+        || !Number.isSafeInteger(result)
+        || result < WAT_HEAP_BASE
+        || (result & 3) !== 0
+      )) {
+        refuseIncompleteSecretCopy("declared return layout requires an aligned in-heap result pointer");
+      }
+      if (
+        resultIsHeapPointer
+        && typeof result === "number"
+        && Number.isSafeInteger(result)
+        && result >= WAT_HEAP_BASE
+        && (result & 3) === 0
+      ) {
       const memory = exports["memory"];
-      if (memory instanceof WebAssembly.Memory) {
-        const view = new Int32Array(memory.buffer);
+      if (isWasmMemory(memory)) {
         if (layout !== undefined) {
+          const { view, wordLength } = readWasmWordView(memory);
           admitCopyFields(layout, 0);
-          const copied = copyGuestRecord(view, result, layout, 0, new Set(), { count: 0 });
+          const copied = copyGuestRecord(view, wordLength, result, layout, 0, new Set(), { count: 0 });
           finalized = freezeCopyRow(copied);
         } else {
           const start = result >>> 2;
@@ -1295,14 +2994,32 @@ function finalizeSecretExportResultWithAttempt(
           if (taggedWords > MAX_COPIED_RECORD_WORDS) {
             refuseIncompleteSecretCopy(`taggedWords=${taggedWords} max=${MAX_COPIED_RECORD_WORDS}`);
           }
-          const remaining = view.length - start;
+          // The guest metadata call may grow memory and detach an ordinary-memory
+          // view, so acquire the private view only after all guest calls finish.
+          const { view, wordLength } = readWasmWordView(memory);
+          const remaining = wordLength - start;
           if (start < 0 || remaining < taggedWords) {
             refuseIncompleteSecretCopy(`short memory remaining=${remaining} taggedWords=${taggedWords}`);
           }
           const words: number[] = [];
-          for (let i = 0; i < taggedWords; i++) words.push(view[start + i]!);
-          finalized = words.length === 1 ? words[0]! : Object.freeze(words);
+          for (let i = 0; i < taggedWords; i++) {
+            const word = view[start + i];
+            if (typeof word !== "number") {
+              refuseIncompleteSecretCopy(`unavailable copied word index=${i}`);
+            }
+            WASM_REFLECT_APPLY(WASM_OBJECT_DEFINE_PROPERTY, Object, [
+              words,
+              i,
+              safeDataPropertyDescriptor(word, true, true, true),
+            ]);
+          }
+          finalized = words.length === 1
+            ? words[0]!
+            : WASM_REFLECT_APPLY(WASM_OBJECT_FREEZE, Object, [words]);
         }
+      } else if (layout !== undefined) {
+        refuseIncompleteSecretCopy("declared return layout requires exported linear memory");
+      }
       }
     }
   } catch (err) {
@@ -1310,7 +3027,7 @@ function finalizeSecretExportResultWithAttempt(
     copyFailure = err;
   }
   try {
-    wipeOwnedSecrets(exports, cleanup);
+    wipeOwnedSecrets(exports, cleanup, onCleanupFailure);
   } catch (cleanupErr) {
     if (copyFailed) throw combineCleanupFailure(copyFailure, cleanupErr);
     throw cleanupErr;
@@ -1326,26 +3043,77 @@ export function invokeAdmittedExport(
   args: readonly number[],
   layout?: readonly RecordCopyField[],
 ): { readonly ok: true; readonly result: unknown } | { readonly ok: false; readonly reason: string } {
+  const isAdmittedWrapper = RAW_ADMITTED_INSTANCES.has(instance);
+  if (!isAdmittedWrapper && nodeTypes.isProxy(instance)) {
+    return { ok: false, reason: "unregistered proxy instance refused" };
+  }
   const raw = RAW_ADMITTED_INSTANCES.get(instance) ?? instance;
-  const fn = (raw.exports as Record<string, unknown>)[exportName];
+  const rawExports = getWasmInstanceExports(raw);
+  if (rawExports === undefined) {
+    return { ok: false, reason: "a genuine WebAssembly.Instance is required" };
+  }
+  if (!ADMITTED_RAW_INSTANCES.has(raw)) {
+    return { ok: false, reason: "instance has not completed admission" };
+  }
+  if (isAdmittedWrapper && layout !== undefined) {
+    return { ok: false, reason: "per-call return-layout override refused; admitted layout is fixed at admission" };
+  }
+  if (SECRET_HELPER_EXPORTS.has(exportName)) {
+    return { ok: false, reason: `reserved secret helper export '${exportName}' cannot be invoked as an application export` };
+  }
+  const capturedLayouts = isAdmittedWrapper ? ADMITTED_RETURN_LAYOUTS.get(instance) : undefined;
+  const effectiveLayout = isAdmittedWrapper ? capturedLayouts?.[exportName] : layout;
+  const ownedReturnShape = isAdmittedWrapper
+    ? ADMITTED_OWNED_RETURN_SCHEMAS.get(instance)?.[exportName]
+    : undefined;
+  const ownedReturnCopier = isAdmittedWrapper ? ADMITTED_OWNED_RETURN_COPIERS.get(instance) : undefined;
+  const fn = rawExports[exportName];
   if (typeof fn !== "function") {
     return { ok: false, reason: `export '${exportName}' is not a callable function of the module` };
   }
+  const helperFunctions = WASM_REFLECT_APPLY(WASM_WEAKMAP_GET, ADMITTED_SECRET_HELPER_FUNCTIONS, [raw]) as
+    | ReadonlyMap<Function, string>
+    | undefined;
+  if (helperFunctions !== undefined && WASM_REFLECT_APPLY(WASM_MAP_GET, helperFunctions, [fn]) !== undefined) {
+    return { ok: false, reason: `reserved secret helper export '${exportName}' cannot be invoked as an application export` };
+  }
+  const callState = admittedExportCallState(raw);
+  if (callState.quarantined) {
+    return { ok: false, reason: "FUNGI-WASM-QUARANTINED-001: instance refused after owned-memory cleanup failure" };
+  }
+  if (callState.active) {
+    return {
+      ok: false,
+      reason: "FUNGI-WASM-REENTRANT-001: nested admitted export refused while a prior export is active",
+    };
+  }
+  setAdmittedCallActive(callState, true);
   const cleanup = createCleanupAttempt();
+  const onCleanupFailure = () => quarantineAdmittedInstance(callState);
   try {
     const value = (fn as (...a: number[]) => unknown)(...args);
-    return { ok: true, result: finalizeSecretExportResultWithAttempt(raw, value, layout, cleanup) };
+    return {
+      ok: true,
+      result: finalizeSecretExportResultWithAttempt(
+        rawExports, value, effectiveLayout, cleanup, ownedReturnShape, ownedReturnCopier,
+        onCleanupFailure,
+      ),
+    };
   } catch (err) {
     if (!cleanup.attempted) {
       try {
-        wipeOwnedSecrets(raw.exports as Record<string, unknown>, cleanup);
+        wipeOwnedSecrets(rawExports, cleanup, onCleanupFailure);
       } catch (cleanupErr) {
+        quarantineAdmittedInstance(callState);
         err = combineCleanupFailure(err, cleanupErr);
       }
     }
+    if (cleanup.failed) quarantineAdmittedInstance(callState);
     return {
       ok: false,
       reason: `trap during '${exportName}': ${err instanceof Error ? err.message : String(err)}`,
     };
+  } finally {
+    setAdmittedCallActive(callState, false);
   }
 }

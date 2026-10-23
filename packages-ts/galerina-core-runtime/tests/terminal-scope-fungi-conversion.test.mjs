@@ -19,6 +19,7 @@ describe("core-runtime package-owned terminal scope decision", () => {
       packageRoot: PACKAGE_ROOT,
       assetRoot: PRODUCT_ROOT,
       assetRelative: ASSET,
+      productTree: "packages/fungi/products/galerina/rd0873-core-runtime",
       referenceRelative: "src/structured-await.ts",
       assertReference(reference) {
         assert.match(reference, /export type StructuredAwaitScopeStatus =\s*\| "running"\s*\| "cancelling"\s*\| StructuredAwaitTerminalOutcome;/u);

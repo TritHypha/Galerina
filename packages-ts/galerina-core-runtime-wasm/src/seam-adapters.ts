@@ -23,7 +23,8 @@
 
 // TYPE-ONLY seam interfaces (the ✅ direction; core-runtime is a zero-dep leaf — see .graph/boundary-policy.json).
 import type { GovernedAdmissionVerifier, LowLevelWasmExecutor } from "@galerina/core-runtime";
-import { wasmHash, verifyWasm, invokeAdmittedExport } from "./wasm-runtime.js";
+import { types as nodeTypes } from "node:util";
+import { wasmHash, verifyWasmSigned, createWasmInvocationAuthority } from "./wasm-runtime.js";
 import { createHostRuntime } from "./wasm-runtime.js";
 import type { AdmissionPolicy, WasmAttestation, RunnerProfile } from "./wasm-runtime.js";
 
@@ -33,7 +34,7 @@ import type { AdmissionPolicy, WasmAttestation, RunnerProfile } from "./wasm-run
  * the real value and asserts equality, so a drift is caught at CI. A drift is also fail-CLOSED at runtime: the
  * composition refuses any injected capability whose seamVersion does not match the pinned version.
  */
-const RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v1";
+const RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v2";
 
 /** The seam's `hashArtifact` capability: sha256 hex over the artifact bytes. */
 export const hashArtifact: (bytes: Uint8Array) => string = wasmHash;
@@ -80,6 +81,53 @@ function moduleDefinesExport(bytes: Uint8Array, exportName: string): boolean {
   }
 }
 
+type ClosedHostFunctionImport = {
+  readonly module: string;
+  readonly name: string;
+  readonly handler: (...args: number[]) => number;
+};
+
+function readInvocationPermitOnly(value: unknown): object | undefined {
+  if (value === null || typeof value !== "object" || nodeTypes.isProxy(value) || Array.isArray(value)) return undefined;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return undefined;
+  const keys = Reflect.ownKeys(value);
+  if (keys.length !== 1 || keys[0] !== "invocationPermit") return undefined;
+  const descriptor = Object.getOwnPropertyDescriptor(value, "invocationPermit");
+  if (descriptor === undefined || !("value" in descriptor) || !descriptor.enumerable) return undefined;
+  return typeof descriptor.value === "object" && descriptor.value !== null ? descriptor.value : undefined;
+}
+
+/** Resolve only function imports present in the closed host ABI. Import kind is part of
+ *  the capability identity: a JavaScript function must never be reinterpreted as an
+ *  externref/global (or another WebAssembly import kind). */
+function resolveClosedHostFunctionImports(
+  mod: WebAssembly.Module,
+  imports: WebAssembly.Imports,
+): ClosedHostFunctionImport[] {
+  const provided = imports as Record<string, Record<string, unknown>>;
+  return WebAssembly.Module.imports(mod).map((imp) => {
+    if (imp.kind !== "function") {
+      throw new WebAssembly.LinkError(
+        `unsupported host import kind: ${imp.module}.${imp.name} is ${imp.kind}, expected function`,
+      );
+    }
+    if (!Object.prototype.hasOwnProperty.call(provided, imp.module)) {
+      throw new WebAssembly.LinkError(`disallowed host import namespace: ${imp.module}`);
+    }
+    const namespace = provided[imp.module];
+    if (typeof namespace !== "object" || namespace === null ||
+        !Object.prototype.hasOwnProperty.call(namespace, imp.name)) {
+      throw new WebAssembly.LinkError(`disallowed host import: ${imp.module}.${imp.name} is not provided`);
+    }
+    const handler = namespace[imp.name];
+    if (typeof handler !== "function") {
+      throw new WebAssembly.LinkError(`host import ${imp.module}.${imp.name} is not a function`);
+    }
+    return { module: imp.module, name: imp.name, handler: handler as (...args: number[]) => number };
+  });
+}
+
 /**
  * Build the injectable admission verifier (R&D ruling model A). `policy` is the DSS admission policy — which
  * public key to trust, whether a signature / certified profile is required, any pinned-hash allow-list. The
@@ -91,7 +139,20 @@ function moduleDefinesExport(bytes: Uint8Array, exportName: string): boolean {
  *   4. `exportName` is a DEFINED export of that module (the hard export-presence gate — a valid signature
  *      over a module that does not define the export still DENIES).
  */
-export function createWasmAdmissionVerifier(policy: AdmissionPolicy): GovernedAdmissionVerifier {
+type WasmAdmissionVerifier = GovernedAdmissionVerifier & {
+  /** Diagnostic signature check only; runtime admission is exclusively through `prepareInvocation`. */
+  verifyAttestation(input: {
+    readonly attestation: string;
+    readonly artifactSha256: string;
+    readonly exportName: string;
+    readonly artifactBytes: Uint8Array;
+  }): boolean;
+};
+
+function makeWasmAdmissionVerifier(
+  policy: AdmissionPolicy,
+  invocationAuthority?: ReturnType<typeof createWasmInvocationAuthority>,
+): WasmAdmissionVerifier {
   return {
     seamVersion: RUNTIME_SEAM_VERSION,
     verifyAttestation({ attestation, artifactSha256, exportName, artifactBytes }): boolean {
@@ -101,7 +162,7 @@ export function createWasmAdmissionVerifier(policy: AdmissionPolicy): GovernedAd
       // from artifactBytes and checks it === parsed.sha256; we additionally require both to equal the
       // composition-supplied artifactSha256 so a mismatched (bytes, hash) pair can never slip through.
       if (parsed.sha256 !== artifactSha256) return false;
-      const verdict = verifyWasm(artifactBytes, parsed, policy);
+      const verdict = verifyWasmSigned(artifactBytes, parsed, policy);
       if (!verdict.ok) return false;
       if (verdict.hash !== artifactSha256) return false;
       // HARD export-presence gate (R&D ruling condition 2): never admit a call to an export the signed
@@ -109,7 +170,31 @@ export function createWasmAdmissionVerifier(policy: AdmissionPolicy): GovernedAd
       if (!moduleDefinesExport(artifactBytes, exportName)) return false;
       return true;
     },
+    prepareInvocation(input: {
+      readonly attestation: string;
+      readonly artifactSha256: string;
+      readonly exportName: string;
+      readonly artifactBytes: Uint8Array;
+      readonly args: readonly unknown[];
+    }): object | false {
+      if (invocationAuthority === undefined) return false;
+      const { attestation, artifactSha256, exportName, artifactBytes, args } = input;
+      const parsed = parseAttestation(attestation);
+      if (parsed === null) return false;
+      if (parsed.sha256 !== artifactSha256) return false;
+      return invocationAuthority.prepare({
+        wasm: artifactBytes,
+        attestation: parsed,
+        artifactSha256,
+        exportName,
+        args,
+      });
+    },
   };
+}
+
+export function createWasmAdmissionVerifier(policy: AdmissionPolicy): WasmAdmissionVerifier {
+  return makeWasmAdmissionVerifier(policy);
 }
 
 /**
@@ -122,7 +207,9 @@ export function createWasmAdmissionVerifier(policy: AdmissionPolicy): GovernedAd
  * number (a non-numeric arg is REFUSED, never silently coerced — NaN→0 would corrupt an i32 param). Generic
  * string/record argument marshalling is a later widening.
  */
-export function createLowLevelWasmExecutor(): LowLevelWasmExecutor {
+function makeLowLevelWasmExecutor(
+  invocationAuthority?: ReturnType<typeof createWasmInvocationAuthority>,
+): LowLevelWasmExecutor {
   return {
     seamVersion: RUNTIME_SEAM_VERSION,
     /** Zero-trust default, owner may revisit (owner rule 2026-10-04: no VM at all on a deny path). SYNCHRONOUS
@@ -136,43 +223,24 @@ export function createLowLevelWasmExecutor(): LowLevelWasmExecutor {
         }
         const mod = new WebAssembly.Module(artifactBytes as BufferSource);
         if (!WebAssembly.Module.exports(mod).some((e) => e.name === exportName && e.kind === "function")) return false;
-        const closedImports = createHostRuntime().imports as Record<string, Record<string, unknown>>;
-        return WebAssembly.Module.imports(mod).every((imp) => {
-          if (imp.kind !== "function") return false;
-          if (!Object.prototype.hasOwnProperty.call(closedImports, imp.module)) return false;
-          const space = closedImports[imp.module];
-          if (typeof space !== "object") return false;
-          return Object.prototype.hasOwnProperty.call(space, imp.name) && typeof space[imp.name] === "function";
-        });
+        resolveClosedHostFunctionImports(mod, createHostRuntime().imports);
+        return true;
       } catch {
         return false;
       }
     },
-    instantiateAndCall({ artifactBytes, exportName, args }) {
-      for (const a of args) {
-        if (typeof a !== "number" || !Number.isFinite(a)) {
-          return { ok: false, reason: `argument marshalling refused: non-numeric arg (${String(a)}) — numeric-fold ABI only` };
-        }
+    instantiateAndCall(input: { readonly invocationPermit: object }) {
+      const invocationPermit = readInvocationPermitOnly(input);
+      if (invocationAuthority === undefined || invocationPermit === undefined) {
+        return { ok: false, reason: "missing paired, one-shot invocation permit or malformed invocation permit request; raw low-level execution is refused" };
       }
-      // A fresh closed host per execution (resets the string/array registries + the record staging bump).
-      const host = createHostRuntime();
-      let instance: WebAssembly.Instance;
-      try {
-        const mod = new WebAssembly.Module(artifactBytes as BufferSource);
-        instance = new WebAssembly.Instance(mod, host.imports);
-      } catch (err) {
-        // Mirror admitAndInstantiate's fail-closed classification: a LinkError means the module tried to
-        // reach a host import OUTSIDE the closed set — a capability escape, not an ordinary fault.
-        const reason = err instanceof WebAssembly.LinkError
-          ? `disallowed host import (module requires a capability outside the closed host set): ${err.message}`
-          : `instantiation failed: ${err instanceof Error ? err.message : String(err)}`;
-        return { ok: false, reason };
-      }
-      const mem = (instance.exports as Record<string, unknown>)["memory"];
-      if (mem instanceof WebAssembly.Memory) host.bindMemory(mem);
-      return invokeAdmittedExport(instance, exportName, args as readonly number[]);
+      return invocationAuthority.execute(invocationPermit);
     },
   };
+}
+
+export function createLowLevelWasmExecutor(): LowLevelWasmExecutor {
+  return makeLowLevelWasmExecutor();
 }
 
 /** The three TCB-side seam capabilities bundled, ready to spread into core-runtime's
@@ -182,9 +250,10 @@ export function createBorderSafeRuntimeDeps(opts: { readonly policy: AdmissionPo
   readonly lowLevel: LowLevelWasmExecutor;
   readonly hashArtifact: (bytes: Uint8Array) => string;
 } {
+  const invocationAuthority = createWasmInvocationAuthority(opts.policy);
   return {
-    admissionVerifier: createWasmAdmissionVerifier(opts.policy),
-    lowLevel: createLowLevelWasmExecutor(),
+    admissionVerifier: makeWasmAdmissionVerifier(opts.policy, invocationAuthority),
+    lowLevel: makeLowLevelWasmExecutor(invocationAuthority),
     hashArtifact,
   };
 }
