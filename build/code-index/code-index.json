@@ -23061,8 +23061,8 @@
     ],
     "allSites": [
       "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:634",
-      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1025",
-      "ref packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:505",
+      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1028",
+      "ref packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:506",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:183",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:158",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-throw-fail-closed.test.mjs:93",

@@ -91,6 +91,8 @@ export interface SecretGate {
     fn: (value: Uint8Array) => unknown,
     onViolation?: (error: unknown) => void,
     operationId?: string,
+    /** S5: presence the caller's Fungi admission observed for this request; only literal true counts. */
+    presenceObserved?: unknown,
   ): undefined;
   /** ACK the released lease this gate minted for `operationId`. Process-local. */
   acknowledge(operationId: string): ReleaseOutcome;
@@ -217,6 +219,7 @@ function buildSecretGate(
     fn: (value: Uint8Array) => unknown,
     onViolation?: (error: unknown) => void,
     operationId?: string,
+    presenceObserved?: unknown,
   ): undefined {
     if (!requiresName(required, name)) return undefined;
     if (provider === undefined) {
@@ -246,17 +249,15 @@ function buildSecretGate(
           epochPresent = false;
         }
       }
-      // Validity is observed only when the epoch was observable: an epochless provider is already
-      // refused by the decider, and an extra presence call would hand a hostile provider one more
-      // re-entry point (pinned by secret-gate.test.mjs call counts). Unobserved = not valid.
-      let currentlyValid = false;
-      if (epochPresent) {
-        try {
-          currentlyValid = provider.has(name) === true;
-        } catch {
-          currentlyValid = false;
-        }
-      }
+      // S5h: validity is the presence the caller's Fungi admission observed for THIS request
+      // (kernel gate 9.5 post-wait), passed as a fact; only the literal true counts, anything else
+      // is unobserved = not valid. No extra provider.has() here: one presence call per acquisition
+      // (the post-use recheck below) keeps a hostile provider's re-entry points fixed (pinned by
+      // secret-gate.test.mjs call counts). Bytes still reach the consumer only after that recheck.
+      // Rejected: a second pre-handoff has() (extra hostile re-entry; shifted the attack schedule so
+      // a swallowed late callback violation went unseen, 200 instead of 500); loosening the pinned
+      // call-count tests; dropping the post-use recheck.
+      const currentlyValid = presenceObserved === true;
       let verdict: unknown;
       try {
         verdict = preHandoff(Object.freeze({

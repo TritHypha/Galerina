@@ -912,6 +912,8 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let requestOutcomeSealed = false;
     let secretAccessInProgress = false;
     let secretAccessSpent = false;
+    // S5h: set only when the Fungi gate admitted every required secret after the idempotency wait.
+    let secretsAdmittedThisRequest = false;
     let requestActive = false;
     const secretUnavailableResponse = (): GalerinaKernelResponse =>
       errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
@@ -978,6 +980,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
         // idempotency key; the kernel never guesses that an external store claim can be undone.
         return pipelineOutcome(errorResponse(503, postWaitSecretRefusal, "A required secret is unavailable."), policy);
       }
+      secretsAdmittedThisRequest = postWaitSecretRefusal === null;
 
       // Retain the response budget in kernel-local state before exposing `policy` to handler code.
       const responseMemoryBudgetBytes = policy.limits.memoryBytes;
@@ -1093,7 +1096,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
                 // response is sealed. Later closed-capability refusals cannot revise an
                 // outcome whose matching audit event may already be accepted.
                 if (!requestOutcomeSealed) secretAccessFailed = true;
-              }, releaseOperationId);
+              }, releaseOperationId, secretsAdmittedThisRequest);
             } catch (error) {
               // Latch the fault so a handler cannot catch a missing/invalid secret-use error and
               // still return a success response. After sealing, the callback still refuses but
