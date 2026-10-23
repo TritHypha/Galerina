@@ -23061,8 +23061,8 @@
     ],
     "allSites": [
       "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:634",
-      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1028",
-      "ref packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:506",
+      "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:1044",
+      "ref packages-ts/galerina-framework-app-kernel/src/secret-gate.ts:515",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:183",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs:158",
       "test packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-throw-fail-closed.test.mjs:93",
@@ -32536,8 +32536,8 @@
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:289",
       "ref packages-ts/galerina-framework-app-kernel/src/kernel.ts:633",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:182",
-      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:479",
-      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:483"
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:517",
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:521"
     ]
   },
   {
@@ -32559,7 +32559,7 @@
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:32",
       "ref packages-ts/galerina-framework-app-kernel/src/fungi-secret-gate-loader.ts:254",
       "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:160",
-      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:483"
+      "test packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs:521"
     ]
   },
   {

@@ -471,6 +471,44 @@ test("S5-R8b shell treats only the literal true presence fact as currently valid
   assert.equal(uses, 1, "literal true admits through the WebAssembly");
 });
 
+// S5-R8c (gcw-s5k): an IN-DOMAIN epoch move between gate 9.5 admission and handoff never delivers.
+// Found by the round check at 24bbacba: the shell read epochMint and epochUse back-to-back inside
+// getSecret, so 3 -> 5 after admission looked unmoved. Zero-trust choice: the kernel reads the epoch
+// BEFORE the post-wait admit (a has() that bumps it is then seen as a move) and binds that admitted
+// epoch as the epochMint fact; deliverPreHandoff then sees epochMoved. Rejected: re-reading the epoch
+// at getSecret (blind to any move before the handler runs); a per-call fallback when no admitted
+// epoch is passed (a missing fact would silently restore the old blind path).
+test("S5-R8c kernel getSecret refuses when the epoch moves inside the domain after admission", async () => {
+  assert.equal(existsSync(APP_KERNEL_INDEX_JS), true, "app-kernel not built: " + APP_KERNEL_INDEX_JS);
+  const { createAppKernel } = await import(pathToFileURL(APP_KERNEL_INDEX_JS).href);
+  for (const [label, handlerEpoch, expectDelivery] of [["epoch 3 -> 5 in domain", 5, false], ["control: epoch stays 3", 3, true]]) {
+    let consumerCalled = false;
+    let uses = 0;
+    let inHandler = false;
+    const kernel = createAppKernel({
+      routes: [{ method: "GET", path: "/syn", handler: "syn", auth: { mode: "public" }, secrets: { require: ["SYN_A"] } }],
+      dispatch: {
+        syn: ({ getSecret }) => {
+          inHandler = true;
+          getSecret("SYN_A", () => { consumerCalled = true; });
+          return { body: { ok: true } };
+        },
+      },
+      secretsProvider: {
+        has: (n) => n === "SYN_A",
+        use: (_n, fn) => { uses += 1; fn(new Uint8Array([7, 7])); },
+        revocationEpoch: () => (inHandler ? handlerEpoch : 3),
+      },
+    });
+    const res = await kernel.handle({ method: "GET", path: "/syn", headers: {}, body: new Uint8Array(0), query: {}, requestId: "rq-s5-r8c", receivedAt: 0 });
+    assert.equal(inHandler, true, label + ": admission passed and the handler ran");
+    assert.equal(consumerCalled, expectDelivery, label + ": consumer delivery");
+    assert.equal(uses, expectDelivery ? 1 : 0, label + ": provider.use calls");
+    if (expectDelivery) assert.equal(res.status, 200, label + ": control succeeds");
+    else assert.notEqual(res.status, 200, label + ": request does not succeed");
+  }
+});
+
 // ---------------- S5-R9: every loader refusal code is a registered FUNGI-* code (gcw-s5j) ----------------
 // Owner ruling 2026-10-22 22:38: the two artifact codes join the FUNGI-SECRET family.
 // Zero-trust choice: assert against the GENERATED registry and the append-only code history, not a

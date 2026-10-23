@@ -93,6 +93,9 @@ export interface SecretGate {
     operationId?: string,
     /** S5: presence the caller's Fungi admission observed for this request; only literal true counts. */
     presenceObserved?: unknown,
+    /** S5-R8c: raw revocation epoch the caller read at its Fungi admission. Used as the epochMint
+     *  fact when the shell is built with bindAdmittedEpoch; missing = UNKNOWN = refused. */
+    admittedEpoch?: unknown,
   ): undefined;
   /** ACK the released lease this gate minted for `operationId`. Process-local. */
   acknowledge(operationId: string): ReleaseOutcome;
@@ -183,6 +186,7 @@ function buildSecretGate(
     readonly requireRevocationEpoch?: boolean;
   },
   preHandoff: ((facts: ShellPreHandoffFacts) => unknown) | undefined,
+  bindAdmittedEpoch = false,
 ): SecretGate {
   const authority = options.authority ?? new ReleaseCommitAuthority();
   const requireBoundOperationId = options.requireBoundOperationId === true;
@@ -220,6 +224,7 @@ function buildSecretGate(
     onViolation?: (error: unknown) => void,
     operationId?: string,
     presenceObserved?: unknown,
+    admittedEpoch?: unknown,
   ): undefined {
     if (!requiresName(required, name)) return undefined;
     if (provider === undefined) {
@@ -249,6 +254,10 @@ function buildSecretGate(
           epochPresent = false;
         }
       }
+      // S5-R8c: with bindAdmittedEpoch the mint fact is the epoch the caller read at admission, so a
+      // move between admission and handoff (even inside the WebAssembly domain) is epochMoved. No
+      // per-call fallback: an absent admitted epoch is passed raw and the decider refuses it.
+      if (bindAdmittedEpoch) epochMint = admittedEpoch;
       // S5h: validity is the presence the caller's Fungi admission observed for THIS request
       // (kernel gate 9.5 post-wait), passed as a fact; only the literal true counts, anything else
       // is unobserved = not valid. No extra provider.has() here: one presence call per acquisition
@@ -528,6 +537,8 @@ export function createSecretReleaseShell(
     readonly authority?: ReleaseCommitAuthority;
     readonly requireBoundOperationId?: boolean;
     readonly requireRevocationEpoch?: boolean;
+    /** S5-R8c: take the epochMint fact from the caller's admitted epoch (the kernel sets this). */
+    readonly bindAdmittedEpoch?: boolean;
   },
 ): SecretReleaseShell {
   const decider: unknown = options === null || typeof options !== "object" ? undefined : options.decider;
@@ -548,6 +559,7 @@ export function createSecretReleaseShell(
       requireRevocationEpoch: options.requireRevocationEpoch === true,
     },
     (facts) => intrinsicApply(preVerdict as (f: unknown) => unknown, decider, [facts]),
+    options.bindAdmittedEpoch === true,
   );
 
   function noteUnknown(operationId: string): void {

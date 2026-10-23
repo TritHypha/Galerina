@@ -646,6 +646,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     ...(opts.releaseAuthority === undefined ? {} : { authority: opts.releaseAuthority }),
     requireBoundOperationId: true,
     requireRevocationEpoch: true,
+    bindAdmittedEpoch: true,
   });
   const gateProvider = opts.secretsProvider;
 
@@ -914,6 +915,8 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     let secretAccessSpent = false;
     // S5h: set only when the Fungi gate admitted every required secret after the idempotency wait.
     let secretsAdmittedThisRequest = false;
+    // S5-R8c: raw epoch read just BEFORE the post-wait admit; the epochMint fact for every getSecret.
+    let admittedEpoch: unknown = "UNKNOWN";
     let requestActive = false;
     const secretUnavailableResponse = (): GalerinaKernelResponse =>
       errorResponse(503, "secret_unavailable", "A required secret is unavailable.");
@@ -974,6 +977,19 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
       // Idempotency admission may await an external store. Re-check required secrets after that
       // yield so a provider that was removed, faulted, or disposed while the claim was pending
       // cannot reach developer dispatch on the basis of the earlier gate-9.5 snapshot.
+      // S5-R8c: read the epoch BEFORE the post-wait admit, so a has() that bumps it shows as a move.
+      // Rejected: reading after admit (a fault raised inside has() would be absorbed as admitted).
+      admittedEpoch = "UNKNOWN";
+      if (policy.secrets.require.length > 0 && gateProvider !== undefined && gateProvider !== null) {
+        try {
+          const readEpoch: unknown = gateProvider.revocationEpoch;
+          if (typeof readEpoch === "function") {
+            admittedEpoch = intrinsicReflectApply(readEpoch as () => unknown, gateProvider, []);
+          }
+        } catch {
+          admittedEpoch = "UNKNOWN";
+        }
+      }
       const postWaitSecretRefusal = fungiGate.admit(gateProvider, policy.secrets.require);
       if (postWaitSecretRefusal !== null) {
         // The reservation remains consumed. A caller must reconcile the operation and use a new
@@ -1096,7 +1112,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
                 // response is sealed. Later closed-capability refusals cannot revise an
                 // outcome whose matching audit event may already be accepted.
                 if (!requestOutcomeSealed) secretAccessFailed = true;
-              }, releaseOperationId, secretsAdmittedThisRequest);
+              }, releaseOperationId, secretsAdmittedThisRequest, admittedEpoch);
             } catch (error) {
               // Latch the fault so a handler cannot catch a missing/invalid secret-use error and
               // still return a success response. After sealing, the callback still refuses but
