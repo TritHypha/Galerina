@@ -12,7 +12,7 @@
   },
   "composedUnit": {
     "path": "packages/fungi/memory/src/composed-route.fungi",
-    "sha256": "1062ba16c174c235763ec4543ff490ffa47084ccd4e32fb2db6f1990ece16e28"
+    "sha256": "75b1eabf96dc134139b048b3f49735d7f45b3013bac03a38f9754b54b17c9135"
   },
   "stageTokens": "0 Success 1 Refused(before begin) 2 Failed(after begin) 3 Indeterminate 4 MissingRecord 5 NotRun",
   "stages": [
@@ -54,7 +54,7 @@
         }
       ],
       "token": 0,
-      "tokenRule": "refusal 0 (packed 0 or 100) Success; any other listed refusal Refused before begin"
+      "tokenRule": "ingressStageToken: 100 Success; listed 101..199 Refused before begin; else Unlisted 11"
     },
     {
       "stage": "1414-custody",
@@ -76,7 +76,7 @@
         }
       ],
       "token": 0,
-      "tokenRule": "casBegin 100 Success; 106 Indeterminate; else Refused before begin"
+      "tokenRule": "custodyStageToken: 100 Success; 106 Indeterminate; other listed Refused before begin; else Unlisted 11"
     },
     {
       "stage": "1415-release",
@@ -119,7 +119,7 @@
         }
       ],
       "token": 3,
-      "tokenRule": "reserve!=100 Refused; commit 100 Success; commit 102 Failed; commit 106 settles only on reconcile 100, else Indeterminate; else Failed"
+      "tokenRule": "releaseStageToken: reserve!=100 listed Refused; commit 100 Success; commit 102 Failed; commit 106 settles only on reconcile 100, listed reconcile Indeterminate; other listed commit Failed; else Unlisted 11"
     }
   ],
   "composed": {

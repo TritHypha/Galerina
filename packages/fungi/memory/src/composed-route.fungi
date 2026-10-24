@@ -27,6 +27,8 @@
 /// Rejected: satisfy on synthetic route tests (synthetic SecretsProvider is not the real
 ///   route; docs/TODO.md says older WAT results and synthetic tests do not substitute);
 ///   retire on missing owner answer (silence is not retirement).
+/// S10-R3: stage tokens are re-derived natively (ingressStageToken, custodyStageToken,
+///   releaseStageToken) from replayed invocation values; see the classifier block below.
 /// Sequential if-return. Nested if/else failed WAT emit. Every table ends fail-closed.
 
 pure flow composedPack(code: Int) -> Int
@@ -157,4 +159,86 @@ contract {
     }
   }
   return composedPack(6)
+}
+
+/// S10-R3 (P6, kills RM1): native stage-token classifiers. The receipt's stage token is
+///   re-derived in .fungi from the replayed invocation values, never typed in by the
+///   generator or trusted from the recorded tokenRule text. Listed packed codes are 101..199.
+///   Unlisted values (including an unpacked 0, a negative or >= 200) return 11 Unlisted,
+///   which composeRouteOutcome refuses (111).
+/// Rejected: deriving tokens in the JS generator or the test harness only (a second,
+///   unpinned rule that a receipt edit can drift from); trusting tokenRule text; mapping
+///   every non-Success value to Refused (an unlisted value would read as a clean refusal).
+
+pure flow ingressStageToken(value: Int) -> Int
+contract {
+  intent { "1413 ingress token from readChunks. 100 Success 0. Listed refusal 101..199 Refused before begin 1. Else Unlisted 11." }
+}
+{
+  if value == 100 {
+    return 0
+  }
+  if value > 100 {
+    if value < 200 {
+      return 1
+    }
+  }
+  return 11
+}
+
+pure flow custodyStageToken(value: Int) -> Int
+contract {
+  intent { "1414 custody token from casBegin. 100 Success 0. 106 Indeterminate 3. Other listed 101..199 Refused before begin 1. Else Unlisted 11." }
+}
+{
+  if value == 100 {
+    return 0
+  }
+  if value == 106 {
+    return 3
+  }
+  if value > 100 {
+    if value < 200 {
+      return 1
+    }
+  }
+  return 11
+}
+
+pure flow releaseStageToken(reserve: Int, commit: Int, reconcile: Int) -> Int
+contract {
+  intent { "1415 release token from reserve, commit, reconcile. Reserve not 100: listed Refused 1, else 11. Commit 100 Success 0; 102 Failed 2; 106 settles Success only on reconcile 100, listed reconcile Indeterminate 3, else 11; other listed commit Failed 2; else 11." }
+}
+{
+  if reserve != 100 {
+    if reserve > 100 {
+      if reserve < 200 {
+        return 1
+      }
+    }
+    return 11
+  }
+  if commit == 100 {
+    return 0
+  }
+  if commit == 102 {
+    return 2
+  }
+  if commit == 106 {
+    if reconcile == 100 {
+      return 0
+    }
+    if reconcile > 100 {
+      if reconcile < 200 {
+        return 3
+      }
+    }
+    return 11
+  }
+  if commit > 100 {
+    if commit < 200 {
+      return 2
+    }
+  }
+  return 11
 }

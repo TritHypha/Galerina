@@ -24,6 +24,14 @@ function run(file, flow, args) {
   return { file: REL + file, flow, args, value: r.value };
 }
 
+// S10-R3: stage tokens come from the native classifiers in composed-route.fungi (ingressStageToken,
+// custodyStageToken, releaseStageToken) invoked on the replayed values; the generator no longer holds a JS rule.
+function nativeToken(flow, values) {
+  const r = invoke(join(SRC, "composed-route.fungi"), flow, values);
+  if (r.status !== 0 || r.present !== true) throw new Error("gen: " + flow + " produced no token; refusing to write a receipt");
+  return r.value;
+}
+
 // Missing value (crash, absent record) is MissingRecord 4, never Success.
 function anyMissing(inv) {
   return inv.some((v) => v.value === null);
@@ -36,7 +44,7 @@ function ingress() {
   const inv = [run("body-reader.fungi", "readChunks", [0, 1, 1, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 16384, 1, 0, 16, 1, 0, 0])];
   if (anyMissing(inv)) return { inv, token: 4, rule: "missing value is MissingRecord" };
   const v = inv[0].value;
-  return { inv, token: v === 0 || v === 100 ? 0 : 1, rule: "refusal 0 (packed 0 or 100) Success; any other listed refusal Refused before begin" };
+  return { inv, token: nativeToken("ingressStageToken", [v]), rule: "ingressStageToken: 100 Success; listed 101..199 Refused before begin; else Unlisted 11" };
 }
 
 // 1414 custody: the one CAS claims an OPEN capability for release-begin (claim and revoke share one CAS).
@@ -45,7 +53,7 @@ function custody() {
   const inv = [run("release-commit-point.fungi", "casBegin", [0, 0])];
   if (anyMissing(inv)) return { inv, token: 4, rule: "missing value is MissingRecord" };
   const v = inv[0].value;
-  return { inv, token: v === 100 ? 0 : v === 106 ? 3 : 1, rule: "casBegin 100 Success; 106 Indeterminate; else Refused before begin" };
+  return { inv, token: nativeToken("custodyStageToken", [v]), rule: "custodyStageToken: 100 Success; 106 Indeterminate; other listed Refused before begin; else Unlisted 11" };
 }
 
 // 1415 release: reserve the idempotency key, then commit and reconcile after dispatch. Zero-trust inputs:
@@ -62,13 +70,8 @@ function release() {
   ];
   if (anyMissing(inv)) return { inv, token: 4, rule: "missing value is MissingRecord" };
   const [r, c, k] = inv.map((v) => v.value);
-  let token = 2;
-  if (r !== 100) token = 1;
-  else if (c === 100) token = 0;
-  else if (c === 102) token = 2;
-  else if (c === 106 && k === 100) token = 0;
-  else if (c === 106) token = 3;
-  return { inv, token, rule: "reserve!=100 Refused; commit 100 Success; commit 102 Failed; commit 106 settles only on reconcile 100, else Indeterminate; else Failed" };
+  const token = nativeToken("releaseStageToken", [r, c, k]);
+  return { inv, token, rule: "releaseStageToken: reserve!=100 listed Refused; commit 100 Success; commit 102 Failed; commit 106 settles only on reconcile 100, listed reconcile Indeterminate; other listed commit Failed; else Unlisted 11" };
 }
 
 const OUTCOME = { 100: "Success", 102: "Refused", 106: "Indeterminate" };
@@ -128,7 +131,7 @@ const rows = ROWS.map(([obligation, successor, s, e], i) => {
     disposition: NAME[r.value],
     evidenceKind: wasm ? "none" : "synthetic-only",
     evidence: wasm ? [] : EV[successor],
-    ownerDecision: null,
+    ownerDecision: "UNKNOWN",
     reason: wasm
       ? "WebAssembly-specific historical WAT Q1 obligation: a gateway route never satisfies it (RD-1415:74) and no owner-signed retirement exists, so it stays UNRESOLVED (typed UNKNOWN)."
       : "Successor " + successor + " route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired.",
