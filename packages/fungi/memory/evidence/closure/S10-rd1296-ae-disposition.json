@@ -1,0 +1,119 @@
+{
+  "schema": "galerina.s10.rd1296-ae-disposition.v1",
+  "authorizing": false,
+  "status": "NON_AUTHORIZING",
+  "classifier": {
+    "unit": {
+      "path": "packages/fungi/memory/src/composed-route.fungi",
+      "sha256": "75b1eabf96dc134139b048b3f49735d7f45b3013bac03a38f9754b54b17c9135"
+    },
+    "flow": "classifyAeObligation"
+  },
+  "rows": [
+    {
+      "obligation": "A",
+      "successor": "RD-1413",
+      "tokens": {
+        "letter": 1,
+        "successorBound": 1,
+        "evidence": 2,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "synthetic-only",
+      "evidence": [
+        "packages/fungi/memory/tests/s6-loaded-ingress/s6-loaded-ingress.test.mjs",
+        "packages/fungi/memory/src/auth-verify-route.fungi"
+      ],
+      "ownerDecision": "UNKNOWN",
+      "reason": "Successor RD-1413 route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired."
+    },
+    {
+      "obligation": "B",
+      "successor": "RD-1413",
+      "tokens": {
+        "letter": 2,
+        "successorBound": 1,
+        "evidence": 2,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "synthetic-only",
+      "evidence": [
+        "packages/fungi/memory/tests/s6-loaded-ingress/s6-loaded-ingress.test.mjs",
+        "packages/fungi/memory/src/auth-verify-route.fungi"
+      ],
+      "ownerDecision": "UNKNOWN",
+      "reason": "Successor RD-1413 route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired."
+    },
+    {
+      "obligation": "C",
+      "successor": "RD-1414",
+      "tokens": {
+        "letter": 3,
+        "successorBound": 1,
+        "evidence": 2,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "synthetic-only",
+      "evidence": [
+        "packages/fungi/memory/tests/s7-product-custody/s7b-php-oom-reuse.test.mjs",
+        "packages/fungi/memory/src/secret-arena.fungi"
+      ],
+      "ownerDecision": "UNKNOWN",
+      "reason": "Successor RD-1414 route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired."
+    },
+    {
+      "obligation": "D",
+      "successor": "RD-1415",
+      "tokens": {
+        "letter": 4,
+        "successorBound": 1,
+        "evidence": 2,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "synthetic-only",
+      "evidence": [
+        "packages/fungi/memory/tests/s8-release/s8b-idempotency.test.mjs",
+        "packages/fungi/memory/src/release-idempotency.fungi"
+      ],
+      "ownerDecision": "UNKNOWN",
+      "reason": "Successor RD-1415 route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired."
+    },
+    {
+      "obligation": "E",
+      "successor": "RD-1415",
+      "tokens": {
+        "letter": 5,
+        "successorBound": 1,
+        "evidence": 2,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "synthetic-only",
+      "evidence": [
+        "packages/fungi/memory/tests/s8-release/s8b-idempotency.test.mjs",
+        "packages/fungi/memory/src/release-idempotency.fungi"
+      ],
+      "ownerDecision": "UNKNOWN",
+      "reason": "Successor RD-1415 route is exercised only with the synthetic SecretsProvider; the real POST /auth/verify credential is the owner's open question, so synthetic evidence does not satisfy it (RD-1415:62). UNRESOLVED (typed UNKNOWN), not retired."
+    },
+    {
+      "obligation": "WASM-Q1",
+      "successor": "DEFERRED",
+      "tokens": {
+        "letter": 6,
+        "successorBound": 0,
+        "evidence": 0,
+        "ownerRetire": 0
+      },
+      "disposition": "UNRESOLVED",
+      "evidenceKind": "none",
+      "evidence": [],
+      "ownerDecision": "UNKNOWN",
+      "reason": "WebAssembly-specific historical WAT Q1 obligation: a gateway route never satisfies it (RD-1415:74) and no owner-signed retirement exists, so it stays UNRESOLVED (typed UNKNOWN)."
+    }
+  ]
+}

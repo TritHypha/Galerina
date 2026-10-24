@@ -10585,7 +10585,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 5,
+      "tests": 7,
       "docs": 0
     },
     {
@@ -10601,7 +10601,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 5,
+      "tests": 15,
       "docs": 0
     },
     {
@@ -10633,7 +10633,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 0,
+      "tests": 3,
       "docs": 0
     },
     {

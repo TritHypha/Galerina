@@ -1,7 +1,7 @@
 {
   "tool": "gen-code-registry",
   "authority": "NONE",
-  "gitCommit": "2af784793051e9c54e9f813bcda422f6e21b028d",
-  "builtAt": "2026-10-23T18:26:06.000Z",
+  "gitCommit": "6267a5d73e480789c0b0cc04e5c1b251c47b8e4e",
+  "builtAt": "2026-10-24T11:24:45.000Z",
   "node": "v24.18.0"
 }
