@@ -7,6 +7,8 @@
 //     has at least one invocation, and the stage token is derived from its recorded values, not asserted.
 //  P4 the composed outcome code equals composeRouteOutcome(stage tokens) re-invoked now, and the outcome name
 //     matches it (100 Success, 102 Refused, 106 Indeterminate); Success is never claimed unless the code is 100.
+//  P6 (S10-R3) each stage token equals the pinned native classifier re-invoked on the replayed values (kills RM1).
+//  P7 (S10-R3) the native stage-token classifiers match an independent zero-trust oracle; N1 no null in evidence.
 //  P5 honesty: the receipt is NON_AUTHORIZING, names the synthetic SecretsProvider, and does not claim a real
 //     credential or production clearance (the real POST /auth/verify credential is the owner's open question).
 import { test } from "node:test";
@@ -81,4 +83,71 @@ test("S10-R1 P5: receipt is honest about scope (synthetic provider, no clearance
   assert.equal(j.secretsProvider, "synthetic", "synthetic SecretsProvider only");
   assert.equal(j.realCredential, "UNKNOWN", "real POST /auth/verify credential stays the owner's open question");
   assert.equal(j.productionClearance, false, "no production clearance claim");
+});
+// S10-R3 P6 (kills RM1): each stage token is re-derived now from the replayed invocation values by the pinned
+// native classifier in composed-route.fungi; the stage's invocation flows are pinned here, not read from the receipt.
+const DERIVE = {
+  "1413-ingress": { flows: ["readChunks"], token: "ingressStageToken" },
+  "1414-custody": { flows: ["casBegin"], token: "custodyStageToken" },
+  "1415-release": { flows: ["reserveReleaseIdempotency", "commitReleaseIdempotency", "reconcileReleaseIdempotency"], token: "releaseStageToken" },
+};
+
+test("S10-R3 P6: every stage token is re-derived natively from its replayed invocation values", () => {
+  const j = receipt();
+  for (const s of j.stages) {
+    const d = DERIVE[s.stage];
+    assert.ok(d, "unexpected stage " + s.stage);
+    assert.deepEqual(s.invocations.map((v) => v.flow), d.flows, s.stage + " invocation flows are pinned");
+    const values = s.invocations.map((v) => {
+      const r = invoke(join(REPO, v.file), v.flow, v.args);
+      assert.equal(r.status, 0, s.stage + " " + v.flow + " status " + r.text);
+      assert.equal(r.present, true, s.stage + " " + v.flow + " value absent");
+      return r.value;
+    });
+    const t = invoke(join(SRC, "composed-route.fungi"), d.token, values);
+    assert.equal(t.status, 0, d.token + " status " + t.text);
+    assert.equal(t.present, true, d.token + " value absent " + t.text);
+    assert.equal(s.token, t.value, s.stage + " token must equal " + d.token + "(" + values.join(",") + ")");
+  }
+});
+
+// S10-R3 P7: native stage-token classifier laws against an independent zero-trust oracle.
+const listed = (v) => Number.isInteger(v) && v > 100 && v < 200;
+export function ingressOracle(v) { return v === 100 ? 0 : listed(v) ? 1 : 11; }
+export function custodyOracle(v) { return v === 100 ? 0 : v === 106 ? 3 : listed(v) ? 1 : 11; }
+export function releaseOracle(r, c, k) {
+  if (r !== 100) return listed(r) ? 1 : 11;
+  if (c === 100) return 0;
+  if (c === 102) return 2;
+  if (c === 106) return k === 100 ? 0 : listed(k) ? 3 : 11;
+  return listed(c) ? 2 : 11;
+}
+const VALS = [-1, 0, 1, 99, 100, 101, 102, 106, 111, 199, 200];
+
+test("S10-R3 P7: ingress and custody stage-token classifiers match the oracle", () => {
+  for (const v of VALS) {
+    const a = invoke(join(SRC, "composed-route.fungi"), "ingressStageToken", [v]);
+    assert.equal(a.value, ingressOracle(v), "ingressStageToken(" + v + ")");
+    const b = invoke(join(SRC, "composed-route.fungi"), "custodyStageToken", [v]);
+    assert.equal(b.value, custodyOracle(v), "custodyStageToken(" + v + ")");
+  }
+});
+
+test("S10-R3 P7: release stage-token classifier matches the oracle", () => {
+  const cells = [];
+  for (const r of [0, 100, 102, 200]) cells.push([r, 100, 100]);
+  for (const c of VALS) cells.push([100, c, 106]);
+  for (const k of VALS) cells.push([100, 106, k]);
+  for (const [r, c, k] of cells) {
+    const t = invoke(join(SRC, "composed-route.fungi"), "releaseStageToken", [r, c, k]);
+    assert.equal(t.value, releaseOracle(r, c, k), "releaseStageToken(" + r + "," + c + "," + k + ")");
+  }
+});
+
+test("S10-R3 N1: no null anywhere in the S10 evidence (typed UNKNOWN only)", () => {
+  for (const f of ["closure/S10-composed-run-receipt.json", "closure/S10-rd1296-ae-disposition.json"]) {
+    const t = evidence(f);
+    assert.notEqual(t, null, f + " missing");
+    assert.ok(!/\bnull\b/.test(t), f + " contains null");
+  }
 });

@@ -96,6 +96,9 @@ test("S10-R1 A6: SATISFIED rows cite existing product-route evidence; RETIRED ro
       assert.ok(Array.isArray(row.evidence) && row.evidence.length > 0, row.obligation + " evidence list");
       for (const p of row.evidence) assert.notEqual(readRepo(p), null, row.obligation + " evidence path missing: " + p);
     }
+    if (row.disposition !== "RETIRED") {
+      assert.equal(row.ownerDecision, "UNKNOWN", row.obligation + " ownerDecision must be typed UNKNOWN (S10-R3 N1, no null)");
+    }
     if (row.disposition === "RETIRED") {
       assert.ok(typeof row.ownerDecision === "string", row.obligation + " ownerDecision");
       assert.notEqual(readRepo(row.ownerDecision), null, row.obligation + " owner decision file missing");
