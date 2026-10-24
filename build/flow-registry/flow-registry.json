@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 146,
+  "total": 147,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -9,6 +9,13 @@
       "flow": "classifyAdapter",
       "file": "packages/fungi/memory/src/adapter-profile.fungi",
       "line": 57
+    },
+    {
+      "qualified": "adapter-profile.classifyDurableAdapter",
+      "unit": "adapter-profile",
+      "flow": "classifyDurableAdapter",
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "line": 134
     },
     {
       "qualified": "adapter-profile.tableForClass",
