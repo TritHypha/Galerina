@@ -1,0 +1,66 @@
+{
+  "schema": "galerina.s8.crashcell-receipt.v1",
+  "step": "S8 (RD-1415-T7, KG-07, Q10)",
+  "harness": {
+    "path": "packages/fungi/memory/tests/s8-release/crashcell.py",
+    "sha256": "3f0d200a1ec2d18ede8f378f17170af7f58c65c903d271ddde07208b1401289f"
+  },
+  "environment": {
+    "kernel": "6.18.54.1-microsoft-standard-WSL2",
+    "strace": "strace -- version 6.19",
+    "python": "Python 3.14.4"
+  },
+  "model": "strace-recorded syscall trace; SIGKILL injected at every write/pwrite64/fsync/fdatasync/rename point (k=1..n+1) plus post-ack; each point replayed with and without the power-loss model (unsynced data truncated, unsynced dir ops reverted)",
+  "adapters": [
+    {
+      "adapter": "release-store-sqlite",
+      "backend": "sqlite-wal-full",
+      "durability": "DURABLE",
+      "crashCampaignToken": 1,
+      "points": 78,
+      "violations": 0,
+      "powerloss": true,
+      "syscalls": {
+        "pwrite64": 22,
+        "fdatasync": 11,
+        "write": 2
+      },
+      "states": {
+        "pc:Absent": 25,
+        "pc:Indeterminate": 4,
+        "pc:Committed": 9,
+        "pl:Absent": 26,
+        "pl:Indeterminate": 4,
+        "pl:Committed": 8
+      }
+    },
+    {
+      "adapter": "release-store-file",
+      "backend": "rename-fsync-dirfsync",
+      "durability": "DURABLE",
+      "crashCampaignToken": 1,
+      "points": 26,
+      "violations": 0,
+      "powerloss": true,
+      "syscalls": {
+        "write": 4,
+        "fsync": 4,
+        "rename": 1
+      },
+      "states": {
+        "pc:Indeterminate-Empty": 1,
+        "pc:Indeterminate": 6,
+        "pc:Committed": 5,
+        "pl:Absent": 2,
+        "pl:Indeterminate": 6,
+        "pl:Committed": 4
+      }
+    }
+  ],
+  "negativeControl": {
+    "backend": "file-nosync",
+    "violations": 6,
+    "points": 16,
+    "powerloss": true
+  }
+}

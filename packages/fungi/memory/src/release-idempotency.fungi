@@ -1,0 +1,186 @@
+@version 1
+/// @file: release-idempotency.fungi
+/// @purpose: S8-R2 release idempotency (1415-T7 RETRY, Q3): reserve / commit / uncertain reconcile.
+///   Separate unit, least authority: release-commit-point is imported by the shipped secret-gate
+///   WebAssembly admit artifact; adding these flows there would widen that pinned artifact (S5-R2a).
+///   Rejected: append to release-commit-point (ships unrelated code in the admit artifact, re-pin);
+///   reuse kernel-ports.reserveIdempotency name (FUNGI-NAME-002 collision in composed builds).
+///   Self-contained (no import): run --invoke cannot call an imported helper (B5), so the
+///   packing helper is local under a distinct name; packed = code + 100 (wipe construct, same
+///   table as release-commit-point: 100 ok 102 refused 103 replay 105 missing 106 unknown
+///   107 reissued-terminal 108 no-op 111 unlisted).
+
+pure flow idemPack(code: Int) -> Int
+contract {
+  intent { "Pack an S8-R2 outcome code with the wipe construct (+100)." }
+}
+{
+  return code + 100
+}
+
+/// S8-R2 idempotency key (1415-T7 RETRY, Q3). keyState: 0 ABSENT 1 RESERVED 2 TERMINAL
+///   (stored result) 3 INDETERMINATE else 11. A reserved key never returns to ABSENT (no replay
+///   door); a crash or missing durable record is 106, never success; a stored terminal is
+///   reissued 107, never re-executed; reuse with a different request digest is fenced 102.
+///   Rejected: release-on-failure (reopens replay), last-writer-wins commit (no owner fence),
+///   reconcile-as-success when no record (crash read as success).
+
+pure flow reserveReleaseIdempotency(keyPresentToken: Int, keyState: Int, digestMatchToken: Int) -> Int
+contract {
+  intent { "Q3 reserve. Range-check first. Only a present ABSENT key with no stored digest reserves 100. In-flight 103, stored terminal 107, digest mismatch fenced 102, Indeterminate 106, missing key 105. Unlisted or inconsistent refuses 111." }
+}
+{
+  if keyPresentToken != 0 {
+    if keyPresentToken != 1 {
+      return idemPack(11)
+    }
+  }
+  if digestMatchToken != 0 {
+    if digestMatchToken != 1 {
+      return idemPack(11)
+    }
+  }
+  if keyState != 0 {
+    if keyState != 1 {
+      if keyState != 2 {
+        if keyState != 3 {
+          return idemPack(11)
+        }
+      }
+    }
+  }
+  if keyPresentToken == 0 {
+    if keyState != 0 {
+      return idemPack(11)
+    }
+    if digestMatchToken != 0 {
+      return idemPack(11)
+    }
+    return idemPack(5)
+  }
+  if keyState == 0 {
+    if digestMatchToken == 0 {
+      return idemPack(0)
+    }
+    return idemPack(11)
+  }
+  if digestMatchToken == 0 {
+    return idemPack(2)
+  }
+  if keyState == 1 {
+    return idemPack(3)
+  }
+  if keyState == 2 {
+    return idemPack(7)
+  }
+  if keyState == 3 {
+    return idemPack(6)
+  }
+  return idemPack(11)
+}
+
+pure flow commitReleaseIdempotency(keyState: Int, ownerMatchToken: Int, deliveryOutcome: Int) -> Int
+contract {
+  intent { "Q3 commit. deliveryOutcome 0 Success 1 Refused-before-begin 2 Indeterminate. Range-check first. Only the reservation owner commits a RESERVED key: 100 / 102 stored refusal / 106. Non-owner fenced 102, no reservation 105, terminal replay 103, Indeterminate stays 106. Unlisted refuses 111." }
+}
+{
+  if keyState != 0 {
+    if keyState != 1 {
+      if keyState != 2 {
+        if keyState != 3 {
+          return idemPack(11)
+        }
+      }
+    }
+  }
+  if ownerMatchToken != 0 {
+    if ownerMatchToken != 1 {
+      return idemPack(11)
+    }
+  }
+  if deliveryOutcome != 0 {
+    if deliveryOutcome != 1 {
+      if deliveryOutcome != 2 {
+        return idemPack(11)
+      }
+    }
+  }
+  if keyState == 0 {
+    return idemPack(5)
+  }
+  if keyState == 2 {
+    return idemPack(3)
+  }
+  if keyState == 3 {
+    return idemPack(6)
+  }
+  if keyState != 1 {
+    return idemPack(11)
+  }
+  if ownerMatchToken == 0 {
+    return idemPack(2)
+  }
+  if deliveryOutcome == 0 {
+    return idemPack(0)
+  }
+  if deliveryOutcome == 1 {
+    return idemPack(2)
+  }
+  if deliveryOutcome == 2 {
+    return idemPack(6)
+  }
+  return idemPack(11)
+}
+
+pure flow reconcileReleaseIdempotency(keyState: Int, expiredToken: Int, durableRecord: Int) -> Int
+contract {
+  intent { "Q3 uncertain reconciliation, no stranded key. durableRecord 0 none 1 success record 2 refused-before-begin record. Range-check first. Expired RESERVED settles 100 / 102 from a durable record, else Indeterminate 106 (never success, never ABSENT). Unexpired 103, terminal no-op 108, Indeterminate stays 106, absent 105. Unlisted refuses 111." }
+}
+{
+  if keyState != 0 {
+    if keyState != 1 {
+      if keyState != 2 {
+        if keyState != 3 {
+          return idemPack(11)
+        }
+      }
+    }
+  }
+  if expiredToken != 0 {
+    if expiredToken != 1 {
+      return idemPack(11)
+    }
+  }
+  if durableRecord != 0 {
+    if durableRecord != 1 {
+      if durableRecord != 2 {
+        return idemPack(11)
+      }
+    }
+  }
+  if keyState == 0 {
+    return idemPack(5)
+  }
+  if keyState == 2 {
+    return idemPack(8)
+  }
+  if keyState == 3 {
+    return idemPack(6)
+  }
+  if keyState != 1 {
+    return idemPack(11)
+  }
+  if expiredToken == 0 {
+    return idemPack(3)
+  }
+  if durableRecord == 1 {
+    return idemPack(0)
+  }
+  if durableRecord == 2 {
+    return idemPack(2)
+  }
+  if durableRecord == 0 {
+    return idemPack(6)
+  }
+  return idemPack(11)
+}

@@ -118,3 +118,62 @@ contract {
   let unknownKindCode: Int = 3
   return unknownKindCode
 }
+
+/// S8-R3 (1415-T7, KG-07, Q10 ruling): storage durability class. A durable class is
+///   admitted only for SQLite WAL synchronous=FULL or a measured rename+fsync+dir-fsync
+///   protocol, and only with a crash-campaign token that says the ALICE-style campaign
+///   passed with 0 violations. Unmeasured or failed stays DELIVERY_UNKNOWN.
+/// backend: 0 sqlite-wal-full 1 rename-fsync-dirfsync 2 any other store else Unlisted
+/// crashCampaignToken: 0 NOT_RUN 1 PASSED_ZERO_VIOLATIONS 2 FAILED_VIOLATIONS else Unlisted
+/// packed: 5 DURABLE_CRASH_PROVEN 1 DELIVERY_UNKNOWN-only 4 RAW_VALUE_REFUSED 11 Unlisted
+/// Zero-trust choices (rejected options): new flow, classifyAdapter unchanged (rejected:
+///   widen classifyAdapter, which 47 auth-verify-e2e composes and 44 evidence pins);
+///   unlisted backend/token refuses 11 (rejected: silently treat as DELIVERY_UNKNOWN,
+///   which hides a wiring bug); a passing token never upgrades a non-durable store.
+///   The token is a claim only: S8-R4 binds it to the crash-cell receipt.
+pure flow classifyDurableAdapter(
+  backendClass: Int,
+  backend: Int,
+  crashCampaignClass: Int,
+  crashCampaignToken: Int
+) -> Int
+contract {
+  intent { "Admit backend and crash-campaign token; durable only when proven, else DELIVERY_UNKNOWN." }
+}
+{
+  let backendReason: Int = readForeignI32Integer(backendClass, backend)
+  if backendReason != 0 {
+    if backendReason == 11 {
+      return 11
+    }
+    return 4
+  }
+  let campaignReason: Int = readForeignI32Integer(crashCampaignClass, crashCampaignToken)
+  if campaignReason != 0 {
+    if campaignReason == 11 {
+      return 11
+    }
+    return 4
+  }
+  if backend < 0 {
+    return 11
+  }
+  if backend > 2 {
+    return 11
+  }
+  if crashCampaignToken < 0 {
+    return 11
+  }
+  if crashCampaignToken > 2 {
+    return 11
+  }
+  let deliveryUnknown: Int = 1
+  if backend == 2 {
+    return deliveryUnknown
+  }
+  if crashCampaignToken != 1 {
+    return deliveryUnknown
+  }
+  let durableCrashProven: Int = 5
+  return durableCrashProven
+}
