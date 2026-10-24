@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 147,
+  "total": 151,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -296,6 +296,34 @@
       "flow": "resourceTransition",
       "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
       "line": 387
+    },
+    {
+      "qualified": "composed-route.classifyAeObligation",
+      "unit": "composed-route",
+      "flow": "classifyAeObligation",
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "line": 120
+    },
+    {
+      "qualified": "composed-route.composeRouteOutcome",
+      "unit": "composed-route",
+      "flow": "composeRouteOutcome",
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "line": 60
+    },
+    {
+      "qualified": "composed-route.composedPack",
+      "unit": "composed-route",
+      "flow": "composedPack",
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "line": 32
+    },
+    {
+      "qualified": "composed-route.composedStageExit",
+      "unit": "composed-route",
+      "flow": "composedStageExit",
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "line": 40
     },
     {
       "qualified": "kernel-ports.reserveAudit",

@@ -1,0 +1,137 @@
+{
+  "schema": "galerina.s10.composed-run-receipt.v1",
+  "authorizing": false,
+  "status": "NON_AUTHORIZING",
+  "secretsProvider": "synthetic",
+  "realCredential": "UNKNOWN",
+  "productionClearance": false,
+  "toolchain": {
+    "galerina": "galerina.mjs",
+    "galerinaSha256": "0338d3917f6508af1461e5ddb3d32d013d6a6e52151101724dbb1c78a93e952e",
+    "node": "v24.18.0"
+  },
+  "composedUnit": {
+    "path": "packages/fungi/memory/src/composed-route.fungi",
+    "sha256": "1062ba16c174c235763ec4543ff490ffa47084ccd4e32fb2db6f1990ece16e28"
+  },
+  "stageTokens": "0 Success 1 Refused(before begin) 2 Failed(after begin) 3 Indeterminate 4 MissingRecord 5 NotRun",
+  "stages": [
+    {
+      "stage": "1413-ingress",
+      "units": [
+        {
+          "path": "packages/fungi/memory/src/body-reader.fungi",
+          "sha256": "4dc21210b9549a6fa29d92bcc437d9e8327ae42ee89e8cfa4b5896953e8e3e91"
+        }
+      ],
+      "invocations": [
+        {
+          "file": "packages/fungi/memory/src/body-reader.fungi",
+          "flow": "readChunks",
+          "args": [
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            16384,
+            1,
+            0,
+            16,
+            1,
+            0,
+            0
+          ],
+          "value": 100
+        }
+      ],
+      "token": 0,
+      "tokenRule": "refusal 0 (packed 0 or 100) Success; any other listed refusal Refused before begin"
+    },
+    {
+      "stage": "1414-custody",
+      "units": [
+        {
+          "path": "packages/fungi/memory/src/release-commit-point.fungi",
+          "sha256": "4911c7d49b787948c20f32d754603f0af4a7a8b0e016ecc4f6167ed58f4d2b59"
+        }
+      ],
+      "invocations": [
+        {
+          "file": "packages/fungi/memory/src/release-commit-point.fungi",
+          "flow": "casBegin",
+          "args": [
+            0,
+            0
+          ],
+          "value": 100
+        }
+      ],
+      "token": 0,
+      "tokenRule": "casBegin 100 Success; 106 Indeterminate; else Refused before begin"
+    },
+    {
+      "stage": "1415-release",
+      "units": [
+        {
+          "path": "packages/fungi/memory/src/release-idempotency.fungi",
+          "sha256": "a96bcb85628aceb55188f24062bc2af5e2fd107f1608a02d52c2822721fa2bb0"
+        }
+      ],
+      "invocations": [
+        {
+          "file": "packages/fungi/memory/src/release-idempotency.fungi",
+          "flow": "reserveReleaseIdempotency",
+          "args": [
+            1,
+            0,
+            0
+          ],
+          "value": 100
+        },
+        {
+          "file": "packages/fungi/memory/src/release-idempotency.fungi",
+          "flow": "commitReleaseIdempotency",
+          "args": [
+            1,
+            1,
+            2
+          ],
+          "value": 106
+        },
+        {
+          "file": "packages/fungi/memory/src/release-idempotency.fungi",
+          "flow": "reconcileReleaseIdempotency",
+          "args": [
+            1,
+            1,
+            0
+          ],
+          "value": 106
+        }
+      ],
+      "token": 3,
+      "tokenRule": "reserve!=100 Refused; commit 100 Success; commit 102 Failed; commit 106 settles only on reconcile 100, else Indeterminate; else Failed"
+    }
+  ],
+  "composed": {
+    "flow": "composeRouteOutcome",
+    "tokens": [
+      0,
+      0,
+      3
+    ],
+    "outcomeCode": 106,
+    "outcome": "Indeterminate"
+  },
+  "replayScope": "Replays only self-contained stage units (run --invoke cannot call imported helpers, B5). Importing units auth-verify-route, query-custody, secret-arena and secret-gate are covered by flattened S5-S8 suites, not by this receipt.",
+  "note": "Indeterminate is the honest composed outcome: post-dispatch delivery has no consumer acknowledgement and no durable consumer record, so the release stage stays DELIVERY_UNKNOWN. Not production clearance."
+}

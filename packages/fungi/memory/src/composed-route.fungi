@@ -1,0 +1,160 @@
+@version 1
+/// @file: composed-route.fungi
+/// @purpose: S10-R2 (X-COMP, 1415-T9, CP6) composed RD-1413 -> RD-1414 -> RD-1415 route
+///   outcome and RD-1296 A-E obligation disposition. Pure decision tables over typed Int
+///   tokens the generator derives from replayed stage invocations. No new authority.
+///   Synthetic data only. NON_AUTHORIZING. No production clearance.
+/// Self-contained (no import): run --invoke cannot call an imported helper (B5), and the
+///   receipt replays this unit directly. Local packing helper has a distinct name
+///   (composedPack) so composed builds keep FUNGI-NAME-002 clean.
+/// Stage token: 0 Success 1 Refused(before begin) 2 Failed(after begin) 3 Indeterminate
+///   4 MissingRecord 5 NotRun; else 11 Unlisted.
+/// Composed packed (existing listed codes only, +100 wipe construct): 100 Success,
+///   102 Refused, 106 Indeterminate (DELIVERY_UNKNOWN), 111 Unlisted / inconsistent.
+/// Laws: 100 only when all three stages are Success. The earliest non-Success stage
+///   decides; every later stage must be NotRun, else 111 (a stage ran after a refusal or an
+///   UNKNOWN). A NotRun stage with no earlier non-Success stage is a skipped stage: 111.
+///   Refused before begin is 102. Failed after begin, Indeterminate and MissingRecord are
+///   106: a crash or a missing record is UNKNOWN, never success.
+/// Rejected: a separate composed Failed code (claims no partial effect the composition
+///   cannot prove; would need a new registry code); treating NotRun as Success (a skipped
+///   stage would compose to 100); last-stage-wins (hides an earlier UNKNOWN).
+/// A-E: letter 1 A 2 B 3 C 4 D 5 E 6 WASM-Q1; successorBound 0/1; evidence 0 none
+///   1 product-route 2 synthetic-only; ownerRetire 0 none 1 owner-signed decision.
+///   Packed: 100 SATISFIED 106 UNRESOLVED (typed UNKNOWN) 108 RETIRED 111 Unlisted.
+///   Silence never retires; synthetic-only evidence never satisfies (RD-1415:62);
+///   WASM-Q1 is never satisfied by a gateway route (RD-1415:74).
+/// Rejected: satisfy on synthetic route tests (synthetic SecretsProvider is not the real
+///   route; docs/TODO.md says older WAT results and synthetic tests do not substitute);
+///   retire on missing owner answer (silence is not retirement).
+/// Sequential if-return. Nested if/else failed WAT emit. Every table ends fail-closed.
+
+pure flow composedPack(code: Int) -> Int
+contract {
+  intent { "Pack an S10 composed outcome code with the wipe construct (+100)." }
+}
+{
+  return code + 100
+}
+
+pure flow composedStageExit(token: Int) -> Int
+contract {
+  intent { "Exit for the earliest non-Success stage. Refused 102. Failed, Indeterminate and MissingRecord 106. NotRun, Success or unlisted refuse 111." }
+}
+{
+  if token == 1 {
+    return composedPack(2)
+  }
+  if token == 2 {
+    return composedPack(6)
+  }
+  if token == 3 {
+    return composedPack(6)
+  }
+  if token == 4 {
+    return composedPack(6)
+  }
+  return composedPack(11)
+}
+
+pure flow composeRouteOutcome(ingress: Int, custody: Int, release: Int) -> Int
+contract {
+  intent { "Composed RD-1413 -> 1414 -> 1415 outcome. Range-check every token first. 100 only when all stages are Success. Earliest non-Success stage decides; any later stage that ran refuses 111; skipped stage refuses 111." }
+}
+{
+  if ingress < 0 {
+    return composedPack(11)
+  }
+  if ingress > 5 {
+    return composedPack(11)
+  }
+  if custody < 0 {
+    return composedPack(11)
+  }
+  if custody > 5 {
+    return composedPack(11)
+  }
+  if release < 0 {
+    return composedPack(11)
+  }
+  if release > 5 {
+    return composedPack(11)
+  }
+  if ingress == 5 {
+    return composedPack(11)
+  }
+  if ingress != 0 {
+    if custody != 5 {
+      return composedPack(11)
+    }
+    if release != 5 {
+      return composedPack(11)
+    }
+    return composedStageExit(ingress)
+  }
+  if custody == 5 {
+    return composedPack(11)
+  }
+  if custody != 0 {
+    if release != 5 {
+      return composedPack(11)
+    }
+    return composedStageExit(custody)
+  }
+  if release == 5 {
+    return composedPack(11)
+  }
+  if release != 0 {
+    return composedStageExit(release)
+  }
+  if ingress == 0 {
+    if custody == 0 {
+      if release == 0 {
+        return composedPack(0)
+      }
+    }
+  }
+  return composedPack(11)
+}
+
+pure flow classifyAeObligation(letter: Int, successorBound: Int, evidence: Int, ownerRetire: Int) -> Int
+contract {
+  intent { "RD-1296 A-E disposition. Range-check every token first. RETIRED 108 only on an owner-signed decision. SATISFIED 100 only for A-E with a bound successor and product-route evidence. WASM-Q1 and everything else UNRESOLVED 106." }
+}
+{
+  if letter < 1 {
+    return composedPack(11)
+  }
+  if letter > 6 {
+    return composedPack(11)
+  }
+  if successorBound != 0 {
+    if successorBound != 1 {
+      return composedPack(11)
+    }
+  }
+  if evidence != 0 {
+    if evidence != 1 {
+      if evidence != 2 {
+        return composedPack(11)
+      }
+    }
+  }
+  if ownerRetire != 0 {
+    if ownerRetire != 1 {
+      return composedPack(11)
+    }
+  }
+  if ownerRetire == 1 {
+    return composedPack(8)
+  }
+  if letter == 6 {
+    return composedPack(6)
+  }
+  if successorBound == 1 {
+    if evidence == 1 {
+      return composedPack(0)
+    }
+  }
+  return composedPack(6)
+}
