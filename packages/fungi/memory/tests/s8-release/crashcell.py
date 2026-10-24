@@ -111,7 +111,8 @@ def run(mode, base, inj=None, plos=False):
     return out, st, cont
 def check(out, st, cont):
     v = []
-    if st == "Indeterminate-Empty": st = "Indeterminate"  # O_EXCL entry exists: the reservation is the name, content not yet written`n    if st not in ("Absent", "Indeterminate", "Committed"): v.append("STATE_" + st)
+    if st == "Indeterminate-Empty": st = "Indeterminate"  # O_EXCL entry exists: the reservation is the name, content not yet written
+    if st not in ("Absent", "Indeterminate", "Committed"): v.append("STATE_" + st)
     if "ACK" in out and st != "Committed": v.append("ACK_LOST")
     if "RESERVED" in out and st == "Absent": v.append("RESERVATION_LOST")
     won = "RESERVED" in cont

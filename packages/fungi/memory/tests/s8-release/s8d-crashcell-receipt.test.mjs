@@ -18,7 +18,7 @@ const CC = join(HERE, "crashcell.py");
 
 function pyCheck(st, out) {
   const code = "import sys,json;sys.path.insert(0,sys.argv[1]);import crashcell as c;print(json.dumps(c.check(json.loads(sys.argv[3]),sys.argv[2],[])))";
-  const r = spawnSync("python3", ["-c", code, HERE, st, JSON.stringify(out)], { encoding: "utf8", timeout: 60000 });
+  const r = spawnSync("python3", ["-c", code, HERE, st, JSON.stringify(out)], { encoding: "utf8", timeout: 60000, env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
   assert.equal(r.status, 0, "python3 check() failed: " + r.stderr);
   return JSON.parse(r.stdout.trim());
 }
