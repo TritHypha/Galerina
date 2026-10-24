@@ -7540,6 +7540,26 @@
       "code": "FUNGI-SECRET-009",
       "meaning": "UNKNOWN",
       "status": "active"
+    },
+    {
+      "code": "FUNGI-LINEAR-001",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINEAR-002",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINEAR-003",
+      "meaning": "UNKNOWN",
+      "status": "active"
+    },
+    {
+      "code": "FUNGI-LINEAR-004",
+      "meaning": "UNKNOWN",
+      "status": "active"
     }
   ]
 }

@@ -229,6 +229,8 @@ const BUILT_IN_TYPES: ReadonlySet<string> = new Set([
   "DecodeError", "ParseError",
   // Branded and runtime-minted authority types
   "Brand", "Authority",
+  // S7-R2: opaque close authority for `close(linear, cap)`; carries no data, cannot be constructed from literals.
+  "CloseCap",
   // ── Security types ───────────────────────────────────────────────────────
   "Hash", "Signature", "Secret",
   // ── AI / ML types ────────────────────────────────────────────────────────

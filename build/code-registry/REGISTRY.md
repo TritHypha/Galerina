@@ -13,9 +13,9 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 
 | status | count | meaning |
 |---|---|---|
-| live | 230 | emitted with an exported constant |
+| live | 231 | emitted with an exported constant |
 | inline | 444 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 175 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 178 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 232 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 76 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 351 | referenced only (no def/emit) |
@@ -1522,6 +1522,15 @@ Do NOT hand-edit. Regenerate: `node scripts/code-index.mjs && node scripts/gen-c
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-LIMIT-001 | inline | ENFORCED_LIMIT_EXCEEDED | — |
+
+### LINEAR (4)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-LINEAR-001 | referenced | LINEAR_USE_AFTER_CLOSE | error |
+| FUNGI-LINEAR-002 | referenced | LINEAR_NOT_CLOSED | error |
+| FUNGI-LINEAR-003 | referenced | LINEAR_CLOSED_TWICE | error |
+| FUNGI-LINEAR-004 | live | LINEAR_TYPE_SHAPE_REFUSED | error |
 
 ### LINT (7)
 

@@ -201,6 +201,20 @@ contract {
   return 111
 }
 
+pure flow arenaListedExit(listedPacked: Int) -> Int
+contract {
+  intent { "Non-Active arena listing at the route exit. Unlisted 111 and invalid 110 pass. Partial, Quarantined, Disposed and anything else exit UNKNOWN 106 with quarantine, never a raw listing token." }
+}
+{
+  if listedPacked == 111 {
+    return 111
+  }
+  if listedPacked == 110 {
+    return 110
+  }
+  return finish(6, true)
+}
+
 pure flow exitBeforeBegin(
   mintedToken: Int,
   evOpId: Int,
@@ -476,7 +490,8 @@ contract {
   }
   let arenaListed: Int = listedState(gClass, arenaState)
   if arenaListed != 100 {
-    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, arenaListed)
+    let arenaExit: Int = arenaListedExit(arenaListed)
+    return exitBeforeBegin(cleanupMinted, cleanupEvOp, cleanupCallOp, cleanupEvGen, cleanupCallGen, cleanupEvDigest, cleanupCallDigest, cleanupStatus, cleanupOpClass, arenaExit)
   }
   let arenaPacked: Int = arenaHas(gClass, arenaState, gClass, arenaStatus, gClass, arenaLen, gClass, arenaByte)
   if arenaPacked != 100 {

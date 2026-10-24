@@ -219,6 +219,8 @@ export interface AstNode {
    * Absent or undefined means a plain call: all children are arguments.
    */
   readonly callStyle?: "method";
+  /** S7-R2: set only on a bodyless `linear type Name` typeDecl (must-close, compiler-checked). */
+  readonly linear?: true;
   /**
    * Optional type name for named record constructors: `TypeName { field: val }`.
    * Set on `#record` callExpr nodes that were parsed with an explicit type prefix.
@@ -560,6 +562,11 @@ class Parser {
 
   private parseDeclaration(): AstNode | undefined {
     const tok = this.current();
+
+    // S7-R2: contextual `linear type Name` (closure item 1414-LEASE). `linear` stays an ordinary identifier elsewhere.
+    if (tok.kind === "identifier" && tok.value === "linear" && this.peek(1).kind === "keyword" && this.peek(1).value === "type") {
+      return this.parseLinearTypeDecl();
+    }
 
     if (tok.kind === "keyword") {
       switch (tok.value) {
@@ -6781,6 +6788,33 @@ class Parser {
       this.advance();
     }
     return { kind: "importDecl", value: value.trim(), location: loc };
+  }
+
+  /**
+   * S7-R2: `linear type Name` declares a bodyless, opaque, must-close type. Zero trust: an alias
+   * (`= T`) or a body would let ordinary data construct or copy the value, so any trailing shape is
+   * refused (FUNGI-LINEAR-004) and returns a non-authorizing node instead of a usable typeDecl.
+   */
+  private parseLinearTypeDecl(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume contextual "linear"
+    this.advance(); // consume "type"
+    const named = this.current().kind === "identifier";
+    const name = named ? this.current().value : "<unknown>";
+    if (named) this.advance();
+    if (!named || !(this.isEof() || this.current().kind === "newline")) {
+      this.emit(
+        "FUNGI-LINEAR-004",
+        "LINEAR_TYPE_SHAPE_REFUSED",
+        `Linear type '${name}' must be bodyless and opaque: write 'linear type ${name}'.`,
+        loc,
+        `Write 'linear type ${name}' with no '=' alias and no body.`,
+      );
+      if (this.currentIs("symbol", "{")) this.skipBalancedBraces();
+      while (!this.isEof() && this.current().kind !== "newline") this.advance();
+      return { kind: "identifier", value: `invalid:linear-type:${name}`, location: loc };
+    }
+    return { kind: "typeDecl", value: name, location: loc, linear: true };
   }
 
   private parseTypeDecl(): AstNode {

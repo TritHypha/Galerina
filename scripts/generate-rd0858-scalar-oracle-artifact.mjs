@@ -63,6 +63,7 @@ export const SCALAR_COMPILER_SOURCE_LOCATORS = Object.freeze([
   "i64-arith.ts",
   "invariant-discharge.ts",
   "lexer.ts",
+  "linear-lease-checker.ts",
   "method-chain-checker.ts",
   "module-registry.ts",
   "naming-policy-checker.ts",
