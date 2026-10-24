@@ -1,0 +1,360 @@
+@version 1
+/// @file: durable-store.fungi
+/// @purpose: RD-1415-T8 (Q11) durable storage rule unit. Commit-then-publish,
+///   recovery that marks unpublished commits Indeterminate, Merkle-bound
+///   locators, TUF-style membership admission signed by Phillip, a durable
+///   commit claim only with proven durability, and no retry without an
+///   idempotency proof (RD-0778). Rule unit only: no I/O. Synthetic data only.
+///   NON_AUTHORIZING.
+/// Every foreign Int that carries a class tag enters through c-boundary.fungi
+///   (readForeignI32Integer); durability reuses classifyDurableAdapter from
+///   adapter-profile.fungi (S8-R3), never a second table.
+/// RD-0778 outcomes: 100 Success, 106 Indeterminate (DELIVERY_UNKNOWN), refusals
+///   are flow-local packed codes 20..26 (not registry error codes), 4
+///   RAW_VALUE_REFUSED for class tags 1..10, 11 Unlisted. A crash or a missing
+///   record is 106, never 100.
+/// Zero-trust choices (rejected options):
+///   publish before commit refuses 20 (rejected: publish optimistically and
+///     roll back, which exposes an uncommitted locator);
+///   a commit with DELIVERY_UNKNOWN durability never publishes (rejected:
+///     publish on write acknowledgement alone);
+///   recovery reports any unpublished, torn or missing record as 106 for the
+///     whole scan (rejected: publish committed-unpublished records during
+///     recovery, rejected: drop torn records silently);
+///   a locator needs a verified Merkle proof against a current or retained
+///     root (rejected: accept an unchecked proof, rejected: accept a dropped
+///     or unknown root);
+///   membership: shipped signer is UNKNOWN until Phillip signs the root
+///     (rejected: a Grok-signed root, rejected: trust-on-first-use); signatures
+///     checked first, then strict version+1 (rollback, replay and gaps refuse),
+///     then freeze (expired refuses);
+///   retry only with an idempotency proof; Success never retries (NOOP 8).
+/// Sequential if-return style (secret-gate.fungi / adapter-profile.fungi); no
+///   else branches, every path ends in a typed refusal.
+
+import "./c-boundary.fungi"
+import "./adapter-profile.fungi"
+
+pure flow durableTagReason(classTag: Int, value: Int) -> Int
+contract {
+  intent { "Admit one class-tagged foreign Int: 0 admitted, 4 raw class tag, 11 unlisted tag." }
+}
+{
+  let reason: Int = readForeignI32Integer(classTag, value)
+  if reason == 0 {
+    return 0
+  }
+  if reason == 11 {
+    return 11
+  }
+  let rawRefused: Int = 4
+  return rawRefused
+}
+
+/// commitState: 0 NOT_COMMITTED 1 COMMITTED_DURABLE 2 COMMIT_DELIVERY_UNKNOWN else Unlisted
+/// publishReq: 0 NONE 1 PUBLISH else Unlisted
+/// packed: 100 PUBLISHED 20 PUBLISH_BEFORE_COMMIT_REFUSED 106 Indeterminate 8 NOOP 4 11
+pure flow publishAfterCommit(
+  commitClass: Int,
+  commitState: Int,
+  publishClass: Int,
+  publishReq: Int
+) -> Int
+contract {
+  intent { "Publish only after a durable commit; before commit refuses 20; unknown durability is 106, never published." }
+}
+{
+  let commitReason: Int = durableTagReason(commitClass, commitState)
+  if commitReason != 0 {
+    return commitReason
+  }
+  let publishReason: Int = durableTagReason(publishClass, publishReq)
+  if publishReason != 0 {
+    return publishReason
+  }
+  if commitState < 0 {
+    return 11
+  }
+  if commitState > 2 {
+    return 11
+  }
+  if publishReq < 0 {
+    return 11
+  }
+  if publishReq > 1 {
+    return 11
+  }
+  if publishReq == 0 {
+    let noop: Int = 8
+    return noop
+  }
+  if commitState == 1 {
+    let published: Int = 100
+    return published
+  }
+  if commitState == 0 {
+    let publishBeforeCommitRefused: Int = 20
+    return publishBeforeCommitRefused
+  }
+  let indeterminate: Int = 106
+  return indeterminate
+}
+
+/// recordState: 0 COMMITTED_PUBLISHED 1 COMMITTED_UNPUBLISHED 2 TORN 3 MISSING
+///   4 PUBLISHED_WITHOUT_COMMIT else Unlisted
+pure flow recoverRecord(recordClass: Int, recordState: Int) -> Int
+contract {
+  intent { "Recover one record: only committed-and-published is 100; unpublished, torn, missing or orphan-published is 106." }
+}
+{
+  let reason: Int = durableTagReason(recordClass, recordState)
+  if reason != 0 {
+    return reason
+  }
+  if recordState < 0 {
+    return 11
+  }
+  if recordState > 4 {
+    return 11
+  }
+  if recordState == 0 {
+    let recovered: Int = 100
+    return recovered
+  }
+  let indeterminate: Int = 106
+  return indeterminate
+}
+
+pure flow recoveryAggregate(published: Int, unpublished: Int, torn: Int, missing: Int) -> Int
+contract {
+  intent { "Whole-scan recovery verdict: any unpublished, torn or missing record makes the scan 106; negative counts are 11." }
+}
+{
+  if published < 0 {
+    return 11
+  }
+  if unpublished < 0 {
+    return 11
+  }
+  if torn < 0 {
+    return 11
+  }
+  if missing < 0 {
+    return 11
+  }
+  let indeterminate: Int = 106
+  if unpublished > 0 {
+    return indeterminate
+  }
+  if torn > 0 {
+    return indeterminate
+  }
+  if missing > 0 {
+    return indeterminate
+  }
+  let scanClean: Int = 100
+  return scanClean
+}
+
+/// rootRelation: 0 CURRENT 1 RETAINED_PRIOR 2 UNKNOWN_ROOT 3 DROPPED_PRIOR else Unlisted
+/// proofResult: 0 FAILED 1 VERIFIED 2 NOT_CHECKED else Unlisted
+/// packed: 100 LOCATOR_OK 21 LOCATOR_REFUSED 4 11
+pure flow verifyLocator(
+  rootClass: Int,
+  rootRelation: Int,
+  proofClass: Int,
+  proofResult: Int
+) -> Int
+contract {
+  intent { "Accept a locator only with a verified Merkle proof against a current or retained root; otherwise refuse 21." }
+}
+{
+  let rootReason: Int = durableTagReason(rootClass, rootRelation)
+  if rootReason != 0 {
+    return rootReason
+  }
+  let proofReason: Int = durableTagReason(proofClass, proofResult)
+  if proofReason != 0 {
+    return proofReason
+  }
+  if rootRelation < 0 {
+    return 11
+  }
+  if rootRelation > 3 {
+    return 11
+  }
+  if proofResult < 0 {
+    return 11
+  }
+  if proofResult > 2 {
+    return 11
+  }
+  let locatorRefused: Int = 21
+  if proofResult != 1 {
+    return locatorRefused
+  }
+  if rootRelation > 1 {
+    return locatorRefused
+  }
+  let locatorOk: Int = 100
+  return locatorOk
+}
+
+/// TUF-style membership. signerState: 0 UNKNOWN_NEEDS_PHILLIP_SIGNATURE
+///   1 OWNER_SIGNED_VERIFIED else Unlisted. expired: 0 FRESH 1 EXPIRED else Unlisted.
+/// packed: 100 ADMITTED 22 ROLLBACK_OR_GAP_REFUSED 23 THRESHOLD_REFUSED
+///   24 FREEZE_REFUSED 25 SIGNER_UNKNOWN_REFUSED 11 Unlisted or negative
+pure flow admitMembership(
+  currentVersion: Int,
+  newVersion: Int,
+  validSigs: Int,
+  threshold: Int,
+  signerState: Int,
+  expired: Int
+) -> Int
+contract {
+  intent { "Admit a membership root only when owner-signed, threshold met, exactly version+1 and fresh." }
+}
+{
+  if currentVersion < 0 {
+    return 11
+  }
+  if newVersion < 0 {
+    return 11
+  }
+  if validSigs < 0 {
+    return 11
+  }
+  if threshold < 0 {
+    return 11
+  }
+  if signerState < 0 {
+    return 11
+  }
+  if signerState > 1 {
+    return 11
+  }
+  if expired < 0 {
+    return 11
+  }
+  if expired > 1 {
+    return 11
+  }
+  if signerState != 1 {
+    let signerUnknownRefused: Int = 25
+    return signerUnknownRefused
+  }
+  let thresholdRefused: Int = 23
+  if threshold < 1 {
+    return thresholdRefused
+  }
+  if validSigs < threshold {
+    return thresholdRefused
+  }
+  let rollbackOrGapRefused: Int = 22
+  if newVersion <= currentVersion {
+    return rollbackOrGapRefused
+  }
+  let step: Int = newVersion - currentVersion
+  if step != 1 {
+    return rollbackOrGapRefused
+  }
+  if expired != 0 {
+    let freezeRefused: Int = 24
+    return freezeRefused
+  }
+  let admitted: Int = 100
+  return admitted
+}
+
+pure flow shippedMembershipSigner() -> Int
+contract {
+  intent { "The shipped membership root signer is UNKNOWN (0) until Phillip signs it." }
+}
+{
+  let unknownNeedsPhillipSignature: Int = 0
+  return unknownNeedsPhillipSignature
+}
+
+/// writeAck: 0 NO_ACK 1 ACK else Unlisted
+/// packed: 100 COMMITTED_DURABLE 106 Indeterminate 4 11 (adapter refusals pass through)
+pure flow commitOutcome(
+  backendClass: Int,
+  backend: Int,
+  campaignClass: Int,
+  campaignToken: Int,
+  writeAck: Int
+) -> Int
+contract {
+  intent { "Durable commit only when classifyDurableAdapter is 5 and the write was acknowledged; otherwise 106." }
+}
+{
+  let adapter: Int = classifyDurableAdapter(backendClass, backend, campaignClass, campaignToken)
+  if adapter == 4 {
+    return 4
+  }
+  if adapter == 11 {
+    return 11
+  }
+  if writeAck < 0 {
+    return 11
+  }
+  if writeAck > 1 {
+    return 11
+  }
+  let indeterminate: Int = 106
+  if writeAck != 1 {
+    return indeterminate
+  }
+  if adapter == 5 {
+    let committedDurable: Int = 100
+    return committedDurable
+  }
+  if adapter == 1 {
+    return indeterminate
+  }
+  let unlistedAdapter: Int = 11
+  return unlistedAdapter
+}
+
+/// idempotencyProof: 0 NONE 1 PROVEN else Unlisted
+/// packed: 8 NOOP after 100, 7 RETRY_ALLOWED only with proof, 26 RETRY_REFUSED, 11
+pure flow retryCommit(priorOutcome: Int, idempotencyProof: Int) -> Int
+contract {
+  intent { "No retry without an idempotency proof; Success never retries; unknown prior outcomes refuse 11." }
+}
+{
+  if idempotencyProof < 0 {
+    return 11
+  }
+  if idempotencyProof > 1 {
+    return 11
+  }
+  if priorOutcome == 100 {
+    let noop: Int = 8
+    return noop
+  }
+  if priorOutcome == 106 {
+    return retryVerdict(idempotencyProof)
+  }
+  if priorOutcome < 20 {
+    return 11
+  }
+  if priorOutcome > 25 {
+    return 11
+  }
+  return retryVerdict(idempotencyProof)
+}
+
+pure flow retryVerdict(idempotencyProof: Int) -> Int
+contract {
+  intent { "Retry is allowed (7) only with a proven idempotency proof, else refused (26)." }
+}
+{
+  if idempotencyProof == 1 {
+    let retryAllowed: Int = 7
+    return retryAllowed
+  }
+  let retryRefused: Int = 26
+  return retryRefused
+}
