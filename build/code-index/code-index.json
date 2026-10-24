@@ -24190,7 +24190,7 @@
     "code": "FUNGI-NAME-002",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 109,
+    "occurrences": 110,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -24303,6 +24303,7 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:407",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:418",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:584",
+      "fungi packages/fungi/memory/src/release-idempotency.fungi:7",
       "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:6",
       "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:192",
       "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:203",

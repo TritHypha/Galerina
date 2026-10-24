@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { join } from "node:path";
 import { SRC, invoke } from "./harness.mjs";
 
-const RCP = join(SRC, "release-commit-point.fungi");
+const RCP = join(SRC, "release-idempotency.fungi");
 
 function call(flow, args) {
   const r = invoke(RCP, flow, args);
@@ -25,28 +25,28 @@ function expect(flow, args, want) {
   assert.equal(call(flow, args), want, flow + "(" + args.join(",") + ")");
 }
 
-test("S8-R2 reserveIdempotency: only an ABSENT key reserves; in-flight 103, stored terminal 107, digest mismatch 102, Indeterminate 106, missing key 105", () => {
-  expect("reserveIdempotency", [1, 0, 0], 100);
-  expect("reserveIdempotency", [0, 0, 0], 105);
-  expect("reserveIdempotency", [1, 1, 1], 103);
-  expect("reserveIdempotency", [1, 1, 0], 102);
-  expect("reserveIdempotency", [1, 2, 1], 107);
-  expect("reserveIdempotency", [1, 2, 0], 102);
-  expect("reserveIdempotency", [1, 3, 1], 106);
-  expect("reserveIdempotency", [1, 3, 0], 102);
+test("S8-R2 reserveReleaseIdempotency: only an ABSENT key reserves; in-flight 103, stored terminal 107, digest mismatch 102, Indeterminate 106, missing key 105", () => {
+  expect("reserveReleaseIdempotency", [1, 0, 0], 100);
+  expect("reserveReleaseIdempotency", [0, 0, 0], 105);
+  expect("reserveReleaseIdempotency", [1, 1, 1], 103);
+  expect("reserveReleaseIdempotency", [1, 1, 0], 102);
+  expect("reserveReleaseIdempotency", [1, 2, 1], 107);
+  expect("reserveReleaseIdempotency", [1, 2, 0], 102);
+  expect("reserveReleaseIdempotency", [1, 3, 1], 106);
+  expect("reserveReleaseIdempotency", [1, 3, 0], 102);
 });
 
-test("S8-R2 reserveIdempotency L6: unlisted or inconsistent tokens refuse 111", () => {
+test("S8-R2 reserveReleaseIdempotency L6: unlisted or inconsistent tokens refuse 111", () => {
   for (const a of [[2, 0, 0], [-1, 0, 0], [1, 4, 0], [1, -1, 0], [1, 2, 2], [1, 0, 1], [0, 1, 0], [0, 0, 1]]) {
-    expect("reserveIdempotency", a, 111);
+    expect("reserveReleaseIdempotency", a, 111);
   }
 });
 
-test("S8-R2 reserveIdempotency L1 grid: 100 only for present ABSENT key with no stored digest", () => {
+test("S8-R2 reserveReleaseIdempotency L1 grid: 100 only for present ABSENT key with no stored digest", () => {
   for (const kp of [0, 1]) {
     for (const ks of [0, 1, 2, 3]) {
       for (const dm of [0, 1]) {
-        const v = call("reserveIdempotency", [kp, ks, dm]);
+        const v = call("reserveReleaseIdempotency", [kp, ks, dm]);
         if (kp === 1 && ks === 0 && dm === 0) {
           assert.equal(v, 100);
         } else {
@@ -57,35 +57,35 @@ test("S8-R2 reserveIdempotency L1 grid: 100 only for present ABSENT key with no 
   }
 });
 
-test("S8-R2 commitIdempotency: owner commits Success 100 / Refused-before-begin 102 / Indeterminate 106; non-owner 102; no reservation 105; replay 103", () => {
-  expect("commitIdempotency", [1, 1, 0], 100);
-  expect("commitIdempotency", [1, 1, 1], 102);
-  expect("commitIdempotency", [1, 1, 2], 106);
-  expect("commitIdempotency", [1, 0, 0], 102);
-  expect("commitIdempotency", [0, 1, 0], 105);
-  expect("commitIdempotency", [2, 1, 0], 103);
-  expect("commitIdempotency", [3, 1, 0], 106);
+test("S8-R2 commitReleaseIdempotency: owner commits Success 100 / Refused-before-begin 102 / Indeterminate 106; non-owner 102; no reservation 105; replay 103", () => {
+  expect("commitReleaseIdempotency", [1, 1, 0], 100);
+  expect("commitReleaseIdempotency", [1, 1, 1], 102);
+  expect("commitReleaseIdempotency", [1, 1, 2], 106);
+  expect("commitReleaseIdempotency", [1, 0, 0], 102);
+  expect("commitReleaseIdempotency", [0, 1, 0], 105);
+  expect("commitReleaseIdempotency", [2, 1, 0], 103);
+  expect("commitReleaseIdempotency", [3, 1, 0], 106);
   for (const a of [[4, 1, 0], [-1, 1, 0], [1, 2, 0], [1, 1, 3], [1, 1, -1]]) {
-    expect("commitIdempotency", a, 111);
+    expect("commitReleaseIdempotency", a, 111);
   }
 });
 
-test("S8-R2 reconcileIdempotency L2/L4: expired reservation with no durable record is 106 (never success); records settle 100/102; in-flight 103", () => {
-  expect("reconcileIdempotency", [1, 1, 0], 106);
-  expect("reconcileIdempotency", [1, 1, 1], 100);
-  expect("reconcileIdempotency", [1, 1, 2], 102);
-  expect("reconcileIdempotency", [1, 0, 0], 103);
-  expect("reconcileIdempotency", [2, 1, 1], 108);
-  expect("reconcileIdempotency", [3, 1, 0], 106);
-  expect("reconcileIdempotency", [0, 1, 0], 105);
+test("S8-R2 reconcileReleaseIdempotency L2/L4: expired reservation with no durable record is 106 (never success); records settle 100/102; in-flight 103", () => {
+  expect("reconcileReleaseIdempotency", [1, 1, 0], 106);
+  expect("reconcileReleaseIdempotency", [1, 1, 1], 100);
+  expect("reconcileReleaseIdempotency", [1, 1, 2], 102);
+  expect("reconcileReleaseIdempotency", [1, 0, 0], 103);
+  expect("reconcileReleaseIdempotency", [2, 1, 1], 108);
+  expect("reconcileReleaseIdempotency", [3, 1, 0], 106);
+  expect("reconcileReleaseIdempotency", [0, 1, 0], 105);
   for (const a of [[5, 1, 0], [-1, 1, 0], [1, 2, 0], [1, 1, 3], [1, 1, -1]]) {
-    expect("reconcileIdempotency", a, 111);
+    expect("reconcileReleaseIdempotency", a, 111);
   }
 });
 
-test("S8-R2 reconcileIdempotency L4 grid: an expired RESERVED key never stays in flight and never reads as reserved-free", () => {
+test("S8-R2 reconcileReleaseIdempotency L4 grid: an expired RESERVED key never stays in flight and never reads as reserved-free", () => {
   for (const rec of [0, 1, 2]) {
-    const v = call("reconcileIdempotency", [1, 1, rec]);
+    const v = call("reconcileReleaseIdempotency", [1, 1, rec]);
     assert.ok([100, 102, 106].includes(v), "reconcile(1,1," + rec + ")=" + v);
   }
 });

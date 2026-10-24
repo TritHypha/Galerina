@@ -45,8 +45,9 @@ test("S8 crash cell: the product release store carries a crash-campaign receipt 
   }
 });
 
+// R2: flows live in release-idempotency.fungi (least authority: kept out of the shipped secret-gate artifact).
 test("S8 RETRY: reserve/commit idempotency with uncertain reconciliation flows exist (no stranded key)", red("S8", "Q3 reserve/commit + uncertain reconciliation"), () => {
-  const t = unitText("release-commit-point");
+  const t = unitText("release-idempotency");
   for (const n of ["reserve", "commit", "reconcile"]) {
     assert.match(t, new RegExp("pure flow " + n + "\\w*Idempotency\\w*\\("), n + "*Idempotency* flow missing");
   }

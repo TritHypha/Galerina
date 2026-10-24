@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 142,
+  "total": 146,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -716,6 +716,34 @@
       "flow": "revokeDelivery",
       "file": "packages/fungi/memory/src/release-commit-point.fungi",
       "line": 413
+    },
+    {
+      "qualified": "release-idempotency.commitReleaseIdempotency",
+      "unit": "release-idempotency",
+      "flow": "commitReleaseIdempotency",
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "line": 82
+    },
+    {
+      "qualified": "release-idempotency.idemPack",
+      "unit": "release-idempotency",
+      "flow": "idemPack",
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "line": 13
+    },
+    {
+      "qualified": "release-idempotency.reconcileReleaseIdempotency",
+      "unit": "release-idempotency",
+      "flow": "reconcileReleaseIdempotency",
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "line": 135
+    },
+    {
+      "qualified": "release-idempotency.reserveReleaseIdempotency",
+      "unit": "release-idempotency",
+      "flow": "reserveReleaseIdempotency",
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "line": 28
     },
     {
       "qualified": "secret-arena-custodian-port.decodeFrameStatus",
