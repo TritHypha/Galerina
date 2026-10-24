@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 154,
+  "total": 164,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -345,6 +345,76 @@
       "flow": "releaseStageToken",
       "file": "packages/fungi/memory/src/composed-route.fungi",
       "line": 208
+    },
+    {
+      "qualified": "durable-store.admitMembership",
+      "unit": "durable-store",
+      "flow": "admitMembership",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 207
+    },
+    {
+      "qualified": "durable-store.commitOutcome",
+      "unit": "durable-store",
+      "flow": "commitOutcome",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 281
+    },
+    {
+      "qualified": "durable-store.durableTagReason",
+      "unit": "durable-store",
+      "flow": "durableTagReason",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 38
+    },
+    {
+      "qualified": "durable-store.publishAfterCommit",
+      "unit": "durable-store",
+      "flow": "publishAfterCommit",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 57
+    },
+    {
+      "qualified": "durable-store.recoverRecord",
+      "unit": "durable-store",
+      "flow": "recoverRecord",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 105
+    },
+    {
+      "qualified": "durable-store.recoveryAggregate",
+      "unit": "durable-store",
+      "flow": "recoveryAggregate",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 128
+    },
+    {
+      "qualified": "durable-store.retryCommit",
+      "unit": "durable-store",
+      "flow": "retryCommit",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 322
+    },
+    {
+      "qualified": "durable-store.retryVerdict",
+      "unit": "durable-store",
+      "flow": "retryVerdict",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 349
+    },
+    {
+      "qualified": "durable-store.shippedMembershipSigner",
+      "unit": "durable-store",
+      "flow": "shippedMembershipSigner",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 270
+    },
+    {
+      "qualified": "durable-store.verifyLocator",
+      "unit": "durable-store",
+      "flow": "verifyLocator",
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "line": 162
     },
     {
       "qualified": "kernel-ports.reserveAudit",
