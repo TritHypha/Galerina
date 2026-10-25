@@ -742,6 +742,18 @@ test("S21-R6 a divergent name bound to none that the root calls refuses (UNBOUND
   }, (e) => e instanceof FlattenRefusal && e.kind === "UNBOUND_CALL" && /httpStatusFor/.test(e.message));
 });
 
+test("S21-R7 a divergent strip naming a composed unit outside route/kernel refuses (UNSTRIPPABLE)", () => {
+  // Synthetic declaration (s21Synthetic is not a real flow): both units are composed, so a strip is derived for
+  // secret-gate.fungi, which the flattener cannot strip. Zero-trust: refuse, never skip the strip.
+  const outside = new Map(DIVERGENT);
+  outside.set("s21Synthetic", { units: ["auth-verify-route.fungi", "secret-gate.fungi"], bound: "auth-verify-route.fungi",
+    sha: { "auth-verify-route.fungi": "0".repeat(64), "secret-gate.fungi": "1".repeat(64) }, why: "S21-R7 synthetic" });
+  assert.throws(() => {
+    const f = flattenUnit({ divergent: outside });
+    cleanupFlat(f);
+  }, (e) => e instanceof FlattenRefusal && e.kind === "UNSTRIPPABLE" && /s21Synthetic/.test(e.message) && /secret-gate\.fungi/.test(e.message));
+});
+
 test("mutant (a) skip Signet goes red", () => {
   const original = readFileSync(UNIT, "utf8");
   const start = original.indexOf("  let verifiedReq: Int = validateVerifyRequest(");
