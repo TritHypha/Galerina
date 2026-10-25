@@ -37,8 +37,11 @@ test("per-field vAnd fold: the most-cautious cap wins (can only lower, never lif
   assert.equal(maskByVerdict([ALLOW, ALLOW]), null, "all-allow → keep");
   assert.ok(isMasked(maskByVerdict([ALLOW, DENY])), "any deny → withhold");
   assert.ok(isMasked(maskByVerdict([ALLOW, INDETERMINATE])), "any indeterminate → withhold");
-  const folded = maskByVerdict([ALLOW, INDETERMINATE, DENY]);
+  // K3U2: UNKNOWN is infectious in the vAnd fold (weak Kleene); NEUTRAL is the definite 0 and folds by min.
+  assert.equal(maskByVerdict([ALLOW, INDETERMINATE, DENY]).verdict, Verdict.UNKNOWN, "fold with UNKNOWN = UNKNOWN");
+  const folded = maskByVerdict([ALLOW, Verdict.NEUTRAL, DENY]);
   assert.equal(folded.verdict, DENY, "fold = min(+1,0,-1) = DENY");
+  assert.equal(maskByVerdict([ALLOW, Verdict.NEUTRAL]).verdict, Verdict.NEUTRAL);
 });
 
 test("partialReturn: keep-the-rest — allowed fields pass through, others masked", () => {
@@ -87,5 +90,23 @@ test("SOUNDNESS: across every verdict, a non-ALLOW field never returns its value
     const out = partialReturn({ secret: "PLAINTEXT" }, () => v);
     assert.ok(isMasked(out.shaped.secret), `verdict ${JSON.stringify(v)} must withhold`);
     assert.notEqual(out.shaped.secret, "PLAINTEXT", "the value never leaks through a non-ALLOW verdict");
+  }
+});
+
+// K3U2-PR (2026-10-25): the typed K3_UNKNOWN sentinel is a single Verdict (not a cap list); NEUTRAL is a
+// definite non-ALLOW ("denied", no audit diagnostic); a forged look-alike object is refused, never folded.
+test("K3U2-PR1: a single UNKNOWN field verdict is withheld as indeterminate with FUNGI-GOV-3VL-001", () => {
+  const m = maskByVerdict(Verdict.UNKNOWN);
+  assert.ok(isMasked(m) && m.reason === "indeterminate" && m.verdict === Verdict.UNKNOWN);
+  assert.equal(m.diagnostic?.code, "FUNGI-GOV-3VL-001");
+});
+test("K3U2-PR2: a NEUTRAL field verdict is withheld as denied with no diagnostic", () => {
+  const m = maskByVerdict(Verdict.NEUTRAL);
+  assert.ok(isMasked(m) && m.reason === "denied" && m.verdict === Verdict.NEUTRAL);
+  assert.deepEqual(m.diagnostic, { kind: "NONE" });
+});
+test("K3U2-PR3: a forged sentinel look-alike or junk object is refused, never folded or kept", () => {
+  for (const junk of [{ kind: "K3_UNKNOWN" }, JSON.parse(JSON.stringify(Verdict.UNKNOWN)), { reduce: () => 1 }, 2, Number.NaN]) {
+    assert.throws(() => maskByVerdict(junk));
   }
 });
