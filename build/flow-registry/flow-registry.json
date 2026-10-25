@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 164,
+  "total": 171,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -751,6 +751,55 @@
       "flow": "admitQueryCustody",
       "file": "packages/fungi/memory/src/query-custody.fungi",
       "line": 20
+    },
+    {
+      "qualified": "region-keys.admitKeyId",
+      "unit": "region-keys",
+      "flow": "admitKeyId",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 61
+    },
+    {
+      "qualified": "region-keys.admitKeySource",
+      "unit": "region-keys",
+      "flow": "admitKeySource",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 38
+    },
+    {
+      "qualified": "region-keys.admitStop",
+      "unit": "region-keys",
+      "flow": "admitStop",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 120
+    },
+    {
+      "qualified": "region-keys.requestPersist",
+      "unit": "region-keys",
+      "flow": "requestPersist",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 95
+    },
+    {
+      "qualified": "region-keys.startupKek",
+      "unit": "region-keys",
+      "flow": "startupKek",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 134
+    },
+    {
+      "qualified": "region-keys.unwrapDek",
+      "unit": "region-keys",
+      "flow": "unwrapDek",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 222
+    },
+    {
+      "qualified": "region-keys.useKey",
+      "unit": "region-keys",
+      "flow": "useKey",
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "line": 182
     },
     {
       "qualified": "release-commit-point.ackStep",
