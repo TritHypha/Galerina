@@ -3,7 +3,7 @@
 // === ALLOW only; the FSM state is never aliased to the trit). Pure logic over the shipped K3 calculus.
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { transportStep as step, permitData, initialTransportContext as initCtx } from "../dist/index.js";
+import { transportStep as step, permitData, initialTransportContext as initCtx, K3_UNKNOWN } from "../dist/index.js";
 
 const CFG = { timeoutMs: 5000 }; // τ
 const KEYS = Object.freeze({ chain: "x25519+mlkem" });
@@ -16,6 +16,8 @@ const reverify = (subVerdicts, nowMs = 2000) => ({ kind: "reverify", subVerdicts
 const tick = (nowMs) => ({ kind: "tick", nowMs });
 const fatal = () => ({ kind: "fatal" });
 const OK4 = [1, 1, 1, 1], IND4 = [1, 1, 1, 0], DENY4 = [1, 1, 1, -1];
+// K3U2: IND4 folds to NEUTRAL 0 (a computed, settled non-ALLOW); UNK4 carries the typed K3_UNKNOWN sentinel.
+const UNK4 = [1, 1, 1, K3_UNKNOWN];
 
 describe("S4 — worked examples (RD §3)", () => {
   test("Example A: Established --fault--> Recovering (hold) --reverify(+1)--> Established (RESUME)", () => {
@@ -32,13 +34,14 @@ describe("S4 — worked examples (RD §3)", () => {
     assert.ok(permitData(r.next), "data permitted again");
   });
 
-  test("Example B: Recovering --reverify(0)--> stay (no resume, audited) --tick(Δt≥τ)--> Closed/Erase", () => {
+  test("Example B: Recovering --reverify(UNKNOWN)--> stay (no resume, audited) --tick(Δt≥τ)--> Closed/Erase", () => {
     let diags = [];
     let ctx = recovering(0);
-    const r0 = step(ctx, reverify(IND4, 2000), CFG, (d) => diags.push(d));
-    assert.equal(r0.next.state, "Recovering", "a 0 does NOT resume (INV-6)");
+    const r0 = step(ctx, reverify(UNK4, 2000), CFG, (d) => diags.push(d));
+    assert.equal(r0.next.state, "Recovering", "an UNKNOWN does NOT resume (INV-6)");
     assert.equal(r0.decision.authorized, false);
-    assert.equal(r0.decision.diagnostic?.code, "FUNGI-GOV-3VL-001", "the 0 is audited, not dropped");
+    assert.equal(r0.decision.verdict, K3_UNKNOWN, "K3U2: the fold stays the typed UNKNOWN, never trit 0");
+    assert.equal(r0.decision.diagnostic?.code, "FUNGI-GOV-3VL-001", "the UNKNOWN is audited, not dropped");
     assert.equal(diags.length, 1, "diagnostic forwarded to the sink");
     // timeout
     let erased = null;
@@ -47,6 +50,16 @@ describe("S4 — worked examples (RD §3)", () => {
     assert.equal(r1.next.keys, null, "keys zeroized on timeout");
     assert.equal(r1.erased, true);
     assert.equal(erased, KEYS, "erase seam invoked with the live keys");
+  });
+
+  test("K3U2 Example B0: Recovering --reverify(NEUTRAL 0)--> stay (no resume, keys held, no 3VL diagnostic)", () => {
+    const diags = [];
+    const r = step(recovering(0), reverify(IND4, 2000), CFG, (d) => diags.push(d));
+    assert.equal(r.next.state, "Recovering", "a NEUTRAL 0 does NOT resume (INV-6)");
+    assert.equal(r.next.keys, KEYS, "a NEUTRAL 0 holds keys");
+    assert.equal(r.decision.authorized, false);
+    assert.equal(r.decision.verdict, 0, "a computed 0 is NEUTRAL, not UNKNOWN");
+    assert.equal(diags.length, 0, "NEUTRAL is settled: no 3VL indeterminate diagnostic");
   });
 
   test("Example C: Recovering --reverify(-1)--> Closed/Erase (hard deny, no timeout)", () => {
@@ -68,7 +81,7 @@ describe("S4 — the six invariants", () => {
 
   test("INV-2 (exhaustive): a non-Established state reaches Established ONLY via reverify(+1)", () => {
     const states = [recovering(0), closed()];
-    const events = [fault(2000), tick(2000), tick(9000), fatal(), reverify(OK4), reverify(IND4), reverify(DENY4)];
+    const events = [fault(2000), tick(2000), tick(9000), fatal(), reverify(OK4), reverify(IND4), reverify(UNK4), reverify(DENY4)];
     for (const s of states) {
       for (const e of events) {
         const next = step(s, e, CFG).next;
@@ -86,7 +99,7 @@ describe("S4 — the six invariants", () => {
   });
 
   test("INV-4: Closed is absorbing and keys stay ∅", () => {
-    for (const e of [fault(1), reverify(OK4), reverify(IND4), reverify(DENY4), tick(9e9), fatal()]) {
+    for (const e of [fault(1), reverify(OK4), reverify(IND4), reverify(UNK4), reverify(DENY4), tick(9e9), fatal()]) {
       const r = step(closed(), e, CFG);
       assert.equal(r.next.state, "Closed", `Closed absorbs ${e.kind}`);
       assert.equal(r.next.keys, null);
@@ -100,7 +113,7 @@ describe("S4 — the six invariants", () => {
     assert.equal(r.next.state, "Recovering", "Established + 0 → Recovering (degrade)");
     assert.equal(r.next.enteredRecoveringAt, 3000, "the τ clock starts");
     // A degrade-only side input (a single -1/0 in the fold) can never produce +1 → never resumes.
-    for (const sub of [[1, 1, 1, 0], [1, 0, 1, 1], [-1, 1, 1, 1], [0, 0, 0, 0]]) {
+    for (const sub of [[1, 1, 1, 0], [1, 0, 1, 1], [-1, 1, 1, 1], [0, 0, 0, 0], [1, 1, 1, K3_UNKNOWN], [K3_UNKNOWN, K3_UNKNOWN, K3_UNKNOWN, K3_UNKNOWN]]) {
       assert.notEqual(step(recovering(0), reverify(sub, 2000), CFG).next.state, "Established",
         `a fold containing ${JSON.stringify(sub)} must not resume`);
     }
@@ -121,5 +134,10 @@ describe("S4 — the six invariants", () => {
     // and the keys are NOT erased on a 0 (only -1 / timeout / fatal erase)
     assert.equal(r.next.keys, KEYS, "a 0 holds keys (no premature erase)");
     assert.equal(r.erased, false);
+    // K3U2: the same holds for the typed UNKNOWN (from Established it degrades, never resumes or erases)
+    const u = step(established(), reverify(UNK4, 3000), CFG);
+    assert.equal(u.next.state, "Recovering", "Established + UNKNOWN ? Recovering (degrade)");
+    assert.equal(u.next.keys, KEYS);
+    assert.equal(u.erased, false);
   });
 });

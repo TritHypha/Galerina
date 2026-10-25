@@ -239,6 +239,15 @@ describe("registry rotation cryptographic adapter", () => {
       }),
       0,
     );
+    // K3U2: not-due is a settled abstain (NEUTRAL 0, a number), never the typed UNKNOWN,
+    // and it emits no 3VL indeterminate diagnostic.
+    const notDueDiags = [];
+    const notDue = registryRotationTriggerVerdict({
+      nowTick: 20, activeSinceTick: 10, rotateAfterTicks: 80, signedArtifacts: 2, maxSignedArtifacts: 100,
+    }, (d) => notDueDiags.push(d));
+    assert.equal(typeof notDue, "number");
+    assert.equal(notDue, 0);
+    assert.equal(notDueDiags.length, 0);
     assert.equal(
       registryRotationTriggerVerdict({
         nowTick: 5,
