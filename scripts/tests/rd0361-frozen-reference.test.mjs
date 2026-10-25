@@ -67,7 +67,7 @@ test("planted fault fires on exactly the planted case; missing invoker throws", 
 });
 
 test("plantedValue always returns a different valid value of the same kind", () => {
-  for (const [kind, value] of [["bool", true], ["bool", false], ["k3", 1], ["k3", 0], ["k3", -1], ["int", 2147483647], ["int", -5], ["string", "planted-fault"], ["string", ""]]) {
+  for (const [kind, value] of [["bool", true], ["bool", false], ["k3", 1], ["k3", 0], ["k3", -1], ["k3", -128], ["int", 2147483647], ["int", -5], ["string", "planted-fault"], ["string", ""]]) {
     const planted = plantedValue(kind, value);
     assert.ok(isValueOfKind(kind, planted) && !Object.is(planted, value), `${kind} ${value}`);
   }
@@ -94,6 +94,9 @@ test("loader refuses every malformed or tampered variant", () => {
     "duplicate id": edit((d) => { d.cases[1].id = "k-a"; }),
     "duplicate args": edit((d) => { d.cases.push({ ...d.cases[0], id: "k-copy" }); }),
     "non-K3 expected": edit((d) => { d.cases[0].expected = 2; }),
+    "near-sentinel -127 expected": edit((d) => { d.cases[0].expected = -127; }),
+    "near-sentinel -129 expected": edit((d) => { d.cases[0].expected = -129; }),
+    "string sentinel expected": edit((d) => { d.cases[0].expected = "-128"; }),
     "bool as 1": edit((d) => { d.cases[0].args[0] = 1; }),
     "fractional int": edit((d) => { d.cases[0].args[1] = 1.5; }),
     "out-of-i32 int": edit((d) => { d.cases[0].args[1] = 2147483648; }),
@@ -118,4 +121,9 @@ test("ledgerPin requires exactly one well-formed ledger entry", () => {
   for (const bad of ["{", JSON.stringify({}), JSON.stringify({ twins: [] }), JSON.stringify({ twins: [row, row] }), JSON.stringify({ twins: [{ ...row, sha256: "x" }] })]) {
     assert.throws(() => ledgerPin(bad, EXPECT.dir, EXPECT.file), FrozenReferenceError);
   }
+});
+
+test("K3U2-LIB1: a k3 value is a trit or exactly the native UNKNOWN sentinel -128 (owner decision D-A)", () => {
+  for (const v of [-1, 0, 1, -128]) assert.equal(isValueOfKind("k3", v), true, `k3 admits ${v}`);
+  for (const v of [-127, -129, 2, -2, 0.5, NaN, "-128", null, undefined, -0.0001]) assert.equal(isValueOfKind("k3", v), false, `k3 refuses ${String(v)}`);
 });

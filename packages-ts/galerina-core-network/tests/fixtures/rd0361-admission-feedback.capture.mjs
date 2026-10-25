@@ -12,7 +12,10 @@ export const oracle = Object.freeze({
   source: "packages-ts/galerina-core-network/tests/rd0361-admission-feedback-execution.test.mjs",
 });
 const B = [false, true];
-const TRITS = [-1, 0, 1];
+// K3-UNKNOWN-NOT-ZERO (owner decision D-A, Phillip 2026-10-25 18:28 GMT): UNKNOWN is its own value, the native
+// sentinel -128 (k3Unknown()), never 0. Re-captured with -128 in the vAnd domain and as every undecided degrade.
+const UNKNOWN = -128;
+const TRITS = [UNKNOWN, -1, 0, 1];
 const b = (x) => (x ? 1 : 0);
 export const signatures = Object.freeze([
   { name: "vAnd", params: ["k3", "k3"], returns: "k3" },
@@ -22,11 +25,11 @@ export const reference = Object.freeze({
   vAnd: (x, y) => Math.min(x, y),
   telemetrySideSignal: (health, present, garbage, hardDeny, throttle) => {
     let v = 1;
-    if (health) v = Math.min(v, 0);
+    if (health) v = Math.min(v, UNKNOWN);
     if (present) {
-      if (garbage) v = Math.min(v, 0);
+      if (garbage) v = Math.min(v, UNKNOWN);
       else if (hardDeny) v = Math.min(v, -1);
-      else if (throttle) v = Math.min(v, 0);
+      else if (throttle) v = Math.min(v, UNKNOWN);
     }
     return v;
   },

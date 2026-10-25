@@ -227,9 +227,9 @@
       "dir": "packages-ts/galerina-core-network/src/self-hosted",
       "tranche": "T7",
       "surface": "degrade-only network telemetry side-signal fold",
-      "sha256": "4d1e3bb6a25d2c4ec0af791f0db2e33704946f32ca1bdb28df6e7258159f3bad",
+      "sha256": "eeb54948153b816fd500ef66339b0b78a6907980efb27f89e21d3949debaaf01",
       "evidencePack": "docs/security/rd0361-t7-core-network-r4-evidence-pack.md",
-      "ownerNod": "2026-07-29 — owner's standing 'unlock all green light' plus autonomous ownership directive; T7 core-network flipped only after the complete fail-closed evidence pack passed",
+      "ownerNod": "2026-07-29 — owner's standing 'unlock all green light' plus autonomous ownership directive; T7 core-network flipped only after the complete fail-closed evidence pack passed; 2026-10-25 18:28 GMT owner decision D-A (K3-UNKNOWN-NOT-ZERO: an undecided degrade is the native UNKNOWN sentinel k3Unknown() = -128, never 0) twin change and admission-feedback frozen-set re-capture approved by Phillip",
       "bake": "shadow-bake in progress (.ts retained as differential shadow; delete only after executable SLIDE integration and the later retirement gate)"
     },
     {
