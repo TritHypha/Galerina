@@ -24,7 +24,7 @@
  * See ../ZTF-Knowledge-Bases/galerina-three-valued-governance.md for the spec.
  */
 
-import { minTrit, maxTrit, negTrit } from "./trit-gates.js";
+import { SecurityTrap, minTrit, maxTrit, negTrit } from "./trit-gates.js";
 
 // ── The typed UNKNOWN sentinel ───────────────────────────────────────────────
 
@@ -90,7 +90,8 @@ function describe(v: unknown): string {
 function operand(v: unknown, where: string): Verdict {
   if (v === K3_UNKNOWN) return K3_UNKNOWN;
   if (v === -1 || v === 0 || v === 1) return v;
-  throw new Error(`${where}: ${describe(v)} is neither a trit nor the K3_UNKNOWN sentinel — fail-closed`);
+  // K3U2: junk keeps the governed SecurityTrap type the gate guards always raised (audit-typed refusal).
+  throw new SecurityTrap(`${where}: ${describe(v)} is neither a trit nor the K3_UNKNOWN sentinel — fail-closed`);
 }
 
 // ── K3 calculus with infectious UNKNOWN ──────────────────────────────────────

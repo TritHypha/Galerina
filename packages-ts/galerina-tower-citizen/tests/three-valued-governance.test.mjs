@@ -15,10 +15,15 @@ import {
 // pin "reuse, no semantics changed" (this test proves vAnd=minTrit etc., which needs the raw primitive).
 import { minTrit, maxTrit, negTrit } from "../dist/tpl-simulator.js";
 
-const TRITS = [Verdict.DENY, Verdict.INDETERMINATE, Verdict.ALLOW]; // -1, 0, 1
+const TRITS = [Verdict.DENY, Verdict.NEUTRAL, Verdict.ALLOW]; // the computed trits -1, 0, 1
+// K3U2 (2026-10-25): the fourth lattice value is the typed UNKNOWN sentinel (not the trit 0).
+const U = Verdict.UNKNOWN;
+const VALS = [...TRITS, U];
+const key = (v) => (v === U ? "U" : String(v));
 
-// ── Independent Kleene K3 reference tables (F=-1, U=0, T=+1) ───────────────────
-// Hand-authored from the K3 definition, NOT from minTrit/maxTrit/negTrit.
+// -- Independent Kleene K3 reference tables over the computed trits (F=-1, N=0, T=+1) --
+// Hand-authored from the K3 definition, NOT from minTrit/maxTrit/negTrit. UNKNOWN is
+// infectious (weak Kleene): any U operand gives U, so U can never be lifted to ALLOW.
 const K3_AND = {
   "-1,-1": -1, "-1,0": -1, "-1,1": -1,
   "0,-1": -1, "0,0": 0, "0,1": 0,
@@ -29,37 +34,41 @@ const K3_OR = {
   "0,-1": 0, "0,0": 0, "0,1": 1,
   "1,-1": 1, "1,0": 1, "1,1": 1,
 };
-const K3_NOT = { "-1": 1, "0": 0, "1": -1 };
+const K3_NOT = { "-1": 1, "0": 0, "1": -1, "U": "U" };
+const ref2 = (table, a, b) => (a === U || b === U ? U : table[`${a},${b}`]);
 
-// ── 1. Kleene oracle (agenda acceptance #1) ───────────────────────────────────
+// -- 1. Kleene oracle (agenda acceptance #1) --
 
-describe("3VL oracle: Kleene ∧ = vAnd (9/9)", () => {
-  it("matches the independent K3 AND table for all 9 cases", () => {
-    for (const a of TRITS) for (const b of TRITS) {
-      const expected = K3_AND[`${a},${b}`];
-      assert.equal(vAnd(a, b), expected, `vAnd(${a},${b})`);
+describe("3VL oracle: Kleene AND = vAnd (16/16, UNKNOWN infectious)", () => {
+  it("matches the independent K3 AND table for all 16 cases", () => {
+    for (const a of VALS) for (const b of VALS) {
+      assert.equal(vAnd(a, b), ref2(K3_AND, a, b), `vAnd(${key(a)},${key(b)})`);
     }
   });
 });
 
-describe("3VL oracle: Kleene ∨ = vOr (9/9)", () => {
-  it("matches the independent K3 OR table for all 9 cases", () => {
-    for (const a of TRITS) for (const b of TRITS) {
-      const expected = K3_OR[`${a},${b}`];
-      assert.equal(vOr(a, b), expected, `vOr(${a},${b})`);
+describe("3VL oracle: Kleene OR = vOr (16/16, UNKNOWN infectious)", () => {
+  it("matches the independent K3 OR table for all 16 cases", () => {
+    for (const a of VALS) for (const b of VALS) {
+      assert.equal(vOr(a, b), ref2(K3_OR, a, b), `vOr(${key(a)},${key(b)})`);
     }
+    assert.equal(vOr(U, Verdict.ALLOW), U, "UNKNOWN is never lifted to ALLOW by OR");
   });
 });
 
-describe("3VL oracle: Kleene ¬ = vNot (3/3)", () => {
-  it("matches the independent K3 NOT table; indeterminacy is preserved (¬0=0)", () => {
-    for (const a of TRITS) assert.equal(vNot(a), K3_NOT[`${a}`], `vNot(${a})`);
-    assert.equal(vNot(Verdict.INDETERMINATE), Verdict.INDETERMINATE, "¬unknown = unknown");
+describe("3VL oracle: Kleene NOT = vNot (4/4)", () => {
+  it("matches the independent K3 NOT table; NEUTRAL and UNKNOWN are fixed points", () => {
+    for (const a of VALS) {
+      const r = vNot(a);
+      assert.equal(key(r), String(K3_NOT[key(a)]), `vNot(${key(a)})`);
+    }
+    assert.equal(vNot(U), U, "not unknown = unknown");
+    assert.equal(vNot(Verdict.NEUTRAL), Verdict.NEUTRAL);
   });
 });
 
-describe("3VL calculus reuses tpl-simulator gates verbatim (no semantics changed)", () => {
-  it("vAnd≡minTrit, vOr≡maxTrit, vNot≡negTrit for all inputs", () => {
+describe("3VL calculus reuses tpl-simulator gates verbatim on the computed trits", () => {
+  it("vAnd=minTrit, vOr=maxTrit, vNot=negTrit for all trit inputs; UNKNOWN short-circuits before the gate", () => {
     for (const a of TRITS) {
       assert.equal(vNot(a), negTrit(a), `vNot vs negTrit (${a})`);
       for (const b of TRITS) {
@@ -67,54 +76,59 @@ describe("3VL calculus reuses tpl-simulator gates verbatim (no semantics changed
         assert.equal(vOr(a, b), maxTrit(a, b), `vOr vs maxTrit (${a},${b})`);
       }
     }
+    for (const a of VALS) {
+      assert.equal(vAnd(a, U), U); assert.equal(vAnd(U, a), U);
+      assert.equal(vOr(a, U), U); assert.equal(vOr(U, a), U);
+    }
   });
 });
 
-// ── 2. Collapse rule (agenda acceptance, collapse) ────────────────────────────
+// -- 2. Collapse rule (agenda acceptance, collapse) --
 
-test("collapse rule: 0 and -1 → deny; +1 → allow", () => {
+test("collapse rule: UNKNOWN, NEUTRAL and DENY -> deny; ALLOW -> allow", () => {
   assert.equal(collapse(Verdict.ALLOW), "allow");
   assert.equal(collapse(Verdict.INDETERMINATE), "deny");
+  assert.equal(collapse(Verdict.NEUTRAL), "deny");
   assert.equal(collapse(Verdict.DENY), "deny");
 });
 
-// ── 3. Fail-closed soundness — Theorem 1 (agenda acceptance #2) ────────────────
+// -- 3. Fail-closed soundness, Theorem 1 (agenda acceptance #2) --
 
-test("authorize(v) ⇔ v = ALLOW (+1), exhaustive over the 3 verdicts", () => {
+test("authorize(v) <=> v = ALLOW (+1), exhaustive over the 4 lattice values", () => {
   assert.equal(authorize(Verdict.ALLOW), true);
-  assert.equal(authorize(Verdict.INDETERMINATE), false, "indeterminate must NEVER authorize");
+  assert.equal(authorize(Verdict.INDETERMINATE), false, "unknown must NEVER authorize");
+  assert.equal(authorize(Verdict.NEUTRAL), false, "neutral must NEVER authorize");
   assert.equal(authorize(Verdict.DENY), false);
 });
 
-test("allOf authorizes ⇔ EVERY clause is ALLOW (exhaustive, n=1..4)", () => {
-  for (let n = 1; n <= 4; n++) {
-    const total = 3 ** n;
+function* clauseSets(maxN) {
+  for (let n = 1; n <= maxN; n++) {
+    const total = VALS.length ** n;
     for (let code = 0; code < total; code++) {
       const clauses = [];
       let c = code;
-      for (let i = 0; i < n; i++) { clauses.push(TRITS[c % 3]); c = (c / 3) | 0; }
-      const everyAllow = clauses.every((v) => v === Verdict.ALLOW);
-      assert.equal(
-        authorize(allOf(clauses)), everyAllow,
-        `allOf(${clauses}) authorize must equal every-allow=${everyAllow}`,
-      );
+      for (let i = 0; i < n; i++) { clauses.push(VALS[c % VALS.length]); c = (c / VALS.length) | 0; }
+      yield clauses;
     }
+  }
+}
+
+test("allOf authorizes <=> EVERY clause is ALLOW (exhaustive over 4 values, n=1..4)", () => {
+  for (const clauses of clauseSets(4)) {
+    const everyAllow = clauses.every((v) => v === Verdict.ALLOW);
+    assert.equal(authorize(allOf(clauses)), everyAllow, `allOf(${clauses.map(key)})`);
   }
 });
 
-test("anyOf authorizes ⇔ SOME clause is ALLOW (exhaustive, n=1..4)", () => {
-  for (let n = 1; n <= 4; n++) {
-    const total = 3 ** n;
-    for (let code = 0; code < total; code++) {
-      const clauses = [];
-      let c = code;
-      for (let i = 0; i < n; i++) { clauses.push(TRITS[c % 3]); c = (c / 3) | 0; }
-      const someAllow = clauses.some((v) => v === Verdict.ALLOW);
-      assert.equal(authorize(anyOf(clauses)), someAllow, `anyOf(${clauses})`);
-    }
+test("anyOf authorizes <=> SOME clause is ALLOW and NO clause is UNKNOWN (exhaustive, n=1..4)", () => {
+  // Zero trust (K3U2): an UNKNOWN clause is an undischarged obligation; it infects the disjunction
+  // rather than being outvoted by an ALLOW. Rejected: strong-Kleene OR (T or U = T), which lets an
+  // unverified clause ride along on another clause's ALLOW.
+  for (const clauses of clauseSets(4)) {
+    const expected = clauses.some((v) => v === Verdict.ALLOW) && !clauses.some((v) => v === U);
+    assert.equal(authorize(anyOf(clauses)), expected, `anyOf(${clauses.map(key)})`);
   }
 });
-
 // ── 4. Undischarged obligation → audited deny (agenda acceptance #3) ───────────
 
 describe("indeterminate at a trust boundary → deny + FUNGI-GOV-3VL-001 (never silent)", () => {
