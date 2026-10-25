@@ -18346,7 +18346,7 @@
     "code": "FUNGI-GOV-3VL-001",
     "namespace": "FUNGI",
     "family": "GOV",
-    "occurrences": 112,
+    "occurrences": 115,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:154"
@@ -18354,9 +18354,9 @@
     "emits": [
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:180"
     ],
-    "tests": 49,
-    "refs": 42,
-    "docs": 14,
+    "tests": 50,
+    "refs": 43,
+    "docs": 15,
     "names": [
       "INDETERMINATE_COLLAPSED_TO_DENY"
     ],
@@ -18365,13 +18365,16 @@
     ],
     "aliases": [],
     "allSites": [
+      "doc packages-ts/galerina-auth/README.md:17",
       "ref packages-ts/galerina-auth/src/channel.ts:63",
-      "ref packages-ts/galerina-auth/src/compose.ts:50",
+      "ref packages-ts/galerina-auth/src/compose.ts:52",
       "ref packages-ts/galerina-auth/src/credential.ts:18",
+      "ref packages-ts/galerina-auth/src/verdict.ts:12",
       "test packages-ts/galerina-auth/tests/channel.test.mjs:66",
       "test packages-ts/galerina-auth/tests/channel.test.mjs:70",
-      "test packages-ts/galerina-auth/tests/compose.test.mjs:34",
-      "test packages-ts/galerina-auth/tests/compose.test.mjs:39",
+      "test packages-ts/galerina-auth/tests/compose.test.mjs:38",
+      "test packages-ts/galerina-auth/tests/compose.test.mjs:43",
+      "test packages-ts/galerina-auth/tests/k3u2-auth-unknown.test.mjs:40",
       "ref packages-ts/galerina-core-network/src/admission-feedback.ts:145",
       "ref packages-ts/galerina-core-network/src/cert-gate.ts:246",
       "fungi packages-ts/galerina-core-network/src/self-hosted/b8-admission.fungi:11",
