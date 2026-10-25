@@ -10,6 +10,7 @@ import {
   parseProgram,
 } from "../../galerina-core-compiler/dist/index.js";
 import { authorize, Verdict } from "../dist/index.js";
+import { fromFungi, toFungi } from "./fixtures/k3-fungi-marshal.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(HERE, "..");
@@ -18,7 +19,7 @@ const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "three-valued-governance.ts")
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
 const VALUES = Object.freeze([
   Object.freeze([Verdict.DENY, false]),
-  Object.freeze([Verdict.INDETERMINATE, false]),
+  Object.freeze([Verdict.UNKNOWN, false]),
   Object.freeze([Verdict.ALLOW, true]),
 ]);
 
@@ -42,7 +43,7 @@ async function compileCandidate() {
 async function interpret(program, candidateVerdict) {
   const interpreted = await executeFlow(
     "authorizeVerdict",
-    new Map([["candidateVerdict", { __tag: "verdict", value: candidateVerdict }]]),
+    new Map([["candidateVerdict", await toFungi(candidateVerdict)]]),
     program.ast,
     program.flows,
   );
@@ -77,5 +78,15 @@ describe("Tower-Citizen package-owned Fungi authorization boundary", () => {
         `Fungi ${candidateVerdict}`,
       );
     }
+    assert.equal(authorize(Verdict.NEUTRAL), false, "TS NEUTRAL never authorizes");
+  });
+
+  it("K3U2: TS NEUTRAL 0 has no native image and is refused, never marshalled as Unknown", async () => {
+    await assert.rejects(() => toFungi(Verdict.NEUTRAL), /NEUTRAL \(trit 0\) has no native Fungi Verdict image/u);
+    await assert.rejects(() => toFungi(0), /NEUTRAL/u);
+    await assert.rejects(() => toFungi({ kind: "K3_UNKNOWN" }), /not a TS Verdict/u);
+    await assert.rejects(() => fromFungi({ __tag: "verdict", value: 2 }), /not a native Verdict/u);
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.DENY));
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.ALLOW));
   });
 });

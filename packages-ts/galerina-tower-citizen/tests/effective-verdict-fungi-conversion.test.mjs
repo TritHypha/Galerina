@@ -10,6 +10,7 @@ import {
   parseProgram,
 } from "../../galerina-core-compiler/dist/index.js";
 import { effectiveVerdict, Verdict } from "../dist/index.js";
+import { fromFungi, toFungi } from "./fixtures/k3-fungi-marshal.mjs";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "effective-verdict.fungi");
@@ -17,13 +18,13 @@ const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "substrate-model.ts");
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
 const K3_MIN = Object.freeze([
   Object.freeze([Verdict.DENY, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.DENY, Verdict.INDETERMINATE, Verdict.DENY]),
+  Object.freeze([Verdict.DENY, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.DENY, Verdict.ALLOW, Verdict.DENY]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.INDETERMINATE, Verdict.INDETERMINATE]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.ALLOW, Verdict.INDETERMINATE]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.DENY, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.ALLOW, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.ALLOW, Verdict.INDETERMINATE, Verdict.INDETERMINATE]),
+  Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
 ]);
 
@@ -52,13 +53,13 @@ async function interpret(program, ideal, reading) {
   const interpreted = await executeFlow(
     "effectiveVerdict",
     new Map([
-      ["ideal", { __tag: "verdict", value: ideal }],
-      ["reading", { __tag: "verdict", value: reading }],
+      ["ideal", await toFungi(ideal)],
+      ["reading", await toFungi(reading)],
     ]),
     program.ast,
     program.flows,
   );
-  return interpreted.value;
+  return fromFungi(interpreted.value);
 }
 
 describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
@@ -83,7 +84,7 @@ describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
     );
   });
 
-  it("matches the complete independent Verdict x Verdict K3 minimum table", async () => {
+  it("matches the complete independent Verdict x Verdict infectious-UNKNOWN K3 minimum table", async () => {
     const program = compileCandidate();
     for (const [ideal, reading, expected] of K3_MIN) {
       assert.equal(
@@ -93,9 +94,18 @@ describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
       );
       assert.deepEqual(
         await interpret(program, ideal, reading),
-        { __tag: "verdict", value: expected },
+        expected,
         `Fungi effectiveVerdict(${ideal}, ${reading})`,
       );
     }
+  });
+
+  it("K3U2: TS NEUTRAL 0 has no native image and is refused, never marshalled as Unknown", async () => {
+    await assert.rejects(() => toFungi(Verdict.NEUTRAL), /NEUTRAL \(trit 0\) has no native Fungi Verdict image/u);
+    await assert.rejects(() => toFungi(0), /NEUTRAL/u);
+    await assert.rejects(() => toFungi({ kind: "K3_UNKNOWN" }), /not a TS Verdict/u);
+    await assert.rejects(() => fromFungi({ __tag: "verdict", value: 2 }), /not a native Verdict/u);
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.DENY));
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.ALLOW));
   });
 });

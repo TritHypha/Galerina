@@ -1,14 +1,16 @@
 @version 1
 pure flow vOrVerdict(left: Verdict, right: Verdict) -> Verdict {
+  // K3U2 (gcw-k3u10): infectious UNKNOWN, matching the TS reference vOr. An Unknown operand never
+  // yields Allow, even beside an Allow.
   check(left) {
     deny: { return right }
-    ambig: {
+    ambig: { return Verdict.Unknown }
+    if: {
       check(right) {
-        deny: { return Verdict.Unknown }
+        deny: { return Verdict.Allow }
         ambig: { return Verdict.Unknown }
         if: { return Verdict.Allow }
       }
     }
-    if: { return Verdict.Allow }
   }
 }

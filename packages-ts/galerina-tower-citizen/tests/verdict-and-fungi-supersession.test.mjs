@@ -10,6 +10,7 @@ import {
   parseProgram,
 } from "../../galerina-core-compiler/dist/index.js";
 import { Verdict, vAnd } from "../dist/index.js";
+import { fromFungi, toFungi } from "./fixtures/k3-fungi-marshal.mjs";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const EXISTING_SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "effective-verdict.fungi");
@@ -17,13 +18,13 @@ const DUPLICATE_SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "verdict-and.f
 const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "three-valued-governance.ts");
 const K3_MIN = Object.freeze([
   Object.freeze([Verdict.DENY, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.DENY, Verdict.INDETERMINATE, Verdict.DENY]),
+  Object.freeze([Verdict.DENY, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.DENY, Verdict.ALLOW, Verdict.DENY]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.INDETERMINATE, Verdict.INDETERMINATE]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.ALLOW, Verdict.INDETERMINATE]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.DENY, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.ALLOW, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.DENY, Verdict.DENY]),
-  Object.freeze([Verdict.ALLOW, Verdict.INDETERMINATE, Verdict.INDETERMINATE]),
+  Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
 ]);
 
@@ -51,13 +52,13 @@ async function interpret(program, left, right) {
   const interpreted = await executeFlow(
     "effectiveVerdict",
     new Map([
-      ["ideal", { __tag: "verdict", value: left }],
-      ["reading", { __tag: "verdict", value: right }],
+      ["ideal", await toFungi(left)],
+      ["reading", await toFungi(right)],
     ]),
     program.ast,
     program.flows,
   );
-  return interpreted.value;
+  return fromFungi(interpreted.value);
 }
 
 describe("Slice 93 vAnd is superseded by existing Fungi minimum", () => {
@@ -66,7 +67,7 @@ describe("Slice 93 vAnd is superseded by existing Fungi minimum", () => {
     assert.equal(existsSync(DUPLICATE_SOURCE), false, "duplicate verdict-and.fungi is forbidden");
     assert.match(
       readUtf8(REFERENCE_SOURCE),
-      /export function vAnd\(a: Verdict, b: Verdict\): Verdict \{\s*return asVerdict\(minTrit\(a, b\)\);\s*\}/u,
+      /export function vAnd\(a: Verdict, b: Verdict\): Verdict \{\s*const x = operand\(a, "vAnd"\);\s*const y = operand\(b, "vAnd"\);\s*if \(isK3Unknown\(x\) \|\| isK3Unknown\(y\)\) return K3_UNKNOWN;\s*return asVerdict\(minTrit\(x, y\)\);\s*\}/u,
     );
   });
 
@@ -76,7 +77,7 @@ describe("Slice 93 vAnd is superseded by existing Fungi minimum", () => {
       assert.equal(vAnd(left, right), expected, `TypeScript vAnd(${left}, ${right})`);
       assert.deepEqual(
         await interpret(program, left, right),
-        { __tag: "verdict", value: expected },
+        expected,
         `existing Fungi minimum(${left}, ${right})`,
       );
     }

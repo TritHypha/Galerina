@@ -21,15 +21,19 @@ const ALL_ALLOW = Object.freeze({
   validation: 1,
   memory: 1,
 });
+// K3U2 gcw-k3u10: vOrVerdict is infectious-UNKNOWN OR (matches the frozen TS vOr):
+// any native Unknown operand yields Unknown, so Allow no longer absorbs Unknown here
+// (strong-Kleene Allow-or-Unknown = Allow would loosen authorization; zero trust rejects it).
+// The value 0 is SLIDE's own wire image of native Verdict.Unknown.
 const K3_MAX = Object.freeze([
   Object.freeze([-1, -1, -1]),
   Object.freeze([-1, 0, 0]),
   Object.freeze([-1, 1, 1]),
   Object.freeze([0, -1, 0]),
   Object.freeze([0, 0, 0]),
-  Object.freeze([0, 1, 1]),
+  Object.freeze([0, 1, 0]),
   Object.freeze([1, -1, 1]),
-  Object.freeze([1, 0, 1]),
+  Object.freeze([1, 0, 0]),
   Object.freeze([1, 1, 1]),
 ]);
 const PACKAGE_IDENTITY = "@galerina/tower-citizen";
@@ -70,7 +74,7 @@ async function prepare(slide, publicationDirectory, context) {
 }
 
 describe("Slice 92 Tower-Citizen vOr through physical SLIDE/VOK", () => {
-  it("publishes, re-admits and executes the complete typed K3 maximum table", {
+  it("publishes, re-admits and executes the complete typed infectious K3 OR table", {
     skip: !SLIDE_AVAILABLE,
   }, async () => {
     const slide = await loadSlide();
