@@ -1,9 +1,11 @@
 @version 1
 /// Closed numeric brand core of three-valued-governance#asVerdict.
-pure flow numericVerdictAdmissionCore(value: Int) -> Verdict
-contract { intent { "Map only the three arithmetic trits into semantic Verdict values." } }
+/// K3U2: trit 0 is the settled NEUTRAL value, never Unknown; every non-trit is refused (the TS throws).
+pure flow numericVerdictAdmissionCore(value: Int) -> String
+contract { intent { "Admit only the three arithmetic trits; 0 is NEUTRAL and anything else is refused." } }
 {
-  if value == 1 { return Verdict.Allow }
-  if value == 0 { return Verdict.Unknown }
-  return Verdict.Deny
+  if value == 1 { return "allow" }
+  if value == 0 { return "neutral" }
+  if value == -1 { return "deny" }
+  return "refuse"
 }

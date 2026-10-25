@@ -1,5 +1,5 @@
 @version 1
-/// Diagnostic action core of three-valued-governance#indeterminateDiagnostic.
+/// Diagnostic action core of three-valued-governance#unknownDiagnostic (K3U2: only native Unknown emits; NEUTRAL 0 has no native image).
 pure flow indeterminateDiagnosticActionCore(value: Verdict, codePresent: Bool) -> String
 contract { intent { "Emit a diagnostic only for semantic ambiguity with an admitted diagnostic code." } }
 {
