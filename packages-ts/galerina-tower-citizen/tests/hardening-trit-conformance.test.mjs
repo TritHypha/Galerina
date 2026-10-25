@@ -19,6 +19,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 // runtime trit (RD-0337)
 import { Trust, combine, discharge, requireTrusted, trustedRoot, unverified, refute as runtimeRefute } from "../dist/epistemic-type-state.js";
+import { K3_UNKNOWN } from "../dist/three-valued-governance.js";
 // compiler trit (the hardening spill→Refuted mirror)
 import {
   CompilerTrust, trustName, combineTrust, dischargeTrust, boundaryTrusted, refute as compilerRefute,
@@ -26,16 +27,32 @@ import {
 
 const TRITS = [CompilerTrust.PROVEN, CompilerTrust.UNKNOWN, CompilerTrust.REFUTED]; // +1, 0, -1
 
+/**
+ * K3U2 marshal (gcw-k3u4): the compiler trit keeps 0 = Unverified; the runtime UNKNOWN is the K3_UNKNOWN
+ * sentinel. The ONLY sanctioned crossing is this explicit total map; anything else (incl. a runtime NEUTRAL 0)
+ * is a fail-closed error, so drift in either direction is caught rather than coerced.
+ */
+function toCompiler(t) {
+  if (t === Trust.PROVEN) return CompilerTrust.PROVEN;
+  if (t === Trust.REFUTED) return CompilerTrust.REFUTED;
+  if (t === K3_UNKNOWN) return CompilerTrust.UNKNOWN;
+  throw new Error("runtime trust " + String(t) + " has no compiler image — fail-closed");
+}
+
 /** A runtime Epistemic wrapper carrying a given trit — the runtime operates on wrappers, not bare trits. */
 function runtimeOf(trit) {
-  if (trit === Trust.PROVEN) return trustedRoot(0, "conformance");
-  if (trit === Trust.UNKNOWN) return unverified(0, "conformance");
+  if (trit === CompilerTrust.PROVEN) return trustedRoot(0, "conformance");
+  if (trit === CompilerTrust.UNKNOWN) return unverified(0, "conformance");
   return runtimeRefute(0, "conformance");
 }
 
 test("bijection: compiler trit ≡ runtime Trust ≡ Verdict (+1/0/-1) + the Trusted/Unverified/Refuted name-map", () => {
   assert.equal(CompilerTrust.PROVEN, Trust.PROVEN);
-  assert.equal(CompilerTrust.UNKNOWN, Trust.UNKNOWN);
+  assert.equal(Trust.UNKNOWN, K3_UNKNOWN); // runtime UNKNOWN is the sentinel, never the trit 0
+  assert.equal(toCompiler(Trust.UNKNOWN), CompilerTrust.UNKNOWN);
+  assert.equal(toCompiler(Trust.PROVEN), CompilerTrust.PROVEN);
+  assert.equal(toCompiler(Trust.REFUTED), CompilerTrust.REFUTED);
+  assert.throws(() => toCompiler(0)); // a runtime NEUTRAL 0 is not a trust value
   assert.equal(CompilerTrust.REFUTED, Trust.REFUTED);
   assert.equal(trustName(CompilerTrust.PROVEN), "Trusted");
   assert.equal(trustName(CompilerTrust.UNKNOWN), "Unverified");
@@ -44,7 +61,7 @@ test("bijection: compiler trit ≡ runtime Trust ≡ Verdict (+1/0/-1) + the Tru
 
 test("3×3 min-fold: compiler combineTrust ≡ runtime combine (vAnd) for all nine trit pairs", () => {
   for (const a of TRITS) for (const b of TRITS) {
-    const runtime = combine(runtimeOf(a), runtimeOf(b), () => 0).trust;
+    const runtime = toCompiler(combine(runtimeOf(a), runtimeOf(b), () => 0).trust);
     assert.equal(combineTrust(a, b), runtime, `min-fold drift at combine(${a},${b})`);
   }
 });
@@ -74,7 +91,7 @@ test("ANTI-NEUTER self-test: the differential FIRES on a deliberately-drifted mo
   const driftedCombine = (a, b) => (a > b ? a : b); // WRONG — max, not the min-fold
   let caught = false;
   for (const a of TRITS) for (const b of TRITS) {
-    const runtime = combine(runtimeOf(a), runtimeOf(b), () => 0).trust;
+    const runtime = toCompiler(combine(runtimeOf(a), runtimeOf(b), () => 0).trust);
     if (driftedCombine(a, b) !== runtime) caught = true;
   }
   assert.ok(caught, "a drifted (max) combine MUST be caught — a differential that can't catch drift is neutered");
