@@ -3,6 +3,7 @@
 // 3 MEMBERSHIP_SIGN else Unlisted; rootTag 0 GALERINA 1 SLIDE 2 LYTH else Unlisted.
 // 100 only for a Galerina key used for its own purpose; 65 PURPOSE_MISMATCH_REFUSED; 66
 // FOREIGN_ROOT_REFUSED for SLIDE and Lyth roots whatever the purpose; 11 Unlisted.
+// Unlisted requestedPurpose refuses 11 even on a listed Galerina key (merge-check note UK6).
 // Zero-trust: rejected one key serving several purposes; SLIDE and Lyth keep separate keys.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -31,7 +32,7 @@ test("T8K-K6 b: SLIDE and Lyth roots refuse 66 regardless of purpose", () => {
 
 test("T8K-K6 c: unlisted purpose or root refuses 11", () => {
   grid("useKey", (call) => {
-    for (const a of [[4, 4, 0], [-1, 0, 0], [0, -1, 0], [0, 0, 3], [0, 0, -1], [4, 0, 1]]) {
+    for (const a of [[4, 4, 0], [-1, 0, 0], [0, -1, 0], [0, 0, 3], [0, 0, -1], [4, 0, 1], [0, 4, 0], [3, 4, 0]]) {
       assert.equal(call(a), 11, "useKey(" + a.join(",") + ")");
     }
   });
