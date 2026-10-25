@@ -24,7 +24,7 @@
  * Because `authorize` is `v === ALLOW` and an INDETERMINATE collapses to deny, the contract is fail-closed:
  * any row whose ownership is not provably in S_user, and which is not a declared-shared row in an attested-
  * public vault, is denied — there is no third path that returns it. A foreign PRIVATE row co-resident in a
- * public vault is denied (its sharedRowLane is INDETERMINATE, its ownerLane is DENY ⇒ vOr = INDETERMINATE).
+ * public vault is denied (its sharedRowLane is NEUTRAL, its ownerLane is DENY ⇒ vOr = NEUTRAL, denied).
  *
  * Visibility (public/private) is a K3 decision with a fail-closed PRIVATE default: an un-declared, mistyped,
  * or unknown vault resolves to PRIVATE (strict intersection). ONLY the exact attested token `"public"` in the
@@ -90,7 +90,7 @@ export function vaultIsPublic(vaultId: string, registry: VaultRegistry): boolean
 export function admitRowVerdict(row: DataRow, sUser: UserScope, policy: BorderPolicy): Verdict {
   const publicShared = policy.publicSharedScopes ?? EMPTY_SCOPES;
   const isPublicVault = vaultIsPublic(row.vaultId, policy.registry);
-  const sharedRowLane: Verdict = isPublicVault && publicShared.has(row.ownerScope) ? Verdict.ALLOW : Verdict.INDETERMINATE;
+  const sharedRowLane: Verdict = isPublicVault && publicShared.has(row.ownerScope) ? Verdict.ALLOW : Verdict.NEUTRAL; // K3U2: a computed "lane does not apply", not an unknown (UNKNOWN would infect vOr and block the owner lane)
   const ownerLane: Verdict = sUser.has(row.ownerScope) ? Verdict.ALLOW : Verdict.DENY;
   return vOr(sharedRowLane, ownerLane);
 }

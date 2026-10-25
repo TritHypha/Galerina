@@ -14,6 +14,11 @@ import {
 const { DENY, INDETERMINATE, ALLOW } = Verdict;
 const TRITS = [DENY, INDETERMINATE, ALLOW]; // -1, 0, +1
 
+// K3U2 (2026-10-25): UNKNOWN is a non-number sentinel ranked BELOW DENY and infectious in vAnd, so the
+// lattice order is UNKNOWN < DENY < NEUTRAL < ALLOW. Compare by rank, never by raw numeric <=.
+const rank = (v) => (v === Verdict.UNKNOWN ? -2 : v);
+const vminRef = (a, b) => (a === Verdict.UNKNOWN || b === Verdict.UNKNOWN ? Verdict.UNKNOWN : Math.min(a, b));
+
 // Fixed clock + a healthy, pinned, in-window cert as the baseline for the examples.
 const NOW = Date.parse("2026-06-22T12:00:00Z");
 const PIN = "ab".repeat(32); // a 64-hex-char sha256-shaped digest
@@ -94,7 +99,7 @@ test("truth table: certVerdict === min(four trits); authorized ⟺ all four are 
           rows++;
           const subs = { pinMatch, chainValid, notExpired, revocationFresh };
           const v = certVerdict(subs);
-          const expected = Math.min(pinMatch, chainValid, notExpired, revocationFresh);
+          const expected = [pinMatch, chainValid, notExpired, revocationFresh].reduce(vminRef);
           assert.equal(v, expected, `verdict must equal min for ${JSON.stringify(subs)}`);
 
           const allPositive = pinMatch === ALLOW && chainValid === ALLOW && notExpired === ALLOW && revocationFresh === ALLOW;
@@ -302,11 +307,11 @@ test("pin match is case-insensitive on the hex digest", () => {
 // ── No-Coercion: a degrade-only side-signal can only LOWER a verdict ───────────
 
 test("No-Coercion: withSideSignal(t*, r) ≤ t* for all 9 (t*, r) combinations", () => {
-  for (const t of TRITS)
-    for (const r of TRITS) {
+  for (const t of [Verdict.UNKNOWN, Verdict.DENY, Verdict.NEUTRAL, Verdict.ALLOW])
+    for (const r of [Verdict.UNKNOWN, Verdict.DENY, Verdict.NEUTRAL, Verdict.ALLOW]) {
       const e = withSideSignal(t, r);
-      assert.ok(e <= t, `vAnd(${t}, ${r}) = ${e} must be ≤ ${t}`);
-      assert.equal(e, Math.min(t, r));
+      assert.ok(rank(e) <= rank(t) && rank(e) <= rank(r), `vAnd(${t}, ${r}) = ${e} must be ≤ ${t}`);
+      assert.equal(e, vminRef(t, r));
     }
 });
 

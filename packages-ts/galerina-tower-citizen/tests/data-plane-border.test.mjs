@@ -91,9 +91,11 @@ test("vaultIsPublic — only the exact attested token widens; typo/absent fail c
   assert.equal(vaultIsPublic("vault.notes", VAULT_REGISTRY), false); // forgotten / absent
 });
 
-test("admitRowVerdict — a foreign private row in a public vault is INDETERMINATE → denied (de-conflation)", () => {
+test("admitRowVerdict — a foreign private row in a public vault is NEUTRAL (K3U2: shared lane does not apply) → denied (de-conflation)", () => {
   const bobDraft = ROWS.find((r) => r.id === 99);
-  assert.equal(admitRowVerdict(bobDraft, ALICE, POLICY), Verdict.INDETERMINATE);
+  // K3U2: the shared lane is a computed NEUTRAL, so the result is a definite non-ALLOW, never UNKNOWN
+  assert.equal(admitRowVerdict(bobDraft, ALICE, POLICY), Verdict.NEUTRAL);
+  assert.notEqual(admitRowVerdict(bobDraft, ALICE, POLICY), Verdict.ALLOW);
   assert.equal(admitRow(bobDraft, ALICE, POLICY), false);
   // a shared org row in the same public vault IS admitted to anyone
   assert.equal(admitRow(ROWS.find((r) => r.id === 5), ALICE, POLICY), true);

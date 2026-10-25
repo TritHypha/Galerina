@@ -12,7 +12,13 @@ import {
 } from "../dist/index.js";
 
 const { DENY, INDETERMINATE, ALLOW } = Verdict;
-const TRITS = [DENY, INDETERMINATE, ALLOW]; // -1, 0, +1
+const TRITS = [DENY, INDETERMINATE, ALLOW]; // -1, UNKNOWN (INDETERMINATE is its deprecated alias), +1
+const LATTICE = [Verdict.UNKNOWN, DENY, Verdict.NEUTRAL, ALLOW];
+
+// K3U2 (2026-10-25): UNKNOWN is a non-number sentinel ranked BELOW DENY and infectious in vAnd, so the
+// lattice order is UNKNOWN < DENY < NEUTRAL < ALLOW. Compare by rank, never by raw numeric <=.
+const rank = (v) => (v === Verdict.UNKNOWN ? -2 : v);
+const vminRef = (a, b) => (a === Verdict.UNKNOWN || b === Verdict.UNKNOWN ? Verdict.UNKNOWN : Math.min(a, b));
 
 // A healthy, pinned, in-window cert: cert verdict = +1 with no telemetry.
 const NOW = Date.parse("2026-06-22T12:00:00Z");
@@ -37,7 +43,7 @@ test("the telemetry side-signal is always ≤ +1 (degrade-only)", () => {
     for (const anomalyScore of [undefined, -1, 0, 0.49, 0.5, 0.9, 1, 2, NaN, Infinity]) {
       for (const denyThreshold of [undefined, 0.9]) {
         const sig = telemetryToSideSignal({ health, anomalyScore, denyThreshold });
-        assert.ok(sig <= ALLOW, `signal ${sig} exceeded ALLOW for ${JSON.stringify({ health, anomalyScore, denyThreshold })}`);
+        assert.ok(rank(sig) <= rank(ALLOW), `signal ${sig} exceeded ALLOW for ${JSON.stringify({ health, anomalyScore, denyThreshold })}`);
         assert.ok(TRITS.includes(sig), `signal ${sig} is not a trit`);
       }
     }
@@ -45,11 +51,11 @@ test("the telemetry side-signal is always ≤ +1 (degrade-only)", () => {
 });
 
 test("withTelemetryFeedback can never lift a base verdict (min over the lattice)", () => {
-  for (const base of TRITS) {
+  for (const base of LATTICE) {
     for (const health of [undefined, "UP", "DOWN", "WAT"]) {
       for (const anomalyScore of [undefined, 0, 0.5, 1, NaN]) {
         const out = withTelemetryFeedback(base, { health, anomalyScore });
-        assert.ok(out <= base, `feedback lifted ${base} → ${out}`);
+        assert.ok(rank(out) <= rank(base), `feedback lifted ${base} → ${out}`);
       }
     }
   }
