@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { basename, dirname, join } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { REGISTERED, DIVERGENT, flowsOf, sha as bodySha, FlattenRefusal, divergentStrips as deriveDivergentStrips, assertFlatBinding } from "../s2-harness/clash-table.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
@@ -179,7 +180,15 @@ function stripImports(src, needles, label) {
   return stripVersion(s);
 }
 
-function flattenUnit() {
+// Units the flattened e2e program composes (its whole import closure, root excluded).
+const COMPOSED = Object.freeze(["c-boundary.fungi", "release-commit-point.fungi", "body-reader.fungi", "serve-gate.fungi",
+  "cleanup-evidence.fungi", "kernel-ports.fungi", "secret-gate.fungi", "secret-arena-custodian-port.fungi",
+  "secret-arena.fungi", "adapter-profile.fungi", "monotonic-time.fungi", "signet-grant-seal.fungi",
+  "auth-verify-route.fungi", "kernel.fungi"]);
+// Same-code duplicates (REGISTERED) the flattener drops from route and kernel; divergent ones come from DIVERGENT.
+const REGISTERED_STRIPS = Object.freeze(["applyConsume", "recoverLease"]);
+
+function flattenUnit(tables = { divergent: DIVERGENT }) {
   const boundary = readFileSync(join(SRC, "c-boundary.fungi"), "utf8");
   const rcp = readFileSync(join(SRC, "release-commit-point.fungi"), "utf8");
   const bodyReader = readFileSync(join(SRC, "body-reader.fungi"), "utf8");
@@ -209,16 +218,27 @@ function flattenUnit() {
   assert.equal(unit.includes(RCP_IMPORT), true, "e2e imports rcp");
   assert.equal(unit.includes(CLEAN_IMPORT), true, "e2e imports cleanup");
   assert.equal(unit.includes(ADAPTER_IMPORT), true, "e2e imports adapter");
-  let routeRest = stripImports(route, [CB_IMPORT, BODY_IMPORT, RCP_IMPORT, SECRET_IMPORT], "route");
-  routeRest = stripNamedFlow(routeRest, "mintOperation");
-  routeRest = stripNamedFlow(routeRest, "applyClock");
-  routeRest = stripNamedFlow(routeRest, "applyConsume");
-  routeRest = stripNamedFlow(routeRest, "recoverLease");
-  let kernelRest = stripImports(kernel, [CB_IMPORT, BODY_IMPORT, RCP_IMPORT, SECRET_IMPORT, PORTS_IMPORT], "kernel");
-  kernelRest = stripNamedFlow(kernelRest, "mintOperation");
-  kernelRest = stripNamedFlow(kernelRest, "applyConsume");
-  kernelRest = stripNamedFlow(kernelRest, "recoverLease");
-  kernelRest = stripNamedFlow(kernelRest, "httpStatusFor");
+  const rest = {
+    "auth-verify-route.fungi": stripImports(route, [CB_IMPORT, BODY_IMPORT, RCP_IMPORT, SECRET_IMPORT], "route"),
+    "kernel.fungi": stripImports(kernel, [CB_IMPORT, BODY_IMPORT, RCP_IMPORT, SECRET_IMPORT, PORTS_IMPORT], "kernel"),
+  };
+  for (const n of REGISTERED_STRIPS) {
+    if (REGISTERED.has(n) !== true) {
+      throw new FlattenRefusal("UNDECLARED_CLASH", "same-code strip '" + n + "' is not in REGISTERED");
+    }
+    for (const u of Object.keys(rest)) {
+      rest[u] = stripNamedFlow(rest[u], n);
+    }
+  }
+  const divergentStrips = deriveDivergentStrips(COMPOSED, tables.divergent);
+  for (const { unit, name } of divergentStrips) {
+    if (Object.hasOwn(rest, unit) !== true) {
+      throw new FlattenRefusal("UNSTRIPPABLE", "divergent '" + name + "' must be stripped from " + unit + ", which the flattener cannot strip");
+    }
+    rest[unit] = stripNamedFlow(rest[unit], name);
+  }
+  const routeRest = rest["auth-verify-route.fungi"];
+  const kernelRest = rest["kernel.fungi"];
   let e2eRest = unit;
   e2eRest = splitOnce(e2eRest, CB_IMPORT, "e2e cb");
   e2eRest = splitOnce(e2eRest, SERVE_IMPORT, "e2e serve");
@@ -235,8 +255,6 @@ function flattenUnit() {
   e2eRest = splitOnce(e2eRest, CLEAN_IMPORT, "e2e clean");
   e2eRest = splitOnce(e2eRest, ADAPTER_IMPORT, "e2e adapter");
   e2eRest = stripVersion(e2eRest);
-  const dir = mkdtempSync(join(tmpdir(), "q47-flat-"));
-  const file = join(dir, basename(dir) + ".fungi");
   const parts = [
     boundary,
     stripVersion(rcp),
@@ -254,8 +272,12 @@ function flattenUnit() {
     kernelRest,
     e2eRest,
   ];
-  writeFileSync(file, parts.join("\n"));
-  return { dir, file, stem: basename(dir) };
+  const text = parts.join("\n");
+  assertFlatBinding(text, unit, COMPOSED, tables.divergent);
+  const dir = mkdtempSync(join(tmpdir(), "q47-flat-"));
+  const file = join(dir, basename(dir) + ".fungi");
+  writeFileSync(file, text);
+  return { dir, file, stem: basename(dir), divergentStrips };
 }
 
 function removeBuildStem(stem) {
@@ -638,6 +660,86 @@ test("collided recoverLease is byte-identical; other collisions stripped to the 
   } finally {
     cleanupFlat(flat);
   }
+});
+
+// S21 OPEN-S2-1 (2026-10-25): the flattener's divergent strips come from the shared DIVERGENT table, and the
+// surviving copy is pinned to the reviewed sha of the bound unit. Zero-trust: an undeclared clash refuses.
+test("S21-R1 flattener strip set equals the DIVERGENT-derived set", () => {
+  const expected = [];
+  for (const [name, d] of DIVERGENT) {
+    for (const u of d.units) {
+      if (u !== d.bound) expected.push(u + ":" + name);
+    }
+  }
+  const flat = flattenUnit();
+  try {
+    const got = (flat.divergentStrips ?? []).map((x) => x.unit + ":" + x.name);
+    assert.deepEqual(got.sort(), expected.sort());
+  } finally {
+    cleanupFlat(flat);
+  }
+});
+
+test("S21-R2 surviving divergent copies are the bound units' pinned bodies", () => {
+  const flat = flattenUnit();
+  try {
+    const flows = flowsOf(readFileSync(flat.file, "utf8"));
+    const clock = flows.get("applyClock") ?? [];
+    assert.equal(clock.length, 1, "one applyClock");
+    assert.equal(bodySha(clock[0]), DIVERGENT.get("applyClock").sha["kernel.fungi"], "applyClock is the kernel copy");
+    const http = flows.get("httpStatusFor") ?? [];
+    assert.equal(http.length, 1, "one httpStatusFor");
+    assert.equal(bodySha(http[0]), DIVERGENT.get("httpStatusFor").sha["auth-verify-route.fungi"], "httpStatusFor is the route copy");
+    assert.equal((flows.get("mintOperation") ?? []).length, 0, "mintOperation bound to none");
+  } finally {
+    cleanupFlat(flat);
+  }
+});
+
+test("S21-R3 flipping applyClock's binding in a synthetic table keeps the route copy (derived, not hardcoded)", () => {
+  const flipped = new Map(DIVERGENT);
+  flipped.set("applyClock", { ...DIVERGENT.get("applyClock"), bound: "auth-verify-route.fungi" });
+  const flat = flattenUnit({ divergent: flipped });
+  try {
+    const clock = flowsOf(readFileSync(flat.file, "utf8")).get("applyClock") ?? [];
+    assert.equal(clock.length, 1, "one applyClock");
+    assert.equal(bodySha(clock[0]), DIVERGENT.get("applyClock").sha["auth-verify-route.fungi"], "flipped binding keeps route applyClock");
+    assert.notEqual(bodySha(clock[0]), DIVERGENT.get("applyClock").sha["kernel.fungi"]);
+  } finally {
+    cleanupFlat(flat);
+  }
+});
+
+test("S21-R4 an undeclared clash in the flatten input refuses with a typed FlattenRefusal", () => {
+  const dup = "\npure flow s21Dup(a: Int) -> Int\ncontract {\n  intent { \"s21 dup\" }\n}\n{\n  return a\n}\n";
+  unitSourceOverride = readFileSync(UNIT, "utf8") + dup + dup;
+  try {
+    assert.throws(() => {
+      const f = flattenUnit();
+      cleanupFlat(f);
+    }, (e) => e instanceof FlattenRefusal && e.kind === "UNDECLARED_CLASH" && /s21Dup/.test(e.message));
+  } finally {
+    unitSourceOverride = UNIT_SOURCE_LANDING;
+  }
+});
+
+test("S21-R5 a bound copy whose body is not the reviewed one refuses (PIN_MISMATCH)", () => {
+  const tampered = new Map(DIVERGENT);
+  const d = DIVERGENT.get("httpStatusFor");
+  tampered.set("httpStatusFor", { ...d, sha: { ...d.sha, "auth-verify-route.fungi": "0".repeat(64) } });
+  assert.throws(() => {
+    const f = flattenUnit({ divergent: tampered });
+    cleanupFlat(f);
+  }, (e) => e instanceof FlattenRefusal && e.kind === "PIN_MISMATCH" && /httpStatusFor/.test(e.message));
+});
+
+test("S21-R6 a divergent name bound to none that the root calls refuses (UNBOUND_CALL)", () => {
+  const unbound = new Map(DIVERGENT);
+  unbound.set("httpStatusFor", { ...DIVERGENT.get("httpStatusFor"), bound: "none" });
+  assert.throws(() => {
+    const f = flattenUnit({ divergent: unbound });
+    cleanupFlat(f);
+  }, (e) => e instanceof FlattenRefusal && e.kind === "UNBOUND_CALL" && /httpStatusFor/.test(e.message));
 });
 
 test("mutant (a) skip Signet goes red", () => {
