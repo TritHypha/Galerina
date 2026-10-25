@@ -1,6 +1,6 @@
 // rd0361-governance-decisions-execution.test.mjs — RD-0361 (governance core): the governance-decisions
 // `.fungi` twin EXECUTES; its K3 quorum + TTL-lease folds are proven EQUAL to spec (balanced-trit verdicts).
-//   R0 build → WASM · R1 sign + #105-admit · R3 exhaustive Int-fold differential (label-safe: verdicts are trits).
+//   R0 build → WASM · R1 sign + #105-admit · R3 exhaustive Int-fold differential (label-safe: verdicts are trits or the native UNKNOWN sentinel -128).
 // Moves governance-decisions shadow → differential; extends twin coverage from the app-kernel to tower-citizen.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -15,8 +15,13 @@ const B = [false, true];
 const bit = (b) => (b ? 1 : 0);
 const range = (lo, hi) => Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);
 
-const refQuorum = (approvals, m, malformed) => (malformed ? 0 : approvals >= m ? 1 : -1);
-const refLease = (wf, nf, now, notAfter) => (!wf ? 0 : !nf ? 0 : now < notAfter ? 1 : -1);
+// K3-UNKNOWN-NOT-ZERO (owner decision D-A, Phillip 2026-10-25 18:28 GMT): the spec is re-captured with UNKNOWN
+// as its OWN value, the native sentinel k3Unknown() = -128 (outside {-1,0,1}, below DENY). Undecided is never 0.
+// Rejected: mapping -128 back to 0 in this oracle (that is the conflation K3U2 removes).
+const UNKNOWN = -128;
+const refQuorum = (approvals, m, malformed) => (malformed ? UNKNOWN : approvals >= m ? 1 : -1);
+const refLease = (wf, nf, now, notAfter) => (!wf ? UNKNOWN : !nf ? UNKNOWN : now < notAfter ? 1 : -1);
+const isVerdict = (w) => w === -1 || w === 0 || w === 1 || w === UNKNOWN;
 
 test("RD-0361 tower-citizen · governance-decisions: R0 build → R1 #105-admit → R3 WASM ≡ K3 quorum + lease spec", async () => {
   assert.ok(existsSync(COMPILER), "core-compiler dist not built — run the full suite first");
@@ -34,16 +39,19 @@ test("RD-0361 tower-citizen · governance-decisions: R0 build → R1 #105-admit 
   const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
   const { instance } = await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host });
   const X = instance.exports;
-  for (const f of ["quorumVerdict", "leaseVerdict"]) assert.equal(typeof X[f], "function", `${f} admitted (R1)`);
+  for (const f of ["quorumVerdict", "leaseVerdict", "k3Unknown"]) assert.equal(typeof X[f], "function", `${f} admitted (R1)`);
+  assert.equal(X.k3Unknown(), UNKNOWN, "native UNKNOWN sentinel is -128, never the trit 0");
 
   for (const ap of range(0, 5)) for (const m of range(0, 5)) for (const mal of B) {
     const w = X.quorumVerdict(ap, m, bit(mal));
     assert.equal(w, refQuorum(ap, m, mal), `quorumVerdict(${ap},${m},${mal})`);
-    assert.ok(w === -1 || w === 0 || w === 1, "verdict is a K3 trit");
+    assert.ok(isVerdict(w), "verdict is a K3 trit or the native UNKNOWN sentinel");
+    if (mal) assert.notEqual(w, 0, "malformed evidence is UNKNOWN, never the trit 0");
   }
   for (const wf of B) for (const nf of B) for (const now of range(0, 3)) for (const na of range(0, 3)) {
     const w = X.leaseVerdict(bit(wf), bit(nf), now, na);
     assert.equal(w, refLease(wf, nf, now, na), `leaseVerdict(${wf},${nf},${now},${na})`);
-    assert.ok(w === -1 || w === 0 || w === 1, "verdict is a K3 trit");
+    assert.ok(isVerdict(w), "verdict is a K3 trit or the native UNKNOWN sentinel");
+    assert.notEqual(w, 0, "a lease verdict is never the trit 0 (malformed / non-finite clock is UNKNOWN)");
   }
 });
