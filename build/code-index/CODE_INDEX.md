@@ -1053,7 +1053,7 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 | FUNGI-GOV-024 | SANDBOX_REQUIRED_BUT_UNAVAILABLE | warning | packages-ts/galerina-core-compiler/src/governance-verifier.ts:777 | 1 | 10 | 4 |
 | FUNGI-GOV-025 | PROTECTED_EGRESS_AUTHORITY_MISSING | error | packages-ts/galerina-core-compiler/src/governance-verifier.ts:574 | 1 | 7 | 4 |
 | FUNGI-GOV-3V | — | — | — | 0 | 2 | 0 |
-| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | warning | packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:119 | 2 | 47 | 14 |
+| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | warning | packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153 | 2 | 47 | 14 |
 | FUNGI-GOV-3VL-003 | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | error | — | 1 | 13 | 0 |
 | FUNGI-GOV-3VL-004 | ORDERED_COMPARISON_ON_VERDICT | error | — | 1 | 12 | 1 |
 | FUNGI-GOV-902 | — | — | — | 0 | 0 | 0 |

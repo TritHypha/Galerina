@@ -18349,11 +18349,11 @@
     "occurrences": 109,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:119"
+      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153"
     ],
     "emits": [
       "packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
-      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:145"
+      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:179"
     ],
     "tests": 47,
     "refs": 40,
@@ -18397,9 +18397,9 @@
       "ref packages-ts/galerina-tower-citizen/src/epistemic-type-state.ts:237",
       "ref packages-ts/galerina-tower-citizen/src/epistemic-type-state.ts:567",
       "ref packages-ts/galerina-tower-citizen/src/index.ts:50",
-      "ref packages-ts/galerina-tower-citizen/src/index.ts:63",
-      "ref packages-ts/galerina-tower-citizen/src/index.ts:120",
-      "ref packages-ts/galerina-tower-citizen/src/index.ts:146",
+      "ref packages-ts/galerina-tower-citizen/src/index.ts:64",
+      "ref packages-ts/galerina-tower-citizen/src/index.ts:121",
+      "ref packages-ts/galerina-tower-citizen/src/index.ts:147",
       "ref packages-ts/galerina-tower-citizen/src/key-rotation.ts:34",
       "ref packages-ts/galerina-tower-citizen/src/lease.ts:13",
       "ref packages-ts/galerina-tower-citizen/src/lease.ts:21",
@@ -18414,12 +18414,12 @@
       "ref packages-ts/galerina-tower-citizen/src/quorum.ts:111",
       "emit packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
       "fungi packages-ts/galerina-tower-citizen/src/self-hosted/gov-3vl-diagnostic.fungi:5",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:22",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:116",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:139",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:157",
-      "def packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:119",
-      "emit packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:145",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:21",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:150",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:173",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:191",
+      "def packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153",
+      "emit packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:179",
       "ref packages-ts/galerina-tower-citizen/src/transport-fsm.ts:47",
       "test packages-ts/galerina-tower-citizen/tests/epistemic-type-state.test.mjs:135",
       "test packages-ts/galerina-tower-citizen/tests/epistemic-type-state.test.mjs:268",
@@ -30556,7 +30556,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-tower-citizen/src/index.ts:151",
+      "ref packages-ts/galerina-tower-citizen/src/index.ts:152",
       "ref packages-ts/galerina-tower-citizen/src/substrate-erasure.ts:2",
       "ref packages-ts/galerina-tower-citizen/src/substrate-erasure.ts:12",
       "ref packages-ts/galerina-tower-citizen/src/substrate-erasure.ts:82",
@@ -33570,7 +33570,7 @@
       "ref packages-ts/galerina-ext-spore/src/kemdem.ts:12",
       "ref packages-ts/galerina-ext-spore/src/tmx256.ts:6",
       "ref packages-ts/galerina-governance-telemetry/src/exposition.ts:15",
-      "ref packages-ts/galerina-tower-citizen/src/index.ts:169",
+      "ref packages-ts/galerina-tower-citizen/src/index.ts:170",
       "ref packages-ts/galerina-tower-citizen/src/quorum.ts:15",
       "ref packages-ts/galerina-tower-citizen/src/substrate-model.ts:291",
       "test packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:209",
