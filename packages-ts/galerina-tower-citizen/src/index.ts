@@ -47,13 +47,14 @@ export type { TransitionPolicy, RestrictedTransition } from "./governance-enforc
 
 // ── Three-valued governance verdicts (Direction A) — proved fail-closed ──
 // Kleene K3 over the trit (vAnd=minTrit ∧, vOr=maxTrit ∨, vNot=negTrit ¬); collapse
-// at the trust boundary (0,-1 → deny); FUNGI-GOV-3VL-001 audits 0→deny. Never silent.
+// at the trust boundary (0,-1,UNKNOWN → deny); FUNGI-GOV-3VL-001 audits UNKNOWN→deny. Never silent.
+// K3-UNKNOWN-NOT-ZERO: UNKNOWN is the typed K3_UNKNOWN sentinel (infectious), never the trit 0.
 export {
   Verdict, asVerdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize,
-  decideAtBoundary, GOV_3VL_DIAGNOSTIC,
+  decideAtBoundary, GOV_3VL_DIAGNOSTIC, K3_UNKNOWN, isK3Unknown,
   vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence,
 } from "./three-valued-governance.js";
-export type { ConfidenceVerdict } from "./three-valued-governance.js";
+export type { ConfidenceVerdict, K3Unknown } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision, BoundaryDiagnostic } from "./three-valued-governance.js";
 
 // ── Epistemic type-state — the trust trit lifted from verdict to value (RD-0337) ──
