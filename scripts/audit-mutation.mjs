@@ -146,8 +146,8 @@ const FUSE = [
   {
     id: "fuse-gate2b-key-revoked",
     file: `${K}/src/fuse-loader.ts`,
-    find: "revoked = opts.revocationCheck(keyId) === true;",
-    replace: "revoked = opts.revocationCheck(keyId) === false;",
+    find: "if (revocationResult === true) {",
+    replace: "if (revocationResult === false) {",
     cwd: K, build: KERNEL_BUILD, test: KERNEL_FUSE_TEST,
     desc: "Gate 2b — revocation verdict inverted; a cryptographically-valid signature from a REVOKED key is admitted",
   },
