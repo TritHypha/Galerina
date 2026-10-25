@@ -18346,7 +18346,7 @@
     "code": "FUNGI-GOV-3VL-001",
     "namespace": "FUNGI",
     "family": "GOV",
-    "occurrences": 102,
+    "occurrences": 109,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:119"
@@ -18355,7 +18355,7 @@
       "packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:145"
     ],
-    "tests": 40,
+    "tests": 47,
     "refs": 40,
     "docs": 14,
     "names": [
@@ -18444,6 +18444,13 @@
       "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:128",
       "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:147",
       "test packages-ts/galerina-tower-citizen/tests/transport-fsm.test.mjs:41",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:8",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:85",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:90",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:91",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:162",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:164",
+      "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:167",
       "doc docs/architecture/audit-key-rotation-triple-lock-design-2026-07-10.md:168",
       "doc docs/contract-authoring-model.md:54",
       "doc docs/governance-automated-floor.md:27",
