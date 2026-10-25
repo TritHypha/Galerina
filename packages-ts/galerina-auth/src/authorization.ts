@@ -11,9 +11,9 @@
  *   - every required scope is present in `granted` → `+1` ALLOW
  *   - some required scope is absent                → `−1` DENY (a missing required
  *                                                     scope is a definite refusal)
- *   - `required` is empty                          → `0` INDETERMINATE
+ *   - `required` is empty                          → UNKNOWN (typed, never `0`)
  *
- * Why empty-required is INDETERMINATE (deny-by-default): an empty conjunction would
+ * Why empty-required is UNKNOWN (deny-by-default): an empty conjunction would
  * be a vacuous ALLOW, which is the one thing a fail-closed gate must not emit. This
  * mirrors `allOf([])` in the K3 algebra. If a route genuinely has NO scope
  * requirement, omit this factor from the composition rather than passing `[]`.
@@ -31,14 +31,14 @@ import { Verdict } from "../../galerina-tower-citizen/dist/index.js";
 
 /**
  * Conjunctive scope check as a K3 verdict: ALLOW iff every `required` scope is in
- * `granted`; DENY on any missing required scope; INDETERMINATE for an empty
+ * `granted`; DENY on any missing required scope; UNKNOWN for an empty
  * requirement (deny-by-default — see module note).
  */
 export function scopeVerdict(
   required: readonly string[],
   granted: readonly string[],
 ): Verdict {
-  if (required.length === 0) return Verdict.INDETERMINATE; // no positive authz evidence
+  if (required.length === 0) return Verdict.UNKNOWN; // no positive authz evidence
   const have = new Set(granted);
   for (const need of required) {
     if (!have.has(need)) return Verdict.DENY; // a missing required scope is a hard refusal

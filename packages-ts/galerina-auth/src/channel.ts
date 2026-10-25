@@ -13,8 +13,8 @@
  * K3 sub-verdicts, folds them with the K3 conjunction (`min` over the trit), and
  * degrades-only with any side-signal. Its headline property: a revocation-UNKNOWN
  * factor collapses the channel to a non-ALLOW verdict (closing the public web's
- * soft-fail hole). Every missing / errored / un-provable factor defaults to `0`
- * (INDETERMINATE), never `+1` — that is the fail-closed seam.
+ * soft-fail hole). Every missing / errored / un-provable factor defaults to UNKNOWN
+ * (the typed K3_UNKNOWN, never `0`), never `+1` — that is the fail-closed seam.
  *
  * Binding posture: crypto / KDF / cipher / signature / key bytes stay Binary
  * (digital). The gate is a PURE governance fold over a TLS library's outputs; it
@@ -57,10 +57,10 @@ export type { CertGateInput, CertSubVerdicts, ChainValidationOutcome, Revocation
  *
  * Hand the result to the App Kernel as `GalerinaKernelRequest.channelVerdict`. The
  * kernel's fixed auth gate collapses it fail-closed: only `+1` (every cert factor
- * proven) admits; `0` (e.g. revocation unknown) and `−1` (e.g. revoked, expired,
+ * proven) admits; UNKNOWN (e.g. revocation unknown), a computed `0` and `−1` (e.g. revoked, expired,
  * pin mismatch) refuse.
  *
- * `onDiagnostic` (optional) receives FUNGI-GOV-3VL-001 if an INDETERMINATE verdict is
+ * `onDiagnostic` (optional) receives FUNGI-GOV-3VL-001 if an UNKNOWN verdict is
  * surfaced through the gate's own boundary preview — it is never dropped silently.
  */
 export function channelIdentityVerdict(

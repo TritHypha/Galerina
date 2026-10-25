@@ -6,7 +6,10 @@
  * `Verdict`):
  *
  *   +1 ALLOW          — proof discharged, the factor may authorize
- *    0 INDETERMINATE  — no positive evidence / un-provable → fail-closed neutral
+ *    0 NEUTRAL        — a computed neutral trit (e.g. ALLOW ∧ NEUTRAL); refused at the boundary
+ *   K3_UNKNOWN        — no positive evidence / un-provable: the typed UNKNOWN sentinel, NEVER the
+ *                       trit 0 (`Verdict.UNKNOWN`; `Verdict.INDETERMINATE` is its deprecated name);
+ *                       infectious under ∧/∨, refused at the boundary with FUNGI-GOV-3VL-001
  *   −1 DENY           — definite refusal (annihilator under conjunction)
  *
  * We re-export the verdict type, the conjunction/disjunction reducers, and the

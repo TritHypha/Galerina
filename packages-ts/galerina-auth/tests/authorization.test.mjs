@@ -11,8 +11,8 @@ test("a missing required scope → DENY (−1)", () => {
   assert.equal(scopeVerdict(["orders.read", "admin"], ["orders.read"]), Verdict.DENY);
 });
 
-test("empty required → INDETERMINATE (0) — deny-by-default, not vacuous ALLOW", () => {
-  assert.equal(scopeVerdict([], ["anything"]), Verdict.INDETERMINATE);
+test("empty required → UNKNOWN (typed, never 0) — deny-by-default, not vacuous ALLOW", () => {
+  assert.equal(scopeVerdict([], ["anything"]), Verdict.UNKNOWN);
 });
 
 test("required but granted is empty → DENY (−1)", () => {

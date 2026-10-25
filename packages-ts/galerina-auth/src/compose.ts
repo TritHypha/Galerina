@@ -7,12 +7,14 @@
  * `allOf` (= `vAnd`-reduce = `min` over the trit):
  *
  *   ALLOW  iff EVERY factor is ALLOW
- *   DENY   if ANY factor is DENY (annihilator)
- *   else   INDETERMINATE
+ *   UNKNOWN if ANY factor is UNKNOWN (infectious, as the pinned K3 `vAnd`: DENY ∧ UNKNOWN is
+ *           UNKNOWN, which the kernel still refuses)
+ *   DENY   else if ANY factor is DENY
+ *   else   NEUTRAL (`0`, a computed trit; refused)
  *
- * Deny-by-default: an EMPTY factor set is INDETERMINATE (`0`), never the vacuous
+ * Deny-by-default: an EMPTY factor set is UNKNOWN (the typed K3_UNKNOWN, never `0`), never the vacuous
  * ALLOW a bare ∧-identity would give. Include exactly the factors that constitute
- * the route's auth requirement; a factor that is merely INDETERMINATE (e.g. the
+ * the route's auth requirement; a factor that is merely UNKNOWN (e.g. the
  * tightened header-presence posture) pulls the composite to non-ALLOW by design.
  *
  * THE BOUNDARY. `composeAuthVerdict` returns a VERDICT, not a decision. That is the
@@ -35,7 +37,7 @@ import type {
 
 /**
  * Conjunctive fold of auth factors into the single K3 verdict to hand the kernel as
- * `channelVerdict`. Empty → INDETERMINATE (deny-by-default). Returns a verdict, not
+ * `channelVerdict`. Empty → UNKNOWN (deny-by-default). Returns a verdict, not
  * a decision.
  */
 export function composeAuthVerdict(factors: readonly Verdict[]): Verdict {
@@ -47,7 +49,7 @@ export function composeAuthVerdict(factors: readonly Verdict[]): Verdict {
  *
  * This is a diagnostic/logging convenience for the transport side; it does NOT make
  * the authoritative admission decision. The App Kernel performs the binding collapse
- * at its own gate. `onDiagnostic` receives FUNGI-GOV-3VL-001 when an INDETERMINATE
+ * at its own gate. `onDiagnostic` receives FUNGI-GOV-3VL-001 when an UNKNOWN
  * verdict is collapsed to deny, so a preview can surface exactly why a request would
  * be refused.
  */

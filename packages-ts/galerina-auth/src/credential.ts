@@ -12,7 +12,7 @@
  * `headerPresenceVerdict` lifts that posture into a reusable FACTOR:
  *
  *   - DEFAULT (allowHeaderPresenceFallback !== true) — header presence is NOT
- *     authentication. The factor is ALWAYS `0` (INDETERMINATE): it carries no
+ *     authentication. The factor is ALWAYS UNKNOWN (typed K3_UNKNOWN, never `0`): it carries no
  *     positive proof and can never authorize on its own. Folded into a composed
  *     auth verdict it pulls the result to non-ALLOW, and the kernel collapses that
  *     to deny (audited FUNGI-GOV-3VL-001). This factor exists to make the posture
@@ -20,11 +20,11 @@
  *
  *   - LEGACY OPT-IN (allowHeaderPresenceFallback === true) — mirrors the kernel's
  *     escape hatch: a non-empty Authorization header maps to `+1` (ALLOW); a missing
- *     or empty header maps to `0` (deny). Use ONLY for a deployment whose real token
+ *     or empty header maps to UNKNOWN (deny). Use ONLY for a deployment whose real token
  *     validation genuinely lives upstream.
  *
  * Hardening note: this factor treats a present-but-EMPTY header value as NOT present
- * (→ `0`). The kernel's legacy opt-in branch was hardened to match (RD-0307/0309): it
+ * (→ UNKNOWN). The kernel's legacy opt-in branch was hardened to match (RD-0307/0309): it
  * now also denies an absent, empty, or whitespace-only `Authorization:` header, so the
  * two agree and neither admits presence-of-an-empty-value. A factor library must not
  * reproduce a latent weakness; this one keeps the strict definition of "present".
@@ -61,8 +61,8 @@ function header(headers: Readonly<Record<string, string>>, name: string): string
 /**
  * The required-auth posture factor as a K3 verdict.
  *
- * By default it is INDETERMINATE (header presence is not authentication). With the
- * legacy opt-in it admits a non-empty header (`+1`) and denies otherwise (`0`).
+ * By default it is UNKNOWN (header presence is not authentication). With the
+ * legacy opt-in it admits a non-empty header (`+1`) and denies otherwise (UNKNOWN).
  * Returns a VERDICT, never a decision — compose it and hand the result to the kernel.
  */
 export function headerPresenceVerdict(
@@ -75,9 +75,9 @@ export function headerPresenceVerdict(
 
   if (opts.allowHeaderPresenceFallback === true) {
     // Legacy opt-in: presence-as-proof. Weak, hence gated behind the explicit flag.
-    return present ? Verdict.ALLOW : Verdict.INDETERMINATE;
+    return present ? Verdict.ALLOW : Verdict.UNKNOWN;
   }
 
   // Tightened default: presence is NOT authentication — no positive proof, ever.
-  return Verdict.INDETERMINATE;
+  return Verdict.UNKNOWN;
 }
