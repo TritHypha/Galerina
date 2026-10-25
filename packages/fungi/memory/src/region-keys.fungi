@@ -1,0 +1,270 @@
+@version 1
+/// @file: region-keys.fungi
+/// @purpose: T8-NEXT-KEYS per-region memory key rule unit. Region keys are
+///   ephemeral per process: one fresh key per memory region, drawn only from
+///   the OS CSPRNG, never shared across regions, never re-admitted after
+///   rotation, never persisted or exported, and wiped on stop. Transient memory
+///   is lost when the app stops, so region keys need no recovery (Phillip
+///   2026-10-24 18:56). The durable-data KEK comes only through the per-secret
+///   SecretsProvider port (portAccess), never a fallback. Rule unit only: no
+///   I/O, no bytes, no key material. Synthetic data only. NON_AUTHORIZING.
+/// Outputs: 100 Admitted, 106 Indeterminate (typed UNKNOWN), 11 Unlisted, and
+///   flow-local packed refusals 61..66 (not registry error codes, like
+///   durable-store 20..26): 61 SOURCE_NOT_CSPRNG_REFUSED 62 KEY_REUSE_REFUSED
+///   63 PERSIST_REFUSED 64 START_REFUSED_KEK_UNKNOWN 65 PURPOSE_MISMATCH_REFUSED
+///   66 FOREIGN_ROOT_REFUSED. Port refusals 112 Undeclared and 119
+///   ProviderAbsent pass through unchanged.
+/// Zero-trust choices (rejected options):
+///   OS CSPRNG only (rejected: region keys from one master secret, where one
+///     leak opens every region; rejected: user-supplied or constant keys);
+///   one key id per region, retired ids stay retired (rejected: a shared key
+///     across regions; rejected: re-admitting a rotated key);
+///   no persist, no export, no sealed recovery export (rejected: all three);
+///   stop is admitted only with wipe evidence; freed-only or missing evidence
+///     is 106 (free is not wipe; a missing record is UNKNOWN, RD-0778);
+///   KEK only via portAccess, name-first (rejected: generated fallback KEK,
+///     plaintext .env fallback, a KEK cached across accesses, list-scoped
+///     access); a missing or malformed KEK refuses start 64;
+///   one purpose per key; SLIDE and Lyth roots are foreign and always refuse 66
+///     (rejected: one key serving several purposes; rejected: shared roots);
+///   unwrap decides root then purpose before the port is consulted (rejected:
+///     port-first ordering, which leaks KEK presence).
+/// Sequential if-return style (durable-store.fungi); every path ends in a
+///   typed refusal.
+
+import "./release-commit-point.fungi"
+import "./secrets-provider-port.fungi"
+
+/// source: 0 OS_CSPRNG 1 DERIVED_FROM_MASTER 2 USER_SUPPLIED 3 CONSTANT else Unlisted
+pure flow admitKeySource(source: Int) -> Int
+contract {
+  intent { "Admit a region key source: only the OS CSPRNG is 100; other listed sources refuse 61; unlisted 11." }
+}
+{
+  if source < 0 {
+    return 11
+  }
+  if source > 3 {
+    return 11
+  }
+  if source == 0 {
+    let admitted: Int = 100
+    return admitted
+  }
+  if source >= 1 {
+    let sourceNotCsprngRefused: Int = 61
+    return sourceNotCsprngRefused
+  }
+  return 11
+}
+
+/// sameIdOtherRegion: 0 NO 1 YES else Unlisted; idRetired: 0 NO 1 YES else Unlisted
+pure flow admitKeyId(sameIdOtherRegion: Int, idRetired: Int) -> Int
+contract {
+  intent { "Admit a key id only if it serves no other region and was never retired; reuse refuses 62; unlisted 11." }
+}
+{
+  if sameIdOtherRegion < 0 {
+    return 11
+  }
+  if sameIdOtherRegion > 1 {
+    return 11
+  }
+  if idRetired < 0 {
+    return 11
+  }
+  if idRetired > 1 {
+    return 11
+  }
+  let keyReuseRefused: Int = 62
+  if sameIdOtherRegion == 1 {
+    return keyReuseRefused
+  }
+  if idRetired == 1 {
+    return keyReuseRefused
+  }
+  if sameIdOtherRegion == 0 {
+    if idRetired == 0 {
+      let admitted: Int = 100
+      return admitted
+    }
+  }
+  return 11
+}
+
+/// kind: 0 PERSIST 1 EXPORT 2 SEALED_EXPORT else Unlisted; keyValid: 0 NO 1 YES else Unlisted
+pure flow requestPersist(kind: Int, keyValid: Int) -> Int
+contract {
+  intent { "Region keys are never persisted or exported: every listed request refuses 63; unlisted 11; never 100." }
+}
+{
+  if kind < 0 {
+    return 11
+  }
+  if kind > 2 {
+    return 11
+  }
+  if keyValid < 0 {
+    return 11
+  }
+  if keyValid > 1 {
+    return 11
+  }
+  let persistRefused: Int = 63
+  if kind >= 0 {
+    return persistRefused
+  }
+  return 11
+}
+
+/// evidence: 0 MISSING 1 FREED_ONLY 2 WIPED else Unlisted
+pure flow admitStop(evidence: Int) -> Int
+contract {
+  intent { "Admit a stop only with wipe evidence; freed-only, missing or unlisted evidence is 106 Indeterminate." }
+}
+{
+  if evidence == 2 {
+    let admitted: Int = 100
+    return admitted
+  }
+  return 106
+}
+
+/// declared: 0 undeclared 1 declared else Unlisted; providerPresent: 0 absent
+///   1 present else Unlisted; kekForm: 0 MISSING 1 MALFORMED 2 WELL_FORMED else Unlisted
+pure flow startupKek(declared: Int, providerPresent: Int, kekForm: Int) -> Int
+contract {
+  intent { "Start only when portAccess admits and the KEK is well formed; 112 and 119 pass through; bad KEK 64; unlisted 11." }
+}
+{
+  if declared < 0 {
+    return 11
+  }
+  if declared > 1 {
+    return 11
+  }
+  if providerPresent < 0 {
+    return 11
+  }
+  if providerPresent > 1 {
+    return 11
+  }
+  if kekForm < 0 {
+    return 11
+  }
+  if kekForm > 2 {
+    return 11
+  }
+  let port: Int = portAccess(0, declared, 0, providerPresent)
+  if port == 112 {
+    let undeclared: Int = 112
+    return undeclared
+  }
+  if port == 119 {
+    let providerAbsent: Int = 119
+    return providerAbsent
+  }
+  if port != 100 {
+    return 11
+  }
+  if kekForm == 2 {
+    let admitted: Int = 100
+    return admitted
+  }
+  if kekForm >= 0 {
+    let startRefusedKekUnknown: Int = 64
+    return startRefusedKekUnknown
+  }
+  return 11
+}
+
+/// keyPurpose, requestedPurpose: 0 REGION 1 DEK_WRAP 2 AUTH_PEPPER 3 MEMBERSHIP_SIGN else Unlisted
+/// rootTag: 0 GALERINA 1 SLIDE 2 LYTH else Unlisted
+pure flow useKey(keyPurpose: Int, requestedPurpose: Int, rootTag: Int) -> Int
+contract {
+  intent { "Use a Galerina key only for its own purpose; foreign roots refuse 66; cross-purpose refuses 65; unlisted 11." }
+}
+{
+  if keyPurpose < 0 {
+    return 11
+  }
+  if keyPurpose > 3 {
+    return 11
+  }
+  if requestedPurpose < 0 {
+    return 11
+  }
+  if requestedPurpose > 3 {
+    return 11
+  }
+  if rootTag < 0 {
+    return 11
+  }
+  if rootTag > 2 {
+    return 11
+  }
+  if rootTag != 0 {
+    let foreignRootRefused: Int = 66
+    return foreignRootRefused
+  }
+  if keyPurpose != requestedPurpose {
+    let purposeMismatchRefused: Int = 65
+    return purposeMismatchRefused
+  }
+  if keyPurpose == requestedPurpose {
+    let admitted: Int = 100
+    return admitted
+  }
+  return 11
+}
+
+/// rootTag as useKey; requestedPurpose as useKey (the key purpose is DEK_WRAP 1);
+///   declared and providerPresent as portAccess
+pure flow unwrapDek(rootTag: Int, requestedPurpose: Int, declared: Int, providerPresent: Int) -> Int
+contract {
+  intent { "Unwrap a DEK: root 66 then purpose 65 before the port (112, 119); 100 only when all admit; unlisted 11." }
+}
+{
+  if rootTag < 0 {
+    return 11
+  }
+  if rootTag > 2 {
+    return 11
+  }
+  if requestedPurpose < 0 {
+    return 11
+  }
+  if requestedPurpose > 3 {
+    return 11
+  }
+  if declared < 0 {
+    return 11
+  }
+  if declared > 1 {
+    return 11
+  }
+  if providerPresent < 0 {
+    return 11
+  }
+  if providerPresent > 1 {
+    return 11
+  }
+  let use: Int = useKey(1, requestedPurpose, rootTag)
+  if use != 100 {
+    return use
+  }
+  let port: Int = portAccess(0, declared, 0, providerPresent)
+  if port == 112 {
+    let undeclared: Int = 112
+    return undeclared
+  }
+  if port == 119 {
+    let providerAbsent: Int = 119
+    return providerAbsent
+  }
+  if port == 100 {
+    let admitted: Int = 100
+    return admitted
+  }
+  return 11
+}
