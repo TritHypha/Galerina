@@ -18377,7 +18377,7 @@
       "ref packages-ts/galerina-core-network/src/cert-gate.ts:246",
       "fungi packages-ts/galerina-core-network/src/self-hosted/b8-admission.fungi:11",
       "fungi packages-ts/galerina-core-network/src/self-hosted/b8-admission.fungi:60",
-      "fungi packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi:84",
+      "fungi packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi:95",
       "test packages-ts/galerina-core-network/tests/admission-feedback.test.mjs:84",
       "test packages-ts/galerina-core-network/tests/cert-gate.test.mjs:56",
       "test packages-ts/galerina-core-network/tests/cert-gate.test.mjs:71",
