@@ -1,8 +1,8 @@
 {
   "schemaVersion": "fungi.manifest.v1",
-  "sourceHash": "sha256:6afb8a0101322fe4a1e8cb5007f2bf5105e2476f839c3ede92699526ae11149d",
+  "sourceHash": "sha256:31788c30da5140d7e011f4f5d0c4cdb12970ff48bdb6796903aaabd548c84c51",
   "sourceFile": "admission-feedback.fungi",
-  "flowCount": 2,
+  "flowCount": 3,
   "compilerVersion": "1.0.0-beta.2",
   "productIdentity": {
     "schemaVersion": 1,
@@ -14,19 +14,26 @@
     "buildMode": "build-production",
     "physicalProfile": "1"
   },
-  "productArtifactKey": "product-artifact-v1:38e88357e1d4d49ad737d00a1443090c0ff54d0cda5ecaefd3411ebf61b4777f",
+  "productArtifactKey": "product-artifact-v1:88f2638557084beaaf8f665aad8a0b5767aeceed8221aff65eefb02b1808ee38",
   "policyResolutionDag": {
     "allowedEffects": 0,
     "deniedEffects": 0,
     "conflictsResolved": 0,
-    "resolvedAt": "2026-09-13T17:46:04.644Z"
+    "resolvedAt": "2026-10-25T22:44:37.681Z"
   },
-  "behavioralFingerprint": "sha256:683aa6f8df64314698194c9afdb42fa896e79d71b7b54fe9d5081ecd701d9a21",
+  "behavioralFingerprint": "sha256:6c9fb6b1d1a3bdf1ff08e0fdd9462877615befeb264660e1d4371b9b0709a701",
   "derivedConstraints": [
-    "telemetrySideSignal: Flow vAnd has a contract declaration [via contract]",
-    "vAnd: Flow vAnd has a contract declaration [via contract]"
+    "k3Unknown: Flow k3Unknown has a contract declaration [via contract]",
+    "telemetrySideSignal: Flow k3Unknown has a contract declaration [via contract]",
+    "vAnd: Flow k3Unknown has a contract declaration [via contract]"
   ],
   "proofObligations": [
+    {
+      "flowName": "k3Unknown",
+      "kind": "effect-safety",
+      "description": "pure flow declares effects [none]",
+      "verified": "static"
+    },
     {
       "flowName": "vAnd",
       "kind": "effect-safety",
@@ -40,12 +47,12 @@
       "verified": "static"
     }
   ],
-  "generatedAt": "2026-09-13T17:46:04.644Z",
+  "generatedAt": "2026-10-25T22:44:37.681Z",
   "governanceSignature": {
     "algorithm": "Ed25519",
-    "keyId": "9f3b6bae862430ff",
-    "signature": "Iug5l6ZShfapaA414UWe/xqKQpybECC9kymOFdIVnNqAjPyHxoaw1QKyGZQAJpUj/Szfns0drPUKhBmh98BxDw==",
+    "keyId": "6c76e9772429d4c9",
+    "signature": "J7GhlSeszf8R7hir1u7GBe3604UALRGh4ACxBY2ecpWvuCChX0sMHkHTNFYypuOWb38+h8S7l2vjvKbr9x1nAA==",
     "canon": "jcs",
-    "signedAt": "2026-09-13T17:46:04.653Z"
+    "signedAt": "2026-10-25T22:44:37.698Z"
   }
 }
