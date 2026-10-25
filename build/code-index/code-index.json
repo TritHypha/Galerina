@@ -18346,7 +18346,7 @@
     "code": "FUNGI-GOV-3VL-001",
     "namespace": "FUNGI",
     "family": "GOV",
-    "occurrences": 109,
+    "occurrences": 111,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153"
@@ -18355,7 +18355,7 @@
       "packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
       "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:179"
     ],
-    "tests": 47,
+    "tests": 49,
     "refs": 40,
     "docs": 14,
     "names": [
@@ -18406,8 +18406,8 @@
       "ref packages-ts/galerina-tower-citizen/src/lease.ts:92",
       "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:10",
       "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:19",
-      "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:63",
-      "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:88",
+      "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:67",
+      "ref packages-ts/galerina-tower-citizen/src/partial-return.ts:92",
       "ref packages-ts/galerina-tower-citizen/src/photonic-admission.ts:19",
       "ref packages-ts/galerina-tower-citizen/src/quorum.ts:21",
       "ref packages-ts/galerina-tower-citizen/src/quorum.ts:31",
@@ -18429,9 +18429,11 @@
       "test packages-ts/galerina-tower-citizen/tests/lease.test.mjs:59",
       "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:5",
       "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:26",
-      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:56",
-      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:58",
-      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:82",
+      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:59",
+      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:61",
+      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:85",
+      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:98",
+      "test packages-ts/galerina-tower-citizen/tests/partial-return.test.mjs:101",
       "test packages-ts/galerina-tower-citizen/tests/photonic-admission.test.mjs:74",
       "test packages-ts/galerina-tower-citizen/tests/photonic-admission.test.mjs:79",
       "test packages-ts/galerina-tower-citizen/tests/quorum.test.mjs:5",
