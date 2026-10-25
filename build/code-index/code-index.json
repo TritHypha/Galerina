@@ -18349,11 +18349,11 @@
     "occurrences": 111,
     "docOnly": false,
     "defs": [
-      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153"
+      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:154"
     ],
     "emits": [
       "packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
-      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:179"
+      "packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:180"
     ],
     "tests": 49,
     "refs": 40,
@@ -18415,11 +18415,11 @@
       "emit packages-ts/galerina-tower-citizen/src/registry-key-rotation.ts:572",
       "fungi packages-ts/galerina-tower-citizen/src/self-hosted/gov-3vl-diagnostic.fungi:5",
       "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:21",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:150",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:173",
-      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:191",
-      "def packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:153",
-      "emit packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:179",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:151",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:174",
+      "ref packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:192",
+      "def packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:154",
+      "emit packages-ts/galerina-tower-citizen/src/three-valued-governance.ts:180",
       "ref packages-ts/galerina-tower-citizen/src/transport-fsm.ts:47",
       "test packages-ts/galerina-tower-citizen/tests/epistemic-type-state.test.mjs:135",
       "test packages-ts/galerina-tower-citizen/tests/epistemic-type-state.test.mjs:268",
@@ -18441,10 +18441,10 @@
       "test packages-ts/galerina-tower-citizen/tests/quorum.test.mjs:68",
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-governance-isolation.test.mjs:67",
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-governance-isolation.test.mjs:68",
-      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:250",
-      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:120",
-      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:128",
-      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:147",
+      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:264",
+      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:134",
+      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:142",
+      "test packages-ts/galerina-tower-citizen/tests/three-valued-governance.test.mjs:161",
       "test packages-ts/galerina-tower-citizen/tests/transport-fsm.test.mjs:41",
       "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:8",
       "test packages/fungi/memory/tests/k3u2-unknown-not-zero/k3u2-unknown-not-zero.test.mjs:85",
