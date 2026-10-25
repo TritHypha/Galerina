@@ -109,7 +109,7 @@ const CERT = [
     find: "return pinned.some((d) => d.toLowerCase() === p) ? Verdict.ALLOW : Verdict.DENY;",
     replace: "return pinned.some((d) => d.toLowerCase() === p) ? Verdict.ALLOW : Verdict.INDETERMINATE;",
     cwd: CN, build: CN_BUILD, test: CN_TEST,
-    desc: "S1 a pin MISMATCH softens from −1 (annihilator) to 0 — the MITM-with-valid-cert no longer hard-denies",
+    desc: "S1 a pin MISMATCH softens from −1 (annihilator) to the typed UNKNOWN — the MITM-with-valid-cert no longer hard-denies",
   },
   {
     id: "cert-no-pin-allow",
@@ -117,7 +117,7 @@ const CERT = [
     find: "if (pinned === undefined || pinned.length === 0) return Verdict.INDETERMINATE;",
     replace: "if (pinned === undefined || pinned.length === 0) return Verdict.ALLOW;",
     cwd: CN, build: CN_BUILD, test: CN_TEST,
-    desc: "S1 fail-closed seam broken — a missing pin defaults to +1 instead of 0 (absence-of-evidence → ALLOW)",
+    desc: "S1 fail-closed seam broken — a missing pin defaults to +1 instead of the typed UNKNOWN (absence-of-evidence → ALLOW)",
   },
 ];
 
@@ -278,15 +278,18 @@ const QUORUM_GOV = [
     find: "  return v === Verdict.ALLOW ? \"allow\" : \"deny\";",
     replace: "  return v === Verdict.DENY ? \"deny\" : \"allow\";",
     cwd: TC, build: TC_BUILD, test: TC_GOV_TEST,
-    desc: "collapse() at the boundary lets INDETERMINATE coerce to 'allow' (was deny-by-default: only ALLOW -> allow)",
+    desc: "collapse() at the boundary lets UNKNOWN (deprecated name INDETERMINATE) coerce to 'allow' (was deny-by-default: only ALLOW -> allow)",
   },
   {
     id: "consensus-tie-to-allow",
     file: `${TC}/src/three-valued-governance.ts`,
-    find: "  return (sum > 0 ? Verdict.ALLOW : sum < 0 ? Verdict.DENY : Verdict.INDETERMINATE);",
-    replace: "  return (sum >= 0 ? Verdict.ALLOW : sum < 0 ? Verdict.DENY : Verdict.INDETERMINATE);",
+    // Anchor updated 2026-10-25 (K3U2, K3-UNKNOWN-NOT-ZERO): consensusTritN no longer returns a ternary
+    // with INDETERMINATE; a split vote is the typed K3_UNKNOWN and an all-neutral tally is NEUTRAL 0.
+    // Same mutation (the tie branch lets sum === 0 ALLOW) on the current form.
+    find: "  if (sum > 0) return Verdict.ALLOW;",
+    replace: "  if (sum >= 0) return Verdict.ALLOW;",
     cwd: TC, build: TC_BUILD, test: TC_CONSENSUS_TEST,
-    desc: "consensusTritN tie (sum===0) coerces to ALLOW instead of INDETERMINATE (deny-by-default lost on a split vote)",
+    desc: "consensusTritN tie (sum===0) coerces to ALLOW instead of the typed UNKNOWN (split vote) or NEUTRAL 0 (all-neutral tally): deny-by-default lost on a split vote",
   },
 ];
 
@@ -421,7 +424,7 @@ const RD0361_IO_NETWORK = [
     replace: "verdict >= 0",
     cwd: "packages-ts/galerina-core-network",
     test: ["node", "--test", "tests/rd0361-cert-gate-execution.test.mjs"],
-    desc: "core-network cert-gate boundaryAuthorized weakened (INDETERMINATE 0 would AUTHORIZE — the revocation-unknown soft-fail hole); the differential must catch WASM != real .ts",
+    desc: "core-network cert-gate boundaryAuthorized weakened (a computed NEUTRAL 0 would AUTHORIZE — only exactly +1 may; UNKNOWN is the native -128, never 0, and must stay refused); the differential must catch WASM != real .ts",
   },
   {
     id: "rd0361-net-inboundguard-denymatch",
@@ -475,7 +478,7 @@ const RD0361_IO_NETWORK = [
     replace: "if verdict >= 0 {",
     cwd: "packages-ts/galerina-core-network",
     test: ["node", "--test", "tests/rd0361-b8-admission-execution.test.mjs"],
-    desc: "core-network b8-admission authorized weakened (INDETERMINATE 0 would AUTHORIZE — B8's TLS soft-fail hole); the differential must catch WASM != real .ts",
+    desc: "core-network b8-admission authorized weakened (a NEUTRAL 0 would AUTHORIZE — B8's TLS soft-fail hole; only exactly +1 may); the differential must catch WASM != real .ts",
   },
 ];
 
@@ -545,7 +548,7 @@ const RD0361_APPKERNEL_TOWER = [
     replace: "if g >= 0 { return 0 }",
     cwd: "packages-ts/galerina-tower-citizen",
     test: ["node", "--test", "tests/rd0361-transport-fsm-execution.test.mjs"],
-    desc: "tower-citizen transport-fsm s4NextState weakened (an INDETERMINATE 0 reverify would RESUME to Established -- manufactured authority, INV-2/INV-5/INV-6, resume must ride === ALLOW only); the differential must catch WASM != real .ts",
+    desc: "tower-citizen transport-fsm s4NextState weakened (a NEUTRAL 0 reverify would RESUME to Established -- manufactured authority, INV-2/INV-5/INV-6, resume must ride === ALLOW only); the differential must catch WASM != real .ts",
   },
   {
     id: "rd0361-tc-governance-quorum",
