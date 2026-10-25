@@ -100,7 +100,7 @@ function operand(v: unknown, where: string): Verdict {
 export function vAnd(a: Verdict, b: Verdict): Verdict {
   const x = operand(a, "vAnd");
   const y = operand(b, "vAnd");
-  if (x === K3_UNKNOWN || y === K3_UNKNOWN) return K3_UNKNOWN;
+  if (isK3Unknown(x) || isK3Unknown(y)) return K3_UNKNOWN;
   return asVerdict(minTrit(x, y));
 }
 
@@ -108,14 +108,14 @@ export function vAnd(a: Verdict, b: Verdict): Verdict {
 export function vOr(a: Verdict, b: Verdict): Verdict {
   const x = operand(a, "vOr");
   const y = operand(b, "vOr");
-  if (x === K3_UNKNOWN || y === K3_UNKNOWN) return K3_UNKNOWN;
+  if (isK3Unknown(x) || isK3Unknown(y)) return K3_UNKNOWN;
   return asVerdict(maxTrit(x, y));
 }
 
 /** K3 ¬: ALLOW ↔ DENY, NEUTRAL ↦ NEUTRAL, UNKNOWN ↦ UNKNOWN; junk → refusal. */
 export function vNot(a: Verdict): Verdict {
   const x = operand(a, "vNot");
-  if (x === K3_UNKNOWN) return K3_UNKNOWN;
+  if (isK3Unknown(x)) return K3_UNKNOWN;
   return asVerdict(negTrit(x));
 }
 
@@ -282,7 +282,7 @@ export function consensusTritN(votes: readonly Verdict[]): Verdict {
   let nonZero = false;
   for (const raw of votes) {
     const v = operand(raw, "consensusTritN");
-    if (v === K3_UNKNOWN) { unknown = true; continue; }
+    if (isK3Unknown(v)) { unknown = true; continue; }
     if (v !== 0) nonZero = true;
     sum += v;
   }
