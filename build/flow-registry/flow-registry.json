@@ -757,49 +757,49 @@
       "unit": "region-keys",
       "flow": "admitKeyId",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 62
+      "line": 61
     },
     {
       "qualified": "region-keys.admitKeySource",
       "unit": "region-keys",
       "flow": "admitKeySource",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 39
+      "line": 38
     },
     {
       "qualified": "region-keys.admitStop",
       "unit": "region-keys",
       "flow": "admitStop",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 121
+      "line": 120
     },
     {
       "qualified": "region-keys.requestPersist",
       "unit": "region-keys",
       "flow": "requestPersist",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 96
+      "line": 95
     },
     {
       "qualified": "region-keys.startupKek",
       "unit": "region-keys",
       "flow": "startupKek",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 135
+      "line": 134
     },
     {
       "qualified": "region-keys.unwrapDek",
       "unit": "region-keys",
       "flow": "unwrapDek",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 223
+      "line": 222
     },
     {
       "qualified": "region-keys.useKey",
       "unit": "region-keys",
       "flow": "useKey",
       "file": "packages/fungi/memory/src/region-keys.fungi",
-      "line": 183
+      "line": 182
     },
     {
       "qualified": "release-commit-point.ackStep",

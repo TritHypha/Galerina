@@ -32,7 +32,6 @@
 /// Sequential if-return style (durable-store.fungi); every path ends in a
 ///   typed refusal.
 
-import "./release-commit-point.fungi"
 import "./secrets-provider-port.fungi"
 
 /// source: 0 OS_CSPRNG 1 DERIVED_FROM_MASTER 2 USER_SUPPLIED 3 CONSTANT else Unlisted
