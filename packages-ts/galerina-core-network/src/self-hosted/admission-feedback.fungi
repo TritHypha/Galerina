@@ -1,7 +1,10 @@
 @version 1
 /// admission-feedback twin — the telemetry → K3 admission side-signal decision surface of
 /// admission-feedback.ts (the closed runtime self-throttle). It maps a LIVE telemetry reading to a
-/// DEGRADE-ONLY Verdict: ALLOW = 1, INDETERMINATE = 0, DENY = -1.
+/// DEGRADE-ONLY Verdict: ALLOW = 1, DENY = -1, UNKNOWN = k3Unknown() (-128). Trit 0 is NEUTRAL and is
+/// never used for undecided (K3-UNKNOWN-NOT-ZERO, owner decision D-A, Phillip 2026-10-25 18:28 GMT).
+/// Rejected: 0 for undecided (conflates NEUTRAL); NEUTRAL for throttle (UNKNOWN fails closed and matches
+/// the shipped .ts, whose INDETERMINATE is now the K3_UNKNOWN alias).
 ///
 /// The single safety property (inherited from the K3 algebra): the signal is at most +1, so folding
 /// it via vAnd (= min) can only LOWER an admission verdict, never lift it — telemetry can throttle a
@@ -11,7 +14,14 @@
 /// Host floor (stays .ts): reading the health probe + the metrics snapshot, resolving the numeric
 /// thresholds (throttle default 0.5, opt-in deny), the [0,1] range checks. This twin is the fold.
 
-/// vAnd — the K3 conjunction = numeric min. The worst (most-restrictive) operand wins (No-Coercion).
+// The one native UNKNOWN sentinel. Compare by equality with k3Unknown(); it is never a trit.
+pure flow k3Unknown() -> Int
+contract { intent { "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit." } }
+{
+  return -128
+}
+
+/// vAnd — the K3 conjunction = numeric min (UNKNOWN = -128 is below DENY, so it is infectious). The worst (most-restrictive) operand wins (No-Coercion).
 pure flow vAnd(a: Int, b: Int) -> Int
 contract { intent { "Apply K3 conjunction by returning the most restrictive operand." } }
 {
@@ -28,17 +38,17 @@ contract { intent { "Map telemetry to a degrade-only K3 side-signal that cannot 
 {
   mut v: Int = 1
   if healthDegrades == true {
-    v = vAnd(v, 0)
+    v = vAnd(v, k3Unknown())
   }
   if scorePresent == true {
     if scoreGarbage == true {
-      v = vAnd(v, 0)
+      v = vAnd(v, k3Unknown())
     } else {
       if scoreHardDeny == true {
         v = vAnd(v, 0 - 1)
       } else {
         if scoreThrottle == true {
-          v = vAnd(v, 0)
+          v = vAnd(v, k3Unknown())
         }
       }
     }

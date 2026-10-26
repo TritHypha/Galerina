@@ -2,8 +2,13 @@
 // pure K3 folds are proven EQUAL to the real three-valued-governance.ts + the fail-closed sub-gate spec.
 //
 // cert-gate = the S1 K3 cert/channel-validation gate (KB galerina-b8-governed-transport §S1): a channel opens
-// IFF the K3 vAnd-reduce (min) over {pin, chain, expiry, revocation} is ALLOW; a revocation-UNKNOWN (0)
-// collapses the channel to DENY by the ALGEBRA, closing the public-web soft-fail hole.
+// IFF the K3 vAnd-reduce (min) over {pin, chain, expiry, revocation} is ALLOW; a revocation-UNKNOWN
+// (the native sentinel k3Unknown() = -128, never the trit 0) collapses the channel to DENY by the ALGEBRA,
+// closing the public-web soft-fail hole.
+// K3-UNKNOWN-NOT-ZERO (owner decision D-A, Phillip 2026-10-25 18:28 GMT): every missing / errored / un-provable
+// sub-gate factor is UNKNOWN (-128), never 0. Rejected: 0 (conflates NEUTRAL, a computed settled trit);
+// NEUTRAL for "no pin configured" (UNKNOWN fails closed and matches the shipped .ts, whose INDETERMINATE is now
+// the K3_UNKNOWN alias). The shipped K3 is compared through the identity-only codec (never UNKNOWN -> 0).
 //   R0  cert-gate.fungi `galerina build`s to a real, signable WASM (buildable now — no P9, no DSS.wasm).
 //   R1  that WASM is signed + admitted through the attestation-first #105 gate + instantiated.
 //   R3  FAIL-CLOSED DIFFERENTIAL: vAnd/certVerdict/withSideSignal ≡ the REAL shipped K3 (tower-citizen), and
@@ -15,19 +20,22 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { decodeK3, encodeK3 } from "./fixtures/rd0361-k3-codec.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "..", "galerina-core-compiler", "dist", "index.js");
 const K3MOD = join(HERE, "..", "..", "galerina-tower-citizen", "dist", "three-valued-governance.js");
 const TWIN = join(HERE, "..", "src", "self-hosted", "cert-gate.fungi");
-const TRITS = [-1, 0, 1]; // DENY · INDETERMINATE · ALLOW
+const UNKNOWN = -128; // native K3 UNKNOWN sentinel k3Unknown(), never a trit
+const TRITS = [-1, 0, 1]; // DENY · NEUTRAL · ALLOW
+const VALUES = [UNKNOWN, -1, 0, 1]; // the native K3 domain
 const BOOLS = [false, true];
 
 // Fail-closed reference for the four cert sub-verdicts — the EXACT spec written in cert-gate.fungi's intents.
-const refPin = (cfg, present, match) => (!cfg ? 0 : !present ? 0 : match ? 1 : -1);
-const refChain = (valid, invalid) => (valid ? 1 : invalid ? -1 : 0);
-const refExpiry = (known, within) => (!known ? 0 : within ? 1 : -1);
-const refRevocation = (revoked, good, fresh) => (revoked ? -1 : !good ? 0 : !fresh ? 0 : 1);
+const refPin = (cfg, present, match) => (!cfg ? UNKNOWN : !present ? UNKNOWN : match ? 1 : -1);
+const refChain = (valid, invalid) => (valid ? 1 : invalid ? -1 : UNKNOWN);
+const refExpiry = (known, within) => (!known ? UNKNOWN : within ? 1 : -1);
+const refRevocation = (revoked, good, fresh) => (revoked ? -1 : !good ? UNKNOWN : !fresh ? UNKNOWN : 1);
 const bit = (b) => (b ? 1 : 0);
 
 test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K3 + fail-closed sub-gate spec", async () => {
@@ -61,17 +69,19 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
   const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
   const { instance } = await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host });
   const X = instance.exports;
-  for (const f of ["vAnd", "pinMatchVerdict", "chainValidVerdict", "notExpiredVerdict", "revocationVerdict", "certVerdict", "withSideSignal", "boundaryAuthorized", "revocationRecheckDue"])
+  for (const f of ["vAnd", "k3Unknown", "pinMatchVerdict", "chainValidVerdict", "notExpiredVerdict", "revocationVerdict", "certVerdict", "withSideSignal", "boundaryAuthorized", "revocationRecheckDue"])
     assert.equal(typeof X[f], "function", `${f} admitted + exported (R1)`);
+  assert.equal(X.k3Unknown(), UNKNOWN, "native UNKNOWN sentinel is -128, never the trit 0");
+  const k3 = (v) => encodeK3(v); // shipped TS Verdict -> native Int (identity-only; throws on anything else)
 
   // ── R3 · differential vs the REAL three-valued-governance.ts + the fail-closed sub-gate spec ──
   // vAnd ≡ shipped vAnd (all 9 trit pairs)
-  for (const a of TRITS) for (const b of TRITS) assert.equal(X.vAnd(a, b), K.vAnd(a, b), `vAnd(${a},${b})`);
+  for (const a of VALUES) for (const b of VALUES) assert.equal(X.vAnd(a, b), k3(K.vAnd(decodeK3(a), decodeK3(b))), `vAnd(${a},${b})`);
   // withSideSignal ≡ vAnd (degrade-only min — No-Coercion: can only lower, never lift)
-  for (const a of TRITS) for (const b of TRITS) assert.equal(X.withSideSignal(a, b), K.vAnd(a, b), `withSideSignal(${a},${b})`);
+  for (const a of VALUES) for (const b of VALUES) assert.equal(X.withSideSignal(a, b), k3(K.vAnd(decodeK3(a), decodeK3(b))), `withSideSignal(${a},${b})`);
   // certVerdict ≡ allOf of the 4 cert sub-trits (exhaustive, 81 combos)
-  for (const p of TRITS) for (const c of TRITS) for (const n of TRITS) for (const r of TRITS)
-    assert.equal(X.certVerdict(p, c, n, r), K.allOf([p, c, n, r]), `certVerdict(${p},${c},${n},${r})`);
+  for (const p of VALUES) for (const c of VALUES) for (const n of VALUES) for (const r of VALUES)
+    assert.equal(X.certVerdict(p, c, n, r), k3(K.allOf([p, c, n, r].map(decodeK3))), `certVerdict(${p},${c},${n},${r})`);
   // the four fail-closed sub-gates ≡ their exact spec (exhaustive over the boolean inputs)
   for (const cfg of BOOLS) for (const pr of BOOLS) for (const m of BOOLS)
     assert.equal(X.pinMatchVerdict(bit(cfg), bit(pr), bit(m)), refPin(cfg, pr, m), `pinMatchVerdict(${cfg},${pr},${m})`);
@@ -83,9 +93,19 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
     assert.equal(X.revocationVerdict(bit(rv), bit(g), bit(fr)), refRevocation(rv, g, fr), `revocationVerdict(${rv},${g},${fr})`);
 
   // ── Headline closure: revocation-UNKNOWN (stale 'good') collapses the channel to DENY by the algebra ──
-  const staleGood = X.revocationVerdict(bit(false), bit(true), bit(false)); // good but not fresh → 0
-  assert.equal(staleGood, 0, "revocation stale-'good' → INDETERMINATE, never ALLOW");
-  assert.equal(X.certVerdict(1, 1, 1, staleGood), 0, "a lone +1 cannot lift the 0 — channel folds to DENY (soft-fail closed)");
+  const staleGood = X.revocationVerdict(bit(false), bit(true), bit(false)); // good but not fresh → UNKNOWN
+  assert.equal(staleGood, UNKNOWN, "revocation stale-'good' → UNKNOWN (-128), never ALLOW and never the trit 0");
+  assert.equal(X.certVerdict(1, 1, 1, staleGood), UNKNOWN, "a lone +1 cannot lift UNKNOWN — channel folds to DENY (soft-fail closed)");
+  assert.equal(decode(X.boundaryAuthorized(X.certVerdict(1, 1, 1, staleGood))), "denied", "UNKNOWN collapses to denied at the boundary");
+  // K3U2: no sub-gate ever emits the trit 0 (an un-provable factor is UNKNOWN, a decided one is +1 or -1)
+  for (const a of BOOLS) for (const b of BOOLS) for (const c of BOOLS) {
+    assert.notEqual(X.pinMatchVerdict(bit(a), bit(b), bit(c)), 0, "pin never 0");
+    assert.notEqual(X.revocationVerdict(bit(a), bit(b), bit(c)), 0, "revocation never 0");
+  }
+  for (const a of BOOLS) for (const b of BOOLS) {
+    assert.notEqual(X.chainValidVerdict(bit(a), bit(b)), 0, "chain never 0");
+    assert.notEqual(X.notExpiredVerdict(bit(a), bit(b)), 0, "expiry never 0");
+  }
 
   // ── boundaryAuthorized — the fail-closed boundary COLLAPSE (the actual admit/deny), authorize IFF the
   //    composed verdict is exactly +1 (ALLOW); INDETERMINATE (0) and DENY (-1) BOTH refuse. Previously the
@@ -93,7 +113,7 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
   //    0-collapse diverged would have passed. Surfaced + closed by the SEC-002 anti-neuter (a weakened
   //    `verdict >= 0` boundary must now fail the differential). ──
   const refAuthorized = (v) => (v === 1 ? "authorized" : "denied");
-  for (const v of TRITS) assert.equal(decode(X.boundaryAuthorized(v)), refAuthorized(v), `boundaryAuthorized(${v}) (label-verified)`);
+  for (const v of VALUES) assert.equal(decode(X.boundaryAuthorized(v)), refAuthorized(v), `boundaryAuthorized(${v}) (label-verified)`);
 
   // ── revocationRecheckDue — the S4 mid-stream re-check cadence (fail-closed totality: due at every chunk
   //    boundary; a valid 'poll' is also due once its interval elapsed; never 'never'). String mode ARG is

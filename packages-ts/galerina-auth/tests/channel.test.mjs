@@ -24,12 +24,12 @@ test("all factors proven → ALLOW (+1)", () => {
   assert.equal(channelIdentityVerdict(goodInput()), Verdict.ALLOW);
 });
 
-test("revocation UNKNOWN → INDETERMINATE (0) — the headline soft-fail closure", () => {
-  assert.equal(channelIdentityVerdict(goodInput({ revocation: "unknown" })), Verdict.INDETERMINATE);
+test("revocation UNKNOWN → UNKNOWN (typed, never 0) — the headline soft-fail closure", () => {
+  assert.equal(channelIdentityVerdict(goodInput({ revocation: "unknown" })), Verdict.UNKNOWN);
 });
 
-test("revocation absent → INDETERMINATE (0), never +1 (fail-closed seam)", () => {
-  assert.equal(channelIdentityVerdict(goodInput({ revocation: undefined })), Verdict.INDETERMINATE);
+test("revocation absent → UNKNOWN (typed, never 0), never +1 (fail-closed seam)", () => {
+  assert.equal(channelIdentityVerdict(goodInput({ revocation: undefined })), Verdict.UNKNOWN);
 });
 
 test("revoked → DENY (−1)", () => {
@@ -48,18 +48,18 @@ test("expired (now > notAfter) → DENY (−1)", () => {
   assert.equal(channelIdentityVerdict(goodInput({ now: NOW + 5000 })), Verdict.DENY);
 });
 
-test("empty input → INDETERMINATE (0), nothing proven", () => {
-  assert.equal(channelIdentityVerdict({}), Verdict.INDETERMINATE);
+test("empty input → UNKNOWN (typed, never 0), nothing proven", () => {
+  assert.equal(channelIdentityVerdict({}), Verdict.UNKNOWN);
 });
 
 test("degrade-only side-signal can only LOWER, never lift (No-Coercion)", () => {
   // A 0 side-signal pulls a proven +1 channel down to 0; it can never raise a verdict.
-  assert.equal(channelIdentityVerdict(goodInput({ sideSignals: [Verdict.INDETERMINATE] })), Verdict.INDETERMINATE);
+  assert.equal(channelIdentityVerdict(goodInput({ sideSignals: [Verdict.UNKNOWN] })), Verdict.UNKNOWN);
   // A +1 side-signal does not change an already-+1 verdict and cannot lift a 0.
   assert.equal(channelIdentityVerdict(goodInput({ sideSignals: [Verdict.ALLOW] })), Verdict.ALLOW);
   assert.equal(
     channelIdentityVerdict(goodInput({ revocation: "unknown", sideSignals: [Verdict.ALLOW] })),
-    Verdict.INDETERMINATE,
+    Verdict.UNKNOWN,
   );
 });
 

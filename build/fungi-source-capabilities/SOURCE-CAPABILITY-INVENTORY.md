@@ -4,38 +4,38 @@ Generated from the retirement graph. This is measured source demand, not SLIDE
 admission, execution parity, retirement credit or production authority.
 
 - Files: 2544
-- Flows: 3294
-- Bytes: 8350843
-- Retirement graph: `sha256:0e1facb0e22193c08bb60c57fadeeb20a994a82c901ef941f9de8df2d6f5b561`
+- Flows: 3307
+- Bytes: 8366182
+- Retirement graph: `sha256:bceea737a3598d3a598d102415b8c86358b31f31ed60425b7a9e42375359a6fc`
 
 ## AST kinds
 
 | Kind | Count |
 |---|---:|
-| `identifier` | 169382 |
-| `letDecl` | 139839 |
-| `block` | 19509 |
-| `stringLiteral` | 18535 |
-| `returnStmt` | 17429 |
-| `typeRef` | 15797 |
-| `ifStmt` | 14215 |
-| `paramDecl` | 13686 |
-| `callExpr` | 7389 |
-| `binaryExpr` | 6991 |
-| `numberLiteral` | 6322 |
-| `memberExpr` | 4766 |
-| `pureFlowDecl` | 3282 |
+| `identifier` | 169698 |
+| `letDecl` | 139856 |
+| `block` | 19612 |
+| `stringLiteral` | 18583 |
+| `returnStmt` | 17501 |
+| `typeRef` | 15824 |
+| `ifStmt` | 14266 |
+| `paramDecl` | 13700 |
+| `callExpr` | 7511 |
+| `binaryExpr` | 7046 |
+| `numberLiteral` | 6355 |
+| `memberExpr` | 4771 |
+| `pureFlowDecl` | 3295 |
 | `program` | 2544 |
-| `boolLiteral` | 2390 |
-| `assignStmt` | 2160 |
-| `matchArm` | 1382 |
-| `contractDecl` | 1317 |
-| `intentDecl` | 1317 |
-| `mutDecl` | 833 |
-| `matchExpr` | 413 |
+| `boolLiteral` | 2516 |
+| `assignStmt` | 2181 |
+| `matchArm` | 1410 |
+| `contractDecl` | 1330 |
+| `intentDecl` | 1330 |
+| `mutDecl` | 849 |
+| `matchExpr` | 417 |
+| `whileStmt` | 353 |
 | `checkArm` | 351 |
-| `whileStmt` | 347 |
-| `unaryExpr` | 300 |
+| `unaryExpr` | 304 |
 | `recordDecl` | 211 |
 | `checkExpr` | 117 |
 | `listLiteral` | 115 |
@@ -58,12 +58,12 @@ admission, execution parity, retirement credit or production authority.
 
 | Type | Count |
 |---|---:|
-| `Bool` | 10993 |
-| `String` | 2676 |
-| `Int` | 963 |
+| `Bool` | 11001 |
+| `String` | 2691 |
+| `Int` | 970 |
 | `Bytes` | 143 |
-| `Array<Auto>` | 82 |
-| `Verdict` | 61 |
+| `Array<Auto>` | 78 |
+| `Verdict` | 60 |
 | `Array<Token>` | 46 |
 | `SLIDEV2AImportCursor` | 36 |
 | `Array<Int>` | 22 |
@@ -79,14 +79,14 @@ admission, execution parity, retirement credit or production authority.
 | `SLIDEV2ABlock` | 11 |
 | `SLIDEV2ADecision` | 11 |
 | `SLIDEV2BLease` | 11 |
+| `Array<Stmt>` | 10 |
+| `Expr` | 10 |
 | `FlowEntry` | 10 |
 | `SLIDER1DecodedProgram` | 10 |
 | `SLIDEV2AInstruction` | 10 |
 | `SLIDEV2CAggregateDecision` | 10 |
 | `SLIDEV2DMemoryDecision` | 10 |
 | `SLIDEV2EExternalEvidenceExpectation` | 10 |
-| `Array<Stmt>` | 9 |
-| `Expr` | 9 |
 | `SLIDEG4CheckedSnapshot` | 9 |
 | `SLIDEV2AProgram` | 9 |
 | `SLIDEV2BCapabilityDecision` | 9 |
@@ -308,26 +308,26 @@ admission, execution parity, retirement credit or production authority.
 
 | Method | Count |
 |---|---:|
-| `append` | 714 |
+| `append` | 712 |
 | `count` | 566 |
-| `empty` | 510 |
+| `empty` | 553 |
 | `get` | 258 |
-| `length` | 189 |
+| `length` | 210 |
 | `of` | 170 |
-| `toString` | 83 |
+| `toString` | 84 |
 | `encode` | 56 |
 | `contains` | 37 |
 | `unwrapOr` | 35 |
+| `charAt` | 33 |
 | `sha256Hex` | 33 |
-| `charAt` | 31 |
-| `startsWith` | 16 |
+| `startsWith` | 20 |
+| `slice` | 18 |
 | `bitAnd` | 14 |
 | `isEmpty` | 14 |
 | `fromHex` | 13 |
-| `slice` | 13 |
 | `trim` | 13 |
+| `isDigit` | 12 |
 | `toInt` | 12 |
-| `isDigit` | 11 |
 | `codePoint` | 10 |
 | `first` | 9 |
 | `bitOr` | 7 |
@@ -350,16 +350,16 @@ admission, execution parity, retirement credit or production authority.
 
 | Operator | Count |
 |---|---:|
-| `==` | 2453 |
-| `+` | 1058 |
+| `==` | 2475 |
+| `+` | 1068 |
 | `!=` | 986 |
 | `\|\|` | 778 |
-| `<` | 630 |
-| `-` | 477 |
+| `<` | 641 |
+| `-` | 482 |
 | `&&` | 451 |
-| `>` | 258 |
-| `>=` | 77 |
-| `*` | 57 |
+| `>` | 264 |
+| `>=` | 81 |
+| `*` | 58 |
 | `<=` | 32 |
 | `/` | 26 |
 | `%` | 6 |

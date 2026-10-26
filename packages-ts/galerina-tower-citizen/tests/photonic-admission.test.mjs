@@ -71,11 +71,13 @@ test("deny: signature from the wrong key fails verification", () => {
   assert.match(r.reason, /signature/i);
 });
 
-test("indeterminate: no attestation is undischarged (FUNGI-GOV-3VL-001), not admitted", () => {
+test("indeterminate: no attestation is undischarged (FUNGI-GOV-3VL-001), not admitted", async () => {
   const { policy } = fixture();
   const r = admitPhotonicConfig(BLOB, undefined, policy);
   assert.equal(r.admitted, false);
-  assert.equal(r.decision.verdict, 0, "INDETERMINATE");
+  const { K3_UNKNOWN, isK3Unknown } = await import("../dist/index.js");
+  assert.equal(r.decision.verdict, K3_UNKNOWN, "K3U2: undischarged is the typed UNKNOWN");
+  assert.ok(isK3Unknown(r.decision.verdict) && r.decision.verdict !== 0, "never the trit 0");
   assert.equal(r.decision.diagnostic?.code, "FUNGI-GOV-3VL-001");
 });
 

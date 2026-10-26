@@ -546,10 +546,17 @@ export function createRegistryRotationContext(
 /**
  * Scheduler decision only. ALLOW means “propose rotation”; it never changes
  * the ring. A not-yet-due schedule abstains; malformed or rollback facts deny.
+ *
+ * K3U2 (2026-10-25): "not due" is a settled, computed fact, so it is NEUTRAL (0),
+ * never the typed UNKNOWN, and it emits no FUNGI-GOV-3VL-001 diagnostic (that code
+ * is reserved for UNKNOWN). Zero-trust choice: NEUTRAL still denies at every boundary
+ * (only === ALLOW proposes). Rejected: UNKNOWN (reads a known "not yet" as
+ * cannot-decide and dilutes the 3VL audit) and DENY (conflates abstain with
+ * malformed/rollback facts). The diagnostic sink is kept for signature stability.
  */
 export function registryRotationTriggerVerdict(
   trigger: RegistryRotationTrigger,
-  onDiagnostic?: (diagnostic: GovernanceDiagnostic) => void,
+  _onDiagnostic?: (diagnostic: GovernanceDiagnostic) => void,
 ): Verdict {
   if (
     !validTick(trigger.nowTick)
@@ -568,13 +575,7 @@ export function registryRotationTriggerVerdict(
       >= trigger.rotateAfterTicks
     || trigger.signedArtifacts >= trigger.maxSignedArtifacts;
   if (!due) {
-    onDiagnostic?.({
-      code: "FUNGI-GOV-3VL-001",
-      name: "INDETERMINATE_COLLAPSED_TO_DENY",
-      severity: "warning",
-      message: "registry rotation trigger is not due; no phase may advance",
-    });
-    return Verdict.INDETERMINATE;
+    return Verdict.NEUTRAL;
   }
   return Verdict.ALLOW;
 }

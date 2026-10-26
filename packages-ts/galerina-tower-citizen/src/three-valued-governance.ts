@@ -1,109 +1,144 @@
 /**
  * three-valued-governance.ts — proved fail-closed governance verdicts (Direction A)
  *
- * A governance verdict is three-valued, encoded as a balanced trit:
- *   +1 = ALLOW          (proof discharged, posture positive — may authorize)
- *   -1 = DENY           (definite refusal)
- *    0 = INDETERMINATE  (proof undischarged / evidence incomplete / substrate 0)
+ * K3-UNKNOWN-NOT-ZERO (Phillip 2026-10-25 13:15 GMT): trit 0 is NEVER "unknown". A governance verdict is
+ * a balanced trit PLUS a distinct typed UNKNOWN sentinel:
+ *   +1 = ALLOW        (proof discharged, posture positive — may authorize)
+ *    0 = NEUTRAL      (a COMPUTED neutral trit, e.g. K3 AND of ALLOW and NEUTRAL; denies at the boundary)
+ *   -1 = DENY         (definite refusal)
+ *   K3_UNKNOWN        (undecided: empty fold, consensus split, malformed evidence, garbage confidence).
+ *                     A frozen non-number object, never ==/=== any trit, never minted from a number.
  *
- * The calculus is Kleene strong three-valued logic (K3). It is NOT re-implemented:
- * it reuses the #173/#196 balanced-ternary gates from tpl-simulator.ts, which are
- * already exactly K3 over the trit (DENY < INDETERMINATE < ALLOW):
- *   minTrit = Kleene ∧   ·   maxTrit = Kleene ∨   ·   negTrit = Kleene ¬
- * We import and wrap them with Verdict-typed names so tpl-simulator's semantics
- * (depended on by gate()/tmacVector()/consensusTrit) are never altered here. The
- * exact K3 match is pinned by tests/three-valued-governance.test.mjs — if a future
- * change made the gates diverge from K3, that oracle fails.
+ * Calculus: K3 over the trits (reusing tpl-simulator's minTrit/maxTrit/negTrit gates, unaltered), with
+ * UNKNOWN INFECTIOUS (weak Kleene): any UNKNOWN operand of vAnd / vOr / vNot yields UNKNOWN, so an
+ * undecided clause can never be absorbed by an OR into ALLOW. Rejected: strong Kleene
+ * vOr(UNKNOWN, ALLOW) = ALLOW; encoding UNKNOWN as 0, NaN, null or a 4th number (mintable by arithmetic).
+ * Every operand is matched explicitly; anything that is neither a trit nor THE sentinel is a hard refusal.
  *
- * Verdicts stay three-valued through composition; they collapse to a binary
- * decision ONLY at the trust boundary:
- *   collapse(+1) = allow ;  collapse(0) = deny (audited) ;  collapse(-1) = deny
- *   authorize(v) ⇔ v = +1
- * An INDETERMINATE collapsed to deny emits FUNGI-GOV-3VL-001 — never silent.
+ * Collapse ONLY at the trust boundary:
+ *   collapse(+1) = allow ; collapse(0) = deny ; collapse(-1) = deny ; collapse(UNKNOWN) = deny
+ *   authorize(v) ⇔ v === +1
+ * UNKNOWN (or any non-verdict) collapsed to deny emits FUNGI-GOV-3VL-001 — never silent. NEUTRAL and DENY
+ * deny without the 3VL diagnostic (0 is a computed trit, not an undecided one). No new code is minted.
  *
- * See ../ZTF-Knowledge-Bases/galerina-three-valued-governance.md for the spec, the
- * fail-closed soundness theorem, and the no-coercion proof.
+ * See ../ZTF-Knowledge-Bases/galerina-three-valued-governance.md for the spec.
  */
 
-import { minTrit, maxTrit, negTrit } from "./trit-gates.js";
+import { SecurityTrap, minTrit, maxTrit, negTrit } from "./trit-gates.js";
 
-// ── The trit verdict ─────────────────────────────────────────────────────────
+// ── The typed UNKNOWN sentinel ───────────────────────────────────────────────
 
-/** A governance verdict as a balanced trit. */
-export type Verdict = -1 | 0 | 1;
+/** The type of the one UNKNOWN sentinel. Identity is the only valid test (`v === K3_UNKNOWN`). */
+export interface K3Unknown {
+  readonly kind: "K3_UNKNOWN";
+}
 
 /**
- * Named verdict states. Same numeric encoding as tpl-simulator's TritState
- * (COMMIT/HOLD/REJECT) and core-logic's Tri (TRUE/UNKNOWN/FALSE) — a Verdict IS
- * a trit, so the existing gates operate on it directly.
+ * THE UNKNOWN verdict. Frozen, non-numeric (Number(K3_UNKNOWN) is NaN, never a trit), and compared by
+ * identity only: a JSON round-trip, a spread copy or any structurally equal object is NOT the sentinel and
+ * is refused by every operation below.
  */
-export const Verdict = {
-  DENY: -1,          // definite refusal
-  INDETERMINATE: 0,  // fail-closed neutral — undecided
-  ALLOW: 1,          // may authorize
-} as const;
+export const K3_UNKNOWN: K3Unknown = Object.freeze({
+  kind: "K3_UNKNOWN" as const,
+  toString(): string { return "K3_UNKNOWN"; },
+});
 
-// ── The blessed Verdict mint — "parse, don't cast" (S0 cast-hygiene, RD 2026-07-18) ──
+/** True only for the one real sentinel (identity). */
+export function isK3Unknown(v: unknown): v is K3Unknown {
+  return v === K3_UNKNOWN;
+}
+
+// ── The verdict ──────────────────────────────────────────────────────────────
+
+/** A computed balanced trit. */
+export type Trit = -1 | 0 | 1;
+
+/** A governance verdict: a computed trit, or the typed UNKNOWN sentinel. */
+export type Verdict = Trit | K3Unknown;
 
 /**
- * The ONE sanctioned trit→Verdict transition. Every place that turns a COMPUTED trit — a K3 gate result from
- * tpl-simulator's `number`-typed minTrit/maxTrit/negTrit, or a validated tensor element — into a Verdict
- * routes through here, so a bare `x as Verdict` never mints governance authority past the type-checker (the
- * authority-laundering pattern `scripts/audit-cast-hygiene.mjs` forbids). It VALIDATES, it does not assert: a
- * value outside {-1, 0, 1} is a fail-closed hard error, never a silently-minted invalid verdict (the `if`
- * also narrows `number` → Verdict, so the mint itself needs no cast). Do NOT call this on a raw substrate
- * READING — a reading is a measurement, min-folded via `effectiveVerdict`; it can only degrade a verdict,
- * never be authorized on its own.
+ * Named verdict states. `INDETERMINATE` is kept as a deprecated NAME for UNKNOWN (the sentinel, not 0) so
+ * existing "could not decide / abstain" call sites keep their fail-closed, audited meaning; new code uses
+ * `UNKNOWN`. A computed 0 is `NEUTRAL`.
  */
-export function asVerdict(t: number): Verdict {
+export const Verdict = Object.freeze({
+  DENY: -1 as const,
+  NEUTRAL: 0 as const,
+  ALLOW: 1 as const,
+  UNKNOWN: K3_UNKNOWN,
+  /** @deprecated use Verdict.UNKNOWN; this is the K3_UNKNOWN sentinel, never the trit 0. */
+  INDETERMINATE: K3_UNKNOWN,
+});
+
+// ── The blessed trit mint — "parse, don't cast" (S0 cast-hygiene, RD 2026-07-18) ──
+
+/**
+ * The ONE sanctioned number→trit transition. It VALIDATES, it does not assert: a value outside {-1, 0, 1}
+ * (including the UNKNOWN sentinel and any forged copy of it) is a fail-closed hard error. asVerdict(0) is
+ * NEUTRAL, never UNKNOWN: UNKNOWN is never minted from a number.
+ */
+export function asVerdict(t: number): Trit {
   if (t === -1 || t === 0 || t === 1) return t;
-  throw new Error(`asVerdict: ${t} is not a governance verdict trit (expected -1, 0, or 1) — fail-closed`);
+  throw new Error(`asVerdict: ${describe(t)} is not a governance verdict trit (expected -1, 0, or 1) — fail-closed`);
 }
 
-// ── Kleene K3 calculus — Verdict-typed aliases of the shipped gates ───────────
+function describe(v: unknown): string {
+  try { return typeof v === "string" ? JSON.stringify(v) : String(v); } catch { return typeof v; }
+}
 
-/** Kleene ∧ (AND) — the more-cautious verdict wins (fail-closed). Delegates to minTrit. */
+/** Explicit operand match: UNKNOWN sentinel | trit | _ => hard refusal (fail-closed). */
+function operand(v: unknown, where: string): Verdict {
+  if (v === K3_UNKNOWN) return K3_UNKNOWN;
+  if (v === -1 || v === 0 || v === 1) return v;
+  // K3U2: junk keeps the governed SecurityTrap type the gate guards always raised (audit-typed refusal).
+  throw new SecurityTrap(`${where}: ${describe(v)} is neither a trit nor the K3_UNKNOWN sentinel — fail-closed`);
+}
+
+// ── K3 calculus with infectious UNKNOWN ──────────────────────────────────────
+
+/** K3 ∧ on trits (more-cautious wins); any UNKNOWN operand → UNKNOWN; junk → hard refusal. */
 export function vAnd(a: Verdict, b: Verdict): Verdict {
-  return asVerdict(minTrit(a, b));
+  const x = operand(a, "vAnd");
+  const y = operand(b, "vAnd");
+  if (isK3Unknown(x) || isK3Unknown(y)) return K3_UNKNOWN;
+  return asVerdict(minTrit(x, y));
 }
 
-/** Kleene ∨ (OR) — the more-permissive verdict wins. Delegates to maxTrit. */
+/** K3 ∨ on trits (more-permissive wins); any UNKNOWN operand → UNKNOWN (never ALLOW); junk → refusal. */
 export function vOr(a: Verdict, b: Verdict): Verdict {
-  return asVerdict(maxTrit(a, b));
+  const x = operand(a, "vOr");
+  const y = operand(b, "vOr");
+  if (isK3Unknown(x) || isK3Unknown(y)) return K3_UNKNOWN;
+  return asVerdict(maxTrit(x, y));
 }
 
-/** Kleene ¬ (NOT) — ALLOW ↔ DENY; INDETERMINATE ↦ INDETERMINATE (indeterminacy preserved). */
+/** K3 ¬: ALLOW ↔ DENY, NEUTRAL ↦ NEUTRAL, UNKNOWN ↦ UNKNOWN; junk → refusal. */
 export function vNot(a: Verdict): Verdict {
-  return asVerdict(negTrit(a));
+  const x = operand(a, "vNot");
+  if (isK3Unknown(x)) return K3_UNKNOWN;
+  return asVerdict(negTrit(x));
 }
 
 // ── Composition (deny-by-default empty handling) ──────────────────────────────
 
 /**
- * Conjunctive composition — "authorize only if EVERY clause allows."
- *
- * Deny-by-default: an empty clause set is INDETERMINATE (no clause granted
- * anything → no positive evidence → collapses to deny), NOT the vacuous-truth
- * ALLOW that a bare ∧-fold identity would give. Non-empty sets reduce WITHOUT an
- * ALLOW seed, so a single ALLOW clause is preserved (allOf([+1]) === ALLOW).
+ * Conjunctive composition. An empty clause set is UNKNOWN (no clause decided anything), never the
+ * vacuous-truth ALLOW and never the trit 0. Non-empty sets reduce without a seed.
  */
 export function allOf(verdicts: readonly Verdict[]): Verdict {
-  if (verdicts.length === 0) return Verdict.INDETERMINATE;
+  if (verdicts.length === 0) return K3_UNKNOWN;
   return verdicts.reduce((acc, v) => vAnd(acc, v));
 }
 
-/**
- * Disjunctive composition — "authorize if SOME clause allows."
- * Deny-by-default empty handling mirrors allOf: [] → INDETERMINATE → deny.
- */
+/** Disjunctive composition. Empty → UNKNOWN, mirroring allOf. */
 export function anyOf(verdicts: readonly Verdict[]): Verdict {
-  if (verdicts.length === 0) return Verdict.INDETERMINATE;
+  if (verdicts.length === 0) return K3_UNKNOWN;
   return verdicts.reduce((acc, v) => vOr(acc, v));
 }
 
 // ── The collapse rule + authorization (the trust boundary) ────────────────────
 
-/** Collapse a three-valued verdict to a binary decision. INDETERMINATE and DENY both deny. */
+/** Collapse to a binary decision: only ALLOW allows; NEUTRAL, DENY, UNKNOWN and junk deny. */
 export function collapse(v: Verdict): "allow" | "deny" {
   return v === Verdict.ALLOW ? "allow" : "deny";
 }
@@ -115,7 +150,7 @@ export function authorize(v: Verdict): boolean {
 
 // ── Audited boundary decision — FUNGI-GOV-3VL-001 ───────────────────────────────
 
-/** The diagnostic code for an indeterminate verdict collapsed to deny at a boundary. */
+/** The diagnostic code for an UNKNOWN verdict collapsed to deny at a boundary. */
 export const GOV_3VL_DIAGNOSTIC = "FUNGI-GOV-3VL-001" as const;
 
 /** Structured diagnostic record (shape compatible with the LogicDiagnostic family). */
@@ -136,37 +171,34 @@ export interface BoundaryDecision {
   readonly verdict: Verdict;
   readonly decision: "allow" | "deny";
   readonly authorized: boolean;
-  /** PRESENT IFF an INDETERMINATE verdict was collapsed to deny (FUNGI-GOV-3VL-001). */
+  /** PRESENT IFF an UNKNOWN (or non-verdict) value was collapsed to deny (FUNGI-GOV-3VL-001). */
   readonly diagnostic: BoundaryDiagnostic;
 }
 
-function indeterminateDiagnostic(): GovernanceDiagnostic {
+function unknownDiagnostic(): GovernanceDiagnostic {
   return {
     code: GOV_3VL_DIAGNOSTIC,
     name: "INDETERMINATE_COLLAPSED_TO_DENY",
     severity: "warning",
-    message: "indeterminate governance verdict reached a trust boundary → collapsed to deny",
+    message: "UNKNOWN governance verdict reached a trust boundary → collapsed to deny",
   };
 }
 
 /**
  * Resolve a verdict at the trust boundary, fail-closed and audited.
- *
- * - ALLOW (+1)         → authorized, decision "allow", no diagnostic.
- * - DENY (-1)          → not authorized, decision "deny", no diagnostic (ordinary policy denial).
- * - INDETERMINATE (0)  → not authorized, decision "deny", diagnostic FUNGI-GOV-3VL-001.
- *
- * The diagnostic is returned IN the result whenever a 0 is collapsed — it is
- * structurally impossible to drop an indeterminate verdict silently. The optional
- * sink lets a caller forward it to the AuditLogger egress.
+ *  - ALLOW (+1)          → authorized, "allow", no diagnostic.
+ *  - DENY (-1)           → "deny", no diagnostic (ordinary policy denial).
+ *  - NEUTRAL (0)         → "deny", no diagnostic (a computed trit, not undecided).
+ *  - UNKNOWN / _ (junk)  → "deny", FUNGI-GOV-3VL-001 (never silent).
  */
 export function decideAtBoundary(
   v: Verdict,
   onDiagnostic?: (d: GovernanceDiagnostic) => void,
 ): BoundaryDecision {
-  const diagnostic: BoundaryDiagnostic = v === Verdict.INDETERMINATE
-    ? { kind: "PRESENT", ...indeterminateDiagnostic() }
-    : { kind: "NONE" };
+  const isTrit = v === -1 || v === 0 || v === 1;
+  const diagnostic: BoundaryDiagnostic = isTrit
+    ? { kind: "NONE" }
+    : { kind: "PRESENT", ...unknownDiagnostic() };
   if (diagnostic.kind === "PRESENT" && onDiagnostic) {
     onDiagnostic({
       code: diagnostic.code,
@@ -182,7 +214,6 @@ export function decideAtBoundary(
     diagnostic,
   };
 }
-
 // ── Tensorized No-Coercion (notes/62 net-new, owner-approved 2026-06-25) ──────
 //
 // vAndTensor is a deny-by-default ARITY wrapper over the proven scalar vAnd: it folds an untrusted
@@ -215,7 +246,7 @@ export function vAndTensor(vCore: Int8Array, tSub: Int8Array): Int8Array {
     if ((a !== -1 && a !== 0 && a !== 1) || (b !== -1 && b !== 0 && b !== 1)) {
       throw new Error(`vAndTensor: non-trit element at index ${k} (${a}, ${b}) — fail-closed`);
     }
-    out[k] = vAnd(asVerdict(a), asVerdict(b));
+    out[k] = asVerdict(minTrit(a, b));
   }
   return out;
 }
@@ -236,36 +267,35 @@ export function vAndTensor2D(vCore: Int8Array, tSub: Int8Array, rows: number, co
   return vAndTensor(vCore, tSub); // element-wise; the 2-D shape is the caller's row-major interpretation
 }
 
-// ── Variadic ternary consensus (notes/62 §3, owner-approved 2026-06-25) ──────
+// ── Variadic ternary consensus (notes/62 §3, owner-approved 2026-06-25; K3U2 2026-10-25) ──
 //
-// consensusTritN generalises the 3-input `consensusTrit` (tpl-simulator) to N votes: the consensus is
-// the sign of the sum, with a TIE (or empty) collapsing to INDETERMINATE — fail-closed, never a guessed
-// ALLOW. It is re-implemented inline here (not imported from substrate-model's `majorityVote`) because
-// substrate-model already imports FROM this module — importing back would be a cycle. The no-divergence
-// oracle in the tests pins consensusTritN([a,b,c]) === consensusTrit(a,b,c) over all 27 triples, so the
-// two can never drift. Useful for NMR/redundancy:N folds where the 3-input kernel is too narrow.
+// Sign-of-sum over N votes, but an undecided outcome is UNKNOWN, never the trit 0:
+//  - any UNKNOWN vote → UNKNOWN (infectious);
+//  - empty → UNKNOWN; a split that sums to 0 → UNKNOWN; only UNANIMOUS 0 votes → NEUTRAL;
+//  - a non-trit, non-sentinel vote → hard refusal.
+// (tpl-simulator's 3-input consensusTrit still returns 0 on a tie; it is a later copies unit.)
 
-/** Sign-of-sum consensus over N Verdict votes; a tie (and the empty set) → INDETERMINATE (fail-closed). */
+/** Sign-of-sum consensus over N votes; tie / empty / UNKNOWN vote → K3_UNKNOWN (fail-closed). */
 export function consensusTritN(votes: readonly Verdict[]): Verdict {
   let sum = 0;
-  for (const v of votes) {
-    if (v !== -1 && v !== 0 && v !== 1) {
-      throw new Error(`consensusTritN: non-trit vote ${v} — fail-closed`);
-    }
+  let unknown = false;
+  let nonZero = false;
+  for (const raw of votes) {
+    const v = operand(raw, "consensusTritN");
+    if (isK3Unknown(v)) { unknown = true; continue; }
+    if (v !== 0) nonZero = true;
     sum += v;
   }
-  return (sum > 0 ? Verdict.ALLOW : sum < 0 ? Verdict.DENY : Verdict.INDETERMINATE);
+  if (unknown || votes.length === 0) return K3_UNKNOWN;
+  if (sum > 0) return Verdict.ALLOW;
+  if (sum < 0) return Verdict.DENY;
+  return nonZero ? K3_UNKNOWN : Verdict.NEUTRAL;
 }
 
 // ── Continuous-ternary ConfidenceVerdict (notes/62 §1, owner-approved 2026-06-25) ──
 //
-// A ConfidenceVerdict is a probability vector p=[pDeny, pUnknown, pAllow] (components in [0,1], summing
-// to ~1). It is a TRIAGE signal — NOT a new authority. It MUST fail-safe collapse to the shipped discrete
-// Verdict before any decision: `collapseConfidence` authorises ALLOW only when pAllow is a CONFIDENT
-// strict argmax (≥ threshold and strictly greater than the others); anything ambiguous, low-confidence,
-// non-normalised, or out-of-range collapses to INDETERMINATE (→ deny at the boundary). A confidence
-// score can therefore only ever LOWER the outcome toward deny — it can never manufacture an ALLOW the
-// discrete gate would not (No-Coercion preserved).
+// A TRIAGE signal, never a new authority. Garbage, non-normalised, ambiguous or low-confidence vectors
+// collapse to UNKNOWN (→ audited deny), never to the trit 0. Only a confident strict-argmax pAllow allows.
 
 /** A continuous-ternary confidence vector p=[pDeny, pUnknown, pAllow], components in [0,1], Σ≈1. */
 export interface ConfidenceVerdict {
@@ -274,21 +304,13 @@ export interface ConfidenceVerdict {
   readonly pAllow: number;
 }
 
-/**
- * Fail-safe collapse of a ConfidenceVerdict to a discrete Verdict.
- *  - garbage (NaN / out of [0,1]) or a non-normalised vector (Σ ≠ 1) → INDETERMINATE (fail-safe);
- *  - ALLOW iff pAllow ≥ `allowThreshold` AND strictly greater than both other components;
- *  - DENY iff pDeny is the (≥-tie) dominant component;
- *  - otherwise (ambiguous / low-confidence) → INDETERMINATE.
- * INDETERMINATE and DENY both deny at the boundary, so the ONLY path to authorisation is a confident,
- * unambiguous allow — a confidence vector cannot lift a verdict, only lower it.
- */
+/** Fail-safe collapse of a ConfidenceVerdict: ALLOW / DENY only when clear; everything else UNKNOWN. */
 export function collapseConfidence(p: ConfidenceVerdict, allowThreshold = 0.5): Verdict {
   const { pDeny, pUnknown, pAllow } = p;
-  const inRange = (x: number) => Number.isFinite(x) && x >= 0 && x <= 1;
-  if (!inRange(pDeny) || !inRange(pUnknown) || !inRange(pAllow)) return Verdict.INDETERMINATE;
-  if (Math.abs(pDeny + pUnknown + pAllow - 1) > 1e-6) return Verdict.INDETERMINATE; // not a probability vector
+  const inRange = (x: number) => typeof x === "number" && Number.isFinite(x) && x >= 0 && x <= 1;
+  if (!inRange(pDeny) || !inRange(pUnknown) || !inRange(pAllow)) return K3_UNKNOWN;
+  if (Math.abs(pDeny + pUnknown + pAllow - 1) > 1e-6) return K3_UNKNOWN; // not a probability vector
   if (pAllow >= allowThreshold && pAllow > pDeny && pAllow > pUnknown) return Verdict.ALLOW;
   if (pDeny > pAllow && pDeny >= pUnknown) return Verdict.DENY;
-  return Verdict.INDETERMINATE; // ambiguous / low-confidence → fail-safe deny
+  return K3_UNKNOWN; // ambiguous / low-confidence → UNKNOWN → audited deny
 }

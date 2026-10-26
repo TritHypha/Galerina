@@ -96,7 +96,7 @@ export function step(
       // g === ALLOW (+1): the ONLY path to Established (INV-2). Keys held (resume), clock cleared.
       return { next: { state: "Established", enteredRecoveringAt: null, keys: ctx.keys }, decision, erased: false };
     }
-    // g === INDETERMINATE (0): NOT a resume (INV-6). From Established this degrades to Recovering;
+    // g is NEUTRAL (0) or the typed UNKNOWN (K3U2; audited FUNGI-GOV-3VL-001): NOT a resume (INV-6). From Established this degrades to Recovering;
     // from Recovering it stays. Either way the channel holds and denies data effects.
     const enteredAt = ctx.state === "Recovering" ? ctx.enteredRecoveringAt : event.nowMs;
     return { next: { state: "Recovering", enteredRecoveringAt: enteredAt, keys: ctx.keys }, decision, erased: false };

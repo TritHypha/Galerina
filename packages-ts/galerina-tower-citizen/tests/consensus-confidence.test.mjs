@@ -9,20 +9,24 @@ const TRITS = [-1, 0, 1];
 
 test("consensusTritN: no-divergence oracle — equals the 3-input consensusTrit over all 27 triples", () => {
   for (const a of TRITS) for (const b of TRITS) for (const c of TRITS) {
-    assert.equal(consensusTritN([a, b, c]), consensusTrit(a, b, c), `triple ${a},${b},${c}`);
+    // K3U2: decided triples (sum != 0) agree with the 3-input consensusTrit; a sum-0 triple is NEUTRAL only
+    // when unanimous 0, otherwise UNKNOWN (consensusTrit still returns the trit 0 there; later copies unit).
+    const sum = a + b + c;
+    const want = sum !== 0 ? consensusTrit(a, b, c) : (a === 0 && b === 0 && c === 0 ? Verdict.NEUTRAL : Verdict.UNKNOWN);
+    assert.equal(consensusTritN([a, b, c]), want, `triple ${a},${b},${c}`);
   }
 });
 
-test("consensusTritN: sign-of-sum; a tie and the empty set are INDETERMINATE (fail-closed)", () => {
+test("consensusTritN: sign-of-sum; a split tie and the empty set are UNKNOWN, unanimous 0 is NEUTRAL (fail-closed)", () => {
   assert.equal(consensusTritN([1, 1, -1, 1, -1]), Verdict.ALLOW);   // sum +1
   assert.equal(consensusTritN([-1, -1, 1]), Verdict.DENY);          // sum -1
-  assert.equal(consensusTritN([1, -1]), Verdict.INDETERMINATE);     // tie
-  assert.equal(consensusTritN([0, 0, 0]), Verdict.INDETERMINATE);   // all unknown
-  assert.equal(consensusTritN([]), Verdict.INDETERMINATE);          // empty → deny-by-default
+  assert.equal(consensusTritN([1, -1]), Verdict.UNKNOWN);           // split tie
+  assert.equal(consensusTritN([0, 0, 0]), Verdict.NEUTRAL);         // unanimous neutral (still denies)
+  assert.equal(consensusTritN([]), Verdict.UNKNOWN);          // empty → deny-by-default
 });
 
 test("consensusTritN: a non-trit vote is fail-closed (throws)", () => {
-  assert.throws(() => consensusTritN([1, 2, -1]), /non-trit/);
+  assert.throws(() => consensusTritN([1, 2, -1]), /neither a trit nor the K3_UNKNOWN sentinel/);
 });
 
 test("collapseConfidence: ALLOW only on a confident strict-argmax allow", () => {

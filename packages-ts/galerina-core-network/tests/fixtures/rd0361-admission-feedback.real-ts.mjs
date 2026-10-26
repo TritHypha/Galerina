@@ -6,6 +6,7 @@
 // NON_AUTHORIZING.
 import { telemetryToSideSignal } from "../../dist/index.js";
 import { vAnd } from "../../../galerina-tower-citizen/dist/three-valued-governance.js";
+import { decodeK3, encodeK3 } from "./rd0361-k3-codec.mjs";
 
 export const source = "packages-ts/galerina-core-network/src/admission-feedback.ts";
 function telemetry(health, present, garbage, hardDeny, throttle) {
@@ -20,8 +21,8 @@ function telemetry(health, present, garbage, hardDeny, throttle) {
   return t;
 }
 export const adapters = {
-  vAnd: { covers: () => true, run: (a, b) => vAnd(a, b) },
-  telemetrySideSignal: { covers: () => true, run: (...flags) => telemetryToSideSignal(telemetry(...flags)) },
+  vAnd: { covers: () => true, run: (a, b) => encodeK3(vAnd(decodeK3(a), decodeK3(b))) },
+  telemetrySideSignal: { covers: () => true, run: (...flags) => encodeK3(telemetryToSideSignal(telemetry(...flags))) },
 };
 export const uncovered = {};
 export const gaps = [];

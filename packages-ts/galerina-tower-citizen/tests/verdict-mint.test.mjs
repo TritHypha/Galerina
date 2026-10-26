@@ -11,7 +11,10 @@ import { asVerdict, Verdict, vAnd, vOr, vNot } from "../dist/index.js";
 
 test("asVerdict passes a valid trit through unchanged (identity on {-1,0,1})", () => {
   assert.equal(asVerdict(-1), Verdict.DENY);
-  assert.equal(asVerdict(0), Verdict.INDETERMINATE);
+  // K3U2: a numeric 0 mints NEUTRAL (a computed trit), never UNKNOWN; UNKNOWN is never minted from a number.
+  assert.equal(asVerdict(0), Verdict.NEUTRAL);
+  assert.notEqual(asVerdict(0), Verdict.UNKNOWN);
+  assert.throws(() => asVerdict(Verdict.UNKNOWN), /not a governance verdict trit/);
   assert.equal(asVerdict(1), Verdict.ALLOW);
   assert.equal(asVerdict(asVerdict(1)), 1); // idempotent
 });

@@ -68,9 +68,10 @@
  * Honesty: this is Kleene/Łukasiewicz 3-valued CLASSICAL logic (epistemic "we-don't-know"), NOT a qubit.
  */
 
+import { SecurityTrap } from "./trit-gates.js";
 import {
   Verdict,
-  vAnd,
+  K3_UNKNOWN,
   allOf,
   anyOf,
   decideAtBoundary,
@@ -97,6 +98,36 @@ export const Trust = {
   UNKNOWN: Verdict.INDETERMINATE, //  0 : not yet proven — fail-closed default
   PROVEN: Verdict.ALLOW, //          +1 : proof discharged
 } as const;
+
+/**
+ * K3U2 trust meet (gcw-k3u4, 2026-10-25). The epistemic order is REFUTED < UNKNOWN < PROVEN and REFUTED
+ * is ABSORBING (sticky, RD-0337): a refuted operand can never be hidden behind an UNKNOWN and later
+ * discharged to PROVEN. This deliberately does NOT reuse governance vAnd, whose K3U2 UNKNOWN is infectious
+ * over DENY. Only the three Trust values are accepted; NEUTRAL (0), junk and forged look-alikes of the
+ * sentinel raise the governed SecurityTrap (identity test only, fail-closed).
+ * Rejected: delegating to vAnd (launders REFUTED to UNKNOWN, then discharge lifts it to PROVEN);
+ * mapping NEUTRAL 0 to UNKNOWN (re-introduces the 0-as-unknown conflation K3U2 removes).
+ */
+function assertTrust(t: unknown, where: string): Trust {
+  if (t === Trust.REFUTED || t === Trust.PROVEN || t === K3_UNKNOWN) return t as Trust;
+  throw new SecurityTrap(`${where}: ${String(t)} is not a Trust value (REFUTED, UNKNOWN sentinel, PROVEN) — fail-closed`);
+}
+
+export function trustMeet(a: Trust, b: Trust): Trust {
+  const x = assertTrust(a, "trustMeet");
+  const y = assertTrust(b, "trustMeet");
+  if (x === Trust.REFUTED || y === Trust.REFUTED) return Trust.REFUTED;
+  if (x === K3_UNKNOWN || y === K3_UNKNOWN) return Trust.UNKNOWN;
+  return Trust.PROVEN;
+}
+
+/** N-ary trust meet. Deny-by-default: the empty set is UNKNOWN, never a vacuous PROVEN. */
+export function trustMeetAll(ts: readonly Trust[]): Trust {
+  if (ts.length === 0) return Trust.UNKNOWN;
+  let acc: Trust = Trust.PROVEN;
+  for (const t of ts) acc = trustMeet(acc, t);
+  return acc;
+}
 
 /**
  * A value bound to a first-class epistemic trit + an audit trail of how the trit got
@@ -188,7 +219,7 @@ export function map<T, U>(e: Epistemic<T>, f: (v: T) => U): Epistemic<U> {
 export function combine<A, B, C>(a: Epistemic<A>, b: Epistemic<B>, f: (a: A, b: B) => C): Epistemic<C> {
   return {
     value: f(a.value, b.value),
-    trust: vAnd(a.trust, b.trust),
+    trust: trustMeet(a.trust, b.trust),
     provenance: [...a.provenance, ...b.provenance, "combine"],
   };
 }
@@ -198,7 +229,7 @@ export function combine<A, B, C>(a: Epistemic<A>, b: Epistemic<B>, f: (a: A, b: 
  * Deny-by-default: the EMPTY set is UNKNOWN (no positive evidence), never a vacuous PROVEN.
  */
 export function combineAll<T>(es: readonly Epistemic<T>[]): Epistemic<T[]> {
-  const trust = allOf(es.map((e) => e.trust));
+  const trust = trustMeetAll(es.map((e) => e.trust));
   const provenance = es.length === 0 ? ["combineAll:empty→unknown"] : [...es.flatMap((e) => e.provenance), "combineAll"];
   return { value: es.map((e) => e.value), trust, provenance };
 }
@@ -438,7 +469,10 @@ export function validateTriSchema<R extends Record<string, unknown>>(
     trits.push(trust);
   }
 
-  const verdict = allOf(trits);
+  // K3U2: the record fold is the trust meet, so a REFUTED field keeps the record DENY even when another
+  // field is pending (UNKNOWN). Rejected: allOf, whose infectious UNKNOWN turned a forbidden-present record
+  // into INDETERMINATE.
+  const verdict = trustMeetAll(trits);
   // The record verdict is a governance verdict — audit an INDETERMINATE collapse.
   const bd = decideAtBoundary(verdict, onDiagnostic);
   return { fields, verdict, known, diagnostic: bd.diagnostic };
@@ -508,7 +542,7 @@ export function combineTriTyped<A, B, C>(
 ): TriTyped<C> {
   return {
     value: f(a.value, b.value),
-    proven: vAnd(a.proven, b.proven),
+    proven: trustMeet(a.proven, b.proven),
     classification: classJoin(a.classification, b.classification),
     provenance: [...a.provenance, ...b.provenance, "combine-3axis"],
   };

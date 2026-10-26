@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "61a4b64e01a36bfa61226f6bbd8a71b80e5044cb515db7a7bac5ac986236f0b4",
+    "aggregateSha256": "1d808c8f5c472276fabb00830637658944f1fc3546c3ad46bac59251fd0c5eeb",
     "algorithm": "sha256",
     "files": [
       {
@@ -2984,7 +2984,7 @@
       },
       {
         "path": "src/self-hosted/conversion-overlays/indeterminate-diagnostic-action.fungi",
-        "sha256": "9dfd5787f0083031a5a0a8f0d49339dabb65f05ae015918273577e4ea05e2095"
+        "sha256": "196cb87b195622cb9365d7d2a958b0b9b6cce6662a200ec8dbbeea91dee84f97"
       },
       {
         "path": "src/self-hosted/conversion-overlays/interpreter-assign-slots-status.fungi",
@@ -4364,7 +4364,7 @@
       },
       {
         "path": "src/self-hosted/conversion-overlays/numeric-verdict-admission.fungi",
-        "sha256": "73d9c40479fc57dd7f3dfc0e7230ce441f1cbdeed8d751e61b94d3329c39e2e4"
+        "sha256": "e340c57d1d702756a18adfa117743c5dd5bb71273293b344961cf4b218e4606b"
       },
       {
         "path": "src/self-hosted/conversion-overlays/observability-alert-rule-status.fungi",
@@ -9032,7 +9032,7 @@
       },
       {
         "path": "tests/conversion-overlay-source-decisions-wave-4-fungi.test.mjs",
-        "sha256": "a5b71218fedd0d941708b4dc0818f47d07e0ca87b6c78789e004be48e4ad2cea"
+        "sha256": "8dd3b417d46809b78706f1201c13fbaa373395c5690c98cf71b553b3f1dc467d"
       },
       {
         "path": "tests/conversion-overlay-source-decisions-wave-40-fungi.test.mjs",
@@ -9117,6 +9117,10 @@
       {
         "path": "tests/foundation.test.mjs",
         "sha256": "6b83f9600f7f005e527437fc13285dd8c63485b023f2f68cfbc078401ab36814"
+      },
+      {
+        "path": "tests/k3u2-wave4-twins.test.mjs",
+        "sha256": "65961cad33b9fcae474bcb707cea6993360086c08cb5eff5850e1a8bed97783a"
       },
       {
         "path": "tests/runner-constants-fungi-conversion.test.mjs",

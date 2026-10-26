@@ -25,6 +25,7 @@ import {
   Verdict,
   allOf,
   decideAtBoundary,
+  isK3Unknown,
   type GovernanceDiagnostic,
   type BoundaryDiagnostic,
 } from "./three-valued-governance.js";
@@ -32,7 +33,7 @@ import {
 /** The typed sentinel that replaces a field whose K3 verdict withheld it. Never carries a value. */
 export interface Masked {
   readonly masked: true;
-  /** The collapsed verdict that withheld the field: 0 (INDETERMINATE) or -1 (DENY). Never +1. */
+  /** The collapsed verdict that withheld the field: UNKNOWN, NEUTRAL (0) or DENY (-1). Never +1. */
   readonly verdict: Verdict;
   readonly reason: "denied" | "indeterminate";
   /** PRESENT IFF the field was withheld by an INDETERMINATE collapse; else NONE. */
@@ -54,8 +55,11 @@ export type FieldVerdict = Verdict | readonly Verdict[] | undefined;
 
 function foldField(fv: FieldVerdict): Verdict {
   if (fv === undefined) return Verdict.INDETERMINATE; // deny-by-default
-  if (typeof fv === "number") return fv;              // a single Verdict — `typeof` narrows cleanly (no cast)
-  return allOf(fv);                                    // a readonly Verdict[] — per-field vAnd fold ([] → INDETERMINATE)
+  if (fv === -1 || fv === 0 || fv === 1) return fv;  // a single trit
+  if (isK3Unknown(fv)) return fv;                     // K3U2: the single typed UNKNOWN sentinel, not a cap list
+  if (Array.isArray(fv)) return allOf(fv);             // a readonly Verdict[]: per-field vAnd fold ([] -> UNKNOWN)
+  // Zero trust: a non-trit number or a forged look-alike object is refused, never folded or masked as data.
+  throw new TypeError("partial-return: field verdict is neither a trit, the K3_UNKNOWN sentinel, nor a Verdict[]");
 }
 
 /**
@@ -72,7 +76,7 @@ export function maskByVerdict(
   return {
     masked: true,
     verdict: decision.verdict,
-    reason: decision.verdict === Verdict.DENY ? "denied" : "indeterminate",
+    reason: isK3Unknown(decision.verdict) ? "indeterminate" : "denied", // K3U2: NEUTRAL/DENY are definite denials; only UNKNOWN is audited
     diagnostic: decision.diagnostic,
   };
 }

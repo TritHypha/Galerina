@@ -1,14 +1,16 @@
 @version 1
 pure flow effectiveVerdict(ideal: Verdict, reading: Verdict) -> Verdict {
+  // K3U2 (gcw-k3u10): infectious UNKNOWN, matching the TS reference vAnd. Any Unknown operand is
+  // Unknown (audited deny), never Deny-absorbed and never Allow.
   check(ideal) {
-    deny: { return Verdict.Deny }
-    ambig: {
+    deny: {
       check(reading) {
         deny: { return Verdict.Deny }
         ambig: { return Verdict.Unknown }
-        if: { return Verdict.Unknown }
+        if: { return Verdict.Deny }
       }
     }
+    ambig: { return Verdict.Unknown }
     if: { return reading }
   }
 }

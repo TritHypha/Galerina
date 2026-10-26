@@ -5,12 +5,12 @@
     "dir": "packages-ts/galerina-core-network/src/self-hosted",
     "file": "cert-gate.fungi",
     "module": "cert-gate",
-    "ledgerSha256": "2021331245cbe57ef2a00eab9eebb8976d5824fb4f06ace2f6b1586f7a505029"
+    "ledgerSha256": "d1e9158e5a1bc7f3c0413afe843849d69dc00ca7b06ace02959240f66eead390"
   },
   "oracle": {
     "kind": "differential-spec-capture",
     "source": "packages-ts/galerina-core-network/tests/rd0361-cert-gate-execution.test.mjs",
-    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+    "capturedAtCommit": "64adca20734cd06a905a6ba484974a9e8201cb98"
   },
   "exports": [
     {
@@ -91,9 +91,99 @@
       "returns": "string"
     }
   ],
-  "caseCount": 158,
-  "casesSha256": "989aacf36c03be668f957fc4e62fcb063978adade8844b59f0922496e747b490",
+  "caseCount": 348,
+  "casesSha256": "ad5a3cd28670f1416d96e157414123364d60508cb14b28b2daa38f5ad3961ffa",
   "cases": [
+    {
+      "id": "vand-u-u",
+      "export": "vAnd",
+      "args": [
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-u-u",
+      "export": "withSideSignal",
+      "args": [
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand-u--1",
+      "export": "vAnd",
+      "args": [
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-u--1",
+      "export": "withSideSignal",
+      "args": [
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand-u-0",
+      "export": "vAnd",
+      "args": [
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-u-0",
+      "export": "withSideSignal",
+      "args": [
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand-u-1",
+      "export": "vAnd",
+      "args": [
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-u-1",
+      "export": "withSideSignal",
+      "args": [
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand--1-u",
+      "export": "vAnd",
+      "args": [
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side--1-u",
+      "export": "withSideSignal",
+      "args": [
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
     {
       "id": "vand--1--1",
       "export": "vAnd",
@@ -147,6 +237,24 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "vand-0-u",
+      "export": "vAnd",
+      "args": [
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-0-u",
+      "export": "withSideSignal",
+      "args": [
+        0,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "vand-0--1",
@@ -203,6 +311,24 @@
       "expected": 0
     },
     {
+      "id": "vand-1-u",
+      "export": "vAnd",
+      "args": [
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "side-1-u",
+      "export": "withSideSignal",
+      "args": [
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "vand-1--1",
       "export": "vAnd",
       "args": [
@@ -257,6 +383,941 @@
       "expected": 1
     },
     {
+      "id": "cert-u-u-u-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-u--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-u-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-u-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u--1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u--1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u--1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u--1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-0-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-0--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-0-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-0-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-u-1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -128,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-u-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-u--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-u-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-u-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1--1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1--1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1--1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1--1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-0-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-0--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-0-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-0-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u--1-1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        -1,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-u-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-u--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-u-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-u-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0--1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0--1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0--1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0--1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-0-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-0--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-0-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-0-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-0-1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        0,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-u-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-u--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-u-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-u-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1--1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1--1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1--1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1--1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-0-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-0--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-0-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-0-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-1-u",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-1--1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-1-0",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-u-1-1-1",
+      "export": "certVerdict",
+      "args": [
+        -128,
+        1,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-u-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-u--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-u-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-u-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u--1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u--1--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u--1-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u--1-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-0-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-0--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-0-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-0-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-1--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-1-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-u-1-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -128,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1--1-u-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1--1-u--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1--1-u-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1--1-u-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1--1--1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert--1--1--1--1",
       "export": "certVerdict",
       "args": [
@@ -288,6 +1349,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert--1--1-0-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        0,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert--1--1-0--1",
@@ -323,6 +1395,17 @@
       "expected": -1
     },
     {
+      "id": "cert--1--1-1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        -1,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert--1--1-1--1",
       "export": "certVerdict",
       "args": [
@@ -354,6 +1437,61 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert--1-0-u-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-0-u--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-0-u-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-0-u-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-0--1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        -1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert--1-0--1--1",
@@ -389,6 +1527,17 @@
       "expected": -1
     },
     {
+      "id": "cert--1-0-0-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert--1-0-0--1",
       "export": "certVerdict",
       "args": [
@@ -420,6 +1569,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert--1-0-1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        0,
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert--1-0-1--1",
@@ -455,6 +1615,61 @@
       "expected": -1
     },
     {
+      "id": "cert--1-1-u-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-1-u--1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-1-u-0",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-1-u-1",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert--1-1--1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert--1-1--1--1",
       "export": "certVerdict",
       "args": [
@@ -486,6 +1701,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert--1-1-0-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        0,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert--1-1-0--1",
@@ -521,6 +1747,17 @@
       "expected": -1
     },
     {
+      "id": "cert--1-1-1-u",
+      "export": "certVerdict",
+      "args": [
+        -1,
+        1,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert--1-1-1--1",
       "export": "certVerdict",
       "args": [
@@ -552,6 +1789,237 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert-0-u-u-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-u--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-u-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-u-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u--1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u--1--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u--1-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u--1-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-0-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-0--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-0-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-0-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-1--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-1-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-u-1-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -128,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0--1-u-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0--1-u--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0--1-u-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0--1-u-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0--1--1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        -1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-0--1--1--1",
@@ -587,6 +2055,17 @@
       "expected": -1
     },
     {
+      "id": "cert-0--1-0-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-0--1-0--1",
       "export": "certVerdict",
       "args": [
@@ -618,6 +2097,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert-0--1-1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        -1,
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-0--1-1--1",
@@ -653,6 +2143,61 @@
       "expected": -1
     },
     {
+      "id": "cert-0-0-u-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-0-u--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-0-u-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-0-u-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-0--1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-0-0--1--1",
       "export": "certVerdict",
       "args": [
@@ -684,6 +2229,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert-0-0-0-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        0,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-0-0-0--1",
@@ -719,6 +2275,17 @@
       "expected": 0
     },
     {
+      "id": "cert-0-0-1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        0,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-0-0-1--1",
       "export": "certVerdict",
       "args": [
@@ -750,6 +2317,61 @@
         1
       ],
       "expected": 0
+    },
+    {
+      "id": "cert-0-1-u-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-1-u--1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-1-u-0",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-1-u-1",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-0-1--1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        -1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-0-1--1--1",
@@ -785,6 +2407,17 @@
       "expected": -1
     },
     {
+      "id": "cert-0-1-0-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-0-1-0--1",
       "export": "certVerdict",
       "args": [
@@ -816,6 +2449,17 @@
         1
       ],
       "expected": 0
+    },
+    {
+      "id": "cert-0-1-1-u",
+      "export": "certVerdict",
+      "args": [
+        0,
+        1,
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-0-1-1--1",
@@ -851,6 +2495,237 @@
       "expected": 0
     },
     {
+      "id": "cert-1-u-u-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-u--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-u-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-u-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u--1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u--1--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u--1-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u--1-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        -1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-0-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-0--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        0,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-0-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        0,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-0-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        0,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-1--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        1,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-1-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        1,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-u-1-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -128,
+        1,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1--1-u-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1--1-u--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1--1-u-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1--1-u-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1--1--1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-1--1--1--1",
       "export": "certVerdict",
       "args": [
@@ -882,6 +2757,17 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert-1--1-0-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        0,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-1--1-0--1",
@@ -917,6 +2803,17 @@
       "expected": -1
     },
     {
+      "id": "cert-1--1-1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        -1,
+        1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-1--1-1--1",
       "export": "certVerdict",
       "args": [
@@ -948,6 +2845,61 @@
         1
       ],
       "expected": -1
+    },
+    {
+      "id": "cert-1-0-u-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-0-u--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-0-u-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-0-u-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-0--1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        -1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-1-0--1--1",
@@ -983,6 +2935,17 @@
       "expected": -1
     },
     {
+      "id": "cert-1-0-0-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-1-0-0--1",
       "export": "certVerdict",
       "args": [
@@ -1014,6 +2977,17 @@
         1
       ],
       "expected": 0
+    },
+    {
+      "id": "cert-1-0-1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        0,
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-1-0-1--1",
@@ -1049,6 +3023,61 @@
       "expected": 0
     },
     {
+      "id": "cert-1-1-u-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-1-u--1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-1-u-0",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-1-u-1",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "cert-1-1--1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-1-1--1--1",
       "export": "certVerdict",
       "args": [
@@ -1082,6 +3111,17 @@
       "expected": -1
     },
     {
+      "id": "cert-1-1-0-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "cert-1-1-0--1",
       "export": "certVerdict",
       "args": [
@@ -1113,6 +3153,17 @@
         1
       ],
       "expected": 0
+    },
+    {
+      "id": "cert-1-1-1-u",
+      "export": "certVerdict",
+      "args": [
+        1,
+        1,
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "cert-1-1-1--1",
@@ -1155,7 +3206,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-000",
@@ -1165,7 +3216,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "pin-001",
@@ -1175,7 +3226,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-001",
@@ -1185,7 +3236,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "pin-010",
@@ -1195,7 +3246,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-010",
@@ -1205,7 +3256,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "pin-011",
@@ -1215,7 +3266,7 @@
         true,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-011",
@@ -1235,7 +3286,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-100",
@@ -1255,7 +3306,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "revoc-101",
@@ -1314,7 +3365,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "expiry-00",
@@ -1323,7 +3374,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "chain-01",
@@ -1341,7 +3392,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "chain-10",
@@ -1378,6 +3429,14 @@
         true
       ],
       "expected": 1
+    },
+    {
+      "id": "boundary-u",
+      "export": "boundaryAuthorized",
+      "args": [
+        -128
+      ],
+      "expected": "denied"
     },
     {
       "id": "boundary--1",

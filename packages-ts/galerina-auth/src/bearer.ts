@@ -4,13 +4,13 @@
  * This is the REAL token verification that credential.ts's `headerPresenceVerdict`
  * posture stands in for: it parses `Authorization: Bearer <jwt>`, verifies the
  * signature and the temporal/identity claims, and returns a Kleene-K3 `Verdict`
- * (+1 ALLOW / 0 INDETERMINATE / −1 DENY). Like every galerina-auth factor it
+ * (+1 ALLOW / typed UNKNOWN, never 0 / −1 DENY). Like every galerina-auth factor it
  * computes a verdict; it does NOT decide admission — compose it (compose.ts) and the
  * App Kernel performs the authoritative fail-closed collapse.
  *
  * VERDICT SEMANTICS (deny-by-default):
  *   - No token presented (absent/empty `Authorization`, or not a `Bearer` scheme)
- *     → INDETERMINATE (0): no positive evidence, never authorizes on its own — the
+ *     → UNKNOWN (typed, never 0): no positive evidence, never authorizes on its own — the
  *     same polarity credential.ts uses for "presence is not proof".
  *   - A token that is present but fails ANY check (malformed, bad signature, expired,
  *     not-yet-valid, wrong/absent required claim, disallowed algorithm) → DENY (−1):
@@ -201,7 +201,7 @@ function verifySignature(
  * The bearer/JWT authentication factor as a K3 verdict.
  *
  * Deny-by-default and fail-closed: only a fully-valid token authorizes (ALLOW); a
- * present-but-invalid token DENIES; an absent token is INDETERMINATE. Returns a
+ * present-but-invalid token DENIES; an absent token is UNKNOWN. Returns a
  * VERDICT — compose it and hand the result to the kernel.
  */
 export function bearerTokenVerdict(
@@ -213,11 +213,11 @@ export function bearerTokenVerdict(
 
   const raw = header(headers, opts.header ?? "authorization");
   const value = raw?.trim() ?? "";
-  if (value.length === 0) return Verdict.INDETERMINATE; // no token presented
+  if (value.length === 0) return Verdict.UNKNOWN; // no token presented
 
   // Scheme: exactly `Bearer <token>` (case-insensitive scheme). Anything else = no bearer token.
   const m = /^Bearer[ \t]+(\S.*)$/i.exec(value);
-  if (m === null) return Verdict.INDETERMINATE;
+  if (m === null) return Verdict.UNKNOWN;
   const token = (m[1] ?? "").trim();
 
   const parts = token.split(".");

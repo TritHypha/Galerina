@@ -13,6 +13,8 @@ import { readFileSync } from "node:fs";
 export const FROZEN_REFERENCE_SCHEMA = "galerina.rd0361.frozen-reference.v2";
 export const ORACLE_KINDS = Object.freeze(["typescript-shadow-capture", "differential-spec-capture"]);
 export const VALUE_KINDS = Object.freeze(["bool", "int", "k3", "string"]);
+/** The native .fungi K3 UNKNOWN sentinel (k3Unknown() = -128): outside {-1,0,1}, below DENY, never a trit. */
+export const K3_UNKNOWN_SENTINEL = -128;
 
 const TOP_KEYS = ["caseCount", "cases", "casesSha256", "exports", "oracle", "rd", "schema", "twin"];
 const TWIN_KEYS = ["dir", "file", "ledgerSha256", "module"];
@@ -59,7 +61,9 @@ function exactKeys(value, keys, at) {
 export function isValueOfKind(kind, value) {
   if (kind === "bool") return value === true || value === false;
   if (kind === "int") return Number.isSafeInteger(value) && value >= I32_MIN && value <= I32_MAX;
-  if (kind === "k3") return value === -1 || value === 0 || value === 1;
+  // K3-UNKNOWN-NOT-ZERO (owner decision D-A, 2026-10-25): a k3 value is a trit or the ONE native UNKNOWN
+  // sentinel -128 (k3Unknown()), matched by exact equality. Nothing else (no -127/-129, no string) is admitted.
+  if (kind === "k3") return value === -1 || value === 0 || value === 1 || value === K3_UNKNOWN_SENTINEL;
   if (kind === "string") return typeof value === "string" && SAFE_TEXT.test(value);
   return false;
 }

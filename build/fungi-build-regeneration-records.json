@@ -354,32 +354,32 @@
     "outputs": [
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.wasm",
-        "bytes": 183,
-        "sha256": "4d1e3bb6a25d2c4ec0af791f0db2e33704946f32ca1bdb28df6e7258159f3bad"
+        "bytes": 206,
+        "sha256": "eeb54948153b816fd500ef66339b0b78a6907980efb27f89e21d3949debaaf01"
       },
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.wat",
-        "bytes": 1410,
-        "sha256": "7226033e55efa503596153040e5f63d6df6e6da89861605b53d201b32b19d5c7"
+        "bytes": 1550,
+        "sha256": "7e973a81c0902710a14656db5886343fd72f4f3dd7a11f23cf32ffd6d65cbde5"
       },
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.lmanifest",
-        "bytes": 1387,
-        "sha256": "0b5fcff400592b1f997834a7b18e9e42823a64e0a1e90212e0cb5e86ba1df1c3"
+        "bytes": 1568,
+        "sha256": "ce8dcae1b67abdd48845e954a030cca7234d33101c2070245379beac55b10d0f"
       },
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.lmanifest.json",
-        "bytes": 1786,
-        "sha256": "27ec973d4af4dc9b2e8d8bce7d0961fd1e86a5e6b55a84dc2e78a718fed1f8dd"
+        "bytes": 2031,
+        "sha256": "29bb64fbc553efb53d57dd5b9ab3ff8b58a29638b7725a69bc70c6b947fdbce9"
       },
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.governance-impact.json",
-        "bytes": 706,
-        "sha256": "6db40f09593d56b3af1c3022768da3f6244654976a4ad7f23f5ad4d1d22a68d9"
+        "bytes": 822,
+        "sha256": "5dfcf800d7314f17897c3af8f035701565e66a717d693222a2403e5501e74985"
       }
     ],
     "diagnostic": null,
-    "completedAt": "2026-09-13T17:43:14.7863607+00:00"
+    "completedAt": "2026-10-25T22:44:37.793Z"
   },
   {
     "source": "packages/fungi/products/galerina-core-sentinel-io/integrity-verdict.fungi",

@@ -14,6 +14,7 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { randomBytes } from "node:crypto";
 import { StubTernaryBridge, AuditLogger } from "../dist/index.js";
 import { StaticMemoryPool, TPLStateBuffer, SegmentationController } from "../../galerina-core-sentinel-memory/dist/index.js";
 import { buildManifest, IntegrityMonitor, ZeroCopyMapper } from "../../galerina-core-sentinel-io/dist/index.js";
@@ -89,7 +90,12 @@ test("all six sentinels compose into one governed, recoverable flight", () => {
   assert.equal(r.deterministic, true);
 
   // ── LSS: checkpoint the flight state, then prove cold-boot recovery ──
-  const serializer = new StateSerializer();
+  // Zero-trust (K3U2 consumers 11/n): the serializer refuses to run without an explicit key, and the
+  // all-zero development key is refused too. The flight uses an ephemeral per-process synthetic key
+  // (never a literal, never persisted). Rejected: an all-zero key (refused by design) and a default key.
+  assert.throws(() => new StateSerializer(), /explicit hmacKey or keyProvider/, "no key -> refused, never an implicit default");
+  assert.throws(() => new StateSerializer({ hmacKey: new Uint8Array(32) }), "all-zero key -> refused");
+  const serializer = new StateSerializer({ hmacKey: randomBytes(32) });
   const writer = new AtomicWriter(dir());
   const coldBoot = new ColdBootOrchestrator(serializer, writer, TEST_RESTORE_AUTHORITY);
   coldBoot.checkpoint("flight", { resultChecksum: r.value, kernel: decision.kernel, tick: clock.now() }, clock.now());

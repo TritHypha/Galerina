@@ -36,7 +36,7 @@ const CANDIDATES = Object.freeze([
   ["voted-trit-three.fungi", "votedTritThreeCore", [1, 1, -1], 1, "int"],
   ["snapshot-float-equality.fungi", "snapshotFloatEqualityCore", [5, 10], true, "bool"],
   ["snapshot-consistency-admission.fungi", "snapshotConsistencyAdmissionCore", [true, true, true], true, "bool"],
-  ["numeric-verdict-admission.fungi", "numericVerdictAdmissionCore", [0], 0, "verdict"],
+  ["numeric-verdict-admission.fungi", "numericVerdictAdmissionCore", [0], "neutral", "string"],
   ["indeterminate-diagnostic-action.fungi", "indeterminateDiagnosticActionCore", [0, true], "emit", "string"],
   ["confidence-range-admission.fungi", "confidenceRangeAdmissionCore", [80, 70, 90], true, "bool"],
   ["correlation-id-admission.fungi", "correlationIdAdmissionCore", [true, true, 16], "provided", "string"],

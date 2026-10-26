@@ -20,9 +20,11 @@ import {
   classJoin, triTyped, combineTriTyped, declassify, releaseTo,
 } from "../dist/index.js";
 
-const TRITS = [Trust.REFUTED, Trust.UNKNOWN, Trust.PROVEN]; // -1, 0, 1
-// INDEPENDENT references (hand-authored, NOT the module's folds): balanced-trit min/max.
-const refMin = (a, b) => Math.min(a, b);
+const TRITS = [Trust.REFUTED, Trust.UNKNOWN, Trust.PROVEN]; // -1, K3_UNKNOWN sentinel, +1
+// INDEPENDENT references (hand-authored, NOT the module's folds). K3U2: UNKNOWN is the sentinel, so the
+// epistemic order is by rank REFUTED(0) < UNKNOWN(1) < PROVEN(2); REFUTED is absorbing (sticky).
+const RANK = (t) => { if (t === -1) return 0; if (t === 1) return 2; if (t === Verdict.UNKNOWN) return 1; throw new Error("not a Trust: " + String(t)); };
+const refMin = (a, b) => (RANK(a) <= RANK(b) ? a : b);
 const refMax = (a, b) => Math.max(a, b);
 
 describe("Trust encoding — the verdict trit, lifted", () => {
@@ -92,7 +94,7 @@ describe("4. combine — CONTAGION (oracle: = min-trit) + No-Coercion", () => {
         const ea = { value: 1, trust: a, provenance: [] };
         const eb = { value: 2, trust: b, provenance: [] };
         const out = combine(ea, eb, (x, y) => x + y);
-        assert.equal(out.trust, refMin(a, b), `combine(${a},${b})`);
+        assert.equal(out.trust, refMin(a, b), `combine(${String(a)},${String(b)})`);
         assert.equal(out.value, 3);
       }
     }
@@ -101,7 +103,7 @@ describe("4. combine — CONTAGION (oracle: = min-trit) + No-Coercion", () => {
     for (const a of TRITS) {
       for (const b of TRITS) {
         const out = combine({ value: 0, trust: a, provenance: [] }, { value: 0, trust: b, provenance: [] }, () => 0);
-        assert.ok(out.trust <= a && out.trust <= b, `no-coercion ${a},${b}`);
+        assert.ok(RANK(out.trust) <= RANK(a) && RANK(out.trust) <= RANK(b), `no-coercion ${String(a)},${String(b)}`);
       }
     }
   });

@@ -1,10 +1,16 @@
 {
   "schemaVersion": "fungi.governance-impact.v1",
   "sourceFile": "admission-feedback.fungi",
-  "sourceHash": "sha256:6afb8a0101322fe4a1e8cb5007f2bf5105e2476f839c3ede92699526ae11149d",
-  "generatedAt": "2026-09-13T17:46:04.644Z",
-  "flowCount": 2,
+  "sourceHash": "sha256:31788c30da5140d7e011f4f5d0c4cdb12970ff48bdb6796903aaabd548c84c51",
+  "generatedAt": "2026-10-25T22:44:37.681Z",
+  "flowCount": 3,
   "flows": [
+    {
+      "name": "k3Unknown",
+      "qualifier": "pure",
+      "effects": [],
+      "hasInvariant": false
+    },
     {
       "name": "vAnd",
       "qualifier": "pure",
@@ -25,6 +31,6 @@
     "secretFlows": [],
     "mutationFlows": []
   },
-  "proofObligationCount": 2,
-  "derivedConstraintCount": 2
+  "proofObligationCount": 3,
+  "derivedConstraintCount": 3
 }

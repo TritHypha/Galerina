@@ -10,6 +10,7 @@ import {
   parseProgram,
 } from "../../galerina-core-compiler/dist/index.js";
 import { Verdict, vNot } from "../dist/index.js";
+import { fromFungi, toFungi } from "./fixtures/k3-fungi-marshal.mjs";
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "verdict-not.fungi");
@@ -17,7 +18,7 @@ const REFERENCE_SOURCE = join(PACKAGE_ROOT, "src", "three-valued-governance.ts")
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
 const K3_NOT = Object.freeze([
   Object.freeze([Verdict.DENY, Verdict.ALLOW]),
-  Object.freeze([Verdict.INDETERMINATE, Verdict.INDETERMINATE]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.DENY]),
 ]);
 
@@ -45,11 +46,11 @@ function compileCandidate() {
 async function interpret(program, candidateVerdict) {
   const interpreted = await executeFlow(
     "vNotVerdict",
-    new Map([["candidateVerdict", { __tag: "verdict", value: candidateVerdict }]]),
+    new Map([["candidateVerdict", await toFungi(candidateVerdict)]]),
     program.ast,
     program.flows,
   );
-  return interpreted.value;
+  return fromFungi(interpreted.value);
 }
 
 describe("Tower-Citizen package-owned Fungi vNot decision", () => {
@@ -72,7 +73,7 @@ describe("Tower-Citizen package-owned Fungi vNot decision", () => {
     const reference = readUtf8(REFERENCE_SOURCE);
     assert.match(
       reference,
-      /export function vNot\(a: Verdict\): Verdict \{\s*return asVerdict\(negTrit\(a\)\);\s*\}/u,
+      /export function vNot\(a: Verdict\): Verdict \{\s*const x = operand\(a, "vNot"\);\s*if \(isK3Unknown\(x\)\) return K3_UNKNOWN;\s*return asVerdict\(negTrit\(x\)\);\s*\}/u,
     );
   });
 
@@ -82,9 +83,19 @@ describe("Tower-Citizen package-owned Fungi vNot decision", () => {
       assert.equal(vNot(candidateVerdict), expected, `TypeScript vNot(${candidateVerdict})`);
       assert.deepEqual(
         await interpret(program, candidateVerdict),
-        { __tag: "verdict", value: expected },
+        expected,
         `Fungi vNotVerdict(${candidateVerdict})`,
       );
     }
+    assert.equal(vNot(Verdict.NEUTRAL), Verdict.NEUTRAL, "TS NEUTRAL negates to NEUTRAL");
+  });
+
+  it("K3U2: TS NEUTRAL 0 has no native image and is refused, never marshalled as Unknown", async () => {
+    await assert.rejects(() => toFungi(Verdict.NEUTRAL), /NEUTRAL \(trit 0\) has no native Fungi Verdict image/u);
+    await assert.rejects(() => toFungi(0), /NEUTRAL/u);
+    await assert.rejects(() => toFungi({ kind: "K3_UNKNOWN" }), /not a TS Verdict/u);
+    await assert.rejects(() => fromFungi({ __tag: "verdict", value: 2 }), /not a native Verdict/u);
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.DENY));
+    assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.ALLOW));
   });
 });

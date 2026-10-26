@@ -5,12 +5,12 @@
     "dir": "packages-ts/galerina-core-network/src/self-hosted",
     "file": "admission-feedback.fungi",
     "module": "admission-feedback",
-    "ledgerSha256": "4d1e3bb6a25d2c4ec0af791f0db2e33704946f32ca1bdb28df6e7258159f3bad"
+    "ledgerSha256": "eeb54948153b816fd500ef66339b0b78a6907980efb27f89e21d3949debaaf01"
   },
   "oracle": {
     "kind": "differential-spec-capture",
     "source": "packages-ts/galerina-core-network/tests/rd0361-admission-feedback-execution.test.mjs",
-    "capturedAtCommit": "5a21f1f67d45006d8cfec9c866836bb570eb5551"
+    "capturedAtCommit": "a8b85073274f0730fc37b8ce0d8b01c941084f36"
   },
   "exports": [
     {
@@ -33,9 +33,54 @@
       "returns": "k3"
     }
   ],
-  "caseCount": 41,
-  "casesSha256": "d265f602589878f30f545192b04206faff41149822e5f6b841e8037ff9889420",
+  "caseCount": 48,
+  "casesSha256": "742b2eaaf332ca797c759e2d87a30c3db7185bd7696c591b1c4c18a8573b6c18",
   "cases": [
+    {
+      "id": "vand--128--128",
+      "export": "vAnd",
+      "args": [
+        -128,
+        -128
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand--128--1",
+      "export": "vAnd",
+      "args": [
+        -128,
+        -1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand--128-0",
+      "export": "vAnd",
+      "args": [
+        -128,
+        0
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand--128-1",
+      "export": "vAnd",
+      "args": [
+        -128,
+        1
+      ],
+      "expected": -128
+    },
+    {
+      "id": "vand--1--128",
+      "export": "vAnd",
+      "args": [
+        -1,
+        -128
+      ],
+      "expected": -128
+    },
     {
       "id": "vand--1--1",
       "export": "vAnd",
@@ -64,6 +109,15 @@
       "expected": -1
     },
     {
+      "id": "vand-0--128",
+      "export": "vAnd",
+      "args": [
+        0,
+        -128
+      ],
+      "expected": -128
+    },
+    {
       "id": "vand-0--1",
       "export": "vAnd",
       "args": [
@@ -89,6 +143,15 @@
         1
       ],
       "expected": 0
+    },
+    {
+      "id": "vand-1--128",
+      "export": "vAnd",
+      "args": [
+        1,
+        -128
+      ],
+      "expected": -128
     },
     {
       "id": "vand-1--1",
@@ -235,7 +298,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-01010",
@@ -271,7 +334,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-01101",
@@ -283,7 +346,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-01110",
@@ -295,7 +358,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-01111",
@@ -307,7 +370,7 @@
         true,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10000",
@@ -319,7 +382,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10001",
@@ -331,7 +394,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10010",
@@ -343,7 +406,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10011",
@@ -355,7 +418,7 @@
         true,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10100",
@@ -367,7 +430,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10101",
@@ -379,7 +442,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10110",
@@ -391,7 +454,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-10111",
@@ -403,7 +466,7 @@
         true,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11000",
@@ -415,7 +478,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11001",
@@ -427,7 +490,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11010",
@@ -439,7 +502,7 @@
         true,
         false
       ],
-      "expected": -1
+      "expected": -128
     },
     {
       "id": "side-11011",
@@ -451,7 +514,7 @@
         true,
         true
       ],
-      "expected": -1
+      "expected": -128
     },
     {
       "id": "side-11100",
@@ -463,7 +526,7 @@
         false,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11101",
@@ -475,7 +538,7 @@
         false,
         true
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11110",
@@ -487,7 +550,7 @@
         true,
         false
       ],
-      "expected": 0
+      "expected": -128
     },
     {
       "id": "side-11111",
@@ -499,7 +562,7 @@
         true,
         true
       ],
-      "expected": 0
+      "expected": -128
     }
   ]
 }

@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  Verdict,
   channelIdentityVerdict,
   scopeVerdict,
   composeAuthVerdict,
@@ -67,10 +68,11 @@ test("channel factor ALLOW → kernel ADMITS (handler runs)", { skip }, async ()
   assert.equal(ran(), true);
 });
 
-test("channel factor INDETERMINATE (revocation unknown) → kernel REFUSES (401), handler NOT run", { skip }, async () => {
+test("channel factor UNKNOWN (revocation unknown) → kernel REFUSES (401), handler NOT run", { skip }, async () => {
   const { kernel, ran } = kernelWithSecureRoute();
   const channelVerdict = channelIdentityVerdict(goodCert({ revocation: "unknown" }));
-  assert.equal(channelVerdict, 0); // the factor is 0 — no positive proof
+  assert.equal(channelVerdict, Verdict.UNKNOWN); // typed UNKNOWN — no positive proof
+  assert.notEqual(channelVerdict, 0); // never the trit 0
   const res = await kernel.handle(req({ channelVerdict, principalId: "principal-a" }));
   assert.equal(res.status, 401); // the KERNEL's fail-closed fold denied it
   assert.equal(ran(), false);
