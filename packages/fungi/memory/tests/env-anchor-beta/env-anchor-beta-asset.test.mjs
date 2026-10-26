@@ -86,3 +86,27 @@ test("EA-H2 the shim verifies the pin before use and never builds or spawns at r
   assert.ok(/Module\.imports\(/.test(src), "shim checks the asset imports");
   assert.equal(/child_process|spawn|galerina\.mjs/.test(src), false, "shim never spawns or builds");
 });
+// EA-H3 (gcw-k3u109 mutant-killer, written after the shim to kill surviving host mutant HM5 "skip the pin check";
+// recorded as such in the ENVANCHOR plan addendum). A copy of the shim next to a still-valid but different
+// asset (one extra custom section) must refuse 111 before any file is read.
+test("EA-H3 a tampered but valid asset refuses 111 at load", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "eabtamper-"));
+  try {
+    writeFileSync(join(dir, "env-anchor-beta-host.mjs"), readFileSync(HOST));
+    const bytes = readFileSync(ASSET);
+    const tampered = Buffer.concat([bytes, Buffer.from([0x00, 0x02, 0x01, 0x78])]);
+    assert.ok(WebAssembly.validate(tampered), "tampered asset is still a valid module");
+    writeFileSync(join(dir, "env-anchor-beta.wasm"), tampered);
+    const mod = await import(pathToFileURL(join(dir, "env-anchor-beta-host.mjs")).href);
+    let err = null;
+    try {
+      await mod.loadEnvAnchorBeta({ envPath: join(dir, "absent.env"), manifest: [{ name: "EAB_SYNTH_KEY_A", hexBytes: 32 }], argv: [], modeClass: 0, faultProbe: () => false });
+    } catch (e) {
+      err = e;
+    }
+    assert.ok(err instanceof mod.EnvAnchorRefused, "tampered asset must refuse with the typed error");
+    assert.equal(err.code, 111);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
