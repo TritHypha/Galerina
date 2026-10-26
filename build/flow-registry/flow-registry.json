@@ -1,7 +1,7 @@
 {
   "schema": "galerina.flow-registry.v1",
   "generatedFrom": "packages/fungi/memory/src",
-  "total": 171,
+  "total": 175,
   "flows": [
     {
       "qualified": "adapter-profile.classifyAdapter",
@@ -415,6 +415,34 @@
       "flow": "verifyLocator",
       "file": "packages/fungi/memory/src/durable-store.fungi",
       "line": 162
+    },
+    {
+      "qualified": "env-anchor-beta.envAadAdmit",
+      "unit": "env-anchor-beta",
+      "flow": "envAadAdmit",
+      "file": "packages/fungi/memory/src/env-anchor-beta.fungi",
+      "line": 169
+    },
+    {
+      "qualified": "env-anchor-beta.envFileAdmit",
+      "unit": "env-anchor-beta",
+      "flow": "envFileAdmit",
+      "file": "packages/fungi/memory/src/env-anchor-beta.fungi",
+      "line": 31
+    },
+    {
+      "qualified": "env-anchor-beta.envKeyAdmit",
+      "unit": "env-anchor-beta",
+      "flow": "envKeyAdmit",
+      "file": "packages/fungi/memory/src/env-anchor-beta.fungi",
+      "line": 101
+    },
+    {
+      "qualified": "env-anchor-beta.envSecretAccess",
+      "unit": "env-anchor-beta",
+      "flow": "envSecretAccess",
+      "file": "packages/fungi/memory/src/env-anchor-beta.fungi",
+      "line": 217
     },
     {
       "qualified": "kernel-ports.reserveAudit",

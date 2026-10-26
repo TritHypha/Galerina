@@ -1,0 +1,252 @@
+@version 1
+/// @file: env-anchor-beta.fungi
+/// @purpose: ENV-ANCHOR-BETA (RD-1413 critical path). Beta production secrets come from ONE
+///   plain deployment .env, read once at startup through the SecretsProvider port
+///   (Phillip 2026-10-25 14:06 GMT; .env.spore is post-beta). The host parses the file once and
+///   maps per-key and per-file facts onto Int tags (P20-N2); this unit decides boot admission.
+/// source: 0 file 1 argv else 11
+/// mode: 0 owner-only 1 group/world-readable 2 UNKNOWN else 11
+/// unknownCount: keys in the file that the manifest does not declare (>= 0) else 11
+/// count: occurrences of one required key (0 missing, 1 ok, >= 2 duplicate) else 11
+/// empty: 0 non-empty 1 empty else 11      formatOk: 1 ok 0 malformed else 11
+/// purposeMatch / rootMatch (AEAD AAD binding): 1 match 0 mismatch else 11
+/// faulted: 0 healthy 1 provider faulted after boot else 11
+/// packed: 100 Admit 175 Missing 176 Empty 177 Malformed 178 Duplicate 179 UnknownKey
+///   180 ModeOpen 181 ModeUnknown 182 ArgvSource 183 AadMismatch 184 ProviderFaulted
+///   110 ForeignRaw 111 Unlisted (fail-closed default); envSecretAccess also returns
+///   portAccess 112 Undeclared / 119 ProviderAbsent.
+/// Zero-trust choices: every unlisted token refuses 111 before any specific code (rejected:
+///   decide on the first listed fact); argv refused before the file is examined; mode UNKNOWN
+///   refuses (rejected: treat unknown mode as owner-only); duplicates refuse (rejected:
+///   last-wins); unknown keys refuse (rejected: ignore); post-boot access composes the existing
+///   per-secret portAccess, name first, so an undeclared name never reveals a provider fault
+///   (rejected: a second port inside this unit).
+/// CN-1: CALL the frozen c-boundary helper; finish comes from release-commit-point.
+/// Sequential if-return. No clock, no bytes, no names, no values in this file.
+
+import "./c-boundary.fungi"
+import "./release-commit-point.fungi"
+import "./secrets-provider-port.fungi"
+
+pure flow envFileAdmit(
+  sourceClass: Int,
+  source: Int,
+  modeClass: Int,
+  mode: Int,
+  unknownClass: Int,
+  unknownCount: Int
+) -> Int
+contract {
+  intent { "File-level boot admission. Command-line source, open or undetermined file mode and undeclared keys refuse." }
+}
+{
+  let sourceReason: Int = readForeignBoundedInteger(sourceClass, source, -2147483647, 2147483647)
+  if sourceReason != 0 {
+    if sourceReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let modeReason: Int = readForeignBoundedInteger(modeClass, mode, -2147483647, 2147483647)
+  if modeReason != 0 {
+    if modeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let unknownReason: Int = readForeignBoundedInteger(unknownClass, unknownCount, -2147483647, 2147483647)
+  if unknownReason != 0 {
+    if unknownReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if source != 0 {
+    if source != 1 {
+      return finish(11, true)
+    }
+  }
+  if mode != 0 {
+    if mode != 1 {
+      if mode != 2 {
+        return finish(11, true)
+      }
+    }
+  }
+  if unknownCount < 0 {
+    return finish(11, true)
+  }
+  if source == 1 {
+    return finish(82, true)
+  }
+  if mode == 1 {
+    return finish(80, true)
+  }
+  if mode == 2 {
+    return finish(81, true)
+  }
+  if unknownCount > 0 {
+    return finish(79, true)
+  }
+  if source == 0 {
+    if mode == 0 {
+      if unknownCount == 0 {
+        return finish(0, true)
+      }
+    }
+  }
+  return finish(11, true)
+}
+
+pure flow envKeyAdmit(
+  countClass: Int,
+  count: Int,
+  emptyClass: Int,
+  empty: Int,
+  formatClass: Int,
+  formatOk: Int
+) -> Int
+contract {
+  intent { "Per-key boot admission. Missing, duplicate, empty or malformed refuses; exactly one well-formed value admits." }
+}
+{
+  let countReason: Int = readForeignBoundedInteger(countClass, count, -2147483647, 2147483647)
+  if countReason != 0 {
+    if countReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let emptyReason: Int = readForeignBoundedInteger(emptyClass, empty, -2147483647, 2147483647)
+  if emptyReason != 0 {
+    if emptyReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let formatReason: Int = readForeignBoundedInteger(formatClass, formatOk, -2147483647, 2147483647)
+  if formatReason != 0 {
+    if formatReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if count < 0 {
+    return finish(11, true)
+  }
+  if empty != 0 {
+    if empty != 1 {
+      return finish(11, true)
+    }
+  }
+  if formatOk != 0 {
+    if formatOk != 1 {
+      return finish(11, true)
+    }
+  }
+  if count == 0 {
+    return finish(75, true)
+  }
+  if count > 1 {
+    return finish(78, true)
+  }
+  if empty == 1 {
+    return finish(76, true)
+  }
+  if formatOk == 0 {
+    return finish(77, true)
+  }
+  if count == 1 {
+    if empty == 0 {
+      if formatOk == 1 {
+        return finish(0, true)
+      }
+    }
+  }
+  return finish(11, true)
+}
+
+pure flow envAadAdmit(
+  purposeClass: Int,
+  purposeMatch: Int,
+  rootClass: Int,
+  rootMatch: Int
+) -> Int
+contract {
+  intent { "AEAD additional data must bind both purpose and root. Any mismatch refuses." }
+}
+{
+  let purposeReason: Int = readForeignBoundedInteger(purposeClass, purposeMatch, -2147483647, 2147483647)
+  if purposeReason != 0 {
+    if purposeReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  let rootReason: Int = readForeignBoundedInteger(rootClass, rootMatch, -2147483647, 2147483647)
+  if rootReason != 0 {
+    if rootReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if purposeMatch != 0 {
+    if purposeMatch != 1 {
+      return finish(11, true)
+    }
+  }
+  if rootMatch != 0 {
+    if rootMatch != 1 {
+      return finish(11, true)
+    }
+  }
+  if purposeMatch == 0 {
+    return finish(83, true)
+  }
+  if rootMatch == 0 {
+    return finish(83, true)
+  }
+  if purposeMatch == 1 {
+    if rootMatch == 1 {
+      return finish(0, true)
+    }
+  }
+  return finish(11, true)
+}
+
+pure flow envSecretAccess(
+  faultClass: Int,
+  faulted: Int,
+  declaredClass: Int,
+  declared: Int,
+  providerClass: Int,
+  providerPresent: Int
+) -> Int
+contract {
+  intent { "Post-boot per-secret access. The existing port decides the name first; a faulted provider then refuses." }
+}
+{
+  let faultReason: Int = readForeignBoundedInteger(faultClass, faulted, -2147483647, 2147483647)
+  if faultReason != 0 {
+    if faultReason == 11 {
+      return finish(11, true)
+    }
+    return finish(10, true)
+  }
+  if faulted != 0 {
+    if faulted != 1 {
+      return finish(11, true)
+    }
+  }
+  let port: Int = portAccess(declaredClass, declared, providerClass, providerPresent)
+  if port != 100 {
+    return port
+  }
+  if faulted == 1 {
+    return finish(84, true)
+  }
+  if faulted == 0 {
+    return finish(0, true)
+  }
+  return finish(11, true)
+}

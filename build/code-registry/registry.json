@@ -8984,9 +8984,9 @@
         "warning"
       ],
       "defs": 1,
-      "emits": 2,
-      "tests": 40,
-      "docs": 14
+      "emits": 1,
+      "tests": 50,
+      "docs": 15
     },
     {
       "code": "FUNGI-GOV-3VL-003",
@@ -11324,7 +11324,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 3,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-MB-13",
@@ -16589,7 +16589,7 @@
       "defs": 0,
       "emits": 6,
       "tests": 21,
-      "docs": 4
+      "docs": 3
     },
     {
       "code": "FUNGI-TYPE-008",

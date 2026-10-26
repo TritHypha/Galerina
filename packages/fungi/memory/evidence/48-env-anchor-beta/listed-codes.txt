@@ -1,0 +1,20 @@
+ENV_ANCHOR_BETA listed packed outcomes (packages/fungi/memory/src/env-anchor-beta.fungi; finish(n) packs to 100+n). Anything else maps to 111.
+
+100 Admit
+110 ForeignRaw (a host fact outside its listed Int range)
+111 Unlisted / fail-closed default (every flow ends in finish(11, true))
+112 Undeclared name (from secrets-provider-port.fungi portAccess, via envSecretAccess)
+119 ProviderAbsent (from portAccess, via envSecretAccess)
+175 Missing required key
+176 Empty value
+177 Malformed value (decoded length or charset)
+178 Duplicate key line (no last-wins)
+179 Unknown extra key
+180 .env file mode open (group/world readable)
+181 .env file mode UNKNOWN
+182 Argv-supplied secret source
+183 AEAD AAD mismatch (purpose or root; GCM cannot tell which, so both refuse 183)
+184 Provider faulted after boot (latched; revocationEpoch moves once per fault)
+
+175-184 are unit-local packed outcomes, not FUNGI-* registry codes (decision gcw-k3u107). The block was chosen from a free-code scan of all 21 memory units (gcw-k3u104) and checked against build/code-registry/registry.json (gcw-k3u105).
+Host shim packages/fungi/memory/host/env-anchor-beta-host.mjs never decides: every admit/refuse comes from the pinned zero-import WebAssembly asset env-anchor-beta.wasm (sha256 f87b2ad4924db3bddee0c7b6f2ccd7ccbafd68e4d81e0cf226638f7197d5b1c4) built from the native flows; a code outside this list is treated as 111.
