@@ -11,8 +11,8 @@ never a label it may assert.
 
 | Rung | `keyCustody` value | Custody | What it defeats | State |
 |---|---|---|---|---|
-| L0 | (none) | plaintext `.env` | nothing | **Retired**; replaced by env.spore |
-| L1 | `env-spore` | env.spore sealed at rest | casual file exfiltration, repository leaks | **Current baseline** |
+| L0 | (none) | plaintext `.env` | nothing | **Beta baseline**: deployment `.env` read once at startup only through the SecretsProvider port, fail-closed (owner decision 2026-10-25) |
+| L1 | `env-spore` | env.spore sealed at rest | casual file exfiltration, repository leaks | **Post-beta** (deferred until the Galerina database exists) |
 | L2 | `os-keystore` | OS keystore wraps the env.spore KEK (Windows DPAPI, macOS keychain) | offline file theft without the user session | Post-v1 |
 | L3 | `tpm-sealed` | TPM 2.0 PCR-sealed KEK, bound to machine and measured boot | key theft to another machine; a tampered boot chain | Post-v1 |
 | L4 | `hardware-signer` | key never leaves the TPM/HSM/token; signing happens inside the device | extraction of signer-held key material; it does **not** prevent a compromised process from requesting signatures | Post-v1 |
