@@ -144,7 +144,7 @@ GIR is a governed intermediate representation, not a global interpreter lock. It
 
 ### The SLIDE/VOK boundary
 
-Independent SLIDE proves a bounded path from checked Fungi through canonical GIR to a source-free `.slide` package, followed by independent re-admission and VOK execution. VOK is the verified operation kernel at the final execution boundary. It validates the admitted shape, resource and authority evidence rather than trusting a compiler success flag.
+Independent SLIDE proves a bounded path from checked Fungi through canonical GIR to a source-free `.slide` package, followed by independent re-admission and execution. The final production shape is GIR -> SLIDE: validation, admission, the one-use execution lease and runtime memory enforcement belong to SLIDE itself. VOK (Verified Object Kernel) is a bolt-on checker beside SLIDE and is not part of the production build. In development and tests it cross-checks the admitted shape, resource and authority evidence rather than trusting a compiler success flag, and no production guarantee relies on VOK being present. See [the execution pipeline note](docs/architecture/galerina-slide-lyth-execution-pipeline-20261026.md).
 
 Current evidence is intentionally narrow. It does not yet prove:
 

@@ -19,6 +19,7 @@
 | [`flat-package-topology-and-post-slide-migration.md`](flat-package-topology-and-post-slide-migration.md) | Flat Galerina package topology and post-SLIDE migration |
 | [`fungi-source-capability-inventory-2026-08-09.md`](fungi-source-capability-inventory-2026-08-09.md) | Fungi source capability inventory |
 | [`galerina-governed-memory-and-secure-index-review-2026-07-30.md`](galerina-governed-memory-and-secure-index-review-2026-07-30.md) | Galerina governed-memory and secure-index review |
+| [`galerina-slide-lyth-execution-pipeline-20261026.md`](galerina-slide-lyth-execution-pipeline-20261026.md) | Galerina, SLIDE and Lyth execution pipeline (2026-10-26): production shape GIR -> SLIDE, VOK as a bolt-on checker |
 | [`galerina-slide-vok-current-flow-2026-08-24.md`](galerina-slide-vok-current-flow-2026-08-24.md) | Galerina to SLIDE and VOK current flow |
 | [`gate-cutset-version-gating-decision-2026-07-11.md`](gate-cutset-version-gating-decision-2026-07-11.md) | Decision record — why .gate cut(<field>) is version-gated to @version 1.2.0 (RD-0340) |
 | [`kernel-fungi-floor-resolution-2026-07-10.md`](kernel-fungi-floor-resolution-2026-07-10.md) | ADR — Resolving "OS-kernel → 100% .fungi, no .ts": the governed surface vs. the declared host floor |

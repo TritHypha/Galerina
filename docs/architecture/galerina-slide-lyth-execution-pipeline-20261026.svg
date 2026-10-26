@@ -1,0 +1,250 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2220" viewBox="0 0 1800 2220" role="img" aria-labelledby="title desc">
+<title id="title">Galerina, SLIDE/VOK and Lyth-Weaver: components and WAT/WASM migration</title>
+<desc id="desc">Current compatibility route and intended primary SLIDE route, followed by grouped component roles. Bounded implementations and research are distinguished from production readiness. Source review 26 October 2026.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#6c7e96"/></marker></defs>
+<style>text{font-family:Segoe UI,Arial,sans-serif} </style>
+<rect x="0" y="0" width="1800" height="2220" rx="0" fill="#edf2f8" stroke="none"/>
+<rect x="0" y="0" width="1800" height="166" rx="0" fill="#14253e" stroke="none"/>
+<text x="48" y="54" font-size="17" fill="#a7c5e7" font-weight="650">ONE LANGUAGE • THREE DISTINCT RESPONSIBILITIES</text>
+<text x="48" y="105" font-size="42" fill="#fff" font-weight="700">Galerina + SLIDE / VOK + Lyth-Weaver</text>
+<text x="48" y="140" font-size="21" fill="#d8e4f4" font-weight="400">What the main components do — and exactly where the WAT/WASM execution path changes</text>
+<rect x="40" y="190" width="1720" height="172" rx="14" fill="#fff" stroke="#d1dceb"/>
+<text x="62" y="222" font-size="19" fill="#8f590e" font-weight="700">01  CURRENT CLI / BOOTSTRAP</text>
+<text x="450" y="222" font-size="19" fill="#253650" font-weight="400">Executing TypeScript bootstrap retained; WAT/WASM is still the live CLI route.</text>
+<rect x="62" y="250" width="250" height="76" rx="12" fill="#fff9ef" stroke="#e8ca99"/>
+<text x="78" y="279" font-size="21" fill="#142c4b" font-weight="650">.fungi source</text>
+<text x="78" y="306" font-size="16" fill="#253650" font-weight="400">Application and policy code</text>
+<rect x="350" y="250" width="300" height="76" rx="12" fill="#fff9ef" stroke="#e8ca99"/>
+<text x="366" y="279" font-size="21" fill="#142c4b" font-weight="650">Galerina compiler</text>
+<text x="366" y="306" font-size="16" fill="#253650" font-weight="400">Checks → canonical GIR</text>
+<rect x="688" y="250" width="215" height="76" rx="12" fill="#fff9ef" stroke="#e8ca99"/>
+<text x="704" y="279" font-size="21" fill="#142c4b" font-weight="650">WAT</text>
+<text x="704" y="306" font-size="16" fill="#253650" font-weight="400">WebAssembly text</text>
+<rect x="941" y="250" width="215" height="76" rx="12" fill="#fff9ef" stroke="#e8ca99"/>
+<text x="957" y="279" font-size="21" fill="#142c4b" font-weight="650">WASM</text>
+<text x="957" y="306" font-size="16" fill="#253650" font-weight="400">WebAssembly binary</text>
+<rect x="1194" y="250" width="535" height="76" rx="12" fill="#fff9ef" stroke="#e8ca99"/>
+<text x="1210" y="279" font-size="21" fill="#142c4b" font-weight="650">Compatibility runtime</text>
+<text x="1210" y="306" font-size="16" fill="#253650" font-weight="400">Governed execution via the Wasm lane</text>
+<path d="M316,288 L343,288" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M654,288 L681,288" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M907,288 L934,288" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1160,288 L1187,288" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="62" y="348" font-size="17" fill="#253650" font-weight="400">WAT is a representation of WebAssembly; it is not a separate execution engine.</text>
+<rect x="40" y="383" width="1720" height="278" rx="14" fill="#fff" stroke="#b9d8d2"/>
+<text x="62" y="416" font-size="19" fill="#087164" font-weight="700">02  INTENDED PRIMARY PATH — THE SLIDE REPLACEMENT</text>
+<text x="62" y="446" font-size="20" fill="#253650" font-weight="400">KEEP the Galerina frontend and GIR. Replace mandatory WAT/WASM emission and execution after the migration gates pass.</text>
+<rect x="62" y="468" width="290" height="76" rx="12" fill="#f0faf7" stroke="#9bcfc1"/>
+<text x="78" y="497" font-size="21" fill="#142c4b" font-weight="650">Checked .fungi → GIR</text>
+<text x="78" y="524" font-size="16" fill="#253650" font-weight="400">Galerina semantic ownership</text>
+<rect x="390" y="468" width="312" height="76" rx="12" fill="#f0faf7" stroke="#9bcfc1"/>
+<text x="406" y="497" font-size="21" fill="#142c4b" font-weight="650">SLIDE package + checks</text>
+<text x="406" y="524" font-size="16" fill="#253650" font-weight="400">Realize .slide; independently verify</text>
+<rect x="740" y="468" width="272" height="76" rx="12" fill="#f0faf7" stroke="#9bcfc1"/>
+<text x="756" y="497" font-size="21" fill="#142c4b" font-weight="650">VOK admission role</text>
+<text x="756" y="524" font-size="16" fill="#253650" font-weight="400">Today: JS reference model</text>
+<rect x="1050" y="468" width="330" height="76" rx="12" fill="#f0faf7" stroke="#9bcfc1"/>
+<text x="1066" y="497" font-size="21" fill="#142c4b" font-weight="650">SLIDE execution</text>
+<text x="1066" y="524" font-size="16" fill="#253650" font-weight="400">Runner executes; VOK does not</text>
+<rect x="1418" y="468" width="311" height="76" rx="12" fill="#f0faf7" stroke="#9bcfc1"/>
+<text x="1434" y="497" font-size="21" fill="#142c4b" font-weight="650">Terminal evidence</text>
+<text x="1434" y="524" font-size="16" fill="#253650" font-weight="400">Result, refusal and audit receipt</text>
+<path d="M356,506 L383,506" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M706,506 L733,506" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1016,506 L1043,506" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1384,506 L1411,506" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="62" y="564" width="803" height="73" rx="10" fill="#e7f4f0" stroke="none"/>
+<text x="78" y="590" font-size="20" fill="#086b5d" font-weight="700">REPLACEMENT SEAM: after canonical GIR</text>
+<text x="78" y="616" font-size="18" fill="#253650" font-weight="400">VOK is a JS reference today; production authority and migration remain open.</text>
+<rect x="890" y="564" width="839" height="73" rx="10" fill="#fff7e9" stroke="#e8ca99"/>
+<text x="906" y="590" font-size="19" fill="#8f590e" font-weight="650">OPTIONAL BRANCH: GIR → WAT/WASM → separately admitted executor</text>
+<text x="906" y="616" font-size="18" fill="#253650" font-weight="400">Explicit compatibility / differential target; never silent rescue after refusal.</text>
+<path d="M700,546 L700,558" fill="none" stroke="#6c7e96" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="7 6"/>
+<text x="48" y="694" font-size="18" fill="#142c4b" font-weight="700">Reading the map</text>
+<text x="221" y="694" font-size="18" fill="#253650" font-weight="400">Roles below are source-described component families, not a claim of complete production wiring or a fresh test pass.</text>
+<rect x="40" y="718" width="560" height="106" rx="14" fill="#2366ad" stroke="none"/>
+<text x="62" y="758" font-size="29" fill="#fff" font-weight="700">GALERINA</text>
+<text x="62" y="791" font-size="18" fill="#fff" font-weight="400">Language, application rules and governed source</text>
+<rect x="620" y="718" width="560" height="106" rx="14" fill="#087e70" stroke="none"/>
+<text x="642" y="758" font-size="29" fill="#fff" font-weight="700">SLIDE / VOK</text>
+<text x="642" y="791" font-size="18" fill="#fff" font-weight="400">Target realization, admission and execution</text>
+<rect x="1200" y="718" width="560" height="106" rx="14" fill="#7752a9" stroke="none"/>
+<text x="1222" y="758" font-size="29" fill="#fff" font-weight="700">LYTH-WEAVER</text>
+<text x="1222" y="791" font-size="18" fill="#fff" font-weight="400">Reusable proof work and research instruments</text>
+<rect x="40" y="842" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="857" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="865" font-size="12" fill="#2366ad" font-weight="700">SOURCE / BOOTSTRAP</text>
+<text x="60" y="892" font-size="22" fill="#162e4e" font-weight="650">Language + compiler</text>
+<text x="60" y="916" font-size="17" fill="#42516a" font-weight="400">.fungi is Galerina’s governed programming language.</text>
+<text x="60" y="938" font-size="17" fill="#42516a" font-weight="400">Scanner, parser and checks validate types, effects,</text>
+<text x="60" y="960" font-size="17" fill="#42516a" font-weight="400">value state and governance; GIR carries the plan.</text>
+<rect x="40" y="983" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="998" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1006" font-size="12" fill="#2366ad" font-weight="700">GOVERNANCE</text>
+<text x="60" y="1033" font-size="22" fill="#162e4e" font-weight="650">K3 logic + Tower Citizen</text>
+<text x="60" y="1057" font-size="17" fill="#42516a" font-weight="400">Three outcomes: ALLOW, DENY, INDETERMINATE.</text>
+<text x="60" y="1079" font-size="17" fill="#42516a" font-weight="400">Tower consumes identity, capability and lease evidence.</text>
+<text x="60" y="1101" font-size="17" fill="#42516a" font-weight="400">A source decision is not a downstream execution lease.</text>
+<rect x="40" y="1124" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1139" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1147" font-size="12" fill="#2366ad" font-weight="700">COMPOSITION</text>
+<text x="60" y="1174" font-size="22" fill="#162e4e" font-weight="650">Runtime + app framework</text>
+<text x="60" y="1198" font-size="17" fill="#42516a" font-weight="400">Runtime and app kernel connect governed flows.</text>
+<text x="60" y="1220" font-size="17" fill="#42516a" font-weight="400">API adapters, application borders and audit surfaces</text>
+<text x="60" y="1242" font-size="17" fill="#42516a" font-weight="400">keep host interaction explicit and typed.</text>
+<rect x="40" y="1265" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1280" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1288" font-size="12" fill="#2366ad" font-weight="700">CHECKS / CONTRACTS</text>
+<text x="60" y="1315" font-size="22" fill="#162e4e" font-weight="650">Memory + security + sentinels</text>
+<text x="60" y="1339" font-size="17" fill="#42516a" font-weight="400">Track ownership, value state, secrets and permissions.</text>
+<text x="60" y="1361" font-size="17" fill="#42516a" font-weight="400">Observe policy/security state and reject invalid inputs.</text>
+<text x="60" y="1383" font-size="17" fill="#42516a" font-weight="400">Host/native enforcement needs its own evidence.</text>
+<rect x="40" y="1406" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1421" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1429" font-size="12" fill="#2366ad" font-weight="700">MIGRATION ROLES</text>
+<text x="60" y="1456" font-size="22" fill="#162e4e" font-weight="650">Tri-Pipe + Tri-Fuse</text>
+<text x="60" y="1480" font-size="17" fill="#42516a" font-weight="400">Tri-Pipe proposes compute routes and safety evidence.</text>
+<text x="60" y="1502" font-size="17" fill="#42516a" font-weight="400">Tri-Fuse discharges proved obligations; residual checks</text>
+<text x="60" y="1524" font-size="17" fill="#42516a" font-weight="400">remain. Neither proposal nor optimisation grants access.</text>
+<rect x="40" y="1547" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1562" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1570" font-size="12" fill="#2366ad" font-weight="700">CAPABILITY BORDERS</text>
+<text x="60" y="1597" font-size="22" fill="#162e4e" font-weight="650">Target adapters + observations</text>
+<text x="60" y="1621" font-size="17" fill="#42516a" font-weight="400">CPU, native, Wasm and other target contracts describe</text>
+<text x="60" y="1643" font-size="17" fill="#42516a" font-weight="400">requested capabilities and observed hardware facts.</text>
+<text x="60" y="1665" font-size="17" fill="#42516a" font-weight="400">Device presence alone does not make it usable.</text>
+<rect x="40" y="1688" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1703" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1711" font-size="12" fill="#2366ad" font-weight="700">GOVERNED EFFECTS</text>
+<text x="60" y="1738" font-size="22" fill="#162e4e" font-weight="650">Data, network + extensions</text>
+<text x="60" y="1762" font-size="17" fill="#42516a" font-weight="400">Database/web/network packages expose controlled effects.</text>
+<text x="60" y="1784" font-size="17" fill="#42516a" font-weight="400">SecretsProvider / .spore and native bridges sit at borders.</text>
+<text x="60" y="1806" font-size="17" fill="#42516a" font-weight="400">External engines retain separate trust and custody.</text>
+<rect x="40" y="1829" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="40" y="1844" width="5" height="98" rx="2" fill="#2366ad" stroke="none"/>
+<text x="60" y="1852" font-size="12" fill="#2366ad" font-weight="700">DISCOVERY / EVIDENCE</text>
+<text x="60" y="1879" font-size="22" fill="#162e4e" font-weight="650">Myco, Hypha + developer tools</text>
+<text x="60" y="1903" font-size="17" fill="#42516a" font-weight="400">Myco locates material; Hypha scans passive facts.</text>
+<text x="60" y="1925" font-size="17" fill="#42516a" font-weight="400">Graphs, audits, benchmarks and tests support inspection.</text>
+<text x="60" y="1947" font-size="17" fill="#42516a" font-weight="400">An index hit or test receipt is not execution authority.</text>
+<rect x="620" y="842" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="857" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="865" font-size="12" fill="#087e70" font-weight="700">BOUNDED REFERENCE</text>
+<text x="640" y="892" font-size="22" fill="#162e4e" font-weight="650">Frontend handoff + canonical decoder</text>
+<text x="640" y="916" font-size="17" fill="#42516a" font-weight="400">Take executable GIR, source identity and closed inputs.</text>
+<text x="640" y="938" font-size="17" fill="#42516a" font-weight="400">Decode and validate graph, types, effects and resources.</text>
+<text x="640" y="960" font-size="17" fill="#42516a" font-weight="400">The independent target is not limited to Galerina.</text>
+<rect x="620" y="983" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="998" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1006" font-size="12" fill="#087e70" font-weight="700">BOUNDED REFERENCE</text>
+<text x="640" y="1033" font-size="22" fill="#162e4e" font-weight="650">Profiles + physical .slide packages</text>
+<text x="640" y="1057" font-size="17" fill="#42516a" font-weight="400">Select a declared representation and bind exact bytes.</text>
+<text x="640" y="1079" font-size="17" fill="#42516a" font-weight="400">Package ABI checks exports, imports and dependencies.</text>
+<text x="640" y="1101" font-size="17" fill="#42516a" font-weight="400">Independent re-derivation catches drift or substitution.</text>
+<rect x="620" y="1124" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1139" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1147" font-size="12" fill="#087e70" font-weight="700">NO RELEASED PRODUCTION AUTHORITY</text>
+<text x="640" y="1174" font-size="22" fill="#162e4e" font-weight="650">VOK — JavaScript reference model</text>
+<text x="640" y="1198" font-size="17" fill="#42516a" font-weight="400">Models eight admission gates, one-use leases and receipts.</text>
+<text x="640" y="1220" font-size="17" fill="#42516a" font-weight="400">Memory evidence is one gate; this is not a Rust checker.</text>
+<text x="640" y="1242" font-size="17" fill="#42516a" font-weight="400">Intended admission role; does not execute machine code.</text>
+<rect x="620" y="1265" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1280" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1288" font-size="12" fill="#087e70" font-weight="700">BOUNDED REFERENCE</text>
+<text x="640" y="1315" font-size="22" fill="#162e4e" font-weight="650">Nonce authority + effect broker</text>
+<text x="640" y="1339" font-size="17" fill="#42516a" font-weight="400">Track lease consumption and reserve effect attempts.</text>
+<text x="640" y="1361" font-size="17" fill="#42516a" font-weight="400">The broker mediates capability-limited host operations.</text>
+<text x="640" y="1383" font-size="17" fill="#42516a" font-weight="400">Process recovery evidence is not power-loss proof.</text>
+<rect x="620" y="1406" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1421" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1429" font-size="12" fill="#087e70" font-weight="700">BOUNDED REFERENCE</text>
+<text x="640" y="1456" font-size="22" fill="#162e4e" font-weight="650">Execution core + terminal receipts</text>
+<text x="640" y="1480" font-size="17" fill="#42516a" font-weight="400">Run supported admitted graphs with typed outcomes.</text>
+<text x="640" y="1502" font-size="17" fill="#42516a" font-weight="400">Bind execution, resource and audit evidence to the lease.</text>
+<text x="640" y="1524" font-size="17" fill="#42516a" font-weight="400">General native runner / production release remain open.</text>
+<rect x="620" y="1547" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1562" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1570" font-size="12" fill="#087e70" font-weight="700">DESIGN / LAB MIX</text>
+<text x="640" y="1597" font-size="22" fill="#162e4e" font-weight="650">DFE + Shape Fabric + VPEG</text>
+<text x="640" y="1621" font-size="17" fill="#42516a" font-weight="400">DFE: deterministic work DAG, products and publication.</text>
+<text x="640" y="1643" font-size="17" fill="#42516a" font-weight="400">Shape Fabric: replay and verify candidate graph work.</text>
+<text x="640" y="1665" font-size="17" fill="#42516a" font-weight="400">VPEG: typed graph fragments; caches confer no authority.</text>
+<rect x="620" y="1688" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1703" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1711" font-size="12" fill="#087e70" font-weight="700">RESEARCH ONLY</text>
+<text x="640" y="1738" font-size="22" fill="#162e4e" font-weight="650">NSE + cache-tile experiments</text>
+<text x="640" y="1762" font-size="17" fill="#42516a" font-weight="400">Neural Shape Engine proposes candidates for checking.</text>
+<text x="640" y="1784" font-size="17" fill="#42516a" font-weight="400">Cache-tile experiments study staged data movement.</text>
+<text x="640" y="1806" font-size="17" fill="#42516a" font-weight="400">Neither learned output nor speed can authorize execution.</text>
+<rect x="620" y="1829" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="620" y="1844" width="5" height="98" rx="2" fill="#087e70" stroke="none"/>
+<text x="640" y="1852" font-size="12" fill="#087e70" font-weight="700">TARGET ARCHITECTURE</text>
+<text x="640" y="1879" font-size="22" fill="#162e4e" font-weight="650">Native / optional Wasm / future targets</text>
+<text x="640" y="1903" font-size="17" fill="#42516a" font-weight="400">Intended native lowering replaces mandatory WAT/WASM.</text>
+<text x="640" y="1925" font-size="17" fill="#42516a" font-weight="400">Wasm remains an explicit compatibility / oracle choice.</text>
+<text x="640" y="1947" font-size="17" fill="#42516a" font-weight="400">Broader hardware, isolation and durability gates stay open.</text>
+<rect x="1200" y="842" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="857" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="865" font-size="12" fill="#7752a9" font-weight="700">LAB IMPLEMENTATION</text>
+<text x="1220" y="892" font-size="22" fill="#162e4e" font-weight="650">Admission-work intake</text>
+<text x="1220" y="916" font-size="17" fill="#42516a" font-weight="400">Accept a closed request and reject malformed inputs.</text>
+<text x="1220" y="938" font-size="17" fill="#42516a" font-weight="400">Results: ELIGIBLE, INDETERMINATE or REFUSED.</text>
+<text x="1220" y="960" font-size="17" fill="#42516a" font-weight="400">There is no ALLOW outcome in the proof-work result.</text>
+<rect x="1200" y="983" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="998" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1006" font-size="12" fill="#7752a9" font-weight="700">LAB IMPLEMENTATION</text>
+<text x="1220" y="1033" font-size="22" fill="#162e4e" font-weight="650">Closure key + digest envelopes</text>
+<text x="1220" y="1057" font-size="17" fill="#42516a" font-weight="400">Bind source, GIR, package, verifier, policy and target.</text>
+<text x="1220" y="1079" font-size="17" fill="#42516a" font-weight="400">Canonical fields and freshness identify the exact context.</text>
+<text x="1220" y="1101" font-size="17" fill="#42516a" font-weight="400">Similar-looking work is not automatically reusable.</text>
+<rect x="1200" y="1124" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1139" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1147" font-size="12" fill="#7752a9" font-weight="700">LAB IMPLEMENTATION</text>
+<text x="1220" y="1174" font-size="22" fill="#162e4e" font-weight="650">ReuseStore + trust-domain gate</text>
+<text x="1220" y="1198" font-size="17" fill="#42516a" font-weight="400">Store or retrieve exact evidence under scoped access.</text>
+<text x="1220" y="1220" font-size="17" fill="#42516a" font-weight="400">Conflicts may quarantine identities; foreign access refuses.</text>
+<text x="1220" y="1242" font-size="17" fill="#42516a" font-weight="400">A store hit still requires independent SLIDE verification.</text>
+<rect x="1200" y="1265" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1280" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1288" font-size="12" fill="#7752a9" font-weight="700">PRODUCTION GATES OPEN</text>
+<text x="1220" y="1315" font-size="22" fill="#162e4e" font-weight="650">DFE domain + package handoff</text>
+<text x="1220" y="1339" font-size="17" fill="#42516a" font-weight="400">Proposed production custody lives in a DFE domain.</text>
+<text x="1220" y="1361" font-size="17" fill="#42516a" font-weight="400">Producer statements and exact packages carry evidence.</text>
+<text x="1220" y="1383" font-size="17" fill="#42516a" font-weight="400">Production integration and authenticated custody are open.</text>
+<rect x="1200" y="1406" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1421" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1429" font-size="12" fill="#7752a9" font-weight="700">EXECUTION LAB</text>
+<text x="1220" y="1456" font-size="22" fill="#162e4e" font-weight="650">Work/span + partition + subset</text>
+<text x="1220" y="1480" font-size="17" fill="#42516a" font-weight="400">Measure work and critical path; propose partitions.</text>
+<text x="1220" y="1502" font-size="17" fill="#42516a" font-weight="400">Classify where deterministic parallel work is permitted.</text>
+<text x="1220" y="1524" font-size="17" fill="#42516a" font-weight="400">Authority and non-commutative effects remain ordered.</text>
+<rect x="1200" y="1547" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1562" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1570" font-size="12" fill="#7752a9" font-weight="700">EXECUTION LAB</text>
+<text x="1220" y="1597" font-size="22" fill="#162e4e" font-weight="650">Algebra + capability model</text>
+<text x="1220" y="1621" font-size="17" fill="#42516a" font-weight="400">Require proved algebra before reordering operations.</text>
+<text x="1220" y="1643" font-size="17" fill="#42516a" font-weight="400">Model affine ownership and allowed use of capabilities.</text>
+<text x="1220" y="1665" font-size="17" fill="#42516a" font-weight="400">Structural lab checks do not contain hostile native code.</text>
+<rect x="1200" y="1688" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1703" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1711" font-size="12" fill="#7752a9" font-weight="700">EXECUTION LAB</text>
+<text x="1220" y="1738" font-size="22" fill="#162e4e" font-weight="650">Weaver interpreters + adapters</text>
+<text x="1220" y="1762" font-size="17" fill="#42516a" font-weight="400">Compare serial and strand-based execution with SLIDE.</text>
+<text x="1220" y="1784" font-size="17" fill="#42516a" font-weight="400">Bridge bounded flow plans into research instruments.</text>
+<text x="1220" y="1806" font-size="17" fill="#42516a" font-weight="400">This comparator is separate from the primary fabric.</text>
+<rect x="1200" y="1829" width="560" height="129" rx="12" fill="#fff" stroke="#d7e0ec"/>
+<rect x="1200" y="1844" width="5" height="98" rx="2" fill="#7752a9" stroke="none"/>
+<text x="1220" y="1852" font-size="12" fill="#7752a9" font-weight="700">MEASUREMENT / LAB</text>
+<text x="1220" y="1879" font-size="22" fill="#162e4e" font-weight="650">A-lane harness + assurance tools</text>
+<text x="1220" y="1903" font-size="17" fill="#42516a" font-weight="400">Measure whether proof-work reuse actually pays off.</text>
+<text x="1220" y="1925" font-size="17" fill="#42516a" font-weight="400">Mutation tests, capability lint and drift checks probe gaps.</text>
+<text x="1220" y="1947" font-size="17" fill="#42516a" font-weight="400">Research results never mint a VOK execution lease.</text>
+<rect x="40" y="1990" width="1720" height="78" rx="14" fill="#14253e" stroke="none"/>
+<text x="62" y="2020" font-size="16" fill="#a7c5e7" font-weight="700">HOW THEY CONNECT</text>
+<text x="62" y="2050" font-size="20" fill="#fff" font-weight="550">Intended roles: Galerina checks meaning → Lyth supplies optional proof work → SLIDE verifies → VOK gates permission → SLIDE runner executes.</text>
+<text x="48" y="2104" font-size="18" fill="#334b66" font-weight="650">STATUS: current compatibility lane + bounded reference implementations + explicit design/lab work. No production admission is implied.</text>
+<text x="48" y="2133" font-size="18" fill="#253650" font-weight="400">WASM replacement ≠ removal of .fungi, GIR, governance or hybrid cryptography. No automatic fallback; no removal before the named gates pass.</text>
+<text x="48" y="2166" font-size="15" fill="#253650" font-weight="400">Sources: Galerina README + current-flow map; SLIDE README, migration plan, VOK foundation design + .mjs source; Lyth README + ARCHITECTURE + schema.ts.</text>
+<text x="48" y="2192" font-size="15" fill="#253650" font-weight="400">Reviewed 26 Oct 2026 • Galerina a26c070444dc • SLIDE 514737141a16 • Lyth-Weaver 15dcd2dc19d8 • Main component families, grouped for readability.</text>
+<metadata>{&quot;kind&quot;: &quot;source-described architecture overview; non-authorizing&quot;, &quot;review_date&quot;: &quot;2026-10-26&quot;, &quot;index_status&quot;: &quot;All three discovery indexes stale; current owner files reopened. No runtime tests executed.&quot;, &quot;sources&quot;: [&quot;Galerina/README.md&quot;, &quot;Galerina/docs/architecture/galerina-slide-vok-current-flow-2026-08-24.md&quot;, &quot;SLIDE/README.md&quot;, &quot;SLIDE/docs/GALERINA-INTEGRATION-MIGRATION-PLAN.md&quot;, &quot;SLIDE/docs/slide-independent-architecture.svg&quot;, &quot;lyth-weaver/README.md&quot;, &quot;lyth-weaver/ARCHITECTURE.md&quot;, &quot;lyth-weaver/tools/admission/schema.ts&quot;], &quot;note&quot;: &quot;Current route and intended route are distinct. Historical status counts were deliberately excluded.&quot;}</metadata>
+</svg>

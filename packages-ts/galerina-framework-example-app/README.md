@@ -76,4 +76,5 @@ tests/e2e.test.mjs          the scaffold→fuse→kernel→serve proof
   sha256 against `App.manifest` before the kernel will run it. `tests/e2e.test.mjs`
   admits it with **no** `allowUnsigned`, proving the signature really verifies.
 - **Secrets are runtime-only.** `.env` is git-ignored and never compiled in; in
-  production secrets come from a vault/KMS, not the binary.
+  production secrets come from a deployment `.env` read only through the
+  SecretsProvider port for beta (`.env.spore` after beta), never the binary.

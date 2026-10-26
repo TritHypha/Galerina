@@ -1,5 +1,49 @@
 # TODO
 
+## Fungi memory chapter wrap-up — 2026-10-26
+
+Status sync only; it closes no RD. RD-0361 and RD-1413/1414/1415 stay **[!] HOLD /
+NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
+
+- [x] S21 divergent-bind clash table merged to main (`1dcbe26ca`).
+- [x] T8K per-region ephemeral keys
+  (`packages/fungi/memory/src/region-keys.fungi`) merged to main
+  (`469e6f49b`; red `83d3baeea`, green `2aaf22058`).
+- [x] K3-UNKNOWN-NOT-ZERO U2 merged to main (`523169c6b`): Galerina writes
+  UNKNOWN as -128 (0x80) when a verdict crosses a boundary as a byte, never 0.
+  The VOK checker
+  (`packages-ts/galerina-core-runtime/native/vok-authority`) refuses a bare 0
+  (`VOK_TRIT_BARE_LEGACY_ZERO`) and reads legacy 0 as UNKNOWN only inside the
+  versioned wire frame. The cross-repo K3 conformance gate passes against SLIDE
+  main `9179c6d`.
+- [x] SLIDE K3 UNKNOWN bridge (owner option B, framed-only legacy 0) merged to
+  SLIDE main `9179c6d` with Phillip's one-time yes (2026-10-26 13:40 GMT).
+- [ ] **K3-COPIES (U8):** the compiler's native `Verdict.Unknown` is still
+  i32 0 (`wat-emitter.ts` `(i32.const 0) (; Verdict.Unknown ;)`, the
+  `Unknown(0)` messages in `interpreter.ts`), as are
+  `hardening-residency.ts` `UNKNOWN: 0` and the `INDETERMINATE = 0` comment
+  in `inference-governance.fungi`. Red tests first; the compiler change
+  (K3C-2) needs Phillip's owner nod.
+- [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
+  path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
+  outputs from 0 to -128 (owner F5: they stay 0 until Step Z). The SLIDE sunset
+  red test flips when this lands.
+- [ ] **consensusTritN note:** a split or empty quorum is UNKNOWN by
+  construction (`c0940fec9`, `b498128eb`), which fails closed but is
+  audit-noisy; a unanimous 0 is NEUTRAL. Document it in the three-valued
+  governance header.
+- [ ] **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
+  (`6adf84b8e`), DENY AND UNKNOWN = UNKNOWN (still refused), so DENY is not
+  absorbing when UNKNOWN is present. Record it as an owner-visible decision and
+  contrast `trustMeet`, where REFUTED absorbs (`89cfa6039`).
+- [ ] **Runtime half of the memory guarantees (SLIDE):** alias, wipe and lease
+  enforcement belong to SLIDE production code and are cross-checked by VOK off
+  the production build. Galerina checker evidence proves language-level memory
+  rules only and must not be cited as runtime enforcement.
+- [ ] Migration steps: Step X = WebAssembly + TypeScript, Step Y = WebAssembly +
+  .fungi, Step Z = SLIDE + .fungi. WebAssembly/WAT pieces off the golden path
+  are kept and marked, not deleted.
+
 ## Fungi memory closure-path status — 2026-10-22
 
 Status sync only; it closes no RD. RD-1413/1414/1415 stay **[!] HOLD /
@@ -4220,6 +4264,10 @@ counts or open items that a newer section explicitly supersedes.
   verifier supplies proof.
 - [!] RD-0361 remains open for owner authority/deletion and SLIDE/VOK gates;
   the bounded audit count is not production admission.
+  - 2026-10-25/26 K3U2 D-A (not a close): admission-feedback (48 cases),
+    cert-gate (348) and the governance-decisions R3 frozen sets were
+    re-captured with native UNKNOWN `k3Unknown()` = -128 (`64adca207`,
+    `3153c00a3`, `a8b850732`), merged in `523169c6b`.
 - [!] RD-0363 remains open for authenticated signature verification,
   complete canonical binding, replay-time enforcement, and receipts.
 - [!] RD-0364 remains open for real provider/weight identity, egress and
