@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "cd9f7b25659666f2dec2aa6e710abab9b84a162994b4cfe665d175757d467aa6",
+    "aggregateSha256": "e4396c97bacfc73a1674fe7391f782cd966e4889923511a753cddca3fce9deda",
     "algorithm": "sha256",
     "files": [
       {
@@ -784,7 +784,7 @@
       },
       {
         "path": "tests/three-valued-governance.test.mjs",
-        "sha256": "8b8950da8b616a972ea284a0505e3d51f0f942f90a2fa96004b687bb80edc578"
+        "sha256": "84d0d29fcdb2bd80353cb4e344ab57cade28511e813eb28c86e28a0e2d94af81"
       },
       {
         "path": "tests/tower-citizen.test.mjs",
