@@ -2,9 +2,9 @@
   "generatedBy": "scripts/component-health.mjs --audit-html",
   "provenance": {
     "available": true,
-    "branch": "HEAD",
-    "sha": "964b8ea7e",
-    "detached": true,
+    "branch": "grok/fungi-k3-unknown-u2-20261025",
+    "sha": "4f4296a7a",
+    "detached": false,
     "dirty": true
   },
   "shipReadinessPct": 100,
@@ -488,7 +488,7 @@
         {
           "item": "Contract Registry (RD-0359)",
           "state": "shipped",
-          "detail": "generated authority is current at 3,991 contracts across 2992 .fungi sources; parser-authoritative flow list + intent extraction; self-test and freshness check are CI-wired"
+          "detail": "generated authority is current at 4,324 contracts across 3109 .fungi sources; parser-authoritative flow list + intent extraction; self-test and freshness check are CI-wired"
         },
         {
           "item": "DSS decision core + optional Wasm oracle",
