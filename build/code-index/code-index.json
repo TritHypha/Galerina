@@ -4133,7 +4133,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:25",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:26",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:73",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:117",
       "test packages-ts/galerina-core-runtime/native/vok-authority/tests/secret_arena.rs:1",
@@ -4164,7 +4164,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:26",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:27",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:37",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:111"
     ]
@@ -4192,7 +4192,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:26",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:27",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:25",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:109"
     ]
@@ -4220,7 +4220,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:26",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:27",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:49",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:113"
     ]
@@ -4248,7 +4248,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:27",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:28",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:67",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:116"
     ]
@@ -4276,7 +4276,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:27",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:28",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:61",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:115"
     ]
@@ -4304,7 +4304,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:28",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:29",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:55",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:114"
     ]
@@ -4357,7 +4357,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:28",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:29",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:43",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:112"
     ]
@@ -4386,7 +4386,7 @@
     ],
     "aliases": [],
     "allSites": [
-      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:29",
+      "ref packages-ts/galerina-core-runtime/native/vok-authority/src/lib.rs:30",
       "def packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:31",
       "emit packages-ts/galerina-core-runtime/native/vok-authority/src/secret_arena.rs:110",
       "ref packages-ts/galerina-framework-app-kernel/src/index.ts:13",
@@ -14698,8 +14698,8 @@
       "ref scripts/audit-corpus-effect-names.mjs:188",
       "ref scripts/audit-corpus-effect-names.mjs:254",
       "ref scripts/audit-effect-canonicality.mjs:116",
-      "ref scripts/audit-mutation.mjs:647",
-      "ref scripts/audit-mutation.mjs:651",
+      "ref scripts/audit-mutation.mjs:660",
+      "ref scripts/audit-mutation.mjs:664",
       "ref scripts/audit-twin-emit-parity.mjs:197",
       "ref scripts/audit-twin-emit-parity.mjs:198",
       "ref scripts/audit-twin-emit-parity.mjs:201",
@@ -14878,7 +14878,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "ref scripts/audit-mutation.mjs:648"
+      "ref scripts/audit-mutation.mjs:661"
     ]
   },
   {
@@ -17209,8 +17209,8 @@
       "doc docs/examples/Level-5-Governance/AI_SUMMARY.md:71",
       "doc docs/examples/README.md:130",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:194",
-      "ref scripts/audit-mutation.mjs:629",
-      "ref scripts/audit-mutation.mjs:633",
+      "ref scripts/audit-mutation.mjs:642",
+      "ref scripts/audit-mutation.mjs:646",
       "ref scripts/audit-muted-diagnostics.mjs:49",
       "ref scripts/audit-muted-diagnostics.mjs:59",
       "ref scripts/audit-registry-fixtures.mjs:84",
@@ -18579,7 +18579,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "ref scripts/audit-mutation.mjs:630"
+      "ref scripts/audit-mutation.mjs:643"
     ]
   },
   {
@@ -27527,7 +27527,7 @@
       "fungi packages-ts/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi:26",
       "test packages-ts/galerina-framework-app-kernel/tests/rd0361-packages-execution-cutover.test.mjs:143",
       "doc packages-ts/galerina-registry/README.md:66",
-      "ref scripts/audit-mutation.mjs:542"
+      "ref scripts/audit-mutation.mjs:555"
     ]
   },
   {
@@ -35982,7 +35982,7 @@
       "doc docs/examples/Level-2-Types/AI_SUMMARY.md:50",
       "doc docs/examples/README.md:82",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
-      "ref scripts/audit-mutation.mjs:642",
+      "ref scripts/audit-mutation.mjs:655",
       "ref scripts/audit-twin-emit-parity.mjs:175",
       "ref scripts/audit-twin-emit-parity.mjs:181",
       "ref scripts/audit-twin-emit-parity.mjs:183",
@@ -36121,8 +36121,8 @@
       "doc docs/language/fungi/DO-DONT-TERNARY.md:20",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:58",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:192",
-      "ref scripts/audit-mutation.mjs:638",
-      "ref scripts/audit-mutation.mjs:642"
+      "ref scripts/audit-mutation.mjs:651",
+      "ref scripts/audit-mutation.mjs:655"
     ]
   },
   {
@@ -38189,7 +38189,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "ref scripts/audit-mutation.mjs:639"
+      "ref scripts/audit-mutation.mjs:652"
     ]
   },
   {
