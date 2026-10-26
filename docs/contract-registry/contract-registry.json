@@ -1,9 +1,9 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "generatedAt": "2026-09-12T23:58:47.000Z",
-  "sha": "e716fc677",
-  "contracts": 3991,
-  "parsed": 2992,
+  "generatedAt": "2026-10-25T22:45:35.000Z",
+  "sha": "7b498746b",
+  "contracts": 4324,
+  "parsed": 3109,
   "rows": [
     {
       "file": "docs/examples/CHECKED-MILLION-ITERATION-LOOP.fungi",
@@ -3753,8 +3753,7 @@
       "signature": "secure flow verifyPassword(readonly request: Request) -> Response",
       "effects": [
         "network.inbound",
-        "crypto.verify",
-        "audit.write"
+        "crypto.verify"
       ],
       "intent": "Verify a submitted password against the stored credential hash."
     },
@@ -5452,6 +5451,94 @@
       "signature": "pure flow makePair(a: Expr, b: Expr) -> Array<Expr>",
       "effects": [],
       "intent": "Build the [left, right] children array for a binary node."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "isDigitChar",
+      "qualifier": "pure",
+      "signature": "pure flow isDigitChar(ch: String) -> Bool",
+      "effects": [],
+      "intent": "True when ch is a single decimal digit."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "digitVal",
+      "qualifier": "pure",
+      "signature": "pure flow digitVal(ch: String) -> Int",
+      "effects": [],
+      "intent": "Decimal value of a digit character; 0 for a non-digit."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "charAtStr",
+      "qualifier": "pure",
+      "signature": "pure flow charAtStr(s: String, i: Int) -> String",
+      "effects": [],
+      "intent": "String.charAt returns Option<Char>; project to a one-character String or empty."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "charAtIsDigit",
+      "qualifier": "pure",
+      "signature": "pure flow charAtIsDigit(s: String, i: Int) -> Bool",
+      "effects": [],
+      "intent": "True when the character at i exists and is a decimal digit."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "strContainsChar",
+      "qualifier": "pure",
+      "signature": "pure flow strContainsChar(s: String, ch: String) -> Bool",
+      "effects": [],
+      "intent": "True when s contains the single character ch."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "stripLeadingZeros",
+      "qualifier": "pure",
+      "signature": "pure flow stripLeadingZeros(digits: String) -> String",
+      "effects": [],
+      "intent": "Strip leading zeros from a digit string; a zero value stays '0'."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "parseSmallNat",
+      "qualifier": "pure",
+      "signature": "pure flow parseSmallNat(digits: String) -> Int",
+      "effects": [],
+      "intent": "Parse a short unsigned decimal digit string into Int (exponents 0-999)."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "digitStrGreater",
+      "qualifier": "pure",
+      "signature": "pure flow digitStrGreater(a: String, b: String) -> Bool",
+      "effects": [],
+      "intent": "True when equal-length digit strings a > b as unsigned integers."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "intDigitOverflow",
+      "qualifier": "pure",
+      "signature": "pure flow intDigitOverflow(digits: String, negative: Bool) -> Bool",
+      "effects": [],
+      "intent": "True when the unsigned digit string as a signed i32 magnitude overflows i32."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "isI32OverflowLiteral",
+      "qualifier": "pure",
+      "signature": "pure flow isI32OverflowLiteral(text: String) -> Bool",
+      "effects": [],
+      "intent": "True when Int literal text is outside i32. Digit-string compare, no wrap. Scientific e/E expanded. Dot/hex/bin/oct skipped."
+    },
+    {
+      "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "exprLitI32Overflow",
+      "qualifier": "pure",
+      "signature": "pure flow exprLitI32Overflow(e: Expr) -> Bool",
+      "effects": [],
+      "intent": "True when e is an Int literal, or unary neg of an Int literal, whose text overflows i32."
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi",
@@ -9913,7 +10000,7 @@
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkMatchArms",
       "qualifier": "pure",
-      "signature": "pure flow checkMatchArms(flowName: String, arms: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkMatchArms(flowName: String, arms: Array<Stmt>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-022/023 for a match arm set: a missing mandatory wildcard, or an unreachable arm after the first wildcard."
     },
@@ -10156,14 +10243,6 @@
       "signature": "pure flow checkViewBindings(flowName: String, bindings: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-005: every view(cap) binding must carry at least one named capability."
-    },
-    {
-      "file": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
-      "name": "checkStepExpr",
-      "qualifier": "pure",
-      "signature": "pure flow checkStepExpr(expr: Array<Auto>, env: Array<Auto>) -> Array<Auto>",
-      "effects": [],
-      "intent": "FUNGI-TYPE-007: step target must be a flow call expression, not a literal or parameter reference."
     },
     {
       "file": "packages-ts/galerina-core-compiler/src/self-hosted/unpack-flags.fungi",
@@ -10585,6 +10664,14 @@
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/admission-feedback.fungi",
+      "name": "k3Unknown",
+      "qualifier": "pure",
+      "signature": "pure flow k3Unknown() -> Int",
+      "effects": [],
+      "intent": "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit."
+    },
+    {
+      "file": "packages-ts/galerina-core-network/src/self-hosted/admission-feedback.fungi",
       "name": "vAnd",
       "qualifier": "pure",
       "signature": "pure flow vAnd(a: Int, b: Int) -> Int",
@@ -10633,11 +10720,19 @@
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
+      "name": "k3Unknown",
+      "qualifier": "pure",
+      "signature": "pure flow k3Unknown() -> Int",
+      "effects": [],
+      "intent": "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit."
+    },
+    {
+      "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
       "name": "vAnd",
       "qualifier": "pure",
       "signature": "pure flow vAnd(a: Int, b: Int) -> Int",
       "effects": [],
-      "intent": "Kleene-K3 conjunction: the minimum of two trits (-1 DENY < 0 INDETERMINATE < +1 ALLOW)."
+      "intent": "Kleene-K3 conjunction: the minimum of two K3 values (UNKNOWN -128 < -1 DENY < 0 NEUTRAL < +1 ALLOW)."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10645,7 +10740,7 @@
       "qualifier": "pure",
       "signature": "pure flow pinMatchVerdict(pinConfigured: Bool, presentedPresent: Bool, digestMatches: Bool) -> Int",
       "effects": [],
-      "intent": "Fail-closed pin gate: a matched pin +1; a mismatched pin -1 (MITM); no pin configured or nothing presented 0."
+      "intent": "Fail-closed pin gate: a matched pin +1; a mismatched pin -1 (MITM); no pin configured or nothing presented UNKNOWN."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10653,7 +10748,7 @@
       "qualifier": "pure",
       "signature": "pure flow chainValidVerdict(isValid: Bool, isInvalid: Bool) -> Int",
       "effects": [],
-      "intent": "Fail-closed chain gate: a provably valid path +1; a provably invalid path -1; incomplete/absent 0."
+      "intent": "Fail-closed chain gate: a provably valid path +1; a provably invalid path -1; incomplete/absent UNKNOWN."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10661,7 +10756,7 @@
       "qualifier": "pure",
       "signature": "pure flow notExpiredVerdict(windowKnown: Bool, withinWindow: Bool) -> Int",
       "effects": [],
-      "intent": "Fail-closed expiry gate: inside the validity window +1; outside -1; no window/clock 0."
+      "intent": "Fail-closed expiry gate: inside the validity window +1; outside -1; no window/clock UNKNOWN."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10669,7 +10764,7 @@
       "qualifier": "pure",
       "signature": "pure flow revocationVerdict(isRevoked: Bool, isGood: Bool, freshProvable: Bool) -> Int",
       "effects": [],
-      "intent": "Fail-closed revocation gate: revoked -1; good AND fresh +1; unknown/stale/unprovable 0 — unknown collapses the channel to DENY through the fold."
+      "intent": "Fail-closed revocation gate: revoked -1; good AND fresh +1; unknown/stale/unprovable UNKNOWN — unknown collapses the channel to DENY through the fold."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10677,7 +10772,7 @@
       "qualifier": "pure",
       "signature": "pure flow certVerdict(pinMatch: Int, chainValid: Int, notExpired: Int, revocationFresh: Int) -> Int",
       "effects": [],
-      "intent": "K3 vAnd-reduce of the four cert sub-verdicts: +1 iff all four +1; -1 iff any -1; else 0."
+      "intent": "K3 vAnd-reduce of the four cert sub-verdicts: +1 iff all four +1; UNKNOWN iff any UNKNOWN; else -1 iff any -1; else 0."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -10693,7 +10788,7 @@
       "qualifier": "pure",
       "signature": "pure flow boundaryAuthorized(verdict: Int) -> String",
       "effects": [],
-      "intent": "Fail-closed boundary collapse: authorize IFF the verdict is exactly +1 (ALLOW); 0 and -1 -> refuse."
+      "intent": "Fail-closed boundary collapse: authorize IFF the verdict is exactly +1 (ALLOW); UNKNOWN, 0 and -1 -> refuse."
     },
     {
       "file": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -13395,7 +13490,7 @@
       "qualifier": "pure",
       "signature": "pure flow policyVerdict(levelAllowed: Bool, gateOnRisk: Bool, riskRating: String, maxRiskRating: String) -> String",
       "effects": [],
-      "intent": "Fold registry policy fail-closed: disallowed level or over-max risk -> denied, else 'ok'."
+      "intent": "Fold registry policy fail-closed: disallowed level, unknown max or rating under a gate, or over-max risk -> denied, else 'ok'."
     },
     {
       "file": "packages-ts/galerina-framework-app-kernel/src/self-hosted/registry-index.fungi",
@@ -22209,9 +22304,9 @@
       "file": "packages-ts/galerina-test/src/self-hosted/conversion-overlays/numeric-verdict-admission.fungi",
       "name": "numericVerdictAdmissionCore",
       "qualifier": "pure",
-      "signature": "pure flow numericVerdictAdmissionCore(value: Int) -> Verdict",
+      "signature": "pure flow numericVerdictAdmissionCore(value: Int) -> String",
       "effects": [],
-      "intent": "Map only the three arithmetic trits into semantic Verdict values."
+      "intent": "Admit only the three arithmetic trits; 0 is NEUTRAL and anything else is refused."
     },
     {
       "file": "packages-ts/galerina-test/src/self-hosted/conversion-overlays/observability-alert-rule-status.fungi",
@@ -31375,11 +31470,19 @@
     },
     {
       "file": "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
+      "name": "k3Unknown",
+      "qualifier": "pure",
+      "signature": "pure flow k3Unknown() -> Int",
+      "effects": [],
+      "intent": "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit."
+    },
+    {
+      "file": "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
       "name": "quorumVerdict",
       "qualifier": "pure",
       "signature": "pure flow quorumVerdict(distinctApprovals: Int, m: Int, malformed: Bool) -> Int",
       "effects": [],
-      "intent": "M-of-N distinct-signer K3 fold: malformed -> INDETERMINATE (0); >= M approvals -> ALLOW (1); else DENY (-1)."
+      "intent": "M-of-N distinct-signer K3 fold: malformed -> UNKNOWN (k3Unknown); >= M approvals -> ALLOW (1); else DENY (-1)."
     },
     {
       "file": "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
@@ -31387,7 +31490,7 @@
       "qualifier": "pure",
       "signature": "pure flow leaseVerdict(wellFormed: Bool, nowFinite: Bool, now: Int, notAfter: Int) -> Int",
       "effects": [],
-      "intent": "TTL lease K3 fold: malformed / non-finite clock -> INDETERMINATE (0); now < notAfter -> ALLOW (1); expired -> DENY (-1)."
+      "intent": "TTL lease K3 fold: malformed / non-finite clock -> UNKNOWN (k3Unknown); now < notAfter -> ALLOW (1); expired -> DENY (-1)."
     },
     {
       "file": "packages-ts/galerina-tower-citizen/src/self-hosted/inference-governance.fungi",
@@ -31596,6 +31699,2566 @@
       "signature": "pure flow vOrVerdict(left: Verdict, right: Verdict) -> Verdict",
       "effects": [],
       "intent": ""
+    },
+    {
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "name": "tableForClass",
+      "qualifier": "pure",
+      "signature": "pure flow tableForClass(classClass: Int, classVal: Int) -> Int",
+      "effects": [],
+      "intent": "Map an admitted observation class onto Q07 or DU-only. Unlisted class refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "name": "classifyAdapter",
+      "qualifier": "pure",
+      "signature": "pure flow classifyAdapter(kindClass: Int, kind: Int, auditClass: Int, audit: Int) -> Int",
+      "effects": [],
+      "intent": "Admit kind and preBeginAudit, then return the v1 table code or a typed refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/adapter-profile.fungi",
+      "name": "classifyDurableAdapter",
+      "qualifier": "pure",
+      "signature": "pure flow classifyDurableAdapter(backendClass: Int, backend: Int, crashCampaignClass: Int, crashCampaignToken: Int) -> Int",
+      "effects": [],
+      "intent": "Admit backend and crash-campaign token; durable only when proven, else DELIVERY_UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "andHalves",
+      "qualifier": "pure",
+      "signature": "pure flow andHalves(pqHalfToken: Int, classicalHalfToken: Int) -> Int",
+      "effects": [],
+      "intent": "Host-mapped hybrid AND. Both halves 1 admit. One bad half refuses 15. Unlisted 11. Signet has no per-half ABI; this is composition-only."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "packAdapter",
+      "qualifier": "pure",
+      "signature": "pure flow packAdapter(adapterPacked: Int) -> Int",
+      "effects": [],
+      "intent": "Map classifyAdapter raw v1 table codes onto packed outcomes. 0/1 continue. 2 SAB 172. 3 unknown kind 173. 4 foreign 174. 11 and unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "listedOutcome",
+      "qualifier": "pure",
+      "signature": "pure flow listedOutcome(code: Int) -> Int",
+      "effects": [],
+      "intent": "Closed packed table. Listed code is returned. Anything else refuses 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "arenaListedExit",
+      "qualifier": "pure",
+      "signature": "pure flow arenaListedExit(listedPacked: Int) -> Int",
+      "effects": [],
+      "intent": "Non-Active arena listing at the route exit. Unlisted 111 and invalid 110 pass. Partial, Quarantined, Disposed and anything else exit UNKNOWN 106 with quarantine, never a raw listing token."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "exitBeforeBegin",
+      "qualifier": "pure",
+      "signature": "pure flow exitBeforeBegin(mintedToken: Int, evOpId: Int, callOpId: Int, evGen: Int, callGen: Int, evDigest: Int, callDigest: Int, evStatus: Int, opClass: Int, packed: Int) -> Int",
+      "effects": [],
+      "intent": "Cleanup evidence before begin then return the stage packed code. Cleanup failure wins."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "exitAfterBegin",
+      "qualifier": "pure",
+      "signature": "pure flow exitAfterBegin(evStatus: Int, packed: Int) -> Int",
+      "effects": [],
+      "intent": "After-begin cleanup is DELIVERY_UNKNOWN. Then return the stage packed code."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-e2e.fungi",
+      "name": "runAuthVerify",
+      "qualifier": "pure",
+      "signature": "pure flow runAuthVerify(gClass: Int, layer: Int, method: Int, pathClass: Int, effectClass: Int, reachClass: Int, nChunksClass: Int, nChunks: Int, id1: Int, off1Class: Int, off1: Int, len1Class: Int, len1: Int, id2: Int, off2Class: Int, off2: Int, len2Class: Int, len2: Int, capClass: Int, cap: Int, declaredPresent: Int, declaredLenClass: Int, declaredLen: Int, streamPresent: Int, deadlineExpired: Int, foreignThrow: Int, routeMethod: Int, routePath: Int, contentType: Int, channel: Int, unknownField: Int, malformed: Int, tamper: Int, issuerPinned: Int, actionMatch: Int, grantEpoch: Int, currentEpoch: Int, epochMatchTok: Int, grantProfile: Int, currentProfile: Int, profileMatch: Int, declared: Int, expired: Int, suiteId: Int, pqAvailable: Int, pqHalf: Int, classicalHalf: Int, validatedBefore: Int, verifyBodyBytes: Int, getterChanging: Int, pinnedSize: Int, verifierRead: Int, childExit: Int, tritToken: Int, authorizing: Int, extraKey: Int, testHook: Int, clockReading: Int, clockEpoch: Int, hasLast: Int, lastEpoch: Int, lastTicks: Int, deadlineEpoch: Int, deadlineTicks: Int, rateCount: Int, rateLimit: Int, rateJump: Int, bodyPresent: Int, jsonMalformed: Int, jsonNull: Int, dupKeys: Int, decodeUnknown: Int, decodeValidator: Int, budgetBody: Int, budgetMemory: Int, concCurrent: Int, concMax: Int, concReleased: Int, concZombie: Int, secretRequired: Int, secretProvider: Int, secretPresence: Int, secretEpoch: Int, secretEpochPresent: Int, mintedOp: Int, secretOp: Int, mintedEpochBind: Int, secretEpochBind: Int, idempEnabled: Int, idempClaim: Int, idempAlready: Int, idempDispatch: Int, idempTtl: Int, idempSettle: Int, handlerToken: Int, secretActive: Int, secretDeadlineTok: Int, secretSpent: Int, secretReentrant: Int, secretFailed: Int, secretDeclared: Int, adapterKind: Int, adapterAudit: Int, casOpenState: Int, casCompetitor: Int, casClaimedState: Int, casEpochMatch: Int, casRevokeAfter: Int, casCrash: Int, consumePresent: Int, consumeMatch: Int, consumeEpochMatch: Int, consumeLease: Int, consumeRevoke: Int, independentAuth: Int, preparedCustody: Int, cleanupEvidence: Int, emptyObligation: Int, consumedAuth: Int, currentValidity: Int, ackPresent: Int, ackMatch: Int, ackEpochPresent: Int, ackEpochMatch: Int, ackLease: Int, ackAudit: Int, priorAck: Int, retryPrior: Int, sinkOutcome: Int, crashAfterSink: Int, postSpent: Int, postDispatchPacked: Int, postConsumePacked: Int, postAuditPacked: Int, postCurrent: Int, postMax: Int, postReleased: Int, postZombie: Int, arenaState: Int, arenaStatus: Int, arenaLen: Int, arenaByte: Int, cleanupMinted: Int, cleanupEvOp: Int, cleanupCallOp: Int, cleanupEvGen: Int, cleanupCallGen: Int, cleanupEvDigest: Int, cleanupCallDigest: Int, cleanupStatus: Int, cleanupOpClass: Int) -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "admitIngress",
+      "qualifier": "pure",
+      "signature": "pure flow admitIngress(methodClass: Int, methodToken: Int, pathClass: Int, pathToken: Int, contentClass: Int, contentTypeToken: Int, channelClass: Int, channelToken: Int, bodyClass: Int, bodyPacked: Int, unknownClass: Int, unknownFieldToken: Int, malformedClass: Int, malformedToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed ingress sum. Wrong method path content-type channel unknown field malformed and over-cap refuse. Body throw is UNKNOWN. Body timeout is deadline."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "mintOperation",
+      "qualifier": "pure",
+      "signature": "pure flow mintOperation(randomClass: Int, randomnessPresentToken: Int, callerClass: Int, callerMintToken: Int, idClass: Int, idPresentToken: Int, epochClass: Int, epoch: Int, existingClass: Int, existingPresentToken: Int, leaseClass: Int, existingLease: Int, retiredClass: Int, retiredToken: Int, capClass: Int, atCapToken: Int, freshClass: Int, issuedFreshToken: Int, hereClass: Int, issuedHereToken: Int) -> Int",
+      "effects": [],
+      "intent": "Kernel mint only. Absent randomness refuses. Caller-supplied mint refuses. Delegates listed mintAdmit and maps replay or missing."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "applyClock",
+      "qualifier": "pure",
+      "signature": "pure flow applyClock(clockClass: Int, clock: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Typed foreign clock. Missing negative backwards epoch-mismatch and armedAt plus budget overflow refuse. One deadline covers every later stage."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "applyPrePorts",
+      "qualifier": "pure",
+      "signature": "pure flow applyPrePorts(digestClass: Int, digestToken: Int, aotClass: Int, aotToken: Int, bytecodeClass: Int, bytecodeToken: Int, slideClass: Int, slideToken: Int, vokClass: Int, vokToken: Int, verdictClass: Int, verdictToken: Int, secretClass: Int, secretPacked: Int, tcbClass: Int, tcbToken: Int, mintedOpClass: Int, mintedOp: Int, secretOpClass: Int, secretOp: Int, mintedEpochClass: Int, mintedEpoch: Int, secretEpochClass: Int, secretEpoch: Int, recPresentClass: Int, recPresentToken: Int, recRetiredClass: Int, recRetiredToken: Int, recTombClass: Int, recTombstoneToken: Int, recLeaseClass: Int, recLeaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Pre-consume port sum. Bind minted operation and epoch to secret packed. Listed recovery other than not-found is replay. Secret non-success 106 stays UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "applyConsume",
+      "qualifier": "pure",
+      "signature": "pure flow applyConsume(presentClass: Int, presentToken: Int, matchClass: Int, tokenMatchToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, revokeClass: Int, revokeCommittedToken: Int, cleanupClass: Int, cleanupEvidence: Int, authClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Commit point. No local release. releaseGuard then consumeStep. Revocation first refuses. Listed cleanup pending failed unknown stay UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "applyPostConsume",
+      "qualifier": "pure",
+      "signature": "pure flow applyPostConsume(preClass: Int, prePacked: Int, guestClass: Int, guestToken: Int, disconnectClass: Int, disconnectToken: Int, sinkClass: Int, sinkToken: Int, cleanupClass: Int, cleanupEvidence: Int, ackClass: Int, ackToken: Int, suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int, authClass: Int, independentAuthToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "After consume never packed 100. Guest trap and client disconnect stay distinct from deadline. Sink success partial throw never-settles listed cleanup and false tokens are UNKNOWN. Foreign classTag unlisted tokens and prePacked other than 100 are UNKNOWN. Cleanup failed quarantines. Missing suite refuses. Classical-only never Assured."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "recoverLease",
+      "qualifier": "pure",
+      "signature": "pure flow recoverLease(presentClass: Int, presentToken: Int, retiredClass: Int, retiredToken: Int, tombstoneClass: Int, tombstoneDroppedToken: Int, leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Status-only recovery. Canonical OperationRecoveryStatus unchanged. Unlisted hits 38. Never re-opens or re-consumes."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "httpStatusFor",
+      "qualifier": "pure",
+      "signature": "pure flow httpStatusFor(packedClass: Int, packedCode: Int) -> Int",
+      "effects": [],
+      "intent": "Total HTTP map over packed codes. Unlisted and foreign default 503. Client disconnect stays 499 distinct from deadline 504."
+    },
+    {
+      "file": "packages/fungi/memory/src/auth-verify-route.fungi",
+      "name": "sealReceipt",
+      "qualifier": "pure",
+      "signature": "pure flow sealReceipt(suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int) -> Int",
+      "effects": [],
+      "intent": "Receipt seal binds a suite id. Absent suite refuses. Classical-only or missing PQ is UNKNOWN never Assured. Hybrid required."
+    },
+    {
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "name": "finish",
+      "qualifier": "pure",
+      "signature": "pure flow finish(refusalCode: Int, wiped: Bool) -> Int",
+      "effects": [],
+      "intent": "Pack refusal code and wipe-flag construct. Unlisted wipe flag refuses as Unlisted."
+    },
+    {
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "name": "rangesOverlap",
+      "qualifier": "pure",
+      "signature": "pure flow rangesOverlap(off1: Int, len1: Int, off2: Int, len2: Int) -> Bool",
+      "effects": [],
+      "intent": "Half-open [off, off+len) overlap. Adjacent ranges do not overlap. Callers bound off+len first."
+    },
+    {
+      "file": "packages/fungi/memory/src/body-reader.fungi",
+      "name": "readChunks",
+      "qualifier": "pure",
+      "signature": "pure flow readChunks(nChunksClass: Int, nChunks: Int, id1: Int, off1Class: Int, off1: Int, len1Class: Int, len1: Int, id2: Int, off2Class: Int, off2: Int, len2Class: Int, len2: Int, capClass: Int, cap: Int, declaredPresentToken: Int, declaredLenClass: Int, declaredLen: Int, streamPresentToken: Int, deadlineExpiredToken: Int, foreignThrowToken: Int) -> Int",
+      "effects": [],
+      "intent": "Admit at most two owned chunks or return a packed typed refusal with wipe construct."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignBoundedInteger",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignBoundedInteger(classTag: Int, integer: Int, lo: Int, hi: Int) -> Int",
+      "effects": [],
+      "intent": "Admit classTag 0 only inside [lo, hi]; listed tags refuse as themselves; unlisted is 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignSafeInteger(classTag: Int, integer: Int) -> Int",
+      "effects": [],
+      "intent": "Admit classTag 0 inside conservative i32 excluding i32 min, else typed refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignI32Integer",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignI32Integer(classTag: Int, integer: Int) -> Int",
+      "effects": [],
+      "intent": "Admit classTag 0 on the full physical i32 domain including i32 min; listed tags refuse as themselves; unlisted is 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignLength",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignLength(classTag: Int, integer: Int, hi: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a foreign length: non-negative integer inside [0, hi], else typed refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignByte",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignByte(classTag: Int, integer: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a foreign byte: classTag 0 and integer inside [0, 255], else typed refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readForeignBool",
+      "qualifier": "pure",
+      "signature": "pure flow readForeignBool(token: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a foreign Bool token 0 or 1, else typed Unlisted refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "u16FromBytes",
+      "qualifier": "pure",
+      "signature": "pure flow u16FromBytes(lo: Int, hi: Int) -> Int",
+      "effects": [],
+      "intent": "Join two admitted bytes into one 16-bit limb."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "taggedPayloadFitsI32",
+      "qualifier": "pure",
+      "signature": "pure flow taggedPayloadFitsI32(tag: Int, w0: Int, w1: Int, w2: Int, w3: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a 64-bit limb tuple only when it is an i32 that can sit in the call-site domain."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "taggedPayloadI32",
+      "qualifier": "pure",
+      "signature": "pure flow taggedPayloadI32(w0: Int, w1: Int) -> Int",
+      "effects": [],
+      "intent": "Reconstruct the i32 bit pattern from two low 16-bit limbs. Caller proved it fits."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "readTaggedWideInteger",
+      "qualifier": "pure",
+      "signature": "pure flow readTaggedWideInteger(bufLen: Int, b0: Int, b1: Int, b2: Int, b3: Int, b4: Int, b5: Int, b6: Int, b7: Int, b8: Int, b9: Int, domainLo: Int, domainHi: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a 10-byte tagged LE i64/u64 buffer only inside the call-site i32 domain."
+    },
+    {
+      "file": "packages/fungi/memory/src/c-boundary.fungi",
+      "name": "decodeTaggedWideI32",
+      "qualifier": "pure",
+      "signature": "pure flow decodeTaggedWideI32(bufLen: Int, b0: Int, b1: Int, b2: Int, b3: Int, b4: Int, b5: Int, b6: Int, b7: Int, b8: Int, b9: Int, domainLo: Int, domainHi: Int) -> Int",
+      "effects": [],
+      "intent": "Return the admitted i32 after readTaggedWideInteger is 0. Refuse paths return 0."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "finish",
+      "qualifier": "pure",
+      "signature": "pure flow finish(refusalCode: Int, wiped: Bool) -> Int",
+      "effects": [],
+      "intent": "Pack refusal or admit code with wipe-flag construct. Unlisted wipe flag refuses as Unlisted."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "emptyObligationClass",
+      "qualifier": "pure",
+      "signature": "pure flow emptyObligationClass(opClass: Int) -> Int",
+      "effects": [],
+      "intent": "Listed empty-obligation classes only. Unlisted classes are never empty."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "digestEqual",
+      "qualifier": "pure",
+      "signature": "pure flow digestEqual(evDigest: Int, callDigest: Int) -> Int",
+      "effects": [],
+      "intent": "Equality of host-mapped digest tags. Constant-time compare is NEEDS_LANGUAGE."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "mintCleanup",
+      "qualifier": "pure",
+      "signature": "pure flow mintCleanup(statusClass: Int, evStatus: Int) -> Int",
+      "effects": [],
+      "intent": "Mint path for listed status tags. Sealing the constructor is NEEDS_LANGUAGE."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "admitCleanup",
+      "qualifier": "pure",
+      "signature": "pure flow admitCleanup(mintedClass: Int, mintedToken: Int, evOpIdClass: Int, evOpId: Int, callOpIdClass: Int, callOpId: Int, evGenClass: Int, evGen: Int, callGenClass: Int, callGen: Int, evDigestClass: Int, evDigest: Int, callDigestClass: Int, callDigest: Int, statusClass: Int, evStatus: Int, opClassClass: Int, opClass: Int) -> Int",
+      "effects": [],
+      "intent": "Admit bound DONE or listed-empty NOT_REQUIRED before begin. Each mismatch has its own code."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "afterBeginCleanup",
+      "qualifier": "pure",
+      "signature": "pure flow afterBeginCleanup(statusClass: Int, evStatus: Int, phaseClass: Int, phaseToken: Int) -> Int",
+      "effects": [],
+      "intent": "After begin, listed statuses are DELIVERY_UNKNOWN. Never REFUSED, never success. Unlisted status only is Unlisted. phaseToken 0 has its own code."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "resourceAfterBegin",
+      "qualifier": "pure",
+      "signature": "pure flow resourceAfterBegin(statusClass: Int, evStatus: Int, phaseClass: Int, phaseToken: Int) -> Int",
+      "effects": [],
+      "intent": "After begin, listed statuses move the resource to QUARANTINED. No binding inputs in this flow."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "resourceTransition",
+      "qualifier": "pure",
+      "signature": "pure flow resourceTransition(fromClass: Int, fromState: Int, eventClass: Int, eventKind: Int, toClass: Int, toState: Int) -> Int",
+      "effects": [],
+      "intent": "Closed resource transitions. QUARANTINED admits wipe then destroy only. Unlisted pairs refuse."
+    },
+    {
+      "file": "packages/fungi/memory/src/cleanup-evidence.fungi",
+      "name": "freeStep",
+      "qualifier": "pure",
+      "signature": "pure flow freeStep(actionClass: Int, action: Int) -> Int",
+      "effects": [],
+      "intent": "Free is not wipe. An explicit wipe step reports wipe-step-reported, not AdmitDone. Binding is only through admitCleanup."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "composedPack",
+      "qualifier": "pure",
+      "signature": "pure flow composedPack(code: Int) -> Int",
+      "effects": [],
+      "intent": "Pack an S10 composed outcome code with the wipe construct (+100)."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "composedStageExit",
+      "qualifier": "pure",
+      "signature": "pure flow composedStageExit(token: Int) -> Int",
+      "effects": [],
+      "intent": "Exit for the earliest non-Success stage. Refused 102. Failed, Indeterminate and MissingRecord 106. NotRun, Success or unlisted refuse 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "composeRouteOutcome",
+      "qualifier": "pure",
+      "signature": "pure flow composeRouteOutcome(ingress: Int, custody: Int, release: Int) -> Int",
+      "effects": [],
+      "intent": "Composed RD-1413 -> 1414 -> 1415 outcome. Range-check every token first. 100 only when all stages are Success. Earliest non-Success stage decides; any later stage that ran refuses 111; skipped stage refuses 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "classifyAeObligation",
+      "qualifier": "pure",
+      "signature": "pure flow classifyAeObligation(letter: Int, successorBound: Int, evidence: Int, ownerRetire: Int) -> Int",
+      "effects": [],
+      "intent": "RD-1296 A-E disposition. Range-check every token first. RETIRED 108 only on an owner-signed decision. SATISFIED 100 only for A-E with a bound successor and product-route evidence. WASM-Q1 and everything else UNRESOLVED 106."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "ingressStageToken",
+      "qualifier": "pure",
+      "signature": "pure flow ingressStageToken(value: Int) -> Int",
+      "effects": [],
+      "intent": "1413 ingress token from readChunks. 100 Success 0. Listed refusal 101..199 Refused before begin 1. Else Unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "custodyStageToken",
+      "qualifier": "pure",
+      "signature": "pure flow custodyStageToken(value: Int) -> Int",
+      "effects": [],
+      "intent": "1414 custody token from casBegin. 100 Success 0. 106 Indeterminate 3. Other listed 101..199 Refused before begin 1. Else Unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/composed-route.fungi",
+      "name": "releaseStageToken",
+      "qualifier": "pure",
+      "signature": "pure flow releaseStageToken(reserve: Int, commit: Int, reconcile: Int) -> Int",
+      "effects": [],
+      "intent": "1415 release token from reserve, commit, reconcile. Reserve not 100: listed Refused 1, else 11. Commit 100 Success 0; 102 Failed 2; 106 settles Success only on reconcile 100, listed reconcile Indeterminate 3, else 11; other listed commit Failed 2; else 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "durableTagReason",
+      "qualifier": "pure",
+      "signature": "pure flow durableTagReason(classTag: Int, value: Int) -> Int",
+      "effects": [],
+      "intent": "Admit one class-tagged foreign Int: 0 admitted, 4 raw class tag, 11 unlisted tag."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "publishAfterCommit",
+      "qualifier": "pure",
+      "signature": "pure flow publishAfterCommit(commitClass: Int, commitState: Int, publishClass: Int, publishReq: Int) -> Int",
+      "effects": [],
+      "intent": "Publish only after a durable commit; before commit refuses 20; unknown durability is 106, never published."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "recoverRecord",
+      "qualifier": "pure",
+      "signature": "pure flow recoverRecord(recordClass: Int, recordState: Int) -> Int",
+      "effects": [],
+      "intent": "Recover one record: only committed-and-published is 100; unpublished, torn, missing or orphan-published is 106."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "recoveryAggregate",
+      "qualifier": "pure",
+      "signature": "pure flow recoveryAggregate(published: Int, unpublished: Int, torn: Int, missing: Int) -> Int",
+      "effects": [],
+      "intent": "Whole-scan recovery verdict: any unpublished, torn or missing record makes the scan 106; negative counts are 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "verifyLocator",
+      "qualifier": "pure",
+      "signature": "pure flow verifyLocator(rootClass: Int, rootRelation: Int, proofClass: Int, proofResult: Int) -> Int",
+      "effects": [],
+      "intent": "Accept a locator only with a verified Merkle proof against a current or retained root; otherwise refuse 21."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "admitMembership",
+      "qualifier": "pure",
+      "signature": "pure flow admitMembership(currentVersion: Int, newVersion: Int, validSigs: Int, threshold: Int, signerState: Int, expired: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a membership root only when owner-signed, threshold met, exactly version+1 and fresh."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "shippedMembershipSigner",
+      "qualifier": "pure",
+      "signature": "pure flow shippedMembershipSigner() -> Int",
+      "effects": [],
+      "intent": "The shipped membership root signer is UNKNOWN (0) until Phillip signs it."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "commitOutcome",
+      "qualifier": "pure",
+      "signature": "pure flow commitOutcome(backendClass: Int, backend: Int, campaignClass: Int, campaignToken: Int, writeAck: Int) -> Int",
+      "effects": [],
+      "intent": "Durable commit only when classifyDurableAdapter is 5 and the write was acknowledged; otherwise 106."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "retryCommit",
+      "qualifier": "pure",
+      "signature": "pure flow retryCommit(priorOutcome: Int, idempotencyProof: Int) -> Int",
+      "effects": [],
+      "intent": "No retry without an idempotency proof; Success never retries; unknown prior outcomes refuse 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/durable-store.fungi",
+      "name": "retryVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow retryVerdict(idempotencyProof: Int) -> Int",
+      "effects": [],
+      "intent": "Retry is allowed (7) only with a proven idempotency proof, else refused (26)."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "name": "reserveIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow reserveIdempotency(claimClass: Int, claimToken: Int, reservedClass: Int, alreadyReservedToken: Int, dispatchClass: Int, dispatchToken: Int, ttlClass: Int, ttl: Int) -> Int",
+      "effects": [],
+      "intent": "Closed idempotency reserve. Missing duplicate and full refuse. Store throw is UNKNOWN never REFUSED. Already reserved after dispatch is DELIVERY_UNKNOWN never a second dispatch. Non-positive TTL refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "name": "settleIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow settleIdempotency(dispatchClass: Int, dispatchToken: Int, settleClass: Int, settleToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed settle sum. Before dispatch cancel succeeds so the key is not stranded. After dispatch cancel is unconditional delete and refuses. After dispatch crash is RESERVED_UNKNOWN. Unlisted refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "name": "reserveAudit",
+      "qualifier": "pure",
+      "signature": "pure flow reserveAudit(reserveClass: Int, auditReserveToken: Int, capacityClass: Int, capacity: Int) -> Int",
+      "effects": [],
+      "intent": "Synchronous non-blocking audit reserve. Unavailable or throw is audit-unavailable. Non-positive capacity refuses. Unlisted refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel-ports.fungi",
+      "name": "settleAudit",
+      "qualifier": "pure",
+      "signature": "pure flow settleAudit(settleClass: Int, auditSettleToken: Int) -> Int",
+      "effects": [],
+      "intent": "Commit or cancel exactly once. Commit fail or throw is UNKNOWN never swallowed success. Cancel fail is UNKNOWN. Unlisted refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "constructKernel",
+      "qualifier": "pure",
+      "signature": "pure flow constructKernel(postureClass: Int, postureToken: Int, envClass: Int, envToken: Int, closedClass: Int, closedTypeToken: Int, validatorClass: Int, validatorToken: Int, duplicateClass: Int, duplicateToken: Int, rateClass: Int, rateToken: Int, capacityClass: Int, capacity: Int, keyClass: Int, keyLimit: Int, ttlClass: Int, ttl: Int, secretReqClass: Int, secretRequiredToken: Int, providerClass: Int, providerToken: Int, intrinsicClass: Int, intrinsicToken: Int) -> Int",
+      "effects": [],
+      "intent": "Typed construction. Unknown posture or env, missing validator, duplicate route, bad rate, non-positive capacity key-limit or TTL, secret route with no provider, and missing intrinsic refuse. Never throws."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "admitMatch",
+      "qualifier": "pure",
+      "signature": "pure flow admitMatch(pathClass: Int, pathToken: Int, methodClass: Int, methodToken: Int, policyClass: Int, policyToken: Int) -> Int",
+      "effects": [],
+      "intent": "Fixed match gate. Unknown path 404. Known path wrong method 405. Absent or unlisted policy refuses. Handler never reached."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "admitAuth",
+      "qualifier": "pure",
+      "signature": "pure flow admitAuth(channelClass: Int, channelToken: Int, modeClass: Int, authModeToken: Int, principalClass: Int, principalToken: Int, scopeClass: Int, scopeToken: Int) -> Int",
+      "effects": [],
+      "intent": "Auth gate. Non-allow channel refuses every route. Required mode needs a channel verdict and a principal. Missing scope is forbidden."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "admitBody",
+      "qualifier": "pure",
+      "signature": "pure flow admitBody(bodyClass: Int, bodyPacked: Int, contentClass: Int, contentToken: Int, presentClass: Int, bodyPresentToken: Int) -> Int",
+      "effects": [],
+      "intent": "Body size and content-type. Over-cap from the body reader is 413. Mismatch is 415. Body throw is UNKNOWN. Empty body skips content-type."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyClock",
+      "qualifier": "pure",
+      "signature": "pure flow applyClock(clockClass: Int, clock: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Typed foreign clock. Missing negative backwards epoch-mismatch and armedAt plus budget overflow refuse. One deadline covers every later stage."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyRate",
+      "qualifier": "pure",
+      "signature": "pure flow applyRate(countClass: Int, count: Int, limitClass: Int, limit: Int, jumpClass: Int, jumpToken: Int) -> Int",
+      "effects": [],
+      "intent": "Rate counted before decode. Over limit refuses. Forward or backward clock jump refuses and never resets or stretches a window."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyDecode",
+      "qualifier": "pure",
+      "signature": "pure flow applyDecode(presentClass: Int, bodyPresentToken: Int, malformedClass: Int, malformedToken: Int, nullClass: Int, jsonNullToken: Int, dupClass: Int, dupKeysToken: Int, unknownClass: Int, unknownFieldToken: Int, validatorClass: Int, decodeValidatorToken: Int) -> Int",
+      "effects": [],
+      "intent": "JSON decode. Null duplicate keys unknown field malformed and missing validator refuse. Empty body skips decode."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyBudget",
+      "qualifier": "pure",
+      "signature": "pure flow applyBudget(bodyClass: Int, bodyBytes: Int, memoryClass: Int, memoryBytes: Int) -> Int",
+      "effects": [],
+      "intent": "Memory budget. Body over memoryBytes refuses. Negative lengths refuse. Overflow before compare refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyConcurrency",
+      "qualifier": "pure",
+      "signature": "pure flow applyConcurrency(currentClass: Int, current: Int, maxClass: Int, maxConcurrent: Int, releasedClass: Int, releasedToken: Int, zombieClass: Int, handlerStillRunningToken: Int) -> Int",
+      "effects": [],
+      "intent": "Concurrency slot is linear. Over limit refuses. Slot released on every exit including a deadline with the handler still running. released 0 is never 100. Handler still running is held-slot 59."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "mintOperation",
+      "qualifier": "pure",
+      "signature": "pure flow mintOperation(randomClass: Int, randomnessPresentToken: Int, callerClass: Int, callerMintToken: Int, idClass: Int, idPresentToken: Int, epochClass: Int, epoch: Int, existingClass: Int, existingPresentToken: Int, leaseClass: Int, existingLease: Int, retiredClass: Int, retiredToken: Int, capClass: Int, atCapToken: Int, freshClass: Int, issuedFreshToken: Int, hereClass: Int, issuedHereToken: Int) -> Int",
+      "effects": [],
+      "intent": "Kernel mint only. Absent randomness refuses. Caller-supplied mint refuses. Delegates listed mintAdmit."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applySecrets",
+      "qualifier": "pure",
+      "signature": "pure flow applySecrets(requiredClass: Int, requiredCount: Int, providerClass: Int, providerPresent: Int, presenceClass: Int, presenceStatus: Int, epochClass: Int, epoch: Int, epochPresentClass: Int, epochPresentToken: Int, mintedOpClass: Int, mintedOp: Int, secretOpClass: Int, secretOp: Int, mintedEpochClass: Int, mintedEpoch: Int, secretEpochClass: Int, secretEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Secret admit then bind minted operation and epoch. Non-success including 106 stays UNKNOWN. Empty require admits without a provider."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow applyIdempotency(enabledClass: Int, enabledToken: Int, claimClass: Int, claimToken: Int, reservedClass: Int, alreadyReservedToken: Int, dispatchClass: Int, dispatchToken: Int, ttlClass: Int, ttl: Int, settleClass: Int, settleToken: Int) -> Int",
+      "effects": [],
+      "intent": "Enabled idempotency reserves then settles. Refusal before dispatch cancels. After dispatch crash is DELIVERY_UNKNOWN. Disabled is a no-op."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyDispatch",
+      "qualifier": "pure",
+      "signature": "pure flow applyDispatch(handlerClass: Int, handlerToken: Int) -> Int",
+      "effects": [],
+      "intent": "Dispatch only after every prior gate. Throw is UNKNOWN. Never-settles is deadline. Unlisted shape refuses. Missing handler is internal."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyConsume",
+      "qualifier": "pure",
+      "signature": "pure flow applyConsume(presentClass: Int, presentToken: Int, matchClass: Int, tokenMatchToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, revokeClass: Int, revokeCommittedToken: Int, cleanupClass: Int, cleanupEvidence: Int, authClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "No local release. releaseGuard then consumeStep. Revocation first refuses. Listed cleanup pending failed unknown stay UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "applyFinalize",
+      "qualifier": "pure",
+      "signature": "pure flow applyFinalize(spentClass: Int, spentToken: Int, dispatchClass: Int, dispatchPacked: Int, consumeClass: Int, consumePacked: Int, auditClass: Int, auditPacked: Int, presentClass: Int, presentToken: Int, matchClass: Int, tokenMatchToken: Int, epochPresentClass: Int, epochPresentToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Ack only after audit commit. Unspent success needs listed dispatch, listed no-consumption consumePacked 0, and audit 100. Any other consumePacked is 106. Spent path never packed 100. Audit failed with ack not recorded is 44. Acked after audit is 106."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "getSecretAccess",
+      "qualifier": "pure",
+      "signature": "pure flow getSecretAccess(activeClass: Int, activeToken: Int, deadlineClass: Int, deadlineToken: Int, spentClass: Int, spentToken: Int, reentrantClass: Int, reentrantToken: Int, failedClass: Int, failedToken: Int, declaredClass: Int, declaredToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed getSecret outcome. After deadline spend re-entrant failure or undeclared is a typed refusal never an untyped value."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "recoverLease",
+      "qualifier": "pure",
+      "signature": "pure flow recoverLease(presentClass: Int, presentToken: Int, retiredClass: Int, retiredToken: Int, tombstoneClass: Int, tombstoneDroppedToken: Int, leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Status-only recovery. Canonical OperationRecoveryStatus unchanged. Unlisted hits 38. Never re-opens or re-consumes."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "httpStatusFor",
+      "qualifier": "pure",
+      "signature": "pure flow httpStatusFor(packedClass: Int, packedCode: Int) -> Int",
+      "effects": [],
+      "intent": "Total HTTP map over packed codes. Unlisted and foreign default 503. Deadline stays 504."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedMatchPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedMatchPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Match packed is 100 or listed match refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedBodyPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedBodyPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Body packed is 100 or listed body refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedAuthPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedAuthPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Auth packed is 100 or listed auth refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedRatePacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedRatePacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Rate packed is 100 or listed rate refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedDecodePacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedDecodePacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Decode packed is 100 or listed decode refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedBudgetPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedBudgetPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Budget packed is 100 or listed budget refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedConcurrencyPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedConcurrencyPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Concurrency packed is 100 or listed concurrency refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedSecretsPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedSecretsPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Secrets packed is 100 or listed secrets refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedMintPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedMintPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Mint packed is 100 or listed mint refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "listedIdempPacked",
+      "qualifier": "pure",
+      "signature": "pure flow listedIdempPacked(packed: Int) -> Int",
+      "effects": [],
+      "intent": "Idempotency packed is 100 or listed idemp refusal else unlisted 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "runPreDispatch",
+      "qualifier": "pure",
+      "signature": "pure flow runPreDispatch(matchPacked: Int, bodyPacked: Int, authPacked: Int, ratePacked: Int, decodePacked: Int, budgetPacked: Int, concurrencyPacked: Int, secretsPacked: Int, mintPacked: Int, idempPacked: Int, clockClass: Int, clock1: Int, clock2: Int, clock3: Int, clock4: Int, clock5: Int, clock6: Int, clock7: Int, clock8: Int, clock9: Int, clock10: Int, clock11: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int, handlerClass: Int, handlerToken: Int) -> Int",
+      "effects": [],
+      "intent": "Composed pre-dispatch in TS gate order. One class-tagged clock reading per stage, non-decreasing. Each gate packed is 100 or that gate listed refusal else unlisted 111. First non-100 returns. Dispatch never runs after a refusal."
+    },
+    {
+      "file": "packages/fungi/memory/src/kernel.fungi",
+      "name": "runPostDispatch",
+      "qualifier": "pure",
+      "signature": "pure flow runPostDispatch(clockClass: Int, clockConsume: Int, clockFinalize: Int, clockAudit: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int, spentClass: Int, spentToken: Int, dispatchClass: Int, dispatchPacked: Int, consumeClass: Int, consumePacked: Int, auditClass: Int, auditPacked: Int, ackPresentClass: Int, presentToken: Int, ackMatchClass: Int, tokenMatchToken: Int, epochPresentClass: Int, epochPresentToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, currentClass: Int, current: Int, maxClass: Int, maxConcurrent: Int, releasedClass: Int, releasedToken: Int, zombieClass: Int, handlerStillRunningToken: Int) -> Int",
+      "effects": [],
+      "intent": "Composed post-dispatch. One class-tagged clock reading per consume finalize audit stage, non-decreasing. Slot released on every exit. Spent finalize UNKNOWN wins over slot-held. Spent deadline is 106. Unspent deadline keeps 147. 159 only on the unspent path."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "mintFromClock",
+      "qualifier": "pure",
+      "signature": "pure flow mintFromClock(classTag: Int, reading: Int, epoch: Int, hasLast: Int, lastEpoch: Int, lastTicks: Int) -> Int",
+      "effects": [],
+      "intent": "Admit one sealed clock reading or return a typed refusal. Reads the port once."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "pointMinusPointReason",
+      "qualifier": "pure",
+      "signature": "pure flow pointMinusPointReason(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int",
+      "effects": [],
+      "intent": "Point minus Point reason. Negative ticks, different epochs and backwards subtraction refuse."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "pointMinusPointTicks",
+      "qualifier": "pure",
+      "signature": "pure flow pointMinusPointTicks(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int",
+      "effects": [],
+      "intent": "Duration ticks only after pointMinusPointReason returns 0. Refusal is -1, never a duration."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "pointPlusDurationReason",
+      "qualifier": "pure",
+      "signature": "pure flow pointPlusDurationReason(ticks: Int, duration: Int) -> Int",
+      "effects": [],
+      "intent": "Point plus Duration reason. Negative inputs are backwards. Overflow refuses before the add."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "pointPlusDurationTicks",
+      "qualifier": "pure",
+      "signature": "pure flow pointPlusDurationTicks(epoch: Int, ticks: Int, duration: Int) -> Int",
+      "effects": [],
+      "intent": "Point ticks only after pointPlusDurationReason returns 0. Refusal is -1."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "durationPlusDurationReason",
+      "qualifier": "pure",
+      "signature": "pure flow durationPlusDurationReason(left: Int, right: Int) -> Int",
+      "effects": [],
+      "intent": "Duration plus Duration reason. Negative inputs and overflow refuse."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "durationPlusDurationTicks",
+      "qualifier": "pure",
+      "signature": "pure flow durationPlusDurationTicks(left: Int, right: Int) -> Int",
+      "effects": [],
+      "intent": "Duration ticks only after durationPlusDurationReason returns 0. Refusal is -1."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "pointPlusPoint",
+      "qualifier": "pure",
+      "signature": "pure flow pointPlusPoint(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int",
+      "effects": [],
+      "intent": "Point plus Point is refused. Negative ticks refuse before that."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "durationMinusPoint",
+      "qualifier": "pure",
+      "signature": "pure flow durationMinusPoint(duration: Int, epoch: Int, ticks: Int) -> Int",
+      "effects": [],
+      "intent": "Duration minus Point is refused. Negative inputs refuse before that."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "comparePoints",
+      "qualifier": "pure",
+      "signature": "pure flow comparePoints(epochA: Int, ticksA: Int, epochB: Int, ticksB: Int) -> Int",
+      "effects": [],
+      "intent": "Compare two Points in one epoch. 0 equal, 1 less, 2 greater. Negative ticks and cross-epoch refuse."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "compareDurations",
+      "qualifier": "pure",
+      "signature": "pure flow compareDurations(left: Int, right: Int) -> Int",
+      "effects": [],
+      "intent": "Compare two Durations. Negative durations refuse. 0 equal, 1 less, 2 greater."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "remainingReason",
+      "qualifier": "pure",
+      "signature": "pure flow remainingReason(nowEpoch: Int, nowTicks: Int, deadlineEpoch: Int, deadlineTicks: Int) -> Int",
+      "effects": [],
+      "intent": "Deadline remaining reason. Equal ticks are expired. Unknown is not time left."
+    },
+    {
+      "file": "packages/fungi/memory/src/monotonic-time.fungi",
+      "name": "remainingTicks",
+      "qualifier": "pure",
+      "signature": "pure flow remainingTicks(nowEpoch: Int, nowTicks: Int, deadlineEpoch: Int, deadlineTicks: Int) -> Int",
+      "effects": [],
+      "intent": "Remaining ticks only after remainingReason returns 0. Refusal is -1 and is not time left."
+    },
+    {
+      "file": "packages/fungi/memory/src/query-custody.fungi",
+      "name": "admitQueryCustody",
+      "qualifier": "pure",
+      "signature": "pure flow admitQueryCustody(custodyClass: Int, custodyToken: Int, objectClass: Int, objectCount: Int, versionClass: Int, versionCount: Int, unknownClass: Int, unknownCount: Int, recordClass: Int, recordToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed query custody sum. Foreign input refuses 11. Record-only is UNKNOWN 1. Unknown name 3. Repeat 2. Record mismatch 4. Admit 0 only when every check passes."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "admitKeySource",
+      "qualifier": "pure",
+      "signature": "pure flow admitKeySource(source: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a region key source: only the OS CSPRNG is 100; other listed sources refuse 61; unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "admitKeyId",
+      "qualifier": "pure",
+      "signature": "pure flow admitKeyId(sameIdOtherRegion: Int, idRetired: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a key id only if it serves no other region and was never retired; reuse refuses 62; unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "requestPersist",
+      "qualifier": "pure",
+      "signature": "pure flow requestPersist(kind: Int, keyValid: Int) -> Int",
+      "effects": [],
+      "intent": "Region keys are never persisted or exported: every listed request refuses 63; unlisted 11; never 100."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "admitStop",
+      "qualifier": "pure",
+      "signature": "pure flow admitStop(evidence: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a stop only with wipe evidence; freed-only, missing or unlisted evidence is 106 Indeterminate."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "startupKek",
+      "qualifier": "pure",
+      "signature": "pure flow startupKek(declared: Int, providerPresent: Int, kekForm: Int) -> Int",
+      "effects": [],
+      "intent": "Start only when portAccess admits and the KEK is well formed; 112 and 119 pass through; bad KEK 64; unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "useKey",
+      "qualifier": "pure",
+      "signature": "pure flow useKey(keyPurpose: Int, requestedPurpose: Int, rootTag: Int) -> Int",
+      "effects": [],
+      "intent": "Use a Galerina key only for its own purpose; foreign roots refuse 66; cross-purpose refuses 65; unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/region-keys.fungi",
+      "name": "unwrapDek",
+      "qualifier": "pure",
+      "signature": "pure flow unwrapDek(rootTag: Int, requestedPurpose: Int, declared: Int, providerPresent: Int) -> Int",
+      "effects": [],
+      "intent": "Unwrap a DEK: root 66 then purpose 65 before the port (112, 119); 100 only when all admit; unlisted 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "finish",
+      "qualifier": "pure",
+      "signature": "pure flow finish(refusalCode: Int, wiped: Bool) -> Int",
+      "effects": [],
+      "intent": "Pack outcome/recovery code with wipe-flag construct. Unlisted wipe flag refuses as Unlisted."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "classifyRecovery",
+      "qualifier": "pure",
+      "signature": "pure flow classifyRecovery(presentToken: Int, retiredToken: Int, tombstoneDroppedToken: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "ONE OperationRecoveryStatus kind. Evicted/live/default report DELIVERY_UNKNOWN. Unlisted refuses 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "mintAdmit",
+      "qualifier": "pure",
+      "signature": "pure flow mintAdmit(idPresentToken: Int, epochClass: Int, epoch: Int, existingPresentToken: Int, existingLease: Int, retiredToken: Int, randomnessPresentToken: Int, atCapToken: Int, issuedFreshToken: Int, issuedHereToken: Int) -> Int",
+      "effects": [],
+      "intent": "Admit a mint or return a packed typed refusal. Re-issue of an existing terminal lease is code 7, never a fresh mint."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "consumeStep",
+      "qualifier": "pure",
+      "signature": "pure flow consumeStep(presentToken: Int, tokenMatchToken: Int, epochClass: Int, epochMatchToken: Int, leaseState: Int, revokeCommittedToken: Int, guardOutcome: Int) -> Int",
+      "effects": [],
+      "intent": "Consume is the result-sink commit point D. Range-check every token first. Revocation committed first refuses. Released 100 only if releaseGuard admitted 100."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "ackStep",
+      "qualifier": "pure",
+      "signature": "pure flow ackStep(presentToken: Int, tokenMatchToken: Int, epochPresentToken: Int, epochClass: Int, epochMatchToken: Int, leaseState: Int, auditCommittedToken: Int) -> Int",
+      "effects": [],
+      "intent": "ACK only after committed audit. Range-check every token first. Fenced reports 102 before audit-absent."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "revokeDelivery",
+      "qualifier": "pure",
+      "signature": "pure flow revokeDelivery(leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "One-way acknowledged to delivery-unknown. No-op states return code 8, never released. Unlisted lease refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "casBegin",
+      "qualifier": "pure",
+      "signature": "pure flow casBegin(capState: Int, competitor: Int) -> Int",
+      "effects": [],
+      "intent": "Q07 one CAS. Range-check capState and competitor first. Unlisted competitor refuses even when non-OPEN."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "casCommit",
+      "qualifier": "pure",
+      "signature": "pure flow casCommit(capState: Int, adapterClass: Int, epochMatchToken: Int, revokeAfterBeginToken: Int, crashToken: Int) -> Int",
+      "effects": [],
+      "intent": "Q09 per-class commit. Range-check every token first. Out-of-process COMMITTED unreachable."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "observationPoint",
+      "qualifier": "pure",
+      "signature": "pure flow observationPoint(kind: Int) -> Int",
+      "effects": [],
+      "intent": "Only CAS-begin is the release point. Addendum F rejected claims refuse. Post-write events stay DELIVERY_UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "bytesEqualScan",
+      "qualifier": "pure",
+      "signature": "pure flow bytesEqualScan(lenA: Int, lenB: Int, mismatchFoundToken: Int, scanned: Int) -> Int",
+      "effects": [],
+      "intent": "Host-reported full-length scan. Constant-time XOR is NEEDS_LANGUAGE. Early exit refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "retryAfterUnknown",
+      "qualifier": "pure",
+      "signature": "pure flow retryAfterUnknown(priorOutcome: Int) -> Int",
+      "effects": [],
+      "intent": "No retry after DELIVERY_UNKNOWN. Other priors refuse unlisted."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "releaseGuard",
+      "qualifier": "pure",
+      "signature": "pure flow releaseGuard(independentAuthToken: Int, preparedCustodyToken: Int, cleanupEvidence: Int, emptyObligationSetToken: Int, consumedAuthorityToken: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Three-part release guard plus separate consumed-authority and current-validity. No admit unless all hold."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-commit-point.fungi",
+      "name": "outcomeClass",
+      "qualifier": "pure",
+      "signature": "pure flow outcomeClass(outcomeCode: Int, phaseToken: Int) -> Int",
+      "effects": [],
+      "intent": "Map outcome 0-8+11 onto Success/Refused/Indeterminate. Missing/stale/unlisted before begin is Refused; after begin is Indeterminate."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "name": "idemPack",
+      "qualifier": "pure",
+      "signature": "pure flow idemPack(code: Int) -> Int",
+      "effects": [],
+      "intent": "Pack an S8-R2 outcome code with the wipe construct (+100)."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "name": "reserveReleaseIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow reserveReleaseIdempotency(keyPresentToken: Int, keyState: Int, digestMatchToken: Int) -> Int",
+      "effects": [],
+      "intent": "Q3 reserve. Range-check first. Only a present ABSENT key with no stored digest reserves 100. In-flight 103, stored terminal 107, digest mismatch fenced 102, Indeterminate 106, missing key 105. Unlisted or inconsistent refuses 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "name": "commitReleaseIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow commitReleaseIdempotency(keyState: Int, ownerMatchToken: Int, deliveryOutcome: Int) -> Int",
+      "effects": [],
+      "intent": "Q3 commit. deliveryOutcome 0 Success 1 Refused-before-begin 2 Indeterminate. Range-check first. Only the reservation owner commits a RESERVED key: 100 / 102 stored refusal / 106. Non-owner fenced 102, no reservation 105, terminal replay 103, Indeterminate stays 106. Unlisted refuses 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/release-idempotency.fungi",
+      "name": "reconcileReleaseIdempotency",
+      "qualifier": "pure",
+      "signature": "pure flow reconcileReleaseIdempotency(keyState: Int, expiredToken: Int, durableRecord: Int) -> Int",
+      "effects": [],
+      "intent": "Q3 uncertain reconciliation, no stranded key. durableRecord 0 none 1 success record 2 refused-before-begin record. Range-check first. Expired RESERVED settles 100 / 102 from a durable record, else Indeterminate 106 (never success, never ABSENT). Unexpired 103, terminal no-op 108, Indeterminate stays 106, absent 105. Unlisted refuses 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "name": "decodeSpawn",
+      "qualifier": "pure",
+      "signature": "pure flow decodeSpawn(spawnClass: Int, spawnToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed spawn sum. Unlisted refuses. Never a default path."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "name": "decodeFrameStatus",
+      "qualifier": "pure",
+      "signature": "pure flow decodeFrameStatus(statusClass: Int, statusToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed custodian status. OK / NOT_FOUND / QUARANTINED. Any other byte refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "name": "decodeTerminate",
+      "qualifier": "pure",
+      "signature": "pure flow decodeTerminate(termClass: Int, termToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed terminate sum. StillRunning is UNKNOWN at the arena. No busy-wait."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena-custodian-port.fungi",
+      "name": "decodePresence",
+      "qualifier": "pure",
+      "signature": "pure flow decodePresence(presentClass: Int, presentToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed presence tag 0 missing 1 present. Unlisted refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "listedState",
+      "qualifier": "pure",
+      "signature": "pure flow listedState(stateClass: Int, stateToken: Int) -> Int",
+      "effects": [],
+      "intent": "Active 0, Quarantined 1, Disposed 2, Partial 3. Unlisted 11. Partial is never Active."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "listedWipe",
+      "qualifier": "pure",
+      "signature": "pure flow listedWipe(wipeClass: Int, wipeToken: Int) -> Int",
+      "effects": [],
+      "intent": "Wipe 0 ok 1 failed 2 unknown. Failed or unknown is cleanup_failed plus quarantine. No erase claim."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "wipeWins",
+      "qualifier": "pure",
+      "signature": "pure flow wipeWins(wiped: Int) -> Int",
+      "effects": [],
+      "intent": "Failed 117 or UNKNOWN 106 wipe wins on every later exit. Other wipe packed continues as 100."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "listedCallback",
+      "qualifier": "pure",
+      "signature": "pure flow listedCallback(callbackClass: Int, callbackToken: Int) -> Int",
+      "effects": [],
+      "intent": "Callback 0 not-called 1 once-void 2 twice 3 returns-value 4 thenable."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "applyArenaClock",
+      "qualifier": "pure",
+      "signature": "pure flow applyArenaClock(clockClass: Int, clock: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Caller-supplied reading. Missing, backwards, epoch mismatch, overflow, deadline. .fungi reads no clock."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "constructArena",
+      "qualifier": "pure",
+      "signature": "pure flow constructArena(platformClass: Int, platformToken: Int, pathClass: Int, pathPresent: Int, spawnClass: Int, spawnToken: Int, stdioClass: Int, stdioToken: Int, helloClass: Int, helloStatus: Int, helloLenClass: Int, helloLen: Int, intrinsicClass: Int, intrinsicPresent: Int) -> Int",
+      "effects": [],
+      "intent": "Typed construction. No default custodian path. Unlisted refuses. Hello must be OK with exactly one data byte."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaHas",
+      "qualifier": "pure",
+      "signature": "pure flow arenaHas(stateClass: Int, stateToken: Int, statusClass: Int, statusToken: Int, lenClass: Int, dataLen: Int, byteClass: Int, dataByte: Int) -> Int",
+      "effects": [],
+      "intent": "Exact has frame. OK+1byte+1 present, OK+1byte+0 or NOT_FOUND absent. Unlisted status, empty, byte 2, extra bytes UNKNOWN plus quarantine. Quarantined never absent."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaStatus",
+      "qualifier": "pure",
+      "signature": "pure flow arenaStatus(stateClass: Int, stateToken: Int, statusClass: Int, statusToken: Int, lenClass: Int, dataLen: Int, byteClass: Int, dataByte: Int) -> Int",
+      "effects": [],
+      "intent": "OK requires exactly one data byte. Empty or over-long is Quarantined, never Active."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaEpoch",
+      "qualifier": "pure",
+      "signature": "pure flow arenaEpoch(stateClass: Int, stateToken: Int, statusClass: Int, statusToken: Int, lenClass: Int, dataLen: Int, epochClass: Int, epochValue: Int, lastClass: Int, lastEpoch: Int, fenceClass: Int, fenceEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Exactly 8 bytes. Overflow refuses. Decreasing STALE_EPOCH. Quarantine fence strictly past last custodian epoch. Never truncate."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaUse",
+      "qualifier": "pure",
+      "signature": "pure flow arenaUse(stateClass: Int, stateToken: Int, abortClass: Int, abortToken: Int, statusClass: Int, statusToken: Int, lenClass: Int, dataLen: Int, callbackClass: Int, callbackToken: Int, wipeClass: Int, wipeToken: Int, spentClass: Int, spentViewToken: Int, clockClass: Int, clock: Int, presentClass: Int, clockPresent: Int, armedClass: Int, armedAt: Int, budgetClass: Int, budget: Int, clockEpochClass: Int, clockEpoch: Int, armedEpochClass: Int, armedEpoch: Int) -> Int",
+      "effects": [],
+      "intent": "Wipe on every exit. Callback unit-only. Post-consume non-success is UNKNOWN plus quarantine. Spent view never the bytes."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaPut",
+      "qualifier": "pure",
+      "signature": "pure flow arenaPut(stateClass: Int, stateToken: Int, nameClass: Int, nameLen: Int, valueClass: Int, valueLen: Int, maxClass: Int, maxFrame: Int, highClass: Int, highBit: Int, statusClass: Int, statusToken: Int, wipeClass: Int, wipeToken: Int) -> Int",
+      "effects": [],
+      "intent": "Bounded put. One byte over cap refuses. Zero length and high-bit refuse. Wipe on every exit."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaDispose",
+      "qualifier": "pure",
+      "signature": "pure flow arenaDispose(stateClass: Int, stateToken: Int, cleanupClass: Int, cleanupStatus: Int, termClass: Int, termToken: Int, recordedClass: Int, recordedPacked: Int) -> Int",
+      "effects": [],
+      "intent": "Never Verified. Non-OK cleanup Failed 144. Dead custodian Unknown 106. Second dispose returns recorded packed."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "mapHasToPresence",
+      "qualifier": "pure",
+      "signature": "pure flow mapHasToPresence(packedClass: Int, packedCode: Int) -> Int",
+      "effects": [],
+      "intent": "Secret-gate presence map. Present 0, absent 1, faulted 2. Never map quarantine to absent or present."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaSetupAbort",
+      "qualifier": "pure",
+      "signature": "pure flow arenaSetupAbort(stage: Int, allocFailed: Int, wipeToken: Int) -> Int",
+      "effects": [],
+      "intent": "Setup interrupted at listed stage 0 spawn 1 stdio 2 hello 3 intrinsic 4 arena-slot 5 secret-buffer. The partial object is never valid. OOM with partial wipe ok refuses 148 OOM_PARTIAL_REFUSED. Wipe failed, unknown or unlisted, an unlisted allocation flag, or an abort with no recorded allocation failure is 106 UNKNOWN plus quarantine. Unlisted stage 111. Never 100."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaSlotCheck",
+      "qualifier": "pure",
+      "signature": "pure flow arenaSlotCheck(slotGeneration: Int, handleGeneration: Int, freed: Int) -> Int",
+      "effects": [],
+      "intent": "MB-12 generation-tagged handle. 100 only on a live slot whose generation equals the handle's. Freed slot refuses 150 STALE_HANDLE before any generation bump (free is not wipe). Generation below 1 or at Int max is 140 invalid or exhausted, never wrapped. Mismatch 150. Unlisted freed 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-arena.fungi",
+      "name": "arenaReadBeforeInit",
+      "qualifier": "pure",
+      "signature": "pure flow arenaReadBeforeInit(initToken: Int, slotGeneration: Int, workerGeneration: Int) -> Int",
+      "effects": [],
+      "intent": "Request state is readable only after re-initialisation in the current worker generation. Not initialised 106 UNKNOWN, never the previous request's state. Older or newer slot generation 150 STALE_HANDLE. Generation below 1 or at Int max 140. Unlisted init token 111."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "admit",
+      "qualifier": "pure",
+      "signature": "pure flow admit(requiredCountClass: Int, requiredCount: Int, providerClass: Int, providerPresent: Int, presenceClass: Int, presenceStatus: Int, epochClass: Int, epoch: Int, epochPresentClass: Int, epochPresentToken: Int) -> Int",
+      "effects": [],
+      "intent": "Closed admit sum. Empty require admits without a provider. Unlisted presence refuses. Legacy epoch refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "deliverPreHandoff",
+      "qualifier": "pure",
+      "signature": "pure flow deliverPreHandoff(declaredClass: Int, declaredToken: Int, providerClass: Int, providerPresent: Int, epochPresentClass: Int, epochPresentToken: Int, epochMintClass: Int, epochMint: Int, epochUseClass: Int, epochUse: Int, epochMovedClass: Int, epochMovedToken: Int, revokeClass: Int, revokeCommittedToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Pre-handoff admit. Declared provider epoch-present epoch-compare revocation and current validity refuse before any callback. Mint versus use mismatch refuses 18. Host token disagreeing with the compare refuses 18."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "deliverPostHandoff",
+      "qualifier": "pure",
+      "signature": "pure flow deliverPostHandoff(preClass: Int, prePacked: Int, callbackClass: Int, callbackOutcome: Int, wipeClass: Int, wipeResult: Int, cleanupClass: Int, cleanupEvidence: Int, authClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, presentClass: Int, presentToken: Int, matchClass: Int, tokenMatchToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, revokeClass: Int, revokeCommittedToken: Int, currentValidityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Post-handoff. Non-admit pre-code refuses 11. Callback and wipe closed sums. Release tokens including current validity pass through the commit point unchanged. Listed cleanup never returns packed 100; MB-06 maps success to DELIVERY_UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "gateAcknowledge",
+      "qualifier": "pure",
+      "signature": "pure flow gateAcknowledge(presentClass: Int, presentToken: Int, tokenMatchClass: Int, tokenMatchToken: Int, epochPresentClass: Int, epochPresentToken: Int, epochClass: Int, epoch: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, auditClass: Int, auditCommittedToken: Int) -> Int",
+      "effects": [],
+      "intent": "ACK delegates to ackStep. Status-only recovery never opens the provider."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "gateStatus",
+      "qualifier": "pure",
+      "signature": "pure flow gateStatus(presentClass: Int, presentToken: Int, retiredClass: Int, retiredToken: Int, tombstoneClass: Int, tombstoneDroppedToken: Int, leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Status delegates to classifyRecovery. Never opens the provider, never re-consumes, never re-discloses."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "gateNoteUndelivered",
+      "qualifier": "pure",
+      "signature": "pure flow gateNoteUndelivered(leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "One-way acknowledged to delivery-unknown via revokeDelivery. Never upgrades, never re-discloses."
+    },
+    {
+      "file": "packages/fungi/memory/src/secret-gate.fungi",
+      "name": "gateNoteUnknown",
+      "qualifier": "pure",
+      "signature": "pure flow gateNoteUnknown(leaseClass: Int, leaseState: Int) -> Int",
+      "effects": [],
+      "intent": "Kernel noteUnknown. One-way released to delivery-unknown for an unacked delivery whose fate is unknown. Every other listed lease is no-op 8. Never upgrades, never re-discloses, never acknowledges. Unlisted lease refuses 11."
+    },
+    {
+      "file": "packages/fungi/memory/src/secrets-provider-port.fungi",
+      "name": "portAccess",
+      "qualifier": "pure",
+      "signature": "pure flow portAccess(declaredClass: Int, declaredToken: Int, providerClass: Int, providerPresent: Int) -> Int",
+      "effects": [],
+      "intent": "Per-secret port. Declared name first, then provider presence. Unlisted or foreign refuses."
+    },
+    {
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "name": "finish",
+      "qualifier": "pure",
+      "signature": "pure flow finish(refusalCode: Int, wiped: Bool) -> Int",
+      "effects": [],
+      "intent": "Pack refusal code and wipe-flag construct. Unlisted wipe flag refuses as Unlisted."
+    },
+    {
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "name": "pathProtection",
+      "qualifier": "pure",
+      "signature": "pure flow pathProtection(pathClass: Int) -> Int",
+      "effects": [],
+      "intent": "Closed path-class table. Unnormalisable and unlisted tags are PROTECTED."
+    },
+    {
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "name": "effectSecretClass",
+      "qualifier": "pure",
+      "signature": "pure flow effectSecretClass(effectClass: Int) -> Int",
+      "effects": [],
+      "intent": "Closed effect-name table. Unlisted names are secret-bearing."
+    },
+    {
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "name": "reachSecretClass",
+      "qualifier": "pure",
+      "signature": "pure flow reachSecretClass(reachClass: Int) -> Int",
+      "effects": [],
+      "intent": "Closed reachability table. Alias, nested, callee, unresolved, and unlisted refuse."
+    },
+    {
+      "file": "packages/fungi/memory/src/serve-gate.fungi",
+      "name": "classifyServeRoute",
+      "qualifier": "pure",
+      "signature": "pure flow classifyServeRoute(layerClass: Int, layer: Int, methodClass: Int, method: Int, pathClassClass: Int, pathClass: Int, effectClassClass: Int, effectClass: Int, reachClassClass: Int, reachClass: Int) -> Int",
+      "effects": [],
+      "intent": "Admit foreign tags then refuse protected or secret-bearing standalone serve routes."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "issueGrant",
+      "qualifier": "pure",
+      "signature": "pure flow issueGrant(subjectCountClass: Int, subjectCount: Int, duplicateClass: Int, duplicateToken: Int, digestClass: Int, digestOk: Int, profileClass: Int, profilePresent: Int, epochClass: Int, epoch: Int, clockClass: Int, clock: Int, clockPresentClass: Int, clockPresent: Int, randomClass: Int, randomPresent: Int, keyClass: Int, keyPresent: Int, ttlClass: Int, ttl: Int, suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int) -> Int",
+      "effects": [],
+      "intent": "Closed issue sum. Empty or duplicate subjects refuse. TTL zero negative over-bound and issuedAt plus TTL overflow refuse. Hybrid only. Classical-only never issued as hybrid."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "authenticateGrant",
+      "qualifier": "pure",
+      "signature": "pure flow authenticateGrant(shapeClass: Int, shapeToken: Int, tamperClass: Int, tamperToken: Int, issuerClass: Int, issuerPinned: Int, actionClass: Int, actionMatch: Int, epochMatchClass: Int, epochMatch: Int, profileMatchClass: Int, profileMatch: Int, grantEpochClass: Int, grantEpoch: Int, currentEpochClass: Int, currentEpoch: Int, grantProfileClass: Int, grantProfile: Int, currentProfileClass: Int, currentProfile: Int, declaredClass: Int, declaredToken: Int, expiredClass: Int, expiredToken: Int, suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int) -> Int",
+      "effects": [],
+      "intent": "Closed authenticate sum. Compare grant epoch versus current epoch and grant profile versus current profile in-unit. Host token disagreeing with the compare refuses. Getter proxy extra missing symbol refuse. Tamper unpinned wrong-action undeclared expired refuse. Hybrid required."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "applyPreSink",
+      "qualifier": "pure",
+      "signature": "pure flow applyPreSink(authPackedClass: Int, authPacked: Int, consumedClass: Int, consumedToken: Int, restartClass: Int, restartToken: Int, epochExhClass: Int, epochExhausted: Int, cleanupClass: Int, cleanupEvidence: Int, suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int, issueClockClass: Int, issueClock: Int, applyClockClass: Int, applyClock: Int, ttlClass: Int, ttl: Int, issueGenClass: Int, issueClockGen: Int, applyGenClass: Int, applyClockGen: Int, clockEpochClass: Int, clockEpochMatch: Int, authTokClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int, presentClass: Int, presentToken: Int, matchClass: Int, tokenMatchToken: Int, epochMatchClass: Int, epochMatchToken: Int, leaseClass: Int, leaseState: Int, revokeClass: Int, revokeCommittedToken: Int) -> Int",
+      "effects": [],
+      "intent": "Pre-sink consume. Packed authenticate must be 100. Clock TTL suite restart replay and clock-generation compare refuse before sink. Release tokens pass through the commit point. Replay refuses. Returns packed consume code."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "applyPostSink",
+      "qualifier": "pure",
+      "signature": "pure flow applyPostSink(preClass: Int, prePacked: Int, sinkClass: Int, sinkOutcome: Int, cleanupClass: Int, cleanupEvidence: Int, authTokClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Post-sink classify. Non-consume pre-code refuses 11. After consume only Failed 127, Refused 128, UNKNOWN 106, or unlisted 111. Indeterminate, crash, Success, listed cleanup and false release tokens are UNKNOWN never REFUSED. Nothing after consume restores authority."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "classifySeal",
+      "qualifier": "pure",
+      "signature": "pure flow classifySeal(kindClass: Int, sealKind: Int, pathClass: Int, identityPath: Int, suiteClass: Int, suiteId: Int, pqClass: Int, pqAvailable: Int) -> Int",
+      "effects": [],
+      "intent": "Closed Assured Unknown Distrusted sum. Typed Absent is Unknown. Forged absent-string is Distrusted. Previous epoch and profile Distrusted on both paths. DELIVERY_UNKNOWN is Unknown. Current CONSUMED is Assured only for hybrid. Default refuses. Classical-only never Assured."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "restartHost",
+      "qualifier": "pure",
+      "signature": "pure flow restartHost(epochClass: Int, epoch: Int) -> Int",
+      "effects": [],
+      "intent": "Advance generation. Epoch exhaustion is typed refusal. Consume set is host-side in-memory only."
+    },
+    {
+      "file": "packages/fungi/memory/src/signet-grant-seal.fungi",
+      "name": "validateVerifyRequest",
+      "qualifier": "pure",
+      "signature": "pure flow validateVerifyRequest(validatedClass: Int, validatedBeforeSerialize: Int, bodyClass: Int, bodyBytes: Int, getterClass: Int, getterChanging: Int, pinnedClass: Int, pinnedSize: Int, readClass: Int, verifierRead: Int, exitClass: Int, childExit: Int, kindClass: Int, childKind: Int, tritClass: Int, tritToken: Int, authorizingClass: Int, authorizingToken: Int, extraClass: Int, extraKey: Int, hookClass: Int, testHook: Int, cleanupClass: Int, cleanupEvidence: Int, authTokClass: Int, independentAuthToken: Int, custodyClass: Int, preparedCustodyToken: Int, emptyClass: Int, emptyObligationSetToken: Int, consumedAuthClass: Int, consumedAuthorityToken: Int, validityClass: Int, currentValidityToken: Int) -> Int",
+      "effects": [],
+      "intent": "Validate the verify request before serialisation. Admit only trit 1 with exit 0. Trit deny or unknown with exit 0 refuses 59. Body over 16384 refuses. Pinned over 64 MiB refuses. Unlisted child exit refuses. Exit 3 helper versus verifier is UNKNOWN. Trit plus one with nonzero exit refuses. Production test hook refuses. childKind is range-checked and unused. Listed cleanup never packed 100; MB-06 maps to DELIVERY_UNKNOWN."
+    },
+    {
+      "file": "packages/fungi/memory/tests/45-host-adapter-audit/echo.fungi",
+      "name": "echo",
+      "qualifier": "pure",
+      "signature": "pure flow echo(x: Int) -> Int",
+      "effects": [],
+      "intent": "Identity for invoke-ABI wrap probes."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai-agent/validate-agent-limits.fungi",
+      "name": "validateAgentLimitsAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateAgentLimitsAtPath(limits: AgentLimits, path_: String) -> Array<AgentDiagnostic>",
+      "effects": [],
+      "intent": "Require every present agent resource limit to be positive and return ordered typed diagnostics at the caller-selected path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai-agent/validate-agent-limits.fungi",
+      "name": "validateAgentLimits",
+      "qualifier": "pure",
+      "signature": "pure flow validateAgentLimits(limits: AgentLimits) -> Array<AgentDiagnostic>",
+      "effects": [],
+      "intent": "Validate agent resource limits using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai-lowbit/validate-low-bit-ai-model.fungi",
+      "name": "validateLowBitAiModel",
+      "qualifier": "pure",
+      "signature": "pure flow validateLowBitAiModel(model: LowBitAiModelReference) -> LowBitAiModelValidationResult",
+      "effects": [],
+      "intent": "Validate local path, GGUF extension and finite positive model resource limits without loading or executing the model."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai-neural/is-same-tensor-shape.fungi",
+      "name": "isSameTensorShape",
+      "qualifier": "pure",
+      "signature": "pure flow isSameTensorShape(left: NeuralTensorRef, right: NeuralTensorRef) -> Bool",
+      "effects": [],
+      "intent": "Compare tensor element types and dimensions in source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai-neuromorphic/validate-spike-train.fungi",
+      "name": "validateSpikeTrain",
+      "qualifier": "pure",
+      "signature": "pure flow validateSpikeTrain(train: SpikeTrain, path_: String) -> Array<NeuromorphicDiagnostic>",
+      "effects": [],
+      "intent": "Validate spike train identity, finite timing, amplitude, and first ordering violation."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ai/define-ai-safety-policy.fungi",
+      "name": "defineAiSafetyPolicy",
+      "qualifier": "pure",
+      "signature": "pure flow defineAiSafetyPolicy(policy_: AiSafetyPolicyPatch) -> AiSafetyPolicy",
+      "effects": [],
+      "intent": "Apply the canonical safe defaults to an optional AI safety policy patch."
+    },
+    {
+      "file": "packages/fungi/products/galerina-auth/compose-auth-verdict.fungi",
+      "name": "composeAuthVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow composeAuthVerdict(factors: Array<Int>) -> Int",
+      "effects": [],
+      "intent": "Conjoin authentication factors with deny-by-default empty handling."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-cli/format-cli-result.fungi",
+      "name": "joinMarkers",
+      "qualifier": "pure",
+      "signature": "pure flow joinMarkers(markers: Array<String>) -> String",
+      "effects": [],
+      "intent": "Join bare-detector marker names in their source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-cli/format-cli-result.fungi",
+      "name": "formatCliResult",
+      "qualifier": "pure",
+      "signature": "pure flow formatCliResult(redacted_: CliRedactionResult) -> String",
+      "effects": [],
+      "intent": "Format redacted CLI output and surface bare-credential tripwires."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-compiler/artifact-reference-schema.fungi",
+      "name": "artifactReferenceSchema",
+      "qualifier": "pure",
+      "signature": "pure flow artifactReferenceSchema() -> String",
+      "effects": [],
+      "intent": "Return the exact artifact reference schema identifier."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-compute/validate-compute-plan.fungi",
+      "name": "validateComputePlan",
+      "qualifier": "pure",
+      "signature": "pure flow validateComputePlan(plan: ComputePlan) -> Array<ComputeDiagnostic>",
+      "effects": [],
+      "intent": "Return ordered diagnostics for a compute plan name, fallback target, and optional positive budgets."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-config/environment-mode.fungi",
+      "name": "isEnvironmentMode",
+      "qualifier": "pure",
+      "signature": "pure flow isEnvironmentMode(value: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize only a canonical Galerina environment mode."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-economics/select-vector-tier.fungi",
+      "name": "selectVectorTier",
+      "qualifier": "pure",
+      "signature": "pure flow selectVectorTier(vectorTier: String) -> String",
+      "effects": [],
+      "intent": "Return the caller-selected vector tier unchanged."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-logic/validate-bool-boundary.fungi",
+      "name": "validateBoolBoundary",
+      "qualifier": "pure",
+      "signature": "pure flow validateBoolBoundary(input_: BoolBoundaryInput, context: BoolBoundaryContext) -> BoolBoundaryResult",
+      "effects": [],
+      "intent": "Convert TriState or Decision to a boolean while failing closed for unknown and review."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-network/admission-feedback.fungi",
+      "name": "k3Unknown",
+      "qualifier": "pure",
+      "signature": "pure flow k3Unknown() -> Int",
+      "effects": [],
+      "intent": "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-network/admission-feedback.fungi",
+      "name": "vAnd",
+      "qualifier": "pure",
+      "signature": "pure flow vAnd(a: Int, b: Int) -> Int",
+      "effects": [],
+      "intent": "Apply K3 conjunction by returning the most restrictive operand."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-network/admission-feedback.fungi",
+      "name": "telemetrySideSignal",
+      "qualifier": "pure",
+      "signature": "pure flow telemetrySideSignal(healthDegrades: Bool, scorePresent: Bool, scoreGarbage: Bool, scoreHardDeny: Bool, scoreThrottle: Bool) -> Int",
+      "effects": [],
+      "intent": "Map telemetry to a degrade-only K3 side-signal that cannot manufacture ALLOW."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-photonic/validate-optical-signal.fungi",
+      "name": "validateOpticalSignal",
+      "qualifier": "pure",
+      "signature": "pure flow validateOpticalSignal(signal: OpticalSignal, path_: String) -> Array<PhotonicDiagnostic>",
+      "effects": [],
+      "intent": "Validate wavelength, phase, and amplitude while preserving diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-reports/report-status.fungi",
+      "name": "selectReportStatus",
+      "qualifier": "pure",
+      "signature": "pure flow selectReportStatus(input: ReportStatusCounts) -> String",
+      "effects": [],
+      "intent": "Select the highest report status represented by the admitted counts."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-reports/report-status.fungi",
+      "name": "selectReportStatusCounts",
+      "qualifier": "pure",
+      "signature": "pure flow selectReportStatusCounts(warnings: Int, errors: Int, critical: Int) -> String",
+      "effects": [],
+      "intent": "Construct the exact report-count record and select its status."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-runtime-wasm/wat-heap-base.fungi",
+      "name": "watHeapBase",
+      "qualifier": "pure",
+      "signature": "pure flow watHeapBase() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-runtime/terminal-scope.fungi",
+      "name": "isTerminalScope",
+      "qualifier": "pure",
+      "signature": "pure flow isTerminalScope(status: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize only a terminal structured-await scope state."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-security/is-sensitive-header-name.fungi",
+      "name": "isSensitiveHeaderName",
+      "qualifier": "pure",
+      "signature": "pure flow isSensitiveHeaderName(name: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize the exact case-insensitive sensitive-header name set."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-egress/read-egress-ledger.fungi",
+      "name": "readEgressLedger",
+      "qualifier": "pure",
+      "signature": "pure flow readEgressLedger(ledgerText_: String) -> Array<String>",
+      "effects": [],
+      "intent": "Split ledger text by newline, trim each line, and retain nonblank JSONL records in source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-io/integrity-verdict.fungi",
+      "name": "integrityVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow integrityVerdict(digestMatches: Bool) -> String",
+      "effects": [],
+      "intent": "Refuse a block when its recomputed digest differs from the expected manifest digest; otherwise return ok."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-memory/align-bytes.fungi",
+      "name": "alignBytes",
+      "qualifier": "pure",
+      "signature": "pure flow alignBytes() -> Int",
+      "effects": [],
+      "intent": "Return the fixed byte alignment required by sentinel memory."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-power/validate-envelope.fungi",
+      "name": "validateEnvelope",
+      "qualifier": "pure",
+      "signature": "pure flow validateEnvelope(envelope: ThermalEnvelope) -> Result<Bool,String>",
+      "effects": [],
+      "intent": "Accept only finite thresholds ordered as 0 < throttleC < safeC < criticalC; return a typed failure otherwise."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-state/restore-verdict-export-name.fungi",
+      "name": "restoreVerdictExportName",
+      "qualifier": "pure",
+      "signature": "pure flow restoreVerdictExportName() -> String",
+      "effects": [],
+      "intent": "Return the exact restore decision-port export name."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-sentinel-time/synchronization-gate.fungi",
+      "name": "driftGateVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow driftGateVerdict(synced: Bool, driftAbs: Int, maxDriftTicks: Int) -> Int",
+      "effects": [],
+      "intent": "Deny an unsynchronized or over-envelope logical clock; allow the bounded drift case."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-tasks/task-effect.fungi",
+      "name": "isTaskEffectCore",
+      "qualifier": "pure",
+      "signature": "pure flow isTaskEffectCore(value: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize a canonical core task effect name."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-tasks/task-effect.fungi",
+      "name": "isTaskEffectExtended",
+      "qualifier": "pure",
+      "signature": "pure flow isTaskEffectExtended(value: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize a canonical extended task effect name."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-tasks/task-effect.fungi",
+      "name": "isTaskEffect",
+      "qualifier": "pure",
+      "signature": "pure flow isTaskEffect(value: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize only a canonical task effect name."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-vector/validate-matrix-type.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core-vector/validate-matrix-type.fungi",
+      "name": "validateMatrixType",
+      "qualifier": "pure",
+      "signature": "pure flow validateMatrixType(matrix: MatrixType, path_: String) -> Array<VectorDiagnostic>",
+      "effects": [],
+      "intent": "Validate positive safe matrix dimensions in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-core/has-errors.fungi",
+      "name": "hasErrors",
+      "qualifier": "pure",
+      "signature": "pure flow hasErrors(diagnostics: Array<CompilerDiagnostic>) -> Bool",
+      "effects": [],
+      "intent": "Return true when diagnostics contains an error severity."
+    },
+    {
+      "file": "packages/fungi/products/galerina-cpu-kernels/requires-low-bit-kernel.fungi",
+      "name": "requiresLowBitKernel",
+      "qualifier": "pure",
+      "signature": "pure flow requiresLowBitKernel(inputType: String, operation: String) -> Bool",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-archive/validate-checksum-ref.fungi",
+      "name": "isHexDigit",
+      "qualifier": "pure",
+      "signature": "pure flow isHexDigit(character: Char) -> Bool",
+      "effects": [],
+      "intent": "Recognize one ASCII hexadecimal digit after source lowercase normalization."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-archive/validate-checksum-ref.fungi",
+      "name": "validateChecksumRef",
+      "qualifier": "pure",
+      "signature": "pure flow validateChecksumRef(checksum: ChecksumRef, path_: String) -> Array<ArchiveDiagnostic>",
+      "effects": [],
+      "intent": "Validate a known checksum algorithm and its fixed-length hexadecimal digest."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-archive/validate-checksum-ref.fungi",
+      "name": "validateChecksumRefDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validateChecksumRefDefault(checksum: ChecksumRef) -> Array<ArchiveDiagnostic>",
+      "effects": [],
+      "intent": "Validate a checksum reference using the source default path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-database/validate-database-checksum.fungi",
+      "name": "isHexDigit",
+      "qualifier": "pure",
+      "signature": "pure flow isHexDigit(character: Char) -> Bool",
+      "effects": [],
+      "intent": "Recognize one ASCII hexadecimal digit after source lowercase normalization."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-database/validate-database-checksum.fungi",
+      "name": "validateDatabaseChecksumAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateDatabaseChecksumAtPath(checksum: DatabaseChecksum, path_: String) -> Array<DatabaseDiagnostic>",
+      "effects": [],
+      "intent": "Validate a known database checksum algorithm and fixed-length hexadecimal digest."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-database/validate-database-checksum.fungi",
+      "name": "validateDatabaseChecksum",
+      "qualifier": "pure",
+      "signature": "pure flow validateDatabaseChecksum(checksum: DatabaseChecksum) -> Array<DatabaseDiagnostic>",
+      "effects": [],
+      "intent": "Validate a database checksum using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-db/validate-db-boundary-requirements.fungi",
+      "name": "validateDbBoundaryRequirementsAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateDbBoundaryRequirementsAtPath(requirements: DbBoundaryRequirements, path_: String) -> Array<DbDiagnostic>",
+      "effects": [],
+      "intent": "Recheck all database boundary non-negotiables in source order and return typed errors."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-db/validate-db-boundary-requirements.fungi",
+      "name": "validateDbBoundaryRequirements",
+      "qualifier": "pure",
+      "signature": "pure flow validateDbBoundaryRequirements(requirements: DbBoundaryRequirements) -> Array<DbDiagnostic>",
+      "effects": [],
+      "intent": "Validate database boundary requirements using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-html/validate-html-parse-plan.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-html/validate-html-parse-plan.fungi",
+      "name": "validateHtmlParsePlan",
+      "qualifier": "pure",
+      "signature": "pure flow validateHtmlParsePlan(plan_: HtmlParsePlan) -> Array<HtmlDiagnostic>",
+      "effects": [],
+      "intent": "Validate HTML parse plan identity, mode, input bound, and optional node bound in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-json/validate-json-memory-policy.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-json/validate-json-memory-policy.fungi",
+      "name": "validateJsonMemoryPolicy",
+      "qualifier": "pure",
+      "signature": "pure flow validateJsonMemoryPolicy(memoryPolicy: JsonMemoryPolicy, path_: String) -> Array<JsonDiagnostic>",
+      "effects": [],
+      "intent": "Validate positive finite safe depth and document bounds plus an optional string bound."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-json/validate-json-memory-policy.fungi",
+      "name": "validateJsonMemoryPolicyDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validateJsonMemoryPolicyDefault(memoryPolicy: JsonMemoryPolicy) -> Array<JsonDiagnostic>",
+      "effects": [],
+      "intent": "Validate a JSON memory policy using the source default memory path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-model/response-safe-classification.fungi",
+      "name": "isResponseSafeClassification",
+      "qualifier": "pure",
+      "signature": "pure flow isResponseSafeClassification(classification: String) -> Bool",
+      "effects": [],
+      "intent": "Admit only the public model-field classification for responses."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-pipeline/validate-backpressure-policy.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-pipeline/validate-backpressure-policy.fungi",
+      "name": "validateBackpressurePolicyAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateBackpressurePolicyAtPath(policy_: BackpressurePolicy, path_: String) -> Array<PipelineDiagnostic>",
+      "effects": [],
+      "intent": "Validate bounded pipeline saturation policy in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-pipeline/validate-backpressure-policy.fungi",
+      "name": "validateBackpressurePolicy",
+      "qualifier": "pure",
+      "signature": "pure flow validateBackpressurePolicy(policy_: BackpressurePolicy) -> Array<PipelineDiagnostic>",
+      "effects": [],
+      "intent": "Validate a backpressure policy using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-query/is-some.fungi",
+      "name": "isSome",
+      "qualifier": "pure",
+      "signature": "pure flow isSome(option_: Option<String>) -> Bool",
+      "effects": [],
+      "intent": "Return true exactly for a present Option value."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-query/option-some.fungi",
+      "name": "optionSome",
+      "qualifier": "pure",
+      "signature": "pure flow optionSome(value_: String) -> Option<String>",
+      "effects": [],
+      "intent": "Wrap a value as a present Option result."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-reports/derive-data-report-status.fungi",
+      "name": "deriveDataReportStatus",
+      "qualifier": "pure",
+      "signature": "pure flow deriveDataReportStatus(diagnostics: Array<DataReportDiagnostic>) -> String",
+      "effects": [],
+      "intent": "Derive failed for any error, partial for warnings alone, and success for a clean diagnostic list."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-response/validate-response-mapping.fungi",
+      "name": "validateResponseMapping",
+      "qualifier": "pure",
+      "signature": "pure flow validateResponseMapping(mapping: ModelToResponseMapping, modelFields: Array<SourceModelField>, path_: String) -> Array<ResponseDiagnostic>",
+      "effects": [],
+      "intent": "Validate response names, allowlist entries, duplicate targets and classified source exposure in source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-response/validate-response-mapping.fungi",
+      "name": "validateResponseMappingDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validateResponseMappingDefault(mapping: ModelToResponseMapping, modelFields: Array<SourceModelField>) -> Array<ResponseDiagnostic>",
+      "effects": [],
+      "intent": "Validate a response mapping using the source default mapping path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-search/validate-search-query.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-search/validate-search-query.fungi",
+      "name": "isNonNegativeSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isNonNegativeSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly non-negative finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data-search/validate-search-query.fungi",
+      "name": "validateSearchQuery",
+      "qualifier": "pure",
+      "signature": "pure flow validateSearchQuery(searchQuery: SearchQueryContract) -> Array<SearchDiagnostic>",
+      "effects": [],
+      "intent": "Validate index identity, bounded pagination and each filter in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data/validate-data-memory-limits.fungi",
+      "name": "isPositiveSafeInteger",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveSafeInteger(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Accept exactly positive finite integer values representable as JavaScript safe integers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data/validate-data-memory-limits.fungi",
+      "name": "validateDataMemoryLimits",
+      "qualifier": "pure",
+      "signature": "pure flow validateDataMemoryLimits(limits: DataMemoryLimits, path_: String) -> Array<DataDiagnostic>",
+      "effects": [],
+      "intent": "Validate positive finite safe document, buffer and concurrent-stream limits in source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-data/validate-data-memory-limits.fungi",
+      "name": "validateDataMemoryLimitsDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validateDataMemoryLimitsDefault(limits: DataMemoryLimits) -> Array<DataDiagnostic>",
+      "effects": [],
+      "intent": "Validate data memory limits using the source default limits path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-firestore/validate-firestore-credential-ref.fungi",
+      "name": "isRegexWhitespace",
+      "qualifier": "pure",
+      "signature": "pure flow isRegexWhitespace(codePoint: Int) -> Bool",
+      "effects": [],
+      "intent": "Recognize JavaScript regular-expression whitespace code points."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-firestore/validate-firestore-credential-ref.fungi",
+      "name": "charCodeAt",
+      "qualifier": "pure",
+      "signature": "pure flow charCodeAt(value: String, index: Int) -> Int",
+      "effects": [],
+      "intent": "Read one string code point with a negative missing sentinel."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-firestore/validate-firestore-credential-ref.fungi",
+      "name": "containsInlineCredential",
+      "qualifier": "pure",
+      "signature": "pure flow containsInlineCredential(value: String) -> Bool",
+      "effects": [],
+      "intent": "Detect a user:password credential embedded after a URI authority marker."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-firestore/validate-firestore-credential-ref.fungi",
+      "name": "validateFirestoreCredentialRef",
+      "qualifier": "pure",
+      "signature": "pure flow validateFirestoreCredentialRef(credential: FirestoreCredentialRef, path_: String) -> Array<FirestoreDiagnostic>",
+      "effects": [],
+      "intent": "Require external credential references and reject inline connection-string secrets."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-mysql/validate-mysql-credential-ref.fungi",
+      "name": "isCredentialWhitespace",
+      "qualifier": "pure",
+      "signature": "pure flow isCredentialWhitespace(character: Char) -> Bool",
+      "effects": [],
+      "intent": "Recognize the ECMAScript whitespace code points excluded by the credential reference pattern."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-mysql/validate-mysql-credential-ref.fungi",
+      "name": "hasInlineCredentialString",
+      "qualifier": "pure",
+      "signature": "pure flow hasInlineCredentialString(ref_: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize a scheme user:password at marker with the same bounded shape as the source credential regex."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-mysql/validate-mysql-credential-ref.fungi",
+      "name": "validateMysqlCredentialRefAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateMysqlCredentialRefAtPath(credential_: MysqlCredentialRef, path_: String) -> Array<MysqlDiagnostic>",
+      "effects": [],
+      "intent": "Reject non-external kinds, empty references, and inline user:password connection strings in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-mysql/validate-mysql-credential-ref.fungi",
+      "name": "validateMysqlCredentialRef",
+      "qualifier": "pure",
+      "signature": "pure flow validateMysqlCredentialRef(credential_: MysqlCredentialRef) -> Array<MysqlDiagnostic>",
+      "effects": [],
+      "intent": "Validate a MySQL credential reference using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-opensearch/validate-opensearch-credential-ref.fungi",
+      "name": "isRegexWhitespace",
+      "qualifier": "pure",
+      "signature": "pure flow isRegexWhitespace(codePoint: Int) -> Bool",
+      "effects": [],
+      "intent": "Recognize JavaScript regular-expression whitespace code points."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-opensearch/validate-opensearch-credential-ref.fungi",
+      "name": "charCodeAt",
+      "qualifier": "pure",
+      "signature": "pure flow charCodeAt(value: String, index: Int) -> Int",
+      "effects": [],
+      "intent": "Read one string code point with a negative missing sentinel."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-opensearch/validate-opensearch-credential-ref.fungi",
+      "name": "containsInlineCredential",
+      "qualifier": "pure",
+      "signature": "pure flow containsInlineCredential(value: String) -> Bool",
+      "effects": [],
+      "intent": "Detect a user:password credential embedded after a URI authority marker."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-opensearch/validate-opensearch-credential-ref.fungi",
+      "name": "validateOpenSearchCredentialRef",
+      "qualifier": "pure",
+      "signature": "pure flow validateOpenSearchCredentialRef(credential: OpenSearchCredentialRef, path_: String) -> Array<OpenSearchDiagnostic>",
+      "effects": [],
+      "intent": "Require external credential references and reject inline connection-string secrets."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-postgres/validate-postgres-credential-ref.fungi",
+      "name": "hasInlineCredentialUri",
+      "qualifier": "pure",
+      "signature": "pure flow hasInlineCredentialUri(value: String) -> Bool",
+      "effects": [],
+      "intent": "Detect a scheme URI containing non-empty user and password sections before an at-sign, matching the source credential-bearing URI guard."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-postgres/validate-postgres-credential-ref.fungi",
+      "name": "validatePostgresCredentialRef",
+      "qualifier": "pure",
+      "signature": "pure flow validatePostgresCredentialRef(credential: PostgresCredentialRef, path_: String) -> Array<PostgresDiagnostic>",
+      "effects": [],
+      "intent": "Validate external credential kind and non-empty reference while rejecting inline user-password connection strings in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-postgres/validate-postgres-credential-ref.fungi",
+      "name": "validatePostgresCredentialRefDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validatePostgresCredentialRefDefault(credential: PostgresCredentialRef) -> Array<PostgresDiagnostic>",
+      "effects": [],
+      "intent": "Validate a PostgreSQL credential reference using the source default credential path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-sqlite/validate-sqlite-credential-ref.fungi",
+      "name": "isCredentialWhitespace",
+      "qualifier": "pure",
+      "signature": "pure flow isCredentialWhitespace(character: Char) -> Bool",
+      "effects": [],
+      "intent": "Recognize the ECMAScript whitespace code points excluded by the credential reference pattern."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-sqlite/validate-sqlite-credential-ref.fungi",
+      "name": "hasInlineCredentialString",
+      "qualifier": "pure",
+      "signature": "pure flow hasInlineCredentialString(ref_: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize a scheme user:password at marker with the same bounded shape as the source credential regex."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-sqlite/validate-sqlite-credential-ref.fungi",
+      "name": "validateSqliteCredentialRefAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateSqliteCredentialRefAtPath(credential_: SqliteCredentialRef, path_: String) -> Array<SqliteDiagnostic>",
+      "effects": [],
+      "intent": "Reject non-external kinds, empty references, and inline user:password connection strings in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-db-sqlite/validate-sqlite-credential-ref.fungi",
+      "name": "validateSqliteCredentialRef",
+      "qualifier": "pure",
+      "signature": "pure flow validateSqliteCredentialRef(credential_: SqliteCredentialRef) -> Array<SqliteDiagnostic>",
+      "effects": [],
+      "intent": "Validate a MySQL credential reference using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-benchmarks/extreme-slower.fungi",
+      "name": "extremeSlower",
+      "qualifier": "pure",
+      "signature": "pure flow extremeSlower() -> Int",
+      "effects": [],
+      "intent": "Return the slowdown threshold above which benchmark integrity classifies a result as extreme."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-context/devtools-context-version.fungi",
+      "name": "devtoolsContextVersion",
+      "qualifier": "pure",
+      "signature": "pure flow devtoolsContextVersion() -> String",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-flowgraph/flowgraph-version.fungi",
+      "name": "flowgraphVersion",
+      "qualifier": "pure",
+      "signature": "pure flow flowgraphVersion() -> String",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-fungi-scan/planned-construct-words.fungi",
+      "name": "plannedConstructWords",
+      "qualifier": "pure",
+      "signature": "pure flow plannedConstructWords() -> Array<String>",
+      "effects": [],
+      "intent": "Return the exact ordered planned construct words reserved by the scanner migration table."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-graph-algorithms/binary-dispatch-size.fungi",
+      "name": "binaryDispatchSize",
+      "qualifier": "pure",
+      "signature": "pure flow binaryDispatchSize() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-graph-project/create-package-node.fungi",
+      "name": "createPackageNode",
+      "qualifier": "pure",
+      "signature": "pure flow createPackageNode(id: String, label: String, sourcePath: String, summary: Option<String>) -> ProjectGraphNode",
+      "effects": [],
+      "intent": "Construct a package graph node with the source fields, optional summary and the canonical package tag."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-graph-project/create-package-node.fungi",
+      "name": "createPackageNodeDefault",
+      "qualifier": "pure",
+      "signature": "pure flow createPackageNodeDefault(id: String, label: String, sourcePath: String) -> ProjectGraphNode",
+      "effects": [],
+      "intent": "Construct a package graph node using the source default of no summary."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-hypha/signature.fungi",
+      "name": "sig",
+      "qualifier": "pure",
+      "signature": "pure flow sig(members: Array<String>) -> String",
+      "effects": [],
+      "intent": "Sort members by UTF-16 order and join them with commas."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-impact/build-impact-plan.fungi",
+      "name": "isDocumentationPath",
+      "qualifier": "pure",
+      "signature": "pure flow isDocumentationPath(path: String) -> Bool",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-intelligence/bm25-k1.fungi",
+      "name": "bm25K1",
+      "qualifier": "pure",
+      "signature": "pure flow bm25K1() -> Float",
+      "effects": [],
+      "intent": "Return the exact BM25 term-saturation constant K1."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-kb-graph/stale-days.fungi",
+      "name": "staleDays",
+      "qualifier": "pure",
+      "signature": "pure flow staleDays() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-naming/devtools-naming-version.fungi",
+      "name": "devtoolsNamingVersion",
+      "qualifier": "pure",
+      "signature": "pure flow devtoolsNamingVersion() -> String",
+      "effects": [],
+      "intent": "Return the devtools naming metadata version."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-package-graph/graph-dir.fungi",
+      "name": "graphDir",
+      "qualifier": "pure",
+      "signature": "pure flow graphDir() -> String",
+      "effects": [],
+      "intent": "Return the exact relative directory name used for package graph artifacts."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-pci/devtools-pci-version.fungi",
+      "name": "devtoolsPciVersion",
+      "qualifier": "pure",
+      "signature": "pure flow devtoolsPciVersion() -> String",
+      "effects": [],
+      "intent": "Return the exact declared version of the Galerina PCI developer tool."
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-project-graph/default-max-iterations.fungi",
+      "name": "defaultMaxIterations",
+      "qualifier": "pure",
+      "signature": "pure flow defaultMaxIterations() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-provenance/devtools-provenance-version.fungi",
+      "name": "devtoolsProvenanceVersion",
+      "qualifier": "pure",
+      "signature": "pure flow devtoolsProvenanceVersion() -> String",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-devtools-security/version.fungi",
+      "name": "devtoolsSecurityVersion",
+      "qualifier": "pure",
+      "signature": "pure flow devtoolsSecurityVersion() -> String",
+      "effects": [],
+      "intent": "Return the exact developer security tool package version."
+    },
+    {
+      "file": "packages/fungi/products/galerina-docs/sanitize-schema-name.fungi",
+      "name": "charCodeAt",
+      "qualifier": "pure",
+      "signature": "pure flow charCodeAt(value: String, index: Int) -> Int",
+      "effects": [],
+      "intent": "Read one string code point with a negative missing sentinel."
+    },
+    {
+      "file": "packages/fungi/products/galerina-docs/sanitize-schema-name.fungi",
+      "name": "isSchemaNameCharacter",
+      "qualifier": "pure",
+      "signature": "pure flow isSchemaNameCharacter(codePoint: Int) -> Bool",
+      "effects": [],
+      "intent": "Accept only ASCII OpenAPI component-key characters."
+    },
+    {
+      "file": "packages/fungi/products/galerina-docs/sanitize-schema-name.fungi",
+      "name": "sanitizeSchemaName",
+      "qualifier": "pure",
+      "signature": "pure flow sanitizeSchemaName(typeName: String) -> String",
+      "effects": [],
+      "intent": "Normalize an OpenAPI schema component name with a safe fallback."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-bridge-cpp/select-ternary-bridge.fungi",
+      "name": "selectTernaryBridgeTechnique",
+      "qualifier": "pure",
+      "signature": "pure flow selectTernaryBridgeTechnique() -> String",
+      "effects": [],
+      "intent": "Return the fixed technique identity shared by the CPU and GPU ternary bridge implementations."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-photonic-emulator/w-rep.fungi",
+      "name": "wRep",
+      "qualifier": "pure",
+      "signature": "pure flow wRep() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-proof-snarkjs/circuit-id.fungi",
+      "name": "circuitId",
+      "qualifier": "pure",
+      "signature": "pure flow circuitId() -> String",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-secrets-spore/modality-structured.fungi",
+      "name": "modalityStructured",
+      "qualifier": "pure",
+      "signature": "pure flow modalityStructured() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-secrets-vault/secrets-gateway-wit.fungi",
+      "name": "secretsGatewayWit",
+      "qualifier": "pure",
+      "signature": "pure flow secretsGatewayWit() -> String",
+      "effects": [],
+      "intent": "Return the exact vendor-agnostic secrets gateway WIT interface text."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-spore/header-size.fungi",
+      "name": "headerSize",
+      "qualifier": "pure",
+      "signature": "pure flow headerSize() -> Int",
+      "effects": [],
+      "intent": "Return the exact v0 spore container header size in bytes."
+    },
+    {
+      "file": "packages/fungi/products/galerina-ext-tritsocket/packed-len.fungi",
+      "name": "packedLen",
+      "qualifier": "pure",
+      "signature": "pure flow packedLen(lenTrits: Int) -> Int",
+      "effects": [],
+      "intent": "Return the number of packed bytes required for a nonnegative integer trit count."
+    },
+    {
+      "file": "packages/fungi/products/galerina-framework-api-server/default-request-timeout-ms.fungi",
+      "name": "defaultRequestTimeoutMs",
+      "qualifier": "pure",
+      "signature": "pure flow defaultRequestTimeoutMs() -> Int",
+      "effects": [],
+      "intent": "Return the exact default API request timeout in milliseconds."
+    },
+    {
+      "file": "packages/fungi/products/galerina-framework-app-kernel/max-rate-windows.fungi",
+      "name": "maxRateWindows",
+      "qualifier": "pure",
+      "signature": "pure flow maxRateWindows() -> Int",
+      "effects": [],
+      "intent": "Return the exact maximum number of live rate-limit windows."
+    },
+    {
+      "file": "packages/fungi/products/galerina-governance-telemetry/is-safe-label.fungi",
+      "name": "isSafeLabelCharacter",
+      "qualifier": "pure",
+      "signature": "pure flow isSafeLabelCharacter(character: Char) -> Bool",
+      "effects": [],
+      "intent": "Accept only ASCII letters, digits, underscore, dot, colon, and hyphen."
+    },
+    {
+      "file": "packages/fungi/products/galerina-governance-telemetry/is-safe-label.fungi",
+      "name": "isSafeLabel",
+      "qualifier": "pure",
+      "signature": "pure flow isSafeLabel(value_: String) -> Bool",
+      "effects": [],
+      "intent": "Admit a nonempty ASCII label of at most 80 allowed characters, matching SAFE_LABEL."
+    },
+    {
+      "file": "packages/fungi/products/galerina-hardware-tier/capability-preimage.fungi",
+      "name": "capabilityPreimage",
+      "qualifier": "pure",
+      "signature": "pure flow capabilityPreimage(tier: String) -> String",
+      "effects": [],
+      "intent": "Render the deterministic hardware capability plan-hash pre-image."
+    },
+    {
+      "file": "packages/fungi/products/galerina-inference-bridge-contract/oracle-agrees.fungi",
+      "name": "oracleAgrees",
+      "qualifier": "pure",
+      "signature": "pure flow oracleAgrees(candidateValue: Int, referenceValue: Int) -> Bool",
+      "effects": [],
+      "intent": "Compare two admitted signed i32 scaled accumulators for bit-exact equality."
+    },
+    {
+      "file": "packages/fungi/products/galerina-observability/default-max-routes.fungi",
+      "name": "defaultMaxRoutes",
+      "qualifier": "pure",
+      "signature": "pure flow defaultMaxRoutes() -> Int",
+      "effects": [],
+      "intent": "Return the exact default cap on distinct method and route metric series."
+    },
+    {
+      "file": "packages/fungi/products/galerina-substrate-math/flip-probability.fungi",
+      "name": "flipProbability",
+      "qualifier": "pure",
+      "signature": "pure flow flipProbability(params: SubstrateNoiseParams) -> Float64",
+      "effects": [],
+      "intent": "Compute the per-lane survive-but-flip probability and clamp it to the closed interval [0,1]."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-ai-accelerator/validate-ai-accelerator-model.fungi",
+      "name": "isPositiveStaticDimension",
+      "qualifier": "pure",
+      "signature": "pure flow isPositiveStaticDimension(value: Int) -> Bool",
+      "effects": [],
+      "intent": "Accept positive static dimensions in the executable i32 shape projection."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-ai-accelerator/validate-ai-accelerator-model.fungi",
+      "name": "validateAiAcceleratorModel",
+      "qualifier": "pure",
+      "signature": "pure flow validateAiAcceleratorModel(model: AiAcceleratorModelProfile) -> Array<AiAcceleratorDiagnostic>",
+      "effects": [],
+      "intent": "Validate model path, ONNX file extension and each input tensor's positive static dimensions in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-cpu/supports-cpu-features.fungi",
+      "name": "supportsCpuFeatures",
+      "qualifier": "pure",
+      "signature": "pure flow supportsCpuFeatures(capability: CpuTargetCapability, requiredFeatures: Array<String>) -> Bool",
+      "effects": [],
+      "intent": "Require every requested CPU SIMD feature to be present in the capability."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-gpu/validate-gpu-kernel-plan.fungi",
+      "name": "validateGpuKernelPlan",
+      "qualifier": "pure",
+      "signature": "pure flow validateGpuKernelPlan(plan: GpuKernelPlan, capabilities: Array<GpuTargetCapability>, path_: String) -> Array<GpuDiagnostic>",
+      "effects": [],
+      "intent": "Validate flow identity, known backend, advertised backend availability and non-empty GPU operations in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-gpu/validate-gpu-kernel-plan.fungi",
+      "name": "validateGpuKernelPlanDefault",
+      "qualifier": "pure",
+      "signature": "pure flow validateGpuKernelPlanDefault(plan: GpuKernelPlan, capabilities: Array<GpuTargetCapability>) -> Array<GpuDiagnostic>",
+      "effects": [],
+      "intent": "Validate a GPU kernel plan using the source default plan path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-js/validate-js-output-plan.fungi",
+      "name": "isServerOnlyImport",
+      "qualifier": "pure",
+      "signature": "pure flow isServerOnlyImport(specifier: String) -> Bool",
+      "effects": [],
+      "intent": "Recognize node-scheme and deny-by-default server-only module specifiers."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-js/validate-js-output-plan.fungi",
+      "name": "validateJsOutputPlan",
+      "qualifier": "pure",
+      "signature": "pure flow validateJsOutputPlan(plan_: JsOutputPlan, path_: String) -> Array<JsTargetDiagnostic>",
+      "effects": [],
+      "intent": "Validate JavaScript target plan metadata and fail closed on unsafe browser declarations."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-native/validate-native-target.fungi",
+      "name": "validateNativeTargetAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateNativeTargetAtPath(target_: NativeTarget, path_: String) -> Array<NativeDiagnostic>",
+      "effects": [],
+      "intent": "Validate required native target identity, optional ABI vocabulary, and execution mode in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-native/validate-native-target.fungi",
+      "name": "validateNativeTarget",
+      "qualifier": "pure",
+      "signature": "pure flow validateNativeTarget(target_: NativeTarget) -> Array<NativeDiagnostic>",
+      "effects": [],
+      "intent": "Validate a native target using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-photonic/validate-photonic-lowering-plan.fungi",
+      "name": "validatePhotonicLoweringPlanAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validatePhotonicLoweringPlanAtPath(plan_: PhotonicLoweringPlan, path_: String) -> Array<PhotonicDiagnostic>",
+      "effects": [],
+      "intent": "Validate photonic lowering status, unsupported-operation explanations, status consistency, and non-empty planning in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-photonic/validate-photonic-lowering-plan.fungi",
+      "name": "validatePhotonicLoweringPlan",
+      "qualifier": "pure",
+      "signature": "pure flow validatePhotonicLoweringPlan(plan_: PhotonicLoweringPlan) -> Array<PhotonicDiagnostic>",
+      "effects": [],
+      "intent": "Validate a photonic lowering plan using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-target-wasm/validate-wasm-artefact.fungi",
+      "name": "validateWasmArtefact",
+      "qualifier": "pure",
+      "signature": "pure flow validateWasmArtefact(artefact: WasmArtefact, path_: String) -> Array<WasmDiagnostic>",
+      "effects": [],
+      "intent": "Validate an artefact path, known runtime, and callable export presence."
+    },
+    {
+      "file": "packages/fungi/products/galerina-test/default-timeout-ms.fungi",
+      "name": "defaultTimeoutMs",
+      "qualifier": "pure",
+      "signature": "pure flow defaultTimeoutMs() -> Int",
+      "effects": [],
+      "intent": "Return the exact default harness timeout in milliseconds."
+    },
+    {
+      "file": "packages/fungi/products/galerina-tools-benchmark/validate-benchmark-config.fungi",
+      "name": "validateBenchmarkConfigAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateBenchmarkConfigAtPath(config_: BenchmarkConfig, path_: String) -> Array<BenchmarkDiagnostic>",
+      "effects": [],
+      "intent": "Validate benchmark duration ordering, PII denial, and non-empty target selection in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-tools-benchmark/validate-benchmark-config.fungi",
+      "name": "validateBenchmarkConfig",
+      "qualifier": "pure",
+      "signature": "pure flow validateBenchmarkConfig(config_: BenchmarkConfig) -> Array<BenchmarkDiagnostic>",
+      "effects": [],
+      "intent": "Validate a benchmark configuration using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-tools-myco/version.fungi",
+      "name": "mycoVersion",
+      "qualifier": "pure",
+      "signature": "pure flow mycoVersion() -> String",
+      "effects": [],
+      "intent": "Return the exact Galerina Myco tool package version."
+    },
+    {
+      "file": "packages/fungi/products/galerina-tower-citizen/is-trit.fungi",
+      "name": "isTrit",
+      "qualifier": "pure",
+      "signature": "pure flow isTrit(value: Float64) -> Bool",
+      "effects": [],
+      "intent": "Recognize exactly the three finite numeric Kleene trit values."
+    },
+    {
+      "file": "packages/fungi/products/galerina-tri-regex/version.fungi",
+      "name": "triRegexVersion",
+      "qualifier": "pure",
+      "signature": "pure flow triRegexVersion() -> String",
+      "effects": [],
+      "intent": "Return the exact TriRegex package version."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-components/validate-component-props.fungi",
+      "name": "validateComponentProps",
+      "qualifier": "pure",
+      "signature": "pure flow validateComponentProps(props: Array<ComponentProp>, path_: String) -> Array<WebComponentsDiagnostic>",
+      "effects": [],
+      "intent": "Validate component prop names, duplicate declarations, and known prop kinds in source order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-events/validate-event-payload-field.fungi",
+      "name": "validateEventPayloadFieldAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateEventPayloadFieldAtPath(field_: EventPayloadField, path_: String) -> Array<WebEventsDiagnostic>",
+      "effects": [],
+      "intent": "Validate payload-field name and known kind in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-events/validate-event-payload-field.fungi",
+      "name": "validateEventPayloadField",
+      "qualifier": "pure",
+      "signature": "pure flow validateEventPayloadField(field_: EventPayloadField) -> Array<WebEventsDiagnostic>",
+      "effects": [],
+      "intent": "Validate an event payload field using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-render/validate-renderable-content.fungi",
+      "name": "validateRenderableContent",
+      "qualifier": "pure",
+      "signature": "pure flow validateRenderableContent(content: RenderableContent, path_: String) -> Array<WebRenderDiagnostic>",
+      "effects": [],
+      "intent": "Reject unknown renderable content kinds and require a named sanitizer policy for safe_html content."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-router/validate-link-target.fungi",
+      "name": "charCodeAt",
+      "qualifier": "pure",
+      "signature": "pure flow charCodeAt(value: String, index: Int) -> Int",
+      "effects": [],
+      "intent": "Read one string code point with a negative missing sentinel."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-router/validate-link-target.fungi",
+      "name": "compactLink",
+      "qualifier": "pure",
+      "signature": "pure flow compactLink(value: String) -> String",
+      "effects": [],
+      "intent": "Remove ASCII control/space code points and normalize a link for scheme checks."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-router/validate-link-target.fungi",
+      "name": "extractScheme",
+      "qualifier": "pure",
+      "signature": "pure flow extractScheme(value: String) -> Option<String>",
+      "effects": [],
+      "intent": "Extract a leading ASCII URL scheme without accepting malformed prefixes."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-router/validate-link-target.fungi",
+      "name": "httpHostIsLocalhost",
+      "qualifier": "pure",
+      "signature": "pure flow httpHostIsLocalhost(value: String) -> Bool",
+      "effects": [],
+      "intent": "Permit cleartext HTTP only when its effective host is localhost."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-router/validate-link-target.fungi",
+      "name": "validateLinkTarget",
+      "qualifier": "pure",
+      "signature": "pure flow validateLinkTarget(href: String, path_: String) -> Array<WebRouterDiagnostic>",
+      "effects": [],
+      "intent": "Allow safe relative, HTTPS, localhost HTTP, and mailto link targets."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-state/validate-api-to-state-conversion.fungi",
+      "name": "validateApiToStateConversionAtPath",
+      "qualifier": "pure",
+      "signature": "pure flow validateApiToStateConversionAtPath(conversion_: ApiToStateConversion, path_: String) -> Array<WebStateDiagnostic>",
+      "effects": [],
+      "intent": "Validate named page-state and data-response mapping references in source diagnostic order."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web-state/validate-api-to-state-conversion.fungi",
+      "name": "validateApiToStateConversion",
+      "qualifier": "pure",
+      "signature": "pure flow validateApiToStateConversion(conversion_: ApiToStateConversion) -> Array<WebStateDiagnostic>",
+      "effects": [],
+      "intent": "Validate an API-to-state conversion using the source default diagnostic path."
+    },
+    {
+      "file": "packages/fungi/products/galerina-web/is-server-only-import.fungi",
+      "name": "isServerOnlyImport",
+      "qualifier": "pure",
+      "signature": "pure flow isServerOnlyImport(specifier: String) -> Bool",
+      "effects": [],
+      "intent": "Classify a trimmed module specifier as server-only when it uses node: or a known server builtin name."
     },
     {
       "file": "packages/fungi/products/galerina/rd0858-unit4-scalar-oracle/scalar-oracle.fungi",

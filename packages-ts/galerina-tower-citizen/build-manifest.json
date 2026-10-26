@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "7624158bde40287bf5ed760e5f8d4f6c8ae8574a36464d3685242723e2b941d7",
+    "aggregateSha256": "cd9f7b25659666f2dec2aa6e710abab9b84a162994b4cfe665d175757d467aa6",
     "algorithm": "sha256",
     "files": [
       {
@@ -104,7 +104,7 @@
       },
       {
         "path": "src/data-plane-border.ts",
-        "sha256": "cec2d914d4cee04f03f12555078cbd5ef212d44ecf194cca6183d0921ec0ebe2"
+        "sha256": "d161b77bc4abe6e9298dbe4df96e9037113058cc1810dcf25583f591a3689a7f"
       },
       {
         "path": "src/dataplane.ts",
@@ -116,7 +116,7 @@
       },
       {
         "path": "src/epistemic-type-state.ts",
-        "sha256": "5efecf1ec645fa263e375dcb46e10f416033f224e8a3ca042b5ba9296aa92040"
+        "sha256": "e01ecc8aa4fb2d85c3691b54a64ff948d78895a70ace9f24603ed91923effff0"
       },
       {
         "path": "src/gate-cache.ts",
@@ -140,7 +140,7 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "cd08b05d645cf3f8f806f542e2dedbecbc22b934d4f2df1c228549085a255176"
+        "sha256": "27a548effd92fb92afd94aa163372f878535c7897c9487fa99b157fab1430d6c"
       },
       {
         "path": "src/inference.ts",
@@ -164,7 +164,7 @@
       },
       {
         "path": "src/partial-return.ts",
-        "sha256": "bf6ae0c23039b08e5a17c35607e54111aabe467a744572b6ffbb29ec279b11d7"
+        "sha256": "6dbde29bc76574232cb658e7db372e6644e9b93e47f358aea85365c3d8fb6989"
       },
       {
         "path": "src/photonic-admission.ts",
@@ -204,7 +204,7 @@
       },
       {
         "path": "src/registry-key-rotation.ts",
-        "sha256": "729be31dc638ffacaf8cb70bb50914325e43a8bb665a1c6468f0f97edacbbae7"
+        "sha256": "ae292eba093a5ab2d620c26953bed1a3eacad5ec032610bbb606760c78bd534b"
       },
       {
         "path": "src/registry-public-verifier.ts",
@@ -228,7 +228,7 @@
       },
       {
         "path": "src/self-hosted/effective-verdict.fungi",
-        "sha256": "e239c0f945062f0680772008a1a20d95f80a5f33801a94e3560c159946485fdd"
+        "sha256": "47d08b0e5e9a5fdf6583c2f1d2b0cce82801ecda23a06ad0786d16682da5fce9"
       },
       {
         "path": "src/self-hosted/gov-3vl-diagnostic.fungi",
@@ -236,7 +236,7 @@
       },
       {
         "path": "src/self-hosted/governance-decisions.fungi",
-        "sha256": "f1098a378237e60c6a98fd903426db0656584c880eadb270af2c6379b4e288eb"
+        "sha256": "bce427529918c8d9c55c77d42468f23e1d2cc99d4df4148c068866085ab38412"
       },
       {
         "path": "src/self-hosted/inference-governance.fungi",
@@ -288,7 +288,7 @@
       },
       {
         "path": "src/self-hosted/verdict-or.fungi",
-        "sha256": "d440e77ff406a58f8c6e552089babff099507543518b2a16f07db1c49474f485"
+        "sha256": "97ea0baf949b8fe4ea2fda5c620ea50988a261aa7b0c49d0427d658eb7a8de49"
       },
       {
         "path": "src/snapshot-key-provider.ts",
@@ -308,7 +308,7 @@
       },
       {
         "path": "src/three-valued-governance.ts",
-        "sha256": "c97ea3c0fbaaca7918156eabe9e76eba4097b66e9ddf4996f6b5c12378dbb254"
+        "sha256": "efa8979cf1a821fa044475b7de19500ab752ef814e5edda9754b4f6aecd81578"
       },
       {
         "path": "src/tower-runtime.ts",
@@ -324,7 +324,7 @@
       },
       {
         "path": "src/transport-fsm.ts",
-        "sha256": "c338ad5cc2b5ec95cb17003cbf65a65e4ad7234d2657198268ac024cacc5e535"
+        "sha256": "84fa75fd00ceb411e476d5d667bef8522d28ca3bd478fd737d3436b90c341fd1"
       },
       {
         "path": "src/trit-brand.type-guard.ts",
@@ -344,7 +344,7 @@
       },
       {
         "path": "tests/authorization-boundary-fungi-conversion.test.mjs",
-        "sha256": "d81d5caa3cc10735b95b3819a5bee112b4bc8b727990ac38b1e32f858e3e667a"
+        "sha256": "fae00fb8ef1a242274b1fdb0e7c26a715afc084ef10dad37741590cff2522a71"
       },
       {
         "path": "tests/brain-brawn.test.mjs",
@@ -372,7 +372,7 @@
       },
       {
         "path": "tests/collapse-boundary-fungi-conversion.test.mjs",
-        "sha256": "ef832a6850834dbfbdd1bdee089b209209524bc3349bb29d2a1de203a0ecb336"
+        "sha256": "08f6cdf63c3c68d04f36ab83fac8f569c8728941138bcb9a815e4c0a620cb35c"
       },
       {
         "path": "tests/compiled-policy.test.mjs",
@@ -380,11 +380,11 @@
       },
       {
         "path": "tests/consensus-confidence.test.mjs",
-        "sha256": "7eb16889822bb07e158a70d37480a2c7b05a6dd45686752d7f471d5a216dc0f8"
+        "sha256": "160aaf7de13e5274fe8305635ed0dd69dc0ffd309751a23cc9b4d4f0d9729edd"
       },
       {
         "path": "tests/data-plane-border.test.mjs",
-        "sha256": "13da3e0b0a399ee871268631cdd64ed95d9190af7d84adc7ee13d54bbc0e7364"
+        "sha256": "82b8caa6898cd75669b79c80fe3268d71d74f1c554367ce20f5cbbcc01803103"
       },
       {
         "path": "tests/deadzone-dispatcher.test.mjs",
@@ -396,11 +396,15 @@
       },
       {
         "path": "tests/effective-verdict-fungi-conversion.test.mjs",
-        "sha256": "88a825323a7b3532d49cac5b6076c18997af96999396f338e3cbc6b4b1048db0"
+        "sha256": "42016de8a2cef6630b446edd4d67ad08ac87cbfc228fdda9ac8ebf3bf8ee4cb5"
       },
       {
         "path": "tests/epistemic-type-state.test.mjs",
-        "sha256": "25c98f435fe2b0423f29651a20175828f9e826fc531f14bffa8b5443433034dc"
+        "sha256": "7cdd33425a298409eacf53beb114c72d21738bf131622474d9917382953f73bc"
+      },
+      {
+        "path": "tests/fixtures/k3-fungi-marshal.mjs",
+        "sha256": "02ba348001ee667ae9196043a8d92ede141485aea5be27829db10f65985d261c"
       },
       {
         "path": "tests/fixtures/rd-1295-graph/clean-benign-sub/entry.js",
@@ -632,7 +636,7 @@
       },
       {
         "path": "tests/full-sentinel-flight.test.mjs",
-        "sha256": "7b03992addabedda00f99f27de515f0b0191e44838b11e320535ead3f4aa1809"
+        "sha256": "2a95a09342b7f985a8f73982ebc1ff4b922704c8ff7d3f1e84536187c7410a85"
       },
       {
         "path": "tests/gate-cache.test.mjs",
@@ -648,11 +652,15 @@
       },
       {
         "path": "tests/hardening-trit-conformance.test.mjs",
-        "sha256": "9ed506867f64432a7514a6f86ea3efa0c4a056cc7934ec8f74c4e2ed91060974"
+        "sha256": "660865e73fd7b737d537c37a89b4a083122431708162652c07c9e31b89fe5efc"
       },
       {
         "path": "tests/hybrid-engine.test.mjs",
         "sha256": "bfd0d4e38d295cdd5b5737e6e83c7901de40a38f35287d0c7cc73c86a7813c76"
+      },
+      {
+        "path": "tests/k3u2-epistemic-sticky-refute.test.mjs",
+        "sha256": "e125c6c8c7e66b306d8a4b1dda6d6c294ee81b7ed054fae837e6474095732d2c"
       },
       {
         "path": "tests/key-rotation.test.mjs",
@@ -668,11 +676,11 @@
       },
       {
         "path": "tests/partial-return.test.mjs",
-        "sha256": "73f3863a5ad8d57e408be7440250f3f9a5300b84e8d02b0fdf89cfd982e9c849"
+        "sha256": "80cc035209641ba685271e7dab72129e6cfd476356fdccab7202e8412a29fecb"
       },
       {
         "path": "tests/photonic-admission.test.mjs",
-        "sha256": "dd15f1740e59e65d3b6658e038d10ec2eec57ef56ec14a131ae2bdd131a814ab"
+        "sha256": "a7601ce1d69e9094edd560b8222579aef8d45c3fcd24602952b835ccb2787af0"
       },
       {
         "path": "tests/photonic-certified-admission.test.mjs",
@@ -708,7 +716,7 @@
       },
       {
         "path": "tests/rd0361-governance-decisions-execution.test.mjs",
-        "sha256": "ab1af4747aa867307a409e5dd72c7795dd36fe156ea8ab9fc277920a36a34c38"
+        "sha256": "40afe98e0d9403dd84f59de60c7bfdfd1487b9bdae371e4472f6293e41a45c76"
       },
       {
         "path": "tests/rd0361-transport-fsm-execution.test.mjs",
@@ -732,7 +740,7 @@
       },
       {
         "path": "tests/registry-key-rotation.test.mjs",
-        "sha256": "b145443e0bed6881e8d4fb34bb5b8f55eec5f3fe02813f9d0ef8186f69f02e9a"
+        "sha256": "e51b9202af5fb43986e9741101ad965f4ca63b9d6dd798a894f524233b162591"
       },
       {
         "path": "tests/registry-public-verifier.test.mjs",
@@ -776,7 +784,7 @@
       },
       {
         "path": "tests/three-valued-governance.test.mjs",
-        "sha256": "c15cb43b76293cca9f13c64bce03b5c06d7e614d51082a06406a7f3160313df4"
+        "sha256": "8b8950da8b616a972ea284a0505e3d51f0f942f90a2fa96004b687bb80edc578"
       },
       {
         "path": "tests/tower-citizen.test.mjs",
@@ -792,7 +800,7 @@
       },
       {
         "path": "tests/transport-fsm.test.mjs",
-        "sha256": "809c86898bb3a6b91dc62fe8db76b52ced587a1f1ace303f9b4f1f4d2fdcddd3"
+        "sha256": "398a5ef9d3db099463ae29fdd2462623238b5a38ac64a7a7d1132a478b834709"
       },
       {
         "path": "tests/transport-permit-data-fungi-conversion.test.mjs",
@@ -808,19 +816,19 @@
       },
       {
         "path": "tests/verdict-and-fungi-supersession.test.mjs",
-        "sha256": "fcae2303337d8f2e90b28bd026ea04e57134f306ad3a20d5d203d5d9617116d1"
+        "sha256": "a6d3d853c76e714e7a13363db3e7170a92cce289e3784c78f275113e0d4777aa"
       },
       {
         "path": "tests/verdict-mint.test.mjs",
-        "sha256": "195341788d5360486813d8faed4b8968d7ede013bfe6fbafabb1fba52c291d03"
+        "sha256": "84cf923683db315dc7a61a8f650e327fe02c4302ebc824145798da56c802276e"
       },
       {
         "path": "tests/verdict-not-fungi-conversion.test.mjs",
-        "sha256": "ff051e9e80dd71a01e9bc1679ed561c8295d4ca26e071337d5999cb9654c461b"
+        "sha256": "c044fda4fedaa7d33046cce83bd1a5146d42046c926fbca9925b3db50d8f5788"
       },
       {
         "path": "tests/verdict-or-fungi-conversion.test.mjs",
-        "sha256": "1f45f6d9e04a2979550d2a5b77a24cd4ea2f760a402d4f291b886ddce9410fce"
+        "sha256": "8a919a972397c4ebe111bac281c4f2eeb54246ccf6ca0c541ec4094d43a2247d"
       },
       {
         "path": "tsconfig.json",
