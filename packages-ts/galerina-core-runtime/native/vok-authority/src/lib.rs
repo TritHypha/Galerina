@@ -64,11 +64,17 @@ pub const K3_UNKNOWN_WIRE: i32 = -128;
 
 /// Option B lock-step bridge (Phillip 2026-10-26 07:45 GMT): during Step Y -> Step Z the VOK
 /// checker, like SLIDE's decoders, also reads legacy 0 as UNKNOWN (never Admit, never Refuse),
-/// and counts every such read. SUNSET: set this to `false` and then delete the arm at Step Z,
-/// before SLIDE becomes the default execution path (SLIDE TODO + K3COPIES plan).
+/// and counts every such read. F1 (Phillip 2026-10-26 13:40 GMT, FRAMED ONLY): that read happens
+/// only through `Trit::decode_legacy_frame` (SLIDE `decodeK3WireFrame`); a bare 0 is refused.
+/// SUNSET: set this to `false` and then delete the arm at Step Z, before SLIDE becomes the
+/// default execution path (SLIDE TODO + K3COPIES plan).
 pub const LEGACY_UNKNOWN_ZERO_BRIDGE: bool = true;
 
+/// Failure id for a bare (unframed) 0 at a VOK boundary (F1). Mirrors SLIDE `SLIDE-K3-WIRE-003`.
+pub const VOK_TRIT_BARE_LEGACY_ZERO: &str = "VOK_TRIT_BARE_LEGACY_ZERO";
+
 static LEGACY_UNKNOWN_ZERO_READS: AtomicU64 = AtomicU64::new(0);
+static BARE_LEGACY_ZERO_REFUSALS: AtomicU64 = AtomicU64::new(0);
 
 /// How a trit arrived on the wire. `LegacyUnknownZero` is the typed 'legacy-unknown-0' marker.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -83,14 +89,41 @@ pub fn legacy_unknown_zero_reads() -> u64 {
     LEGACY_UNKNOWN_ZERO_READS.load(AtomicOrdering::SeqCst)
 }
 
+/// Process-wide (saturating) count of bare 0 values refused at a VOK boundary (F1).
+#[must_use]
+pub fn bare_legacy_zero_refusals() -> u64 {
+    BARE_LEGACY_ZERO_REFUSALS.load(AtomicOrdering::SeqCst)
+}
+
 impl Trit {
-    /// Decode a K3 wire value. Fails closed with VOK_TRIT_INVALID on anything outside
-    /// {-1, -128, 1}, plus legacy 0 (counted) while the bridge is open.
-    pub fn decode_wire(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
+    fn decode_canonical(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
         match value {
             -1 => Ok((Self::Refuse, TritWireForm::Canonical)),
             K3_UNKNOWN_WIRE => Ok((Self::Unknown, TritWireForm::Canonical)),
             1 => Ok((Self::Admit, TritWireForm::Canonical)),
+            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+        }
+    }
+
+    /// Decode a bare K3 wire value at a boundary. Accepts only {-1, -128, 1}. F1 (FRAMED ONLY):
+    /// a bare 0 fails closed with VOK_TRIT_BARE_LEGACY_ZERO (counted); anything else VOK_TRIT_INVALID.
+    pub fn decode_wire(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
+        if value == 0 {
+            let _ = BARE_LEGACY_ZERO_REFUSALS.fetch_update(
+                AtomicOrdering::SeqCst,
+                AtomicOrdering::SeqCst,
+                |count| Some(count.saturating_add(1)),
+            );
+            return Err(VokFailure::new(Self::Refuse, VOK_TRIT_BARE_LEGACY_ZERO));
+        }
+        Self::decode_canonical(value)
+    }
+
+    /// Decode a value carried inside the versioned legacy wire frame (SLIDE `decodeK3WireFrame`):
+    /// canonical values as `decode_wire`, plus legacy 0 as UNKNOWN (typed, counted) while the
+    /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes.
+    pub fn decode_legacy_frame(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
+        match value {
             0 if LEGACY_UNKNOWN_ZERO_BRIDGE => {
                 let _ = LEGACY_UNKNOWN_ZERO_READS.fetch_update(
                     AtomicOrdering::SeqCst,
@@ -99,7 +132,8 @@ impl Trit {
                 );
                 Ok((Self::Unknown, TritWireForm::LegacyUnknownZero))
             }
-            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            0 => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_LEGACY_CLOSED")),
+            _ => Self::decode_canonical(value),
         }
     }
 
