@@ -220,3 +220,19 @@ test("EA-R11 a fault after boot latches: has() false, use() silent, epoch advanc
     assert.equal(r.provider.has(NAME_A), false, "a throwing probe counts as a fault (UNKNOWN refuses)");
   });
 });
+// ---------------- EA-R13 (gcw-k3u113 merge-check grid finding): a leading UTF-8 BOM is non-canonical input ----------------
+// RED FIRST: on 2b11725e1 the fatal TextDecoder silently strips a leading BOM, so a BOM-prefixed file is admitted.
+// Zero-trust choice: refuse 111 (structural), like any other byte the line grammar does not allow.
+// Rejected: silent strip (the native and SLIDE byte parsers would disagree with the host), strip-and-count (a lenient path to remove later).
+test("EA-R13 a leading UTF-8 byte-order mark refuses 111 with no key and no value", async () => {
+  const mod = await host();
+  const a = canaryHex(32);
+  const b = canaryHex(16);
+  await withEnv("\uFEFF" + NAME_A + "=" + a + "\n" + NAME_B + "=" + b + "\n", async (envPath) => {
+    const err = await refusal(mod, base({ envPath }));
+    assert.equal(err.code, 111, "BOM refuses 111");
+    assert.equal(err.key, "", "structural refusal names no key");
+    assertNoLeak(renderings(err), a, "BOM error");
+    assertNoLeak(renderings(err), b, "BOM error (other key)");
+  });
+});
