@@ -168,7 +168,11 @@ fn legacy_unknown_zero_is_typed_counted_and_never_admit() {
 fn sunset_step_z_legacy_unknown_zero_bridge_still_open() {
     // SUNSET (Step Z, before SLIDE is the default execution path): this test FLIPS when the
     // bridge closes. Then assert !LEGACY_UNKNOWN_ZERO_BRIDGE and that 0 fails VOK_TRIT_INVALID.
-    assert!(LEGACY_UNKNOWN_ZERO_BRIDGE);
+    assert_eq!(
+        Trit::decode_wire(0).map(|(_, form)| form),
+        Ok(TritWireForm::LegacyUnknownZero),
+        "Option B bridge is still open (LEGACY_UNKNOWN_ZERO_BRIDGE = {LEGACY_UNKNOWN_ZERO_BRIDGE})"
+    );
 }
 
 #[test]
