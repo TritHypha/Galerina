@@ -126,15 +126,49 @@ fn duplicate_lease(handle: &LeaseHandle) -> LeaseHandle {
 
 #[test]
 fn trit_accepts_only_the_closed_k3_domain() {
+    // K3U2 lock-step (Phillip 2026-10-26 07:45 GMT, option B): canonical UNKNOWN on the wire is -128.
     assert_eq!(Trit::try_from(-1), Ok(Trit::Refuse));
-    assert_eq!(Trit::try_from(0), Ok(Trit::Unknown));
+    assert_eq!(Trit::try_from(-128), Ok(Trit::Unknown));
     assert_eq!(Trit::try_from(1), Ok(Trit::Admit));
+    // Bounded Step Y -> Step Z bridge: legacy 0 reads as UNKNOWN, never Admit and never Refuse.
+    assert_eq!(Trit::try_from(0), Ok(Trit::Unknown));
 
-    for malformed in [i32::MIN, -2, 2, 7, i32::MAX] {
+    for malformed in [i32::MIN, -129, -127, -2, 2, 7, 127, 128, 255, i32::MAX] {
         let error = Trit::try_from(malformed).expect_err("malformed trit must refuse");
         assert_eq!(error.outcome(), Trit::Refuse);
         assert_eq!(error.failure_id(), "VOK_TRIT_INVALID");
     }
+}
+
+#[test]
+fn trit_wire_never_emits_zero_and_round_trips() {
+    assert_eq!(K3_UNKNOWN_WIRE, -128);
+    assert_eq!(Trit::Unknown.to_wire(), -128);
+    for trit in [Trit::Refuse, Trit::Unknown, Trit::Admit] {
+        assert_ne!(trit.to_wire(), 0, "Galerina/VOK must never emit 0 as UNKNOWN");
+        assert_eq!(Trit::decode_wire(trit.to_wire()), Ok((trit, TritWireForm::Canonical)));
+    }
+}
+
+#[test]
+fn legacy_unknown_zero_is_typed_counted_and_never_admit() {
+    let before = legacy_unknown_zero_reads();
+    let decoded = Trit::decode_wire(0).expect("bridge open: legacy 0 is UNKNOWN");
+    assert_eq!(decoded, (Trit::Unknown, TritWireForm::LegacyUnknownZero));
+    assert_ne!(decoded.0, Trit::Admit);
+    assert_ne!(decoded.0, Trit::Refuse);
+    assert!(legacy_unknown_zero_reads() > before, "legacy-unknown-0 read must be counted");
+    assert_eq!(
+        Trit::decode_wire(-128),
+        Ok((Trit::Unknown, TritWireForm::Canonical))
+    );
+}
+
+#[test]
+fn sunset_step_z_legacy_unknown_zero_bridge_still_open() {
+    // SUNSET (Step Z, before SLIDE is the default execution path): this test FLIPS when the
+    // bridge closes. Then assert !LEGACY_UNKNOWN_ZERO_BRIDGE and that 0 fails VOK_TRIT_INVALID.
+    assert!(LEGACY_UNKNOWN_ZERO_BRIDGE);
 }
 
 #[test]

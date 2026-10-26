@@ -4,6 +4,7 @@ use std::collections::BTreeSet;
 use std::fmt;
 use std::marker::PhantomData;
 use std::rc::Rc;
+use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
 
 mod memory_policy;
 #[allow(unsafe_code)]
@@ -47,6 +48,9 @@ pub const MAX_OBJECT_BYTES_LIMIT: usize = 64 * 1024 * 1024;
 pub const MAX_NONCE_HISTORY: usize = 262_145;
 pub const RETURN_U64_OBJECT_BYTES: usize = native::OBJECT_BYTES;
 
+/// VOK lattice trit. The enum discriminants are the INTERNAL lattice order used by
+/// `authority_verdict` (Refuse < Unknown < Admit); they are NOT the K3 wire encoding.
+/// Use `Trit::decode_wire` / `TryFrom<i32>` to read and `Trit::to_wire` to write: UNKNOWN is -128 on the wire.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(i8)]
 pub enum Trit {
@@ -55,16 +59,66 @@ pub enum Trit {
     Admit = 1,
 }
 
+/// Canonical K3 UNKNOWN wire value. Galerina emits only this for UNKNOWN, never 0.
+pub const K3_UNKNOWN_WIRE: i32 = -128;
+
+/// Option B lock-step bridge (Phillip 2026-10-26 07:45 GMT): during Step Y -> Step Z the VOK
+/// checker, like SLIDE's decoders, also reads legacy 0 as UNKNOWN (never Admit, never Refuse),
+/// and counts every such read. SUNSET: set this to `false` and then delete the arm at Step Z,
+/// before SLIDE becomes the default execution path (SLIDE TODO + K3COPIES plan).
+pub const LEGACY_UNKNOWN_ZERO_BRIDGE: bool = true;
+
+static LEGACY_UNKNOWN_ZERO_READS: AtomicU64 = AtomicU64::new(0);
+
+/// How a trit arrived on the wire. `LegacyUnknownZero` is the typed 'legacy-unknown-0' marker.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TritWireForm {
+    Canonical,
+    LegacyUnknownZero,
+}
+
+/// Process-wide (saturating) count of legacy-0 UNKNOWN reads, so the bridge can be measured and removed.
+#[must_use]
+pub fn legacy_unknown_zero_reads() -> u64 {
+    LEGACY_UNKNOWN_ZERO_READS.load(AtomicOrdering::SeqCst)
+}
+
+impl Trit {
+    /// Decode a K3 wire value. Fails closed with VOK_TRIT_INVALID on anything outside
+    /// {-1, -128, 1}, plus legacy 0 (counted) while the bridge is open.
+    pub fn decode_wire(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
+        match value {
+            -1 => Ok((Self::Refuse, TritWireForm::Canonical)),
+            K3_UNKNOWN_WIRE => Ok((Self::Unknown, TritWireForm::Canonical)),
+            1 => Ok((Self::Admit, TritWireForm::Canonical)),
+            0 if LEGACY_UNKNOWN_ZERO_BRIDGE => {
+                let _ = LEGACY_UNKNOWN_ZERO_READS.fetch_update(
+                    AtomicOrdering::SeqCst,
+                    AtomicOrdering::SeqCst,
+                    |count| Some(count.saturating_add(1)),
+                );
+                Ok((Self::Unknown, TritWireForm::LegacyUnknownZero))
+            }
+            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+        }
+    }
+
+    /// Canonical K3 wire value. Never 0: UNKNOWN is -128.
+    #[must_use]
+    pub const fn to_wire(self) -> i32 {
+        match self {
+            Self::Refuse => -1,
+            Self::Unknown => K3_UNKNOWN_WIRE,
+            Self::Admit => 1,
+        }
+    }
+}
+
 impl TryFrom<i32> for Trit {
     type Error = VokFailure;
 
     fn try_from(value: i32) -> Result<Self, Self::Error> {
-        match value {
-            -1 => Ok(Self::Refuse),
-            0 => Ok(Self::Unknown),
-            1 => Ok(Self::Admit),
-            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
-        }
+        Self::decode_wire(value).map(|(trit, _form)| trit)
     }
 }
 
