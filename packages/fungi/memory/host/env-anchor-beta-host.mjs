@@ -150,7 +150,7 @@ export async function loadEnvAnchorBeta(opts) {
     } else {
       let text = "";
       try {
-        text = new TextDecoder("utf-8", { fatal: true }).decode(buf);
+        text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(buf);
       } catch {
         structural = true;
       }
