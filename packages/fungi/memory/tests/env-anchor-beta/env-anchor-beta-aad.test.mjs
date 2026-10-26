@@ -114,6 +114,8 @@ test("EA-R10f sizes pinned and bindings typed: wrong key/nonce/tag size or empty
   refusedWith(m, () => m.openBound(k, P, R, { iv: s.iv, ct: s.ct, tag: s.tag.slice(0, 12) }), 111);
   refusedWith(m, () => m.openBound(k, P, R, { iv: s.iv.slice(0, 8), ct: s.ct, tag: s.tag }), 111);
   refusedWith(m, () => m.openBound(k, P, R, { iv: s.iv, ct: s.ct, tag: s.tag, extra: 1 }), 111);
+  // mutant-killer for AM7 (gcw-k3u110): an extra field sorting after "tag" must still refuse.
+  refusedWith(m, () => m.openBound(k, P, R, { iv: s.iv, ct: s.ct, tag: s.tag, zz: 1 }), 111);
 });
 
 test("EA-R10g every seal uses a fresh nonce", async () => {
