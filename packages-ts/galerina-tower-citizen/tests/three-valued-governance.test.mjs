@@ -309,3 +309,12 @@ test("empty clause set is INDETERMINATE → deny (deny-by-default, not vacuous a
   assert.equal(allOf([Verdict.ALLOW]), Verdict.ALLOW);
   assert.equal(anyOf([Verdict.ALLOW]), Verdict.ALLOW);
 });
+
+// K3U2 (2026-10-26): vAndTensor has its own min site (`out[k] = asVerdict(minTrit(a, b))`), separate from the
+// scalar vAnd. Pin its No-Coercion direction here so audit-mutation 'no-coercion-vandtensor-lift' (min->max) is
+// killed by this governance test, not only by vand-tensor.test.mjs.
+import { vAndTensor } from "../dist/index.js";
+test("vAndTensor: an untrusted DENY element LOWERS an ALLOW core (min, never max)", () => {
+  const out = vAndTensor(Int8Array.from([Verdict.ALLOW, Verdict.NEUTRAL]), Int8Array.from([Verdict.DENY, Verdict.ALLOW]));
+  assert.deepEqual([...out], [Verdict.DENY, Verdict.NEUTRAL]);
+});

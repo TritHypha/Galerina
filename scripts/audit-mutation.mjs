@@ -267,10 +267,23 @@ const QUORUM_GOV = [
     // Anchor updated 2026-07-18: S0 (arith-Trit brand) replaced the `as Verdict` cast with the validating
     // `asVerdict()` mint, so the old `return minTrit(a, b) as Verdict;` no longer exists. Same mutation
     // (min -> max) on the current `asVerdict(minTrit(a, b))` form.
-    find: "asVerdict(minTrit(a, b))",
-    replace: "asVerdict(maxTrit(a, b))",
+    // Re-pointed 2026-10-26 (K3U2): the K3U2 rewrite of scalar vAnd checks UNKNOWN first and then returns
+    // `asVerdict(minTrit(x, y))`, so the old `asVerdict(minTrit(a, b))` anchor only matched the vAndTensor fold
+    // (a different function the governance test did not exercise) and the mutant SURVIVED. Same min->max swap,
+    // now on the scalar vAnd; vAndTensor gets its own mutant (no-coercion-vandtensor-lift) below.
+    find: "return asVerdict(minTrit(x, y));",
+    replace: "return asVerdict(maxTrit(x, y));",
     cwd: TC, build: TC_BUILD, test: TC_GOV_TEST,
     desc: "vAnd (Kleene AND / No-Coercion) swapped min->max: an untrusted DENY operand no longer LOWERS the verdict (a lift) — vAnd(ALLOW,DENY) would yield ALLOW",
+  },
+  {
+    id: "no-coercion-vandtensor-lift",
+    file: `${TC}/src/three-valued-governance.ts`,
+    // Added 2026-10-26 (K3U2): vAndTensor folds with its own minTrit, so it needs its own min->max mutant.
+    find: "out[k] = asVerdict(minTrit(a, b));",
+    replace: "out[k] = asVerdict(maxTrit(a, b));",
+    cwd: TC, build: TC_BUILD, test: TC_GOV_TEST,
+    desc: "vAndTensor (element-wise No-Coercion fold) swapped min->max: an untrusted DENY element no longer LOWERS an ALLOW core (a lift)",
   },
   {
     id: "collapse-indeterminate-to-allow",
