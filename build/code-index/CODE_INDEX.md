@@ -1361,7 +1361,7 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 | FUNGI-MB-09 | — | — | — | 0 | 0 | 1 |
 | FUNGI-MB-10 | — | — | — | 0 | 0 | 1 |
 | FUNGI-MB-11 | — | — | — | 0 | 0 | 9 |
-| FUNGI-MB-12 | — | — | — | 0 | 3 | 4 |
+| FUNGI-MB-12 | — | — | — | 0 | 3 | 5 |
 | FUNGI-MB-13 | — | — | — | 0 | 0 | 5 |
 | FUNGI-MB-14 | — | — | — | 0 | 0 | 3 |
 | FUNGI-MB-15 | — | — | — | 0 | 0 | 4 |
@@ -2202,7 +2202,7 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 | FUNGI-TYPE-004 | INVALID_BINARY_OPERATION | error | — | 19 | 148 | 21 |
 | FUNGI-TYPE-005 | INVALID_CALL_ARG_TYPE | error | — | 8 | 59 | 9 |
 | FUNGI-TYPE-006 | — | — | — | 0 | 0 | 5 |
-| FUNGI-TYPE-007 | INVALID_ARGUMENT_COUNT | error | — | 6 | 21 | 4 |
+| FUNGI-TYPE-007 | INVALID_ARGUMENT_COUNT | error | — | 6 | 21 | 3 |
 | FUNGI-TYPE-008 | INVALID_RETURN_TYPE | error | — | 1 | 82 | 5 |
 | FUNGI-TYPE-009 | INVALID_GENERIC_INSTANTIATION | error | — | 1 | 100 | 18 |
 | FUNGI-TYPE-010 | UNSATISFIED_GENERIC_CONSTRAINT | error | packages-ts/galerina-core-compiler/src/index.ts:855 | 0 | 1 | 0 |
