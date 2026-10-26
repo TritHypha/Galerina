@@ -14,7 +14,7 @@
 //  - errors carry { code, key, rule } only, never a value, a prefix or a line; the file buffer is zeroed.
 //  - a fault (probe true OR probe throws) latches for the process lifetime and advances the epoch once.
 //  - any return code outside the closed set refuses 111 (rejected: trust the asset's range).
-import { createHash } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { lstatSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -203,6 +203,77 @@ export function admitAad(purposeMatch, rootMatch) {
   const verdict = decide("envAadAdmit", [0, purposeMatch, 0, rootMatch]);
   if (verdict !== 100) refuse(verdict, "");
   return true;
+}
+
+// EA-R10 AEAD binding (gcw-k3u110). AAD = tag 0x00 u32be(len purpose) purpose u32be(len root) root: length-prefixed
+// so no two (purpose, root) pairs share an AAD. AES-256-GCM, fresh random 12-byte nonce per seal, 16-byte tag pinned.
+// Key 32 bytes, nonce 12, tag 16, purpose/root in a closed lower-case alphabet; anything else refuses 111.
+// A GCM failure on open (other purpose, other root, any touched byte) is mapped by the native envAadAdmit flow (183).
+const AAD_TAG = "galerina.env-anchor-beta.aad.v1";
+const BIND_RE = /^[a-z0-9][a-z0-9._:-]{0,127}$/;
+
+function bytesOf(x, n) {
+  if (!(x instanceof Uint8Array) || (n !== undefined && x.length !== n)) refuse(111, "");
+  return x;
+}
+
+function bindingOf(v) {
+  if (typeof v !== "string" || BIND_RE.test(v) !== true) refuse(111, "");
+  return Buffer.from(v, "utf8");
+}
+
+function u32(n) {
+  const b = Buffer.alloc(4);
+  b.writeUInt32BE(n);
+  return b;
+}
+
+export function boundAad(purpose, rootId) {
+  const p = bindingOf(purpose);
+  const r = bindingOf(rootId);
+  return new Uint8Array(Buffer.concat([Buffer.from(AAD_TAG, "utf8"), Buffer.from([0]), u32(p.length), p, u32(r.length), r]));
+}
+
+export function sealBound(key, purpose, rootId, plaintext) {
+  bytesOf(key, 32);
+  bytesOf(plaintext);
+  const aad = boundAad(purpose, rootId);
+  admitAad(1, 1);
+  const iv = randomBytes(12);
+  const c = createCipheriv("aes-256-gcm", key, iv, { authTagLength: 16 });
+  c.setAAD(aad);
+  const ct = Buffer.concat([c.update(plaintext), c.final()]);
+  return Object.freeze({ iv: new Uint8Array(iv), ct: new Uint8Array(ct), tag: new Uint8Array(c.getAuthTag()) });
+}
+
+export function openBound(key, purpose, rootId, sealed) {
+  bytesOf(key, 32);
+  if (sealed === null || typeof sealed !== "object" || Array.isArray(sealed)) refuse(111, "");
+  const ks = Object.keys(sealed).sort();
+  if (ks.length !== 3 || ks[0] !== "ct" || ks[1] !== "iv" || ks[2] !== "tag") refuse(111, "");
+  bytesOf(sealed.iv, 12);
+  bytesOf(sealed.tag, 16);
+  bytesOf(sealed.ct);
+  const aad = boundAad(purpose, rootId);
+  let out = null;
+  try {
+    const d = createDecipheriv("aes-256-gcm", key, sealed.iv, { authTagLength: 16 });
+    d.setAAD(aad);
+    d.setAuthTag(sealed.tag);
+    out = Buffer.concat([d.update(sealed.ct), d.final()]);
+  } catch {
+    out = null;
+  }
+  const ok = out === null ? 0 : 1;
+  try {
+    admitAad(ok, ok);
+  } catch (e) {
+    if (out !== null) out.fill(0);
+    throw e;
+  }
+  const view = new Uint8Array(out);
+  out.fill(0);
+  return view;
 }
 
 function buildProvider(values, faultProbe) {
