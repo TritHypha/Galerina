@@ -1,6 +1,6 @@
 #!/bin/sh
 # =============================================================================
-# Galerina pre-commit hook — keep the generated //fungi: dependency metadata current
+# Galerina pre-commit hook - keep the generated //fungi: dependency metadata current
 # WITHOUT letting `galerina build` mutate your source.
 #
 # This is the "keep build pure + use a hook" alternative to `build --package`'s
@@ -14,15 +14,15 @@
 #   then ensure it is executable:  chmod +x .git/hooks/pre-commit
 #
 # Set APP_DIR to your app's source root so the cross-file analysis (USES/USEDBY/
-# IMPACT) is computed over the whole app — NOT the whole monorepo. Default ".".
+# IMPACT) is computed over the whole app - NOT the whole monorepo. Default ".".
 # =============================================================================
 set -e
 
 APP_DIR="${GALERINA_APP_DIR:-.}"
 
 # Fast exit: only do work when this commit actually touches .fungi files.
-staged_fungi-=$(git diff --cached --name-only --diff-filter=ACM -- '*.fungi')
-[ -z "$staged_fungi-" ] && exit 0
+staged_fungi=$(git diff --cached --name-only --diff-filter=ACM -- '*.fungi')
+[ -z "$staged_fungi" ] && exit 0
 
 # Refresh the whole app's //fungi: blocks in place (cross-file: a flow called from
 # another file is never mislabelled "safe to delete"). Swap `node galerina.mjs`
@@ -30,7 +30,7 @@ staged_fungi-=$(git diff --cached --name-only --diff-filter=ACM -- '*.fungi')
 node galerina.mjs deps --all "$APP_DIR" --write >/dev/null
 
 # Re-stage any .fungi the refresh changed, so the commit includes current metadata.
-# (A dependency edit in one file can change another file's USEDBY — that file is
+# (A dependency edit in one file can change another file's USEDBY - that file is
 # re-staged too, which is correct: its metadata genuinely changed in this commit.)
 changed=$(git diff --name-only -- '*.fungi')
 if [ -n "$changed" ]; then
