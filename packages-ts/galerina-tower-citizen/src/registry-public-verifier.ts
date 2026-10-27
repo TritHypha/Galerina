@@ -13,10 +13,25 @@ const CONTEXT = Object.freeze({
     "galerina.registry.package.manifest.sig.v1",
   ),
   rotation: new TextEncoder().encode("galerina.registry.rotation.proof.v1"),
+  // Root-signed rotation policy (registry-rotation-policy.ts) and the policy
+  // issuer's delegations. Distinct contexts keep these signatures from being
+  // replayed as root delegations, index signatures or manifest signatures.
+  rotationPolicy: new TextEncoder().encode(
+    "galerina.registry.rotation-policy.sig.v1",
+  ),
+  rotationIssuer: new TextEncoder().encode(
+    "galerina.registry.delegation.issued.sig.v1",
+  ),
 });
 
 export interface RegistryPublicVerifierInput {
-  readonly role: "root" | "operational" | "packageManifest" | "rotation";
+  readonly role:
+    | "root"
+    | "operational"
+    | "packageManifest"
+    | "rotation"
+    | "rotationPolicy"
+    | "rotationIssuer";
   readonly keyId: string;
   readonly ed25519PublicKeyPem: string;
   readonly mlDsa65PublicKey: Uint8Array;
@@ -79,6 +94,8 @@ export function createRegistryPublicVerifiers(
     && input.role !== "operational"
     && input.role !== "packageManifest"
     && input.role !== "rotation"
+    && input.role !== "rotationPolicy"
+    && input.role !== "rotationIssuer"
   ) {
     throw new TypeError("Registry signing role is not admitted.");
   }

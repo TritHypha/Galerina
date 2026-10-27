@@ -498,6 +498,14 @@ it; publish both public halves; overlap verification; sign a strictly newer
 index; then mark the prior operational key verify-only/retired for new
 production acts. Keep its public material.
 
+**Policy-based rotation (replaces per-delegation root signing for routine rotation once a
+policy is signed):** the root signs one rotation policy (`galerina-registry-rotation-policy/v1`,
+<= 730 days) with `scripts/registry-rotation-cli.mjs sign-policy`, which requires the owner to retype the
+policy digest and verifies the result before writing. An issuer key pinned in that policy then issues
+short-lived operational delegations with overlap and no gap. The root is needed again only when the policy
+ends, an incident revokes a key, or the bounds change. All custody rules in section 3 apply to the policy
+signing act. See [`registry-rotation-policy-v1.md`](./registry-rotation-policy-v1.md).
+
 **Suspected compromise:** stop publication; append a revocation; distribute the
 revocation state through the pinned trust path; mint and authorize a new key;
 re-review and re-sign the current index. A valid signature by a revoked key is

@@ -60,6 +60,7 @@
       "src/self-hosted/registry-index-v2-context.fungi",
       "src/self-hosted/registry-package-manifest-v1-context.fungi",
       "src/self-hosted/registry-package-manifest-v1-prefix.fungi",
+      "src/self-hosted/registry-rotation-policy.fungi",
       "src/self-hosted/route-defaults.fungi",
       "src/self-hosted/secret-gate.fungi"
     ]

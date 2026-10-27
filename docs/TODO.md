@@ -31,6 +31,31 @@ NON_AUTHORIZING** for deployment; only the code-level gate changes.
   enforcement; keeping the code gate closed although every code-level row
   passes.
 
+## Registry rotation policy - 2026-10-27 (branch `grok/registry-rotation-policy-20261027`, pushed for review; merge needs owner yes)
+
+- [x] Built the policy-based rotation tooling so delegations never lapse and the owner rarely signs:
+  schema/format/threat model in [`docs/security/registry-rotation-policy-v1.md`](./security/registry-rotation-policy-v1.md),
+  fail-closed verifier `packages-ts/galerina-framework-app-kernel/src/registry-rotation-policy.ts`,
+  `.fungi` decision twin `src/self-hosted/registry-rotation-policy.fungi` (checker-clean, differential-tested,
+  NOT build-wired, #143), issuer/ceremony CLI `scripts/registry-rotation-cli.mjs` (`--self-test` uses throwaway keys).
+  Nothing was signed or activated; no min-serial floor was raised.
+- [ ] **Owner: ONE root-signing ceremony** for the rotation policy (steps in the paste-ready prompt
+  `rotation-policy-ceremony-prompt-20261027.md`). The policy's `anchor` is serial 2 of `f3172a48372bfb23` and its
+  `firstRotation` moves the registry to the Galerina key `0da09262513e2a8d`, so the SLIDE cross-project key
+  issue closes as part of the first issuance. This replaces the "Serial 3 before `2027-01-25T15:45:00.000Z`" item
+  once the policy is signed AND the first delegation is issued by `2027-01-18T15:45:00.000Z`
+  (anchor end minus the 7-day minimum overlap; later is refused as a gap).
+- [ ] Generate/designate the **issuer key** on a dedicated machine (outside the repo) and publish its public bundle
+  to `governance/` before the ceremony; decide custody and revocation drill.
+- [ ] Publish the `0da09262513e2a8d` public bundle (`export-public`) and admit it; re-sign the auth manifest and
+  index under it (the separate publication step).
+- [ ] Opt-in `registry-runtime.ts` loading of `galerina-registry-delegation/v2` + the policy (default off); until
+  then the existing v1 loader is the only consumer. Then decide the min-serial floors.
+- [ ] Owner decision: `gen-package-standard-manifests.mjs --write --accept-lock-drift` for the new tracked files
+  (changes `governance/flat-package-root-lock.json`); not taken silently.
+- [x] Rebased onto main `ef5ee1d3d` after `grok/docs-s13-split-gate-20261027` merged, then pushed (one-branch rule).
+- Limitation: renewing the policy needs a fresh root-signed anchor; see the doc, section 9.
+
 ## Registry delegation serial 2 — 2026-10-26
 
 - [x] Owner root-signed serial 2 of the registry delegation on 2026-10-26: root
