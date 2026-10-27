@@ -66,6 +66,14 @@ pub enum Trit {
 /// Canonical K3 UNKNOWN wire value. Galerina emits only this for UNKNOWN, never 0.
 pub const K3_UNKNOWN_WIRE: i32 = -128;
 
+/// Unsigned K3 byte table. These three literals are the only byte table in this crate.
+pub const K3_BYTE_ADMIT: u8 = 0x01;
+pub const K3_BYTE_DENY: u8 = 0xFF;
+pub const K3_BYTE_UNKNOWN: u8 = 0x80;
+pub const K3_I8_ADMIT: i32 = 1;
+pub const K3_I8_DENY: i32 = -1;
+pub const K3_I8_UNKNOWN: i32 = K3_UNKNOWN_WIRE;
+
 /// Option B lock-step bridge (Phillip 2026-10-26 07:45 GMT): during Step Y -> Step Z the VOK
 /// checker, like SLIDE's decoders, also reads legacy 0 as UNKNOWN (never Admit, never Refuse),
 /// and counts every such read. F1 (Phillip 2026-10-26 13:40 GMT, FRAMED ONLY): that read happens
@@ -100,14 +108,34 @@ pub fn bare_legacy_zero_refusals() -> u64 {
 }
 
 impl Trit {
-    /// Step 2a stub: empty table, fail closed. Green commit fills the named-constant match.
-    pub fn decode_wire_u8(_byte: u8) -> Result<(Self, TritWireForm), VokFailure> {
-        Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID"))
+    fn refuse_bare_legacy_zero() -> VokFailure {
+        let _ = BARE_LEGACY_ZERO_REFUSALS.fetch_update(
+            AtomicOrdering::SeqCst,
+            AtomicOrdering::SeqCst,
+            |count| Some(count.saturating_add(1)),
+        );
+        VokFailure::new(Self::Refuse, VOK_TRIT_BARE_LEGACY_ZERO)
     }
 
-    /// Step 2a stub: wrong encoder emits 0. Green commit maps lattice 0 to 0x80.
-    pub fn encode_lattice_u8(_lattice: i32) -> Result<u8, VokFailure> {
-        Ok(0)
+    /// Unsigned K3 byte reader. Match is over the three named byte constants; default fail closed.
+    pub fn decode_wire_u8(byte: u8) -> Result<(Self, TritWireForm), VokFailure> {
+        match byte {
+            K3_BYTE_ADMIT => Ok((Self::Admit, TritWireForm::Canonical)),
+            K3_BYTE_DENY => Ok((Self::Refuse, TritWireForm::Canonical)),
+            K3_BYTE_UNKNOWN => Ok((Self::Unknown, TritWireForm::Canonical)),
+            0 => Err(Self::refuse_bare_legacy_zero()),
+            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+        }
+    }
+
+    /// Lattice {-1, 0, 1} to unsigned K3 byte. Lattice 0 encodes to K3_BYTE_UNKNOWN, never 0.
+    pub fn encode_lattice_u8(lattice: i32) -> Result<u8, VokFailure> {
+        match lattice {
+            -1 => Ok(K3_BYTE_DENY),
+            0 => Ok(K3_BYTE_UNKNOWN),
+            1 => Ok(K3_BYTE_ADMIT),
+            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+        }
     }
 
     fn decode_canonical(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
@@ -119,18 +147,18 @@ impl Trit {
         }
     }
 
-    /// Decode a bare K3 wire value at a boundary. Accepts only {-1, -128, 1}. F1 (FRAMED ONLY):
-    /// a bare 0 fails closed with VOK_TRIT_BARE_LEGACY_ZERO (counted); anything else VOK_TRIT_INVALID.
+    /// Signed wrapper over `decode_wire_u8`. Maps only the three sign-extended I8 constants
+    /// to the named bytes, then calls the reader. Every other i32, including 0, 128 and 255,
+    /// is refused before the reader. Bare 0 stays VOK_TRIT_BARE_LEGACY_ZERO.
     pub fn decode_wire(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
-        if value == 0 {
-            let _ = BARE_LEGACY_ZERO_REFUSALS.fetch_update(
-                AtomicOrdering::SeqCst,
-                AtomicOrdering::SeqCst,
-                |count| Some(count.saturating_add(1)),
-            );
-            return Err(VokFailure::new(Self::Refuse, VOK_TRIT_BARE_LEGACY_ZERO));
-        }
-        Self::decode_canonical(value)
+        let byte = match value {
+            K3_I8_ADMIT => K3_BYTE_ADMIT,
+            K3_I8_DENY => K3_BYTE_DENY,
+            K3_I8_UNKNOWN => K3_BYTE_UNKNOWN,
+            0 => return Err(Self::refuse_bare_legacy_zero()),
+            _ => return Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+        };
+        Self::decode_wire_u8(byte)
     }
 
     /// Decode a value carried inside the versioned legacy wire frame (SLIDE `decodeK3WireFrame`):
