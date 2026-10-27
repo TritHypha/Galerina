@@ -17,6 +17,8 @@ const CONTEXTS = {
   operational: "galerina.registry.index.sig.v2",
   packageManifest: "galerina.registry.package.manifest.sig.v1",
   rotation: "galerina.registry.rotation.proof.v1",
+  rotationPolicy: "galerina.registry.rotation-policy.sig.v1",
+  rotationIssuer: "galerina.registry.delegation.issued.sig.v1",
 };
 
 function canonicalBase64(bytes) {
@@ -53,6 +55,8 @@ describe("registry public verifier", () => {
     "operational",
     "packageManifest",
     "rotation",
+    "rotationPolicy",
+    "rotationIssuer",
   ]) {
     it(`verifies both ${role} signature halves with the admitted context`, () => {
       const value = fixture(role);
@@ -123,5 +127,20 @@ describe("registry public verifier", () => {
       ...root.input,
       mlDsa65PublicKey: new Uint8Array(1),
     }));
+  });
+
+  it("keeps the rotation-policy and rotation-issuer contexts from replaying across roles", () => {
+    for (const [signedRole, otherRole] of [
+      ["rotationPolicy", "root"],
+      ["rotationPolicy", "rotationIssuer"],
+      ["rotationIssuer", "root"],
+      ["rotationIssuer", "operational"],
+      ["root", "rotationPolicy"],
+    ]) {
+      const value = fixture(signedRole);
+      const other = createRegistryPublicVerifiers({ ...value.input, role: otherRole });
+      assert.equal(other.ed25519(value.message, value.edSignature, KEY_ID), true);
+      assert.notEqual(other.mlDsa65(value.message, value.mlSignature, KEY_ID), true);
+    }
   });
 });

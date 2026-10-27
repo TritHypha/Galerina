@@ -108,6 +108,12 @@ act on and the default stops lying.
 
 ## 5. Open items
 
+- [ ] **Rotation policy (pending owner ceremony).** The offline root will sign one
+  `galerina-registry-rotation-policy/v1` (see [`registry-rotation-policy-v1.md`](./registry-rotation-policy-v1.md));
+  an issuer key (new, separate, pinned in the policy, cannot sign content) then issues short-lived operational
+  delegations with overlap. Its anchor is serial 2 of the SLIDE key `f3172a48372bfb23` (denied for new delegations);
+  its first rotation moves to Galerina key `0da09262513e2a8d` (byte-pinned in the policy; its public bundle is not in
+  `governance/` yet). Not signed, not activated; floors not raised.
 - [ ] **Settle `942d6b2726b0a991`** — does `r6-parity.test.mjs` verify its signatures or just read the
       manifests? Decides fungible-vs-load-bearing. **Nothing should be retired or wiped until this is
       answered.**

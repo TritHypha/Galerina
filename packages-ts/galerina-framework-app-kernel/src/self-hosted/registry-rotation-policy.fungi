@@ -1,0 +1,132 @@
+@version 1
+/// @file: registry-rotation-policy.fungi
+/// @purpose: Checker-verified twin of the PURE decision surface of registry-rotation-policy.ts.
+///   A root-signed rotation policy bounds what the automated issuer may delegate. The host seam
+///   (TypeScript: canonical JSON, Ed25519 + ML-DSA-65 verification, fingerprint hashing, clock) turns
+///   the signed documents into plain evidence (millisecond differences, counts, booleans); these pure
+///   flows fold that evidence FAIL-CLOSED into a structured ERR_REGISTRY_ROTATION_* code or "ok".
+///   Same inject-evidence / fold-verdict discipline as registry-index.fungi.
+/// @status: checker-verified twin; NOT build-wired (execution switch #143). The TypeScript verifier
+///   (registry-rotation-policy.ts) is still the only deciding path. Nothing here authorizes anything:
+///   only the exact string "ok" is a success value, and callers must compare it exactly (K3).
+
+// Lifetime of one issued delegation against the policy cap (both in milliseconds). Float, not Int:\n// Int is 32-bit and 90 days is 7.776e9 ms; Float (f64) is exact for every millisecond count here.
+pure flow rotationLifetimeVerdict(lifetimeMs: Float, maxLifetimeMs: Float) -> String
+contract {
+  intent { "Refuse a negative lifetime as malformed and a lifetime above the policy cap; else 'ok'." }
+}
+{
+  if lifetimeMs < 0.0 {
+    return "ERR_REGISTRY_ROTATION_MALFORMED"
+  }
+  if lifetimeMs > maxLifetimeMs {
+    return "ERR_REGISTRY_ROTATION_LIFETIME"
+  }
+  return "ok"
+}
+
+// overlapMs = predecessor.notAfter - successor.notBefore. Negative means a gap.
+pure flow rotationOverlapVerdict(overlapMs: Float, minOverlapMs: Float, startsBeforePredecessor: Bool) -> String
+contract {
+  intent { "Refuse a successor that starts before its predecessor, leaves a gap, or overlaps by less than the policy minimum; else 'ok'." }
+}
+{
+  if startsBeforePredecessor == true {
+    return "ERR_REGISTRY_ROTATION_ORDER"
+  }
+  if overlapMs < 0.0 {
+    return "ERR_REGISTRY_ROTATION_GAP"
+  }
+  if overlapMs < minOverlapMs {
+    return "ERR_REGISTRY_ROTATION_OVERLAP"
+  }
+  return "ok"
+}
+
+// Serial must be strictly greater than the predecessor's (replay and rollback defense).
+pure flow rotationSerialVerdict(serial: Int, predecessorSerial: Int) -> String
+contract {
+  intent { "Refuse a serial that is not strictly greater than its predecessor's; else 'ok'." }
+}
+{
+  if serial <= predecessorSerial {
+    return "ERR_REGISTRY_ROTATION_SERIAL"
+  }
+  return "ok"
+}
+
+// Roles granted by the delegation versus the roles the policy allows.
+pure flow rotationRoleVerdict(roleCount: Int, outsidePolicyCount: Int) -> String
+contract {
+  intent { "Refuse an empty role set as malformed and any role outside the policy; else 'ok'." }
+}
+{
+  if roleCount <= 0 {
+    return "ERR_REGISTRY_ROTATION_MALFORMED"
+  }
+  if outsidePolicyCount > 0 {
+    return "ERR_REGISTRY_ROTATION_ROLE"
+  }
+  return "ok"
+}
+
+// The signature suite of the operational key must be one the policy allows.
+pure flow rotationAlgorithmVerdict(suiteAllowed: Bool) -> String
+contract {
+  intent { "Refuse a signature suite that the policy does not allow; else 'ok'." }
+}
+{
+  if suiteAllowed == false {
+    return "ERR_REGISTRY_ROTATION_ALGORITHM"
+  }
+  return "ok"
+}
+
+// The operational key: denied or reserved ids never; a pinned id must match its pinned fingerprints;
+// otherwise the policy must allow generated ids and the id must be well formed.
+pure flow rotationKeyVerdict(denied: Bool, reserved: Bool, pinnedIdKnown: Bool, pinnedFingerprintsMatch: Bool, generatedAllowed: Bool, formatOk: Bool) -> String
+contract {
+  intent { "Fold the operational-key evidence fail-closed: denied, reserved, unpinned-when-not-generated, or fingerprint-mismatched keys are refused; else 'ok'." }
+}
+{
+  if denied == true {
+    return "ERR_REGISTRY_ROTATION_KEY_NOT_ALLOWED"
+  }
+  if reserved == true {
+    return "ERR_REGISTRY_ROTATION_KEY_NOT_ALLOWED"
+  }
+  if pinnedIdKnown == true {
+    if pinnedFingerprintsMatch == false {
+      return "ERR_REGISTRY_ROTATION_KEY_MISMATCH"
+    }
+    return "ok"
+  }
+  if generatedAllowed == false {
+    return "ERR_REGISTRY_ROTATION_KEY_NOT_ALLOWED"
+  }
+  if formatOk == false {
+    return "ERR_REGISTRY_ROTATION_KEY_NOT_ALLOWED"
+  }
+  return "ok"
+}
+
+// The delegation window must sit inside the policy window and must not be backdated.
+pure flow rotationWindowVerdict(startsBeforePolicy: Bool, endsAfterPolicy: Bool, issuedOutsidePolicy: Bool, issuedAfterStart: Bool) -> String
+contract {
+  intent { "Refuse a delegation window outside the policy window, an issue time outside it, or an issue time after the start (backdating); else 'ok'." }
+}
+{
+  if startsBeforePolicy == true {
+    return "ERR_REGISTRY_ROTATION_POLICY_WINDOW"
+  }
+  if endsAfterPolicy == true {
+    return "ERR_REGISTRY_ROTATION_POLICY_WINDOW"
+  }
+  if issuedOutsidePolicy == true {
+    return "ERR_REGISTRY_ROTATION_POLICY_WINDOW"
+  }
+  if issuedAfterStart == true {
+    return "ERR_REGISTRY_ROTATION_BACKDATED"
+  }
+  return "ok"
+}
