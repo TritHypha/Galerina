@@ -1,10 +1,9 @@
 //! Versioned-frame parity (Step 2c, behaviour addition).
 //! Clock and counter are inputs. The process wrapper supplies them.
 
-#[allow(unused_imports)]
 use crate::{
-    K3_UNKNOWN_WIRE, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
-    LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+    Trit, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
+    LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -30,19 +29,86 @@ pub struct FrameDecode {
     pub alert: FrameAlert,
 }
 
+fn refuse_invalid(reads_so_far: u64) -> FrameDecode {
+    FrameDecode {
+        label: FrameLabel::Invalid,
+        reads_after: reads_so_far,
+        alert: FrameAlert::None,
+    }
+}
+
+fn refuse_closed(reads_so_far: u64, alert: FrameAlert) -> FrameDecode {
+    FrameDecode {
+        label: FrameLabel::LegacyClosed,
+        reads_after: reads_so_far,
+        alert,
+    }
+}
+
+fn decode_canonical_label(value: i32, reads_so_far: u64) -> FrameDecode {
+    let label = match Trit::decode_canonical(value) {
+        Ok((Trit::Admit, _)) => FrameLabel::Admit,
+        Ok((Trit::Refuse, _)) => FrameLabel::Deny,
+        Ok((Trit::Unknown, _)) => FrameLabel::Unknown,
+        Err(_) => return refuse_invalid(reads_so_far),
+    };
+    FrameDecode {
+        label,
+        reads_after: reads_so_far,
+        alert: FrameAlert::None,
+    }
+}
+
+fn is_positive_in_range_ymd(ymd: i32) -> bool {
+    if ymd <= 0 {
+        return false;
+    }
+    let year = ymd / 10_000;
+    let month = (ymd / 100) % 100;
+    let day = ymd % 100;
+    (1..=9999).contains(&year) && (1..=12).contains(&month) && (1..=31).contains(&day)
+}
+
 /// Pure framed decode. No process clock, no process counter.
 pub fn decode_legacy_frame_pure(
-    _version: i32,
-    _epoch: i32,
-    _value: i32,
-    _now_ymd: i32,
+    version: i32,
+    epoch: i32,
+    value: i32,
+    now_ymd: i32,
     reads_so_far: u64,
 ) -> FrameDecode {
-    // RED stub: ignores version/epoch/value; never alerts; always counts.
+    if version == K3_WIRE_VERSION_CANONICAL {
+        return decode_canonical_label(value, reads_so_far);
+    }
+    if version != K3_WIRE_VERSION_LEGACY {
+        return refuse_invalid(reads_so_far);
+    }
+    if value != 0 {
+        return decode_canonical_label(value, reads_so_far);
+    }
+    if epoch < 0 || epoch > LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH {
+        return refuse_closed(reads_so_far, FrameAlert::None);
+    }
+    if !is_positive_in_range_ymd(now_ymd) {
+        return refuse_closed(reads_so_far, FrameAlert::None);
+    }
+    if !LEGACY_UNKNOWN_ZERO_BRIDGE {
+        return refuse_closed(reads_so_far, FrameAlert::None);
+    }
+    if now_ymd > LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH {
+        return refuse_closed(reads_so_far, FrameAlert::None);
+    }
+    if reads_so_far >= LEGACY_UNKNOWN_ZERO_CAP {
+        return refuse_closed(reads_so_far, FrameAlert::CapReached);
+    }
     FrameDecode {
         label: FrameLabel::Unknown,
         reads_after: reads_so_far.saturating_add(1),
-        alert: FrameAlert::None,
+        alert: if reads_so_far == 0 {
+            FrameAlert::FirstSeen
+        } else {
+            FrameAlert::None
+        },
     }
 }
 
@@ -50,7 +116,8 @@ pub fn decode_legacy_frame_pure(
 mod tests {
     use super::*;
     use crate::{
-        legacy_unknown_zero_reads, Trit, TritWireForm, LEGACY_UNKNOWN_ZERO_BRIDGE,
+        legacy_unknown_zero_reads, Trit, TritWireForm, K3_UNKNOWN_WIRE,
+        LEGACY_UNKNOWN_ZERO_BRIDGE,
     };
 
     const FRAME_RS: &str = include_str!("k3_frame.rs");
@@ -442,6 +509,12 @@ mod tests {
             body.contains("decode_legacy_frame_pure"),
             "decode_legacy_frame must delegate to decode_legacy_frame_pure"
         );
+    }
+
+    #[test]
+    fn civil_ymd_unix_epoch_and_today() {
+        assert_eq!(crate::civil_ymd_from_unix_days(0), 19700101);
+        assert_eq!(crate::civil_ymd_from_unix_days(20753), 20261027);
     }
 
     #[test]

@@ -115,6 +115,31 @@ pub fn bare_legacy_zero_refusals() -> u64 {
     BARE_LEGACY_ZERO_REFUSALS.load(AtomicOrdering::SeqCst)
 }
 
+/// Trusted UTC YYYYMMDD for the process wrapper. Invalid clocks fail closed (-1).
+fn trusted_utc_ymd() -> i32 {
+    let Ok(elapsed) = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) else {
+        return -1;
+    };
+    civil_ymd_from_unix_days((elapsed.as_secs() / 86_400) as i64)
+}
+
+pub(crate) fn civil_ymd_from_unix_days(days: i64) -> i32 {
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    (y as i32)
+        .saturating_mul(10_000)
+        .saturating_add((m as i32).saturating_mul(100))
+        .saturating_add(d as i32)
+}
+
 impl Trit {
     fn refuse_bare_legacy_zero() -> VokFailure {
         let _ = BARE_LEGACY_ZERO_REFUSALS.fetch_update(
@@ -146,7 +171,7 @@ impl Trit {
         }
     }
 
-    fn decode_canonical(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
+    pub(crate) fn decode_canonical(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
         match value {
             -1 => Ok((Self::Refuse, TritWireForm::Canonical)),
             K3_UNKNOWN_WIRE => Ok((Self::Unknown, TritWireForm::Canonical)),
@@ -171,19 +196,37 @@ impl Trit {
 
     /// Decode a value carried inside the versioned legacy wire frame (SLIDE `decodeK3WireFrame`):
     /// canonical values as `decode_wire`, plus legacy 0 as UNKNOWN (typed, counted) while the
-    /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes.
+    /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes. Process clock and counter are
+    /// supplied to `decode_legacy_frame_pure`; this i32 API does not take version/epoch/cap.
     pub fn decode_legacy_frame(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
-        match value {
-            0 if LEGACY_UNKNOWN_ZERO_BRIDGE => {
-                let _ = LEGACY_UNKNOWN_ZERO_READS.fetch_update(
-                    AtomicOrdering::SeqCst,
-                    AtomicOrdering::SeqCst,
-                    |count| Some(count.saturating_add(1)),
-                );
+        let now_ymd = trusted_utc_ymd();
+        let reads = LEGACY_UNKNOWN_ZERO_READS.load(AtomicOrdering::SeqCst);
+        let decoded = decode_legacy_frame_pure(
+            K3_WIRE_VERSION_LEGACY,
+            0,
+            value,
+            now_ymd,
+            reads,
+        );
+        if decoded.reads_after > reads {
+            let delta = decoded.reads_after - reads;
+            let _ = LEGACY_UNKNOWN_ZERO_READS.fetch_update(
+                AtomicOrdering::SeqCst,
+                AtomicOrdering::SeqCst,
+                |count| Some(count.saturating_add(delta)),
+            );
+        }
+        match decoded.label {
+            FrameLabel::Admit => Ok((Self::Admit, TritWireForm::Canonical)),
+            FrameLabel::Deny => Ok((Self::Refuse, TritWireForm::Canonical)),
+            FrameLabel::Unknown if value == 0 => {
                 Ok((Self::Unknown, TritWireForm::LegacyUnknownZero))
             }
-            0 => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_LEGACY_CLOSED")),
-            _ => Self::decode_canonical(value),
+            FrameLabel::Unknown => Ok((Self::Unknown, TritWireForm::Canonical)),
+            FrameLabel::Invalid => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            FrameLabel::LegacyClosed => {
+                Err(VokFailure::new(Self::Refuse, "VOK_TRIT_LEGACY_CLOSED"))
+            }
         }
     }
 
