@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "f7a2e87a7aec90e192d664b6fc86170010a91715be31199a40d132493cb22e4d",
+    "aggregateSha256": "567988cbd43b5cf9cfcbbafbe682731cedd151e382f23665f10a61910b850d5c",
     "algorithm": "sha256",
     "files": [
       {
@@ -72,7 +72,7 @@
       },
       {
         "path": "package.json",
-        "sha256": "783c10e8eb07799eab1bf07f8bf9e584d316a0c8d8365f36a3f804655d46f007"
+        "sha256": "e640bfc5f8df6704a5e8542c2069273f542c139881fbbb72e3a6b39a2f2198e2"
       },
       {
         "path": "src/bool-boundary/bool-boundary-context.ts",
@@ -227,6 +227,10 @@
         "sha256": "c4e2de24389d563398e8d112cef9aa80d9976f27a3f35a2fb0548284f20bb8e9"
       },
       {
+        "path": "src/self-hosted/k3-wire.fungi",
+        "sha256": "6006cb8306996d8e7aba4ed3c7a2ee8426be33e249b2607b17e12da0a1003a84"
+      },
+      {
         "path": "src/self-hosted/tri-ops.fungi",
         "sha256": "974b3d2aea384d0e3c5fe15fc5c4407242392a706424a7319405878d3252c5d4"
       },
@@ -257,6 +261,10 @@
       {
         "path": "tests/is-tri-fungi-conversion.test.mjs",
         "sha256": "7f34bfddb15ffe085815aa44dd12ed625cbbe5ee3c02cc10ac56b5da69e32ff1"
+      },
+      {
+        "path": "tests/k3-wire-fungi-conversion.test.mjs",
+        "sha256": "9184cfc4b0dd78135f60f98ba9b58c93789a8845edc70f8e4d2540d14c27d7d4"
       },
       {
         "path": "tests/logic-contracts.test.mjs",
