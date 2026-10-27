@@ -16,6 +16,7 @@ mod secret_arena_custodian;
 mod secret_arena_store;
 mod sha256;
 mod lattice;
+mod k3_frame;
 #[cfg(test)]
 mod k3_wire_vectors_pin;
 #[cfg(test)]
@@ -24,6 +25,7 @@ mod veo;
 mod assurance;
 
 pub use lattice::{from_lattice, to_lattice};
+pub use k3_frame::{decode_legacy_frame_pure, FrameAlert, FrameDecode, FrameLabel};
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
 };
@@ -83,6 +85,10 @@ pub const K3_I8_UNKNOWN: i32 = K3_UNKNOWN_WIRE;
 /// SUNSET: set this to `false` and then delete the arm at Step Z, before SLIDE becomes the
 /// default execution path (SLIDE TODO + K3COPIES plan).
 pub const LEGACY_UNKNOWN_ZERO_BRIDGE: bool = true;
+pub const K3_WIRE_VERSION_LEGACY: i32 = 1;
+pub const K3_WIRE_VERSION_CANONICAL: i32 = 2;
+pub const LEGACY_UNKNOWN_ZERO_CAP: u64 = 1_000_000;
+pub const LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH: i32 = 20261231;
 
 /// Failure id for a bare (unframed) 0 at a VOK boundary (F1). Mirrors SLIDE `SLIDE-K3-WIRE-003`.
 pub const VOK_TRIT_BARE_LEGACY_ZERO: &str = "VOK_TRIT_BARE_LEGACY_ZERO";
