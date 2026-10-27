@@ -10,6 +10,28 @@ const PACKAGE_ROOT = join(HERE, "..");
 const REPO_ROOT = join(PACKAGE_ROOT, "..", "..");
 const SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "k3-wire.fungi");
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
+const VECTORS = join(
+  REPO_ROOT,
+  "packages-ts",
+  "galerina-core-runtime",
+  "native",
+  "vok-authority",
+  "vectors",
+  "k3-wire-vectors.rows.txt",
+);
+const LABEL_INT = Object.freeze({
+  ADMIT: 1,
+  REFUSE: -1,
+  UNKNOWN: 0,
+  INVALID: 2,
+  BARE_LEGACY_ZERO: 2,
+  LEGACY_CLOSED: 3,
+});
+const ALERT_INT = Object.freeze({
+  NONE: 0,
+  FIRST_SEEN: 1,
+  CAP_REACHED: 2,
+});
 const COMPILER_DIR = join(PACKAGE_ROOT, "..", "galerina-core-compiler", "dist");
 const COMPILER = join(COMPILER_DIR, "index.js");
 
@@ -44,6 +66,65 @@ function gitBlob(path) {
   return execFileSync(git, ["-C", REPO_ROOT, "rev-parse", `HEAD:${path}`], {
     encoding: "utf8",
   }).trim();
+}
+
+function fixtureRows(section) {
+  const text = readFileSync(VECTORS, "utf8").replace(/^\uFEFF/u, "");
+  const rows = [];
+  for (const line of text.split("\n")) {
+    if (line.length === 0 || !line.startsWith(`${section}|`)) {
+      continue;
+    }
+    const first = line.indexOf("|");
+    const second = line.indexOf("|", first + 1);
+    rows.push({
+      input: line.slice(first + 1, second),
+      expected: line.slice(second + 1),
+      line,
+    });
+  }
+  return rows;
+}
+
+function parseFrameInput(input) {
+  const out = { version: 0, epoch: 0, value: 0, nowYmd: 0, readsSoFar: 0 };
+  for (const field of input.split(",")) {
+    const eq = field.indexOf("=");
+    assert.ok(eq > 0, `frame field ${field}`);
+    const key = field.slice(0, eq);
+    const value = Number(field.slice(eq + 1));
+    assert.equal(Number.isInteger(value), true, `frame ${key}`);
+    if (key === "version") {
+      out.version = value;
+    } else if (key === "epoch") {
+      out.epoch = value;
+    } else if (key === "value") {
+      out.value = value;
+    } else if (key === "nowYmd") {
+      out.nowYmd = value;
+    } else if (key === "readsSoFar") {
+      out.readsSoFar = value;
+    } else {
+      assert.fail(`unknown frame key ${key}`);
+    }
+  }
+  return out;
+}
+
+function parseFrameExpected(expected) {
+  let label = "";
+  let readsAfter = 0;
+  let alert = "NONE";
+  for (const field of expected.split(";")) {
+    if (field.startsWith("readsAfter=")) {
+      readsAfter = Number(field.slice("readsAfter=".length));
+    } else if (field.startsWith("alert=")) {
+      alert = field.slice("alert=".length);
+    } else {
+      label = field;
+    }
+  }
+  return { label, readsAfter, alert };
 }
 
 function latticeOrRefuse(fn, args) {
@@ -272,5 +353,105 @@ describe("core-logic k3-wire.fungi conversion", () => {
       false,
       "wrapper refuses load8_u of 0x80 (128)",
     );
+  });
+
+  it("signed wrapper matches shared fixture rows", async () => {
+    const { exports } = await compileK3();
+    const rows = fixtureRows("signedWrapper");
+    assert.ok(rows.length >= 14, `signedWrapper rows ${rows.length}`);
+    for (const row of rows) {
+      const signed = Number(row.input);
+      const want = LABEL_INT[row.expected];
+      assert.equal(typeof want, "number", `unknown label ${row.expected}`);
+      assert.equal(exports.k3DecodeWire(signed), want, row.line);
+    }
+  });
+
+  it("u8 reader matches shared fixture rows", async () => {
+    const { exports } = await compileK3();
+    const rows = fixtureRows("u8");
+    assert.equal(rows.length, 256, "fixture u8 oracle is exhaustive");
+    for (const row of rows) {
+      const byte = Number(row.input);
+      const want = LABEL_INT[row.expected];
+      assert.equal(typeof want, "number", `unknown label ${row.expected}`);
+      assert.equal(exports.k3DecodeByte(byte), want, row.line);
+    }
+  });
+
+  it("encode lattice matches shared fixture rows", async () => {
+    const { exports } = await compileK3();
+    const rows = fixtureRows("encodeLattice");
+    assert.equal(rows.length, 3, "encodeLattice rows");
+    for (const row of rows) {
+      assert.equal(exports.k3EncodeLattice(Number(row.input)), Number(row.expected), row.line);
+    }
+  });
+
+  it("legacy frames match shared fixture rows except A2 nowYmd=-1", async () => {
+    const { exports } = await compileK3();
+    const rows = fixtureRows("frames").filter((row) => !row.input.includes("nowYmd=-1"));
+    assert.ok(rows.length >= 18, `fixture frame rows excluding A2, got ${rows.length}`);
+    for (const row of rows) {
+      const frame = parseFrameInput(row.input);
+      const expect = parseFrameExpected(row.expected);
+      const wantLabel = LABEL_INT[expect.label];
+      const wantAlert = ALERT_INT[expect.alert];
+      assert.equal(typeof wantLabel, "number", expect.label);
+      assert.equal(typeof wantAlert, "number", expect.alert);
+      assert.equal(
+        exports.k3DecodeLegacyFrame(
+          frame.version,
+          frame.epoch,
+          frame.value,
+          frame.nowYmd,
+          frame.readsSoFar,
+        ),
+        wantLabel,
+        row.line,
+      );
+      assert.equal(
+        exports.k3DecodeLegacyFrameReadsAfter(
+          frame.version,
+          frame.epoch,
+          frame.value,
+          frame.nowYmd,
+          frame.readsSoFar,
+        ),
+        expect.readsAfter,
+        `${row.line} readsAfter`,
+      );
+      assert.equal(
+        exports.k3DecodeLegacyFrameAlert(
+          frame.version,
+          frame.epoch,
+          frame.value,
+          frame.nowYmd,
+          frame.readsSoFar,
+        ),
+        wantAlert,
+        `${row.line} alert`,
+      );
+    }
+  });
+
+  it("explicit nowYmd range and v1 non-zero frames", async () => {
+    const { exports } = await compileK3();
+    const closedYmd = [0, 20251301, 20250001, 20251000, 20251032];
+    for (const nowYmd of closedYmd) {
+      assert.equal(
+        exports.k3DecodeLegacyFrame(1, 0, 0, nowYmd, 0),
+        3,
+        `nowYmd=${nowYmd} must close`,
+      );
+      assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, nowYmd, 0), 0);
+      assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, nowYmd, 0), 0);
+    }
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 5, 20261027, 0), 2, "v1 value=5 invalid");
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 5, 20261027, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 5, 20261027, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, -1, 20261027, 0), -1, "v1 value=-1 deny");
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, -1, 20261027, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, -1, 20261027, 0), 0);
   });
 });

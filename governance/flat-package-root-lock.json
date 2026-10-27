@@ -342,7 +342,7 @@
       "identity": "@galerina/core-logic",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-logic",
-      "contentDigest": "9e37d50ab2079cda54d41627b8a14aada32bb55d7b492772bf5882c1e0e4534e",
+      "contentDigest": "d5c17807631e795e01063ceb04926ae3604460a2e6e731a8c11d2d45c0417bf5",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "9f9149916b4fa13d1e0ff8396cd82d96965a326d9b7f3aa5e8bcdacd80ae251e"
+  "rootDigest": "dfba4a4755e54c8714466e277ba569acfac742d46c8c61ad95232968f72978a5"
 }
