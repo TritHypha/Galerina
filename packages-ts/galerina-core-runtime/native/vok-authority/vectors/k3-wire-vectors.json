@@ -1,0 +1,1448 @@
+{
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v2 adds the unsigned u8 oracle, signed-wrapper boundary set, encode-lattice bytes, load8_s/load8_u expected values, and pure-frame rows. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: bridge flag, trusted clock (nowYmd <= 20261231), then cap. Frame epoch must be an integer in [0, 20261231] else LEGACY_CLOSED.",
+  "lattice": {
+    "REFUSE": -1,
+    "UNKNOWN": 0,
+    "ADMIT": 1
+  },
+  "toWire": {
+    "REFUSE": -1,
+    "UNKNOWN": -128,
+    "ADMIT": 1
+  },
+  "canonical": [
+    [
+      -1,
+      "REFUSE"
+    ],
+    [
+      -128,
+      "UNKNOWN"
+    ],
+    [
+      1,
+      "ADMIT"
+    ]
+  ],
+  "legacy": [
+    [
+      0,
+      "UNKNOWN"
+    ]
+  ],
+  "legacyNote": "F1 (Phillip 2026-10-26 13:40 GMT, FRAMED ONLY): legacy 0 is UNKNOWN only inside the typed, versioned wire frame (SLIDE decodeK3WireFrame). A bare 0 at any boundary is refused.",
+  "boundaryBareRefused": [
+    [
+      0,
+      "SLIDE-K3-WIRE-003"
+    ]
+  ],
+  "invalid": [
+    -2147483648,
+    -129,
+    -127,
+    -2,
+    2,
+    7,
+    127,
+    128,
+    255,
+    2147483647
+  ],
+  "header": {
+    "K3_WIRE_HEADER_VERSION": 1,
+    "LEGACY_UNKNOWN_ZERO_CAP": 1000000,
+    "LEGACY_UNKNOWN_ZERO_EXPIRY": 20261231,
+    "LEGACY_UNKNOWN_ZERO_BRIDGE": true,
+    "provisional": true,
+    "decidedBy": "Grok Bot under owner message pt1040u",
+    "overridableBy": "Phillip",
+    "vectorsVersion": 2
+  },
+  "sectionTrees": {
+    "header": "THREE-WAY",
+    "lattice": "THREE-WAY",
+    "toWire": "THREE-WAY",
+    "canonical": "THREE-WAY",
+    "u8": "THREE-WAY",
+    "signedWrapper": "THREE-WAY",
+    "encodeLattice": "THREE-WAY",
+    "load8": "THREE-WAY",
+    "frames": "THREE-WAY",
+    "boundaryBareRefused": "THREE-WAY",
+    "invalid": "THREE-WAY",
+    "legacy": "THREE-WAY",
+    "processGlobalCounter": "SLIDE-ONLY+VOK-ONLY",
+    "processDateNow": "SLIDE-ONLY",
+    "A1_SUNSET": "SLIDE-ONLY"
+  },
+  "u8": [
+    [
+      0,
+      "BARE_LEGACY_ZERO"
+    ],
+    [
+      1,
+      "ADMIT"
+    ],
+    [
+      2,
+      "INVALID"
+    ],
+    [
+      3,
+      "INVALID"
+    ],
+    [
+      4,
+      "INVALID"
+    ],
+    [
+      5,
+      "INVALID"
+    ],
+    [
+      6,
+      "INVALID"
+    ],
+    [
+      7,
+      "INVALID"
+    ],
+    [
+      8,
+      "INVALID"
+    ],
+    [
+      9,
+      "INVALID"
+    ],
+    [
+      10,
+      "INVALID"
+    ],
+    [
+      11,
+      "INVALID"
+    ],
+    [
+      12,
+      "INVALID"
+    ],
+    [
+      13,
+      "INVALID"
+    ],
+    [
+      14,
+      "INVALID"
+    ],
+    [
+      15,
+      "INVALID"
+    ],
+    [
+      16,
+      "INVALID"
+    ],
+    [
+      17,
+      "INVALID"
+    ],
+    [
+      18,
+      "INVALID"
+    ],
+    [
+      19,
+      "INVALID"
+    ],
+    [
+      20,
+      "INVALID"
+    ],
+    [
+      21,
+      "INVALID"
+    ],
+    [
+      22,
+      "INVALID"
+    ],
+    [
+      23,
+      "INVALID"
+    ],
+    [
+      24,
+      "INVALID"
+    ],
+    [
+      25,
+      "INVALID"
+    ],
+    [
+      26,
+      "INVALID"
+    ],
+    [
+      27,
+      "INVALID"
+    ],
+    [
+      28,
+      "INVALID"
+    ],
+    [
+      29,
+      "INVALID"
+    ],
+    [
+      30,
+      "INVALID"
+    ],
+    [
+      31,
+      "INVALID"
+    ],
+    [
+      32,
+      "INVALID"
+    ],
+    [
+      33,
+      "INVALID"
+    ],
+    [
+      34,
+      "INVALID"
+    ],
+    [
+      35,
+      "INVALID"
+    ],
+    [
+      36,
+      "INVALID"
+    ],
+    [
+      37,
+      "INVALID"
+    ],
+    [
+      38,
+      "INVALID"
+    ],
+    [
+      39,
+      "INVALID"
+    ],
+    [
+      40,
+      "INVALID"
+    ],
+    [
+      41,
+      "INVALID"
+    ],
+    [
+      42,
+      "INVALID"
+    ],
+    [
+      43,
+      "INVALID"
+    ],
+    [
+      44,
+      "INVALID"
+    ],
+    [
+      45,
+      "INVALID"
+    ],
+    [
+      46,
+      "INVALID"
+    ],
+    [
+      47,
+      "INVALID"
+    ],
+    [
+      48,
+      "INVALID"
+    ],
+    [
+      49,
+      "INVALID"
+    ],
+    [
+      50,
+      "INVALID"
+    ],
+    [
+      51,
+      "INVALID"
+    ],
+    [
+      52,
+      "INVALID"
+    ],
+    [
+      53,
+      "INVALID"
+    ],
+    [
+      54,
+      "INVALID"
+    ],
+    [
+      55,
+      "INVALID"
+    ],
+    [
+      56,
+      "INVALID"
+    ],
+    [
+      57,
+      "INVALID"
+    ],
+    [
+      58,
+      "INVALID"
+    ],
+    [
+      59,
+      "INVALID"
+    ],
+    [
+      60,
+      "INVALID"
+    ],
+    [
+      61,
+      "INVALID"
+    ],
+    [
+      62,
+      "INVALID"
+    ],
+    [
+      63,
+      "INVALID"
+    ],
+    [
+      64,
+      "INVALID"
+    ],
+    [
+      65,
+      "INVALID"
+    ],
+    [
+      66,
+      "INVALID"
+    ],
+    [
+      67,
+      "INVALID"
+    ],
+    [
+      68,
+      "INVALID"
+    ],
+    [
+      69,
+      "INVALID"
+    ],
+    [
+      70,
+      "INVALID"
+    ],
+    [
+      71,
+      "INVALID"
+    ],
+    [
+      72,
+      "INVALID"
+    ],
+    [
+      73,
+      "INVALID"
+    ],
+    [
+      74,
+      "INVALID"
+    ],
+    [
+      75,
+      "INVALID"
+    ],
+    [
+      76,
+      "INVALID"
+    ],
+    [
+      77,
+      "INVALID"
+    ],
+    [
+      78,
+      "INVALID"
+    ],
+    [
+      79,
+      "INVALID"
+    ],
+    [
+      80,
+      "INVALID"
+    ],
+    [
+      81,
+      "INVALID"
+    ],
+    [
+      82,
+      "INVALID"
+    ],
+    [
+      83,
+      "INVALID"
+    ],
+    [
+      84,
+      "INVALID"
+    ],
+    [
+      85,
+      "INVALID"
+    ],
+    [
+      86,
+      "INVALID"
+    ],
+    [
+      87,
+      "INVALID"
+    ],
+    [
+      88,
+      "INVALID"
+    ],
+    [
+      89,
+      "INVALID"
+    ],
+    [
+      90,
+      "INVALID"
+    ],
+    [
+      91,
+      "INVALID"
+    ],
+    [
+      92,
+      "INVALID"
+    ],
+    [
+      93,
+      "INVALID"
+    ],
+    [
+      94,
+      "INVALID"
+    ],
+    [
+      95,
+      "INVALID"
+    ],
+    [
+      96,
+      "INVALID"
+    ],
+    [
+      97,
+      "INVALID"
+    ],
+    [
+      98,
+      "INVALID"
+    ],
+    [
+      99,
+      "INVALID"
+    ],
+    [
+      100,
+      "INVALID"
+    ],
+    [
+      101,
+      "INVALID"
+    ],
+    [
+      102,
+      "INVALID"
+    ],
+    [
+      103,
+      "INVALID"
+    ],
+    [
+      104,
+      "INVALID"
+    ],
+    [
+      105,
+      "INVALID"
+    ],
+    [
+      106,
+      "INVALID"
+    ],
+    [
+      107,
+      "INVALID"
+    ],
+    [
+      108,
+      "INVALID"
+    ],
+    [
+      109,
+      "INVALID"
+    ],
+    [
+      110,
+      "INVALID"
+    ],
+    [
+      111,
+      "INVALID"
+    ],
+    [
+      112,
+      "INVALID"
+    ],
+    [
+      113,
+      "INVALID"
+    ],
+    [
+      114,
+      "INVALID"
+    ],
+    [
+      115,
+      "INVALID"
+    ],
+    [
+      116,
+      "INVALID"
+    ],
+    [
+      117,
+      "INVALID"
+    ],
+    [
+      118,
+      "INVALID"
+    ],
+    [
+      119,
+      "INVALID"
+    ],
+    [
+      120,
+      "INVALID"
+    ],
+    [
+      121,
+      "INVALID"
+    ],
+    [
+      122,
+      "INVALID"
+    ],
+    [
+      123,
+      "INVALID"
+    ],
+    [
+      124,
+      "INVALID"
+    ],
+    [
+      125,
+      "INVALID"
+    ],
+    [
+      126,
+      "INVALID"
+    ],
+    [
+      127,
+      "INVALID"
+    ],
+    [
+      128,
+      "UNKNOWN"
+    ],
+    [
+      129,
+      "INVALID"
+    ],
+    [
+      130,
+      "INVALID"
+    ],
+    [
+      131,
+      "INVALID"
+    ],
+    [
+      132,
+      "INVALID"
+    ],
+    [
+      133,
+      "INVALID"
+    ],
+    [
+      134,
+      "INVALID"
+    ],
+    [
+      135,
+      "INVALID"
+    ],
+    [
+      136,
+      "INVALID"
+    ],
+    [
+      137,
+      "INVALID"
+    ],
+    [
+      138,
+      "INVALID"
+    ],
+    [
+      139,
+      "INVALID"
+    ],
+    [
+      140,
+      "INVALID"
+    ],
+    [
+      141,
+      "INVALID"
+    ],
+    [
+      142,
+      "INVALID"
+    ],
+    [
+      143,
+      "INVALID"
+    ],
+    [
+      144,
+      "INVALID"
+    ],
+    [
+      145,
+      "INVALID"
+    ],
+    [
+      146,
+      "INVALID"
+    ],
+    [
+      147,
+      "INVALID"
+    ],
+    [
+      148,
+      "INVALID"
+    ],
+    [
+      149,
+      "INVALID"
+    ],
+    [
+      150,
+      "INVALID"
+    ],
+    [
+      151,
+      "INVALID"
+    ],
+    [
+      152,
+      "INVALID"
+    ],
+    [
+      153,
+      "INVALID"
+    ],
+    [
+      154,
+      "INVALID"
+    ],
+    [
+      155,
+      "INVALID"
+    ],
+    [
+      156,
+      "INVALID"
+    ],
+    [
+      157,
+      "INVALID"
+    ],
+    [
+      158,
+      "INVALID"
+    ],
+    [
+      159,
+      "INVALID"
+    ],
+    [
+      160,
+      "INVALID"
+    ],
+    [
+      161,
+      "INVALID"
+    ],
+    [
+      162,
+      "INVALID"
+    ],
+    [
+      163,
+      "INVALID"
+    ],
+    [
+      164,
+      "INVALID"
+    ],
+    [
+      165,
+      "INVALID"
+    ],
+    [
+      166,
+      "INVALID"
+    ],
+    [
+      167,
+      "INVALID"
+    ],
+    [
+      168,
+      "INVALID"
+    ],
+    [
+      169,
+      "INVALID"
+    ],
+    [
+      170,
+      "INVALID"
+    ],
+    [
+      171,
+      "INVALID"
+    ],
+    [
+      172,
+      "INVALID"
+    ],
+    [
+      173,
+      "INVALID"
+    ],
+    [
+      174,
+      "INVALID"
+    ],
+    [
+      175,
+      "INVALID"
+    ],
+    [
+      176,
+      "INVALID"
+    ],
+    [
+      177,
+      "INVALID"
+    ],
+    [
+      178,
+      "INVALID"
+    ],
+    [
+      179,
+      "INVALID"
+    ],
+    [
+      180,
+      "INVALID"
+    ],
+    [
+      181,
+      "INVALID"
+    ],
+    [
+      182,
+      "INVALID"
+    ],
+    [
+      183,
+      "INVALID"
+    ],
+    [
+      184,
+      "INVALID"
+    ],
+    [
+      185,
+      "INVALID"
+    ],
+    [
+      186,
+      "INVALID"
+    ],
+    [
+      187,
+      "INVALID"
+    ],
+    [
+      188,
+      "INVALID"
+    ],
+    [
+      189,
+      "INVALID"
+    ],
+    [
+      190,
+      "INVALID"
+    ],
+    [
+      191,
+      "INVALID"
+    ],
+    [
+      192,
+      "INVALID"
+    ],
+    [
+      193,
+      "INVALID"
+    ],
+    [
+      194,
+      "INVALID"
+    ],
+    [
+      195,
+      "INVALID"
+    ],
+    [
+      196,
+      "INVALID"
+    ],
+    [
+      197,
+      "INVALID"
+    ],
+    [
+      198,
+      "INVALID"
+    ],
+    [
+      199,
+      "INVALID"
+    ],
+    [
+      200,
+      "INVALID"
+    ],
+    [
+      201,
+      "INVALID"
+    ],
+    [
+      202,
+      "INVALID"
+    ],
+    [
+      203,
+      "INVALID"
+    ],
+    [
+      204,
+      "INVALID"
+    ],
+    [
+      205,
+      "INVALID"
+    ],
+    [
+      206,
+      "INVALID"
+    ],
+    [
+      207,
+      "INVALID"
+    ],
+    [
+      208,
+      "INVALID"
+    ],
+    [
+      209,
+      "INVALID"
+    ],
+    [
+      210,
+      "INVALID"
+    ],
+    [
+      211,
+      "INVALID"
+    ],
+    [
+      212,
+      "INVALID"
+    ],
+    [
+      213,
+      "INVALID"
+    ],
+    [
+      214,
+      "INVALID"
+    ],
+    [
+      215,
+      "INVALID"
+    ],
+    [
+      216,
+      "INVALID"
+    ],
+    [
+      217,
+      "INVALID"
+    ],
+    [
+      218,
+      "INVALID"
+    ],
+    [
+      219,
+      "INVALID"
+    ],
+    [
+      220,
+      "INVALID"
+    ],
+    [
+      221,
+      "INVALID"
+    ],
+    [
+      222,
+      "INVALID"
+    ],
+    [
+      223,
+      "INVALID"
+    ],
+    [
+      224,
+      "INVALID"
+    ],
+    [
+      225,
+      "INVALID"
+    ],
+    [
+      226,
+      "INVALID"
+    ],
+    [
+      227,
+      "INVALID"
+    ],
+    [
+      228,
+      "INVALID"
+    ],
+    [
+      229,
+      "INVALID"
+    ],
+    [
+      230,
+      "INVALID"
+    ],
+    [
+      231,
+      "INVALID"
+    ],
+    [
+      232,
+      "INVALID"
+    ],
+    [
+      233,
+      "INVALID"
+    ],
+    [
+      234,
+      "INVALID"
+    ],
+    [
+      235,
+      "INVALID"
+    ],
+    [
+      236,
+      "INVALID"
+    ],
+    [
+      237,
+      "INVALID"
+    ],
+    [
+      238,
+      "INVALID"
+    ],
+    [
+      239,
+      "INVALID"
+    ],
+    [
+      240,
+      "INVALID"
+    ],
+    [
+      241,
+      "INVALID"
+    ],
+    [
+      242,
+      "INVALID"
+    ],
+    [
+      243,
+      "INVALID"
+    ],
+    [
+      244,
+      "INVALID"
+    ],
+    [
+      245,
+      "INVALID"
+    ],
+    [
+      246,
+      "INVALID"
+    ],
+    [
+      247,
+      "INVALID"
+    ],
+    [
+      248,
+      "INVALID"
+    ],
+    [
+      249,
+      "INVALID"
+    ],
+    [
+      250,
+      "INVALID"
+    ],
+    [
+      251,
+      "INVALID"
+    ],
+    [
+      252,
+      "INVALID"
+    ],
+    [
+      253,
+      "INVALID"
+    ],
+    [
+      254,
+      "INVALID"
+    ],
+    [
+      255,
+      "REFUSE"
+    ]
+  ],
+  "signedWrapper": [
+    [
+      -2147483648,
+      "INVALID"
+    ],
+    [
+      -129,
+      "INVALID"
+    ],
+    [
+      -128,
+      "UNKNOWN"
+    ],
+    [
+      -127,
+      "INVALID"
+    ],
+    [
+      -2,
+      "INVALID"
+    ],
+    [
+      -1,
+      "REFUSE"
+    ],
+    [
+      0,
+      "BARE_LEGACY_ZERO"
+    ],
+    [
+      1,
+      "ADMIT"
+    ],
+    [
+      2,
+      "INVALID"
+    ],
+    [
+      127,
+      "INVALID"
+    ],
+    [
+      128,
+      "INVALID"
+    ],
+    [
+      255,
+      "INVALID"
+    ],
+    [
+      256,
+      "INVALID"
+    ],
+    [
+      2147483647,
+      "INVALID"
+    ]
+  ],
+  "encodeLattice": [
+    [
+      -1,
+      255
+    ],
+    [
+      0,
+      128
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "encodeLatticeNote": "Lattice 0 encodes to byte 0x80, never 0x00. Encoder domain is exactly {-1,0,1}; anything else is refused. No encoder may emit 0x00.",
+  "load8": {
+    "bytes": [
+      1,
+      255,
+      128,
+      0,
+      127,
+      129
+    ],
+    "load8_s": [
+      1,
+      -1,
+      -128,
+      0,
+      127,
+      -127
+    ],
+    "load8_u": [
+      1,
+      255,
+      128,
+      0,
+      127,
+      129
+    ],
+    "note": "load8_s feeds the signed wrapper; load8_u feeds the u8 reader. Signed wrapper refuses load8_u of 0xFF (255) and 0x80 (128)."
+  },
+  "frames": [
+    {
+      "id": "v1-framed-0-first",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "note": "N1 counted only on accept. N2 FIRST_SEEN iff accepted and readsSoFar==0."
+    },
+    {
+      "id": "v1-framed-0-second",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 1,
+      "label": "UNKNOWN",
+      "readsAfter": 2,
+      "alert": "NONE"
+    },
+    {
+      "id": "v1-framed-0-last-valid-day",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261231,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "note": "nowYmd <= 20261231 accepts. Mutant: < instead of <=."
+    },
+    {
+      "id": "v1-framed-0-refused-day",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20270101,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "N1: refusal does not count. Clock check before cap, so alert is not CAP_REACHED."
+    },
+    {
+      "id": "v1-framed-0-cap-minus-1",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 999999,
+      "label": "UNKNOWN",
+      "readsAfter": 1000000,
+      "alert": "NONE"
+    },
+    {
+      "id": "v1-framed-0-at-cap",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 1000000,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 1000000,
+      "alert": "CAP_REACHED",
+      "note": "N1 readsAfter = readsSoFar on refuse. N2 CAP_REACHED iff refused only because readsSoFar >= CAP."
+    },
+    {
+      "id": "v1-framed-0-cap-plus-1",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 1000001,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 1000001,
+      "alert": "CAP_REACHED"
+    },
+    {
+      "id": "v1-framed-0-clock-and-cap",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20270101,
+      "readsSoFar": 1000000,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 1000000,
+      "alert": "NONE",
+      "note": "Check order: bridge, clock, then cap. Clock fails first so alert is NONE."
+    },
+    {
+      "id": "unknown-version-3",
+      "version": 3,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "INVALID",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "unknown-version-0",
+      "version": 0,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "INVALID",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "canonical-v2-value-0",
+      "version": 2,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "INVALID",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "Canonical version does not accept legacy 0."
+    },
+    {
+      "id": "canonical-v2-unknown",
+      "version": 2,
+      "epoch": 0,
+      "value": -128,
+      "nowYmd": 20261027,
+      "readsSoFar": 4,
+      "label": "UNKNOWN",
+      "readsAfter": 4,
+      "alert": "NONE",
+      "note": "Canonical decode is not a legacy-0 acceptance."
+    },
+    {
+      "id": "v1-nonlegacy-unknown",
+      "version": 1,
+      "epoch": 0,
+      "value": -128,
+      "nowYmd": 20261027,
+      "readsSoFar": 4,
+      "label": "UNKNOWN",
+      "readsAfter": 4,
+      "alert": "NONE"
+    },
+    {
+      "id": "v1-nonlegacy-admit",
+      "version": 1,
+      "epoch": 0,
+      "value": 1,
+      "nowYmd": 20261027,
+      "readsSoFar": 4,
+      "label": "ADMIT",
+      "readsAfter": 4,
+      "alert": "NONE"
+    },
+    {
+      "id": "epoch-minus-1",
+      "version": 1,
+      "epoch": -1,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "epoch-i32-min",
+      "version": 1,
+      "epoch": -2147483648,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "epoch-expiry-boundary",
+      "version": 1,
+      "epoch": 20261231,
+      "value": 0,
+      "nowYmd": 20261231,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN"
+    },
+    {
+      "id": "epoch-after-expiry",
+      "version": 1,
+      "epoch": 20270101,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "Frame epoch can only close. epoch > EXPIRY is LEGACY_CLOSED even if nowYmd is open."
+    },
+    {
+      "id": "epoch-i32-max",
+      "version": 1,
+      "epoch": 2147483647,
+      "value": 0,
+      "nowYmd": 20261027,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "nowYmd-i32-max",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 2147483647,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE"
+    },
+    {
+      "id": "nowYmd-negative-still-le-expiry",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": -1,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "note": "SLIDE trusted-clock rule is safe-integer and nowYmd <= EXPIRY. Negative nowYmd still opens. Pinned, not tightened."
+    }
+  ],
+  "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowYmd that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."
+}

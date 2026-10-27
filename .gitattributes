@@ -11,6 +11,7 @@ packages-ts/galerina-framework-app-kernel/tests/secret-arena-fake-* text eol=lf
 # Galerina source participates in cross-platform compiler and SLIDE receipt
 # identities. Checkouts must expose the same LF bytes on Windows/macOS/Linux.
 *.fungi text eol=lf
+packages-ts/galerina-core-runtime/native/vok-authority/vectors/* text eol=lf
 
 # Canonical checked-flow receipts are verified as exact UTF-8/LF bytes.
 packages/fungi/products/galerina/rd0858-unit4-scalar-oracle/*.checked.json text eol=lf

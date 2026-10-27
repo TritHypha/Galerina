@@ -15,6 +15,8 @@ mod secret_arena;
 mod secret_arena_custodian;
 mod secret_arena_store;
 mod sha256;
+#[cfg(test)]
+mod k3_wire_vectors_pin;
 mod veo;
 mod assurance;
 
