@@ -1,5 +1,37 @@
 # TODO
 
+## Registry delegation serial 2 — 2026-10-26
+
+- [x] Owner root-signed serial 2 of the registry delegation on 2026-10-26: root
+  `21415420b447e219` to operational key `f3172a48372bfb23`, roles
+  `package-manifest.sign` and `registry-index.sign` only, active
+  `2026-10-27T15:45:00.000Z` through `2027-01-25T15:45:00.000Z` (90 days). Stored as
+  `governance/registry-delegation-f3172a48372bfb23-v2.json` (SHA-256 `7C0D674D58F690F33CDCB6F142D14F3C42F8C292FB4C6B2A06E58012AD550E13`)
+  with its unsigned draft `...-v2.unsigned.json`, alongside serial 1
+  (`...-v1.json`, expires `2026-10-28T15:45:00.000Z`). The 24 h overlap keeps
+  serial 1 valid until its own expiry. Verified with
+  `scripts/registry-authority-cli.mjs verify`: accepted at `2026-10-28T00:00:00.000Z`
+  with `--min-serial 1`, refused at `2026-10-27T15:00:00.000Z` (not yet valid).
+- [x] `registry-runtime.ts` now loads every `registry-delegation-<keyId>-v<N>.json`
+  (it only matched `-v1.json` before). A rotation-bound load is pinned to the
+  serial of its authenticated accepted artifacts; a bootstrap load uses the
+  highest serial whose window contains the verification instant. The chosen
+  delegation is still fully verified (signature, window, floor, revocation, pins).
+- [ ] **Owner decision: raise the min-serial floors to 2.** Deliberately NOT done.
+  Until it is raised, serial 1 is still accepted until `2026-10-28T15:45:00.000Z`
+  and a rolled-back serial-1 delegation is not rejected on serial alone.
+- [ ] **Serial 3 before `2027-01-25T15:45:00.000Z`**, or the registry has no
+  active delegation. Prepare it so it overlaps serial 2 the same way.
+- [!] **Open cross-project key issue.** `f3172a48372bfb23` is the **SLIDE** key (private file `env.slide-hybrid-f3172a48372bfb23`) and it is also the key that signs Galerina's registry. That is an open cross-project key issue (one key serving two projects). Galerina's own dedicated hybrid key `0da09262513e2a8d` (generated 2026-09-19, not yet root-delegated or admitted) is the proposed replacement. Serial 2 does not resolve this; it only renews the existing delegation.
+  Needed (owner): decide the migration, root-delegate `0da09262513e2a8d` through a
+  new ceremony after custody receipts and public-bundle admission, re-sign the
+  auth manifest and index under it, then let the `f3172a48372bfb23` delegation lapse
+  or revoke it. No part of this is started.
+- [ ] The accepted registry generation and index are still bound to serial 1
+  (index issued `2026-07-30T16:33:10.307Z`). Serial 2 does not re-sign them;
+  moving the accepted artifacts to serial 2 needs the open crash-safe
+  re-activation work below.
+
 ## Fungi memory chapter wrap-up — 2026-10-26
 
 Status sync only; it closes no RD. RD-0361 and RD-1413/1414/1415 stay **[!] HOLD /
@@ -12687,7 +12719,10 @@ planning checkbox must never be used to imply that implementation exists.
   command is authorized now. Root `21415420b447e219` signed
   `governance/registry-delegation-f3172a48372bfb23-v1.json`: serial 1, active
   `2026-07-30T15:45:00.000Z` through `2026-10-28T15:45:00.000Z`, and only
-  `package-manifest.sign` plus `registry-index.sign`. Follow only
+  `package-manifest.sign` plus `registry-index.sign`. Serial 2
+  (`governance/registry-delegation-f3172a48372bfb23-v2.json`) was root-signed by the owner on 2026-10-26 and is active
+  `2026-10-27T15:45:00.000Z` through `2027-01-25T15:45:00.000Z`; see
+  "Registry delegation serial 2" at the top of this file. Follow only
   `docs/security/OFFLINE-KEY-SIGNING-WALKTHROUGH.md`. Root delegation, auth
   manifest signing/admission, the fixed public-only one-entry build, returned
   index signature and independent verification are complete. Production

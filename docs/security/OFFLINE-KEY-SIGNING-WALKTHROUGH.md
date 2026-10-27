@@ -16,6 +16,9 @@ the current candidate and must not be treated as live authority.
 | 3 | 🟩 **COMPLETE** | A public-only rebuild produced exactly one unsigned index entry at `2026-07-30T16:33:10.307Z`; SHA-256 `15D531566E9FB71F152E34BD9C4C62D4D6FAE15DB0309CBCFA0834BE2E020383`. |
 | 4 | 🟩 **COMPLETE** | The owner returned the operational hybrid-signed one-entry index. Both signature components independently verify under `f3172a48372bfb23`; its signed payload exactly equals the public-only rebuild. |
 | 5 | 🟩 **COMPLETE** | Signed index SHA-256 is `DCF80AA0717DEBF8BEB837584FDC053E24891C0D1224FB4735900E68FC1AAF06`; seven returned-artifact mutations—entry, either signature, either missing signature, context and algorithm—were all refused. |
+| 6 | 🟩 **COMPLETE** | **Serial 2 (separate act, completed 2026-10-26 by the owner):** root `21415420b447e219` hybrid-signed serial-2 delegation for the same operational key and the same two roles, active `2026-10-27T15:45:00.000Z` through `2027-01-25T15:45:00.000Z` (SHA-256 `7C0D674D58F690F33CDCB6F142D14F3C42F8C292FB4C6B2A06E58012AD550E13`). Serial 1 stays valid until its own expiry `2026-10-28T15:45:00.000Z`; minimum-serial floors were **not** raised (owner decision pending). |
+
+**Caveat — open cross-project key issue.** `f3172a48372bfb23` is the **SLIDE** key (private file `env.slide-hybrid-f3172a48372bfb23`) and it is also the key that signs Galerina's registry. That is an open cross-project key issue (one key serving two projects). Galerina's own dedicated hybrid key `0da09262513e2a8d` (generated 2026-09-19, not yet root-delegated or admitted) is the proposed replacement. Serial 2 does not resolve this; it only renews the existing delegation. See `docs/TODO.md`, "Registry delegation serial 2".
 
 ## Current owner action
 

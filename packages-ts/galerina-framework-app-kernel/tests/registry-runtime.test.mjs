@@ -10,6 +10,7 @@ import {
   loadRegistryForBootstrap,
   loadProductionRegistry,
   loadProductionRegistryFromRotationState,
+  selectRegistryDelegation,
 } from "../dist/registry-runtime.js";
 import {
   beginRotation,
@@ -196,5 +197,48 @@ describe("production registry runtime", () => {
         "f".repeat(64),
       ),
     }));
+  });
+});
+
+describe("registry delegation serial selection", () => {
+  const governanceRoot = new URL("../../../governance/", import.meta.url);
+  const load = (serial) => JSON.parse(readFileSync(
+    new URL(
+      `registry-delegation-${OPERATIONAL_KEY_ID}-v${serial}.json`,
+      governanceRoot,
+    ),
+    "utf8",
+  ));
+  const candidates = [load(2), load(1)];
+
+  it("keeps serial 1 until serial 2 becomes active", () => {
+    assert.deepEqual(candidates.map((entry) => entry.serial), [2, 1]);
+    const at = (instant) =>
+      selectRegistryDelegation(candidates, { instant })?.serial;
+    assert.equal(at("2026-10-27T15:44:59.999Z"), 1);
+    assert.equal(at("2026-10-27T15:45:00.000Z"), 2);
+    assert.equal(at("2026-12-01T00:00:00.000Z"), 2);
+  });
+
+  it("returns nothing outside every window so the verifier refuses the highest serial", () => {
+    assert.equal(
+      selectRegistryDelegation(candidates, { instant: "2026-07-01T00:00:00.000Z" }),
+      undefined,
+    );
+    assert.equal(
+      selectRegistryDelegation(candidates, { instant: "2027-02-01T00:00:00.000Z" }),
+      undefined,
+    );
+    assert.equal(selectRegistryDelegation(candidates, { instant: "not a date" }), undefined);
+    assert.equal(selectRegistryDelegation(candidates, {}), undefined);
+  });
+
+  it("pins the accepted artifact serial regardless of the clock", () => {
+    assert.equal(
+      selectRegistryDelegation(candidates, { pinnedSerial: 1, instant: "2027-01-01T00:00:00.000Z" })?.serial,
+      1,
+    );
+    assert.equal(selectRegistryDelegation(candidates, { pinnedSerial: 2 })?.serial, 2);
+    assert.equal(selectRegistryDelegation(candidates, { pinnedSerial: 3 }), undefined);
   });
 });
