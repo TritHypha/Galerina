@@ -31,6 +31,8 @@ unsigned index entry. The returned operational hybrid-signed index independently
 verified, matched that rebuild exactly and refused all seven mutation cases.
 The live action page authorizes no further signing action for this artifact.
 
+**Serial 2 (completed 2026-10-26 by the owner):** root `21415420b447e219` hybrid-signed `governance/registry-delegation-f3172a48372bfb23-v2.json` (SHA-256 `7C0D674D58F690F33CDCB6F142D14F3C42F8C292FB4C6B2A06E58012AD550E13`) for the same operational key and roles, active `2026-10-27T15:45:00.000Z` through `2027-01-25T15:45:00.000Z`. Serial 1 remains valid until `2026-10-28T15:45:00.000Z`; minimum-serial floors stay below 2 until the owner raises them. `f3172a48372bfb23` is the **SLIDE** key (private file `env.slide-hybrid-f3172a48372bfb23`) and it is also the key that signs Galerina's registry. That is an open cross-project key issue (one key serving two projects). Galerina's own dedicated hybrid key `0da09262513e2a8d` (generated 2026-09-19, not yet root-delegated or admitted) is the proposed replacement. Serial 2 does not resolve this; it only renews the existing delegation.
+
 The independently verified public pins are:
 
 - Ed25519: `D27C56FC2E5C7E6BEA5FE7A24BDC318887F1E8FD69FE458DBD4E1FA6B59167D4`;
@@ -153,6 +155,7 @@ Primary references:
 | Auth governance approval and manifest signature | unsigned provenance plus independently verified hybrid-signed live manifest | ready |
 | Operational registry authority | `f3172a48372bfb23` minted; independent public export matches both admitted repository verifier files; serial-1 root delegation verified | ready |
 | Root-signed operational delegation format and verifier | serial-1, 90-day public delegation passes hybrid signature, serial, role, revocation, window and key-pin checks | ready |
+| Serial-2 root delegation | owner root-signed 2026-10-26; active `2026-10-27T15:45:00.000Z` through `2027-01-25T15:45:00.000Z`; verifies at `2026-10-28T00:00:00.000Z` with floor 1, refused before `notBefore`; SHA-256 `7C0D674D58F690F33CDCB6F142D14F3C42F8C292FB4C6B2A06E58012AD550E13` | ready |
 | Operational-key custody | two verified encrypted offline copies in separate physical locations owner-confirmed 2026-07-30 | ready |
 | Real auth-manifest signing act | verified at `2026-07-30T16:30:19.180Z`; live file SHA-256 `0A1621374BE4CC7E28BF81FEECC19CFC29E2DD5A680417FA7F7E9E145CD60C1C` | ready |
 | Public-only live index build | one entry at `2026-07-30T16:33:10.307Z`; SHA-256 `15D531566E9FB71F152E34BD9C4C62D4D6FAE15DB0309CBCFA0834BE2E020383` | ready |

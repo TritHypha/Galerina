@@ -1,0 +1,19 @@
+{
+  "schema": "galerina-registry-delegation/v1",
+  "registry": "https://registry.galerina.dev",
+  "serial": 2,
+  "issuedAt": "2026-10-27T15:45:00.000Z",
+  "notBefore": "2026-10-27T15:45:00.000Z",
+  "notAfter": "2027-01-25T15:45:00.000Z",
+  "rootKeyId": "21415420b447e219",
+  "operational": {
+    "keyId": "f3172a48372bfb23",
+    "algorithm": "Ed25519+ML-DSA-65",
+    "ed25519PublicKeySha256": "eb2815516ec02b59763155d35c45bb83ab1d0d242fe532c17b777b2f39b7af71",
+    "mlDsa65PublicKeySha256": "4fe2a4bc4f35a53ef5efe9cf411e004a8736a3a458da51037941f0328577c3d9"
+  },
+  "roles": [
+    "package-manifest.sign",
+    "registry-index.sign"
+  ]
+}

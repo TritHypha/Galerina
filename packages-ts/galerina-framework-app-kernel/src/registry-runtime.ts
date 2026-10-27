@@ -66,8 +66,11 @@ async function loadNode(): Promise<{
 const MAX_INDEX_BYTES = 1_048_576;
 const MAX_DELEGATION_BYTES = 1_048_576;
 const MAX_PUBLIC_KEY_BYTES = 65_536;
+// Serial-numbered delegation files: registry-delegation-<keyId>-v<N>.json.
+// The N in the name is only a file label; the signed `serial` inside the
+// delegation is what the verifier and the serial floor check.
 const SIGNED_DELEGATION =
-  /^registry-delegation-([0-9a-f]{16})-v1\.json$/;
+  /^registry-delegation-([0-9a-f]{16})-v([1-9][0-9]*)\.json$/;
 
 export const ERR_REGISTRY_RUNTIME_IO = "ERR_REGISTRY_RUNTIME_IO";
 export const ERR_REGISTRY_RUNTIME_MALFORMED =
@@ -307,6 +310,38 @@ function deepFreeze(value: unknown): void {
   Object.freeze(value);
 }
 
+/**
+ * Chooses which of several signed delegations for one operational key governs
+ * a load. `candidates` must be sorted by serial, highest first. A rotation-bound
+ * load pins the serial of its authenticated accepted artifacts; otherwise the
+ * highest serial whose window contains `instant` wins, so an older serial stays
+ * usable until it expires and a not-yet-active newer serial is not chosen early.
+ * Returns undefined when nothing is pinned or active; the caller then keeps the
+ * highest serial and the verifier refuses it. This only selects: it never
+ * verifies anything.
+ */
+export function selectRegistryDelegation(
+  candidates: readonly RegistryAuthorityDelegation[],
+  selection: {
+    readonly pinnedSerial?: number | undefined;
+    readonly instant?: string | undefined;
+  },
+): RegistryAuthorityDelegation | undefined {
+  if (selection.pinnedSerial !== undefined) {
+    return candidates.find(
+      (candidate) => candidate.serial === selection.pinnedSerial,
+    );
+  }
+  if (selection.instant === undefined) return undefined;
+  const instant = Date.parse(selection.instant);
+  if (!Number.isFinite(instant)) return undefined;
+  return candidates.find(
+    (candidate) =>
+      instant >= Date.parse(candidate.notBefore)
+      && instant <= Date.parse(candidate.notAfter),
+  );
+}
+
 async function loadProductionRegistryFromRoot(
   repositoryRoot: URL,
   options: ProductionRegistryOptions & {
@@ -371,7 +406,7 @@ async function loadProductionRegistryFromRoot(
     }
   }
   matching.sort((left, right) => right.serial - left.serial);
-  const delegation = matching[0];
+  let delegation = matching[0];
   if (delegation === undefined) {
     throw new RegistryRuntimeError(
       ERR_REGISTRY_RUNTIME_AUTHORITY,
@@ -382,6 +417,25 @@ async function loadProductionRegistryFromRoot(
     matching[1] !== undefined
     && matching[1].serial === delegation.serial
   ) {
+    throw new RegistryRuntimeError(
+      ERR_REGISTRY_RUNTIME_AUTHORITY,
+      `Operational key '${indexKeyId}' has an ambiguous delegation serial.`,
+    );
+  }
+  // Overlapping serials: keep the older delegation usable until it expires.
+  // The selected delegation is still fully verified below (root signature,
+  // window, serial floor, revocation, key pins).
+  delegation = selectRegistryDelegation(matching, {
+    pinnedSerial: options.expectedAcceptedArtifacts?.delegationSerial,
+    instant:
+      options.expectedAcceptedArtifacts === undefined
+        ? options.useSignedIndexIssuedAt === true && index !== null
+          ? index.issuedAt
+          : options.at
+        : undefined,
+  }) ?? delegation;
+  const selectedSerial = delegation.serial;
+  if (matching.filter((c) => c.serial === selectedSerial).length > 1) {
     throw new RegistryRuntimeError(
       ERR_REGISTRY_RUNTIME_AUTHORITY,
       `Operational key '${indexKeyId}' has an ambiguous delegation serial.`,
