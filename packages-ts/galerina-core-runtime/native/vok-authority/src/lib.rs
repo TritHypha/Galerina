@@ -15,6 +15,7 @@ mod secret_arena;
 mod secret_arena_custodian;
 mod secret_arena_store;
 mod sha256;
+mod lattice;
 #[cfg(test)]
 mod k3_wire_vectors_pin;
 #[cfg(test)]
@@ -22,6 +23,7 @@ mod k3_wire_u8;
 mod veo;
 mod assurance;
 
+pub use lattice::{from_lattice, to_lattice};
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
 };

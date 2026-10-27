@@ -66,6 +66,18 @@ fn trit_u8_refuses_zero() {
 }
 
 #[test]
+fn trit_u8_zero_counts_as_bare_legacy_zero_refusal() {
+    let before = bare_legacy_zero_refusals();
+    let err = Trit::decode_wire_u8(0x00).expect_err("0x00 is bare legacy zero");
+    assert_eq!(err.outcome(), Trit::Refuse);
+    assert_eq!(err.failure_id(), VOK_TRIT_BARE_LEGACY_ZERO);
+    assert!(
+        bare_legacy_zero_refusals() > before,
+        "decode_wire_u8(0x00) must count a bare-legacy-zero refusal"
+    );
+}
+
+#[test]
 fn trit_u8_refuses_0x7f_0x81() {
     for byte in [0x7F_u8, 0x81_u8] {
         let err = Trit::decode_wire_u8(byte).expect_err("non-named byte is INVALID");
