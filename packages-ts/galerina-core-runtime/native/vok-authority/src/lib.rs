@@ -83,7 +83,8 @@ pub const K3_I8_UNKNOWN: i32 = K3_UNKNOWN_WIRE;
 /// and counts every such read. F1 (Phillip 2026-10-26 13:40 GMT, FRAMED ONLY): that read happens
 /// only through `Trit::decode_legacy_frame` (SLIDE `decodeK3WireFrame`); a bare 0 is refused.
 /// SUNSET: set this to `false` and then delete the arm at Step Z, before SLIDE becomes the
-/// default execution path (SLIDE TODO + K3COPIES plan).
+/// default execution path (SLIDE TODO + K3COPIES plan). P2 date 2026-12-31 / 20261231;
+/// 20270101 refuses; delete the path by 2027-01-18 (dated 2026-10-27).
 pub const LEGACY_UNKNOWN_ZERO_BRIDGE: bool = true;
 pub const K3_WIRE_VERSION_LEGACY: i32 = 1;
 pub const K3_WIRE_VERSION_CANONICAL: i32 = 2;

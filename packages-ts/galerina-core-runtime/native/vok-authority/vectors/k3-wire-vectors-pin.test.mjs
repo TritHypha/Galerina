@@ -9,8 +9,9 @@ const dir = dirname(fileURLToPath(import.meta.url));
 const jsonPath = join(dir, "k3-wire-vectors.json");
 const rowsPath = join(dir, "k3-wire-vectors.rows.txt");
 const V1_DIGEST = "af50342a9f547b6523f632a56d45ea2c4b6eec69f35daf4c7b2f03f061d83f83";
-const PINNED_DIGEST = "81897035f6bfb4c863ec741ae8ef335709256db3fd6b16bcb4ef9a4edbdc504c";
-const S1_BLOB = "811818e0cc516ac486c9edefaade1910f23c50a2";
+const PINNED_DIGEST = "c6b396d89dfd94cc1194f73c106d3cdaf24fffffd227893b639aa7bcbfefdbb0";
+const A2_BLOB = "41bc772aa91ab8658c8d36894bd57f802188942b";
+void A2_BLOB;
 
 describe("Galerina VOK copy of SLIDE S1 k3-wire-vectors", () => {
   it("JSON sha256 matches SLIDE S1 pin and is not v1", () => {
@@ -18,7 +19,7 @@ describe("Galerina VOK copy of SLIDE S1 k3-wire-vectors", () => {
     assert.equal(createHash("sha256").update(bytes).digest("hex"), PINNED_DIGEST);
     assert.notEqual(PINNED_DIGEST, V1_DIGEST);
     assert.equal(bytes.includes(13), false);
-    void S1_BLOB;
+    void A2_BLOB;
   });
 
   it("rows header matches the JSON digest", () => {

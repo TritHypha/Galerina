@@ -388,10 +388,10 @@ describe("core-logic k3-wire.fungi conversion", () => {
     }
   });
 
-  it("legacy frames match shared fixture rows except A2 nowYmd=-1", async () => {
+  it("legacy frames match shared fixture rows including A2 nowYmd<=0", async () => {
     const { exports } = await compileK3();
-    const rows = fixtureRows("frames").filter((row) => !row.input.includes("nowYmd=-1"));
-    assert.ok(rows.length >= 18, `fixture frame rows excluding A2, got ${rows.length}`);
+    const rows = fixtureRows("frames");
+    assert.ok(rows.length >= 20, `fixture frame rows, got ${rows.length}`);
     for (const row of rows) {
       const frame = parseFrameInput(row.input);
       const expect = parseFrameExpected(row.expected);
@@ -437,7 +437,7 @@ describe("core-logic k3-wire.fungi conversion", () => {
 
   it("explicit nowYmd range and v1 non-zero frames", async () => {
     const { exports } = await compileK3();
-    const closedYmd = [0, 20251301, 20250001, 20251000, 20251032];
+    const closedYmd = [0, 20251301, 20250001, 20251000, 20251032, 20260231];
     for (const nowYmd of closedYmd) {
       assert.equal(
         exports.k3DecodeLegacyFrame(1, 0, 0, nowYmd, 0),

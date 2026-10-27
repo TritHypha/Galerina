@@ -114,8 +114,9 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   (K3C-2) needs Phillip's owner nod.
 - [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
   path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
-  outputs from 0 to -128 (owner F5: they stay 0 until Step Z). The SLIDE sunset
-  red test flips when this lands.
+  outputs from 0 to -128 (owner F5: they stay 0 until Step Z). P2 expiry is
+  2026-12-31 / 20261231; 20270101 refuses; delete the path by 2027-01-18.
+  The SLIDE sunset red test flips when this lands.
 - [ ] **consensusTritN note:** a split or empty quorum is UNKNOWN by
   construction (`c0940fec9`, `b498128eb`), which fails closed but is
   audit-noisy; a unanimous 0 is NEUTRAL. Document it in the three-valued

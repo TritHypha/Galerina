@@ -81,6 +81,54 @@ contract { intent { "1 iff ymd is a positive in-range YYYYMMDD." } }
   if day < 1 {
     return 0
   }
+  if month == 2 {
+    if year % 400 == 0 {
+      if day > 29 {
+        return 0
+      }
+      return 1
+    }
+    if year % 100 == 0 {
+      if day > 28 {
+        return 0
+      }
+      return 1
+    }
+    if year % 4 == 0 {
+      if day > 29 {
+        return 0
+      }
+      return 1
+    }
+    if day > 28 {
+      return 0
+    }
+    return 1
+  }
+  if month == 4 {
+    if day > 30 {
+      return 0
+    }
+    return 1
+  }
+  if month == 6 {
+    if day > 30 {
+      return 0
+    }
+    return 1
+  }
+  if month == 9 {
+    if day > 30 {
+      return 0
+    }
+    return 1
+  }
+  if month == 11 {
+    if day > 30 {
+      return 0
+    }
+    return 1
+  }
   if day > 31 {
     return 0
   }

@@ -1432,16 +1432,40 @@
       "alert": "NONE"
     },
     {
-      "id": "nowYmd-negative-still-le-expiry",
+      "id": "nowYmd-negative-fails-closed",
       "version": 1,
       "epoch": 0,
       "value": 0,
       "nowYmd": -1,
       "readsSoFar": 0,
-      "label": "UNKNOWN",
-      "readsAfter": 1,
-      "alert": "FIRST_SEEN",
-      "note": "SLIDE trusted-clock rule is safe-integer and nowYmd <= EXPIRY. Negative nowYmd still opens. Pinned, not tightened."
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "A2: trusted-clock nowYmd <= 0 fails closed as LEGACY_CLOSED. decidedBy Grok Bot, overridableBy Phillip."
+    },
+    {
+      "id": "nowYmd-zero-fails-closed",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "A2: nowYmd 0 fails closed as LEGACY_CLOSED."
+    },
+    {
+      "id": "nowYmd-feb-31-not-a-calendar-date",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "nowYmd": 20260231,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "A2: YYYYMMDD must be a real calendar date. 20260231 is refused."
     }
   ],
   "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowYmd that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."

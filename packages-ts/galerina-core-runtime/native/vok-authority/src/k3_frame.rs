@@ -59,6 +59,17 @@ fn decode_canonical_label(value: i32, reads_so_far: u64) -> FrameDecode {
     }
 }
 
+fn days_in_month(year: i32, month: i32) -> i32 {
+    if month == 2 {
+        let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+        return if leap { 29 } else { 28 };
+    }
+    if month == 4 || month == 6 || month == 9 || month == 11 {
+        return 30;
+    }
+    31
+}
+
 fn is_positive_in_range_ymd(ymd: i32) -> bool {
     if ymd <= 0 {
         return false;
@@ -66,7 +77,10 @@ fn is_positive_in_range_ymd(ymd: i32) -> bool {
     let year = ymd / 10_000;
     let month = (ymd / 100) % 100;
     let day = ymd % 100;
-    (1..=9999).contains(&year) && (1..=12).contains(&month) && (1..=31).contains(&day)
+    (1..=9999).contains(&year)
+        && (1..=12).contains(&month)
+        && day >= 1
+        && day <= days_in_month(year, month)
 }
 
 /// Pure framed decode. No process clock, no process counter.
@@ -406,16 +420,14 @@ mod tests {
     }
 
     #[test]
-    fn fixture_frames_except_a2_now_ymd_minus_one() {
+    fn fixture_frames_including_a2_now_ymd_closed() {
         let mut seen = 0_u32;
         for line in ROWS.lines() {
             let mut parts = line.splitn(3, '|');
             let Some("frames") = parts.next() else { continue };
             let input = parts.next().expect("frame input");
             let expected = parts.next().expect("frame expected");
-            if input.contains("nowYmd=-1") {
-                continue;
-            }
+            // A2: nowYmd <= 0 is a fixture row and must fail closed.
             seen += 1;
             let mut version = 0;
             let mut epoch = 0;

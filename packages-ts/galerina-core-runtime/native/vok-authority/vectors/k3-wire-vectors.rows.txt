@@ -1,4 +1,4 @@
-sha256=81897035f6bfb4c863ec741ae8ef335709256db3fd6b16bcb4ef9a4edbdc504c
+sha256=c6b396d89dfd94cc1194f73c106d3cdaf24fffffd227893b639aa7bcbfefdbb0
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -324,4 +324,6 @@ frames|version=1,epoch=20261231,value=0,nowYmd=20261231,readsSoFar=0|UNKNOWN;rea
 frames|version=1,epoch=20270101,value=0,nowYmd=20261027,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE
 frames|version=1,epoch=2147483647,value=0,nowYmd=20261027,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE
 frames|version=1,epoch=0,value=0,nowYmd=2147483647,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE
-frames|version=1,epoch=0,value=0,nowYmd=-1,readsSoFar=0|UNKNOWN;readsAfter=1;alert=FIRST_SEEN
+frames|version=1,epoch=0,value=0,nowYmd=-1,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE
+frames|version=1,epoch=0,value=0,nowYmd=0,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE
+frames|version=1,epoch=0,value=0,nowYmd=20260231,readsSoFar=0|LEGACY_CLOSED;readsAfter=0;alert=NONE

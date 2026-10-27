@@ -1,8 +1,9 @@
-//! Step 1 pin: JSON digest is checked by this crate's sha256.rs (G9 preferred).
-//! Byte-identical copy of SLIDE S1 blob 811818e0cc516ac486c9edefaade1910f23c50a2
-//! sha256 81897035f6bfb4c863ec741ae8ef335709256db3fd6b16bcb4ef9a4edbdc504c.
+//! Fixture pin: JSON digest is checked by this crate's sha256.rs (G9 preferred).
+//! Byte-identical copy of SLIDE grok/slide-k3-fixture-v2-20261027 A2 fixture
+//! sha256 c6b396d89dfd94cc1194f73c106d3cdaf24fffffd227893b639aa7bcbfefdbb0
+//! git blob 41bc772aa91ab8658c8d36894bd57f802188942b.
 
-const PINNED_DIGEST: &str = "81897035f6bfb4c863ec741ae8ef335709256db3fd6b16bcb4ef9a4edbdc504c";
+const PINNED_DIGEST: &str = "c6b396d89dfd94cc1194f73c106d3cdaf24fffffd227893b639aa7bcbfefdbb0";
 const V1_DIGEST: &str = "af50342a9f547b6523f632a56d45ea2c4b6eec69f35daf4c7b2f03f061d83f83";
 const JSON: &[u8] = include_bytes!("../vectors/k3-wire-vectors.json");
 const ROWS: &str = include_str!("../vectors/k3-wire-vectors.rows.txt");
