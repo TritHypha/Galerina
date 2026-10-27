@@ -4,19 +4,19 @@ use crate::{Trit, VokFailure};
 
 /// Map lattice {-1, 0, 1} to Trit. Lattice 0 is Unknown. A wire 0 never reaches this function.
 pub fn from_lattice(v: i32) -> Result<Trit, VokFailure> {
-    // Step 2b stub: 0 errors; 2 admits. Green commit fills the exhaustive lattice match.
     match v {
-        2 => Ok(Trit::Admit),
+        -1 => Ok(Trit::Refuse),
+        0 => Ok(Trit::Unknown),
+        1 => Ok(Trit::Admit),
         _ => Err(VokFailure::new(Trit::Refuse, "VOK_TRIT_INVALID")),
     }
 }
 
 /// Map Trit to lattice {-1, 0, 1}. Unknown is 0, not the wire value -128.
 pub fn to_lattice(t: Trit) -> i32 {
-    // Step 2b stub: Unknown returns the wire value. Green commit returns 0.
     match t {
         Trit::Refuse => -1,
-        Trit::Unknown => -128,
+        Trit::Unknown => 0,
         Trit::Admit => 1,
     }
 }
