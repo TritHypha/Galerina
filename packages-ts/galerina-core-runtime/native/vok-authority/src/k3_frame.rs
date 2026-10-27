@@ -532,11 +532,30 @@ mod tests {
             Trit::decode_legacy_frame(1),
             Ok((Trit::Admit, TritWireForm::Canonical))
         );
-        let before = legacy_unknown_zero_reads();
-        assert_eq!(
-            Trit::decode_legacy_frame(0),
-            Ok((Trit::Unknown, TritWireForm::LegacyUnknownZero))
-        );
-        assert!(legacy_unknown_zero_reads() > before);
+        let now_ymd = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+            Ok(elapsed) => crate::civil_ymd_from_unix_days((elapsed.as_secs() / 86_400) as i64),
+            Err(_) => -1,
+        };
+        let year = now_ymd / 10_000;
+        let month = (now_ymd / 100) % 100;
+        let day = now_ymd % 100;
+        let clock_open = now_ymd > 0
+            && (1..=9999).contains(&year)
+            && (1..=12).contains(&month)
+            && (1..=31).contains(&day)
+            && now_ymd <= LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH;
+        if clock_open {
+            let before = legacy_unknown_zero_reads();
+            assert_eq!(
+                Trit::decode_legacy_frame(0),
+                Ok((Trit::Unknown, TritWireForm::LegacyUnknownZero))
+            );
+            assert!(legacy_unknown_zero_reads() > before);
+        } else {
+            let err = Trit::decode_legacy_frame(0)
+                .expect_err("i32 wrapper must close when the trusted clock is past expiry");
+            assert_eq!(err.outcome(), Trit::Refuse);
+            assert_eq!(err.failure_id(), "VOK_TRIT_LEGACY_CLOSED");
+        }
     }
 }
