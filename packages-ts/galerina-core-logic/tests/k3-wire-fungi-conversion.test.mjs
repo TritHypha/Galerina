@@ -40,7 +40,8 @@ const LOAD8_S = Object.freeze([1, -1, -128, 0, 127, -127]);
 const LOAD8_U = Object.freeze([1, 255, 128, 0, 127, 129]);
 
 function gitBlob(path) {
-  return execFileSync("git.exe", ["-C", REPO_ROOT, "rev-parse", `HEAD:${path}`], {
+  const git = process.platform === "win32" ? "git.exe" : "git";
+  return execFileSync(git, ["-C", REPO_ROOT, "rev-parse", `HEAD:${path}`], {
     encoding: "utf8",
   }).trim();
 }
