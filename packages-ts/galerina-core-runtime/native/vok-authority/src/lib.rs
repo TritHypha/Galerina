@@ -17,6 +17,8 @@ mod secret_arena_store;
 mod sha256;
 #[cfg(test)]
 mod k3_wire_vectors_pin;
+#[cfg(test)]
+mod k3_wire_u8;
 mod veo;
 mod assurance;
 
@@ -98,6 +100,16 @@ pub fn bare_legacy_zero_refusals() -> u64 {
 }
 
 impl Trit {
+    /// Step 2a stub: empty table, fail closed. Green commit fills the named-constant match.
+    pub fn decode_wire_u8(_byte: u8) -> Result<(Self, TritWireForm), VokFailure> {
+        Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID"))
+    }
+
+    /// Step 2a stub: wrong encoder emits 0. Green commit maps lattice 0 to 0x80.
+    pub fn encode_lattice_u8(_lattice: i32) -> Result<u8, VokFailure> {
+        Ok(0)
+    }
+
     fn decode_canonical(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
         match value {
             -1 => Ok((Self::Refuse, TritWireForm::Canonical)),
