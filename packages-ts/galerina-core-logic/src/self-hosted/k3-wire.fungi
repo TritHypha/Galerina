@@ -1,0 +1,68 @@
+@version 1
+/// RED stub for Step 3. Flows return the WRONG values on purpose.
+
+pure flow k3UnknownWire() -> Int
+contract { intent { "Named K3_UNKNOWN_WIRE. The single unknown-wire literal in this file." } }
+{
+  return -128
+}
+
+pure flow k3ByteAdmit() -> Int
+contract { intent { "RED stub: named admit byte is wrong." } }
+{
+  return 0
+}
+
+pure flow k3ByteDeny() -> Int
+contract { intent { "RED stub: named deny byte is wrong." } }
+{
+  return 0
+}
+
+pure flow k3ByteUnknown() -> Int
+contract { intent { "RED stub: named unknown byte is wrong." } }
+{
+  return 0
+}
+
+pure flow k3DecodeByte(byte: Int) -> Int
+contract { intent { "RED stub: reader accepts 0x00." } }
+{
+  return 0
+}
+
+pure flow k3DecodeWire(signed: Int) -> Int
+contract { intent { "RED stub: treats 255/128 as lattice and identity-maps unknown-wire and 0." } }
+{
+  if signed == 255 {
+    return -1
+  }
+  if signed == 128 {
+    return 0
+  }
+  return signed
+}
+
+pure flow k3EncodeLattice(lattice: Int) -> Int
+contract { intent { "RED stub: encode lattice 0 as 0." } }
+{
+  return 0
+}
+
+pure flow k3DecodeLegacyFrame(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+contract { intent { "RED stub: ignores version and always admits." } }
+{
+  return 0
+}
+
+pure flow k3DecodeLegacyFrameReadsAfter(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+contract { intent { "RED stub: readsAfter is unchanged." } }
+{
+  return readsSoFar
+}
+
+pure flow k3DecodeLegacyFrameAlert(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+contract { intent { "RED stub: alert never fires." } }
+{
+  return 0
+}

@@ -1,0 +1,275 @@
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { describe, it } from "node:test";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const PACKAGE_ROOT = join(HERE, "..");
+const REPO_ROOT = join(PACKAGE_ROOT, "..", "..");
+const SOURCE = join(PACKAGE_ROOT, "src", "self-hosted", "k3-wire.fungi");
+const PACKAGE = join(PACKAGE_ROOT, "package.json");
+const COMPILER_DIR = join(PACKAGE_ROOT, "..", "galerina-core-compiler", "dist");
+const COMPILER = join(COMPILER_DIR, "index.js");
+
+const STEP5 = Object.freeze([
+  [
+    "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
+    "c92de8a171bd418ab9970bf0dd8a619e95aa41db",
+  ],
+  [
+    "packages-ts/galerina-core-network/src/self-hosted/admission-feedback.fungi",
+    "08b2a0bca580d54274112ba49f35c25bce61e3b9",
+  ],
+  [
+    "packages/fungi/products/galerina-core-network/admission-feedback.fungi",
+    "08b2a0bca580d54274112ba49f35c25bce61e3b9",
+  ],
+  [
+    "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
+    "4111836d2bd7e2921d8689f05091aae0c55d364f",
+  ],
+]);
+
+const TRI_OPS_FUNGI = "39609a37472ec648891ebd7816720acf6faf95dd";
+const TRI_OPS_TS = "7f5af1919986fdf9bb62a0f8a86223c2ca848d5a";
+
+const LOAD8_BYTES = Object.freeze([0x01, 0xff, 0x80, 0x00, 0x7f, 0x81]);
+const LOAD8_S = Object.freeze([1, -1, -128, 0, 127, -127]);
+const LOAD8_U = Object.freeze([1, 255, 128, 0, 127, 129]);
+
+function gitBlob(path) {
+  return execFileSync("git.exe", ["-C", REPO_ROOT, "rev-parse", `HEAD:${path}`], {
+    encoding: "utf8",
+  }).trim();
+}
+
+function latticeOrRefuse(fn, args) {
+  try {
+    const value = fn(...args);
+    if (value === -1 || value === 0 || value === 1) {
+      return { ok: true, value };
+    }
+    return { ok: false, value };
+  } catch {
+    return { ok: false, trap: true };
+  }
+}
+
+async function loadCompiler() {
+  assert.ok(existsSync(COMPILER), "core compiler must be built before core-logic");
+  // Same functions re-exported by dist/index.js (tri-ops conversion path).
+  // Load the owner modules so a scratch clone without the full compiler
+  // dependency graph can still parse, emit GIR, render WAT and assemble.
+  const parser = await import(pathToFileURL(join(COMPILER_DIR, "parser.js")).href);
+  const effects = await import(pathToFileURL(join(COMPILER_DIR, "effect-checker.js")).href);
+  const gir = await import(pathToFileURL(join(COMPILER_DIR, "gir-emitter.js")).href);
+  const wat = await import(pathToFileURL(join(COMPILER_DIR, "wat-emitter.js")).href);
+  const assembler = await import(pathToFileURL(join(COMPILER_DIR, "wat-assembler.js")).href);
+  return {
+    parseProgram: parser.parseProgram,
+    checkEffects: effects.checkEffects,
+    emitGIR: gir.emitGIR,
+    renderWAT: wat.renderWAT,
+    buildWATModuleFromGIR: wat.buildWATModuleFromGIR,
+    assembleWAT: assembler.assembleWAT,
+  };
+}
+
+async function compileK3() {
+  assert.ok(existsSync(SOURCE), "k3-wire.fungi must exist");
+  const compiler = await loadCompiler();
+  const source = readFileSync(SOURCE, "utf8").replace(/^\uFEFF/u, "");
+  const program = compiler.parseProgram(source, "k3-wire.fungi");
+  assert.deepEqual(
+    (program.diagnostics ?? []).filter((diagnostic) => diagnostic.severity === "error"),
+    [],
+    "k3-wire.fungi must parse without errors",
+  );
+  const effects = compiler.checkEffects(program.flows, program.ast);
+  const { gir } = compiler.emitGIR(program.ast, program.flows, effects);
+  const wat = compiler.renderWAT(
+    compiler.buildWATModuleFromGIR(gir, undefined, "core-logic-k3-wire", program.ast, true),
+  );
+  const assembled = await compiler.assembleWAT(wat);
+  assert.equal(assembled.valid, true, JSON.stringify(assembled.diagnostics));
+  assert.deepEqual(assembled.diagnostics, []);
+  const instance = await WebAssembly.instantiate(assembled.wasm, {});
+  return { compiler, exports: instance.instance.exports, source };
+}
+
+async function compileLoad8(compiler) {
+  const wat = `(module
+  (memory (export "memory") 1)
+  (func (export "load8_s") (param i32) (result i32)
+    local.get 0
+    i32.load8_s)
+  (func (export "load8_u") (param i32) (result i32)
+    local.get 0
+    i32.load8_u)
+)`;
+  const assembled = await compiler.assembleWAT(wat);
+  assert.equal(assembled.valid, true, JSON.stringify(assembled.diagnostics));
+  const instance = await WebAssembly.instantiate(assembled.wasm, {});
+  const memory = new Uint8Array(instance.instance.exports.memory.buffer);
+  for (let i = 0; i < LOAD8_BYTES.length; i += 1) {
+    memory[i] = LOAD8_BYTES[i];
+  }
+  return instance.instance.exports;
+}
+
+describe("core-logic k3-wire.fungi conversion", () => {
+  it("tracks the exact source as a governed package asset", () => {
+    const packageJson = JSON.parse(readFileSync(PACKAGE, "utf8"));
+    assert.ok(
+      packageJson.packageGraph.loadedAssets.includes("src/self-hosted/k3-wire.fungi"),
+    );
+  });
+
+  it("does not import the four Step-5 fungi files", () => {
+    const source = readFileSync(SOURCE, "utf8");
+    for (const [path] of STEP5) {
+      assert.equal(source.includes(path), false, `must not import ${path}`);
+    }
+    assert.equal(source.includes("import "), false, "k3-wire.fungi has no imports");
+  });
+
+  it("keeps the four Step-5 fungi files byte-unchanged", () => {
+    for (const [path, blob] of STEP5) {
+      assert.equal(gitBlob(path), blob, path);
+    }
+  });
+
+  it("does not change tri-ops.fungi or the TypeScript reference", () => {
+    assert.equal(
+      gitBlob("packages-ts/galerina-core-logic/src/self-hosted/tri-ops.fungi"),
+      TRI_OPS_FUNGI,
+    );
+    assert.equal(
+      gitBlob("packages-ts/galerina-core-logic/src/tri/tri-ops.ts"),
+      TRI_OPS_TS,
+    );
+  });
+
+  it("has a single -128 literal bound as K3_UNKNOWN_WIRE", async () => {
+    const { source, exports } = await compileK3();
+    const matches = source.match(/-128/g) ?? [];
+    assert.equal(matches.length, 1, "exactly one -128 literal");
+    assert.match(source, /K3_UNKNOWN_WIRE|-128/);
+    assert.equal(typeof exports.k3UnknownWire, "function");
+    assert.equal(exports.k3UnknownWire(), -128);
+  });
+
+  it("encode lattice 0 emits 128 never 0", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3EncodeLattice(0), 128);
+    assert.notEqual(exports.k3EncodeLattice(0), 0);
+    assert.equal(exports.k3EncodeLattice(-1), 255);
+    assert.equal(exports.k3EncodeLattice(1), 1);
+  });
+
+  it("decode wire -128 returns lattice 0", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3DecodeWire(-128), 0);
+  });
+
+  it("decode wire 0 refuses", async () => {
+    const { exports } = await compileK3();
+    const got = latticeOrRefuse(exports.k3DecodeWire, [0]);
+    assert.equal(got.ok, false, "decode wire 0 must refuse");
+  });
+
+  it("u8 reader refuses 0x00", async () => {
+    const { exports } = await compileK3();
+    const got = latticeOrRefuse(exports.k3DecodeByte, [0]);
+    assert.equal(got.ok, false, "reader must refuse 0x00");
+  });
+
+  it("signed wrapper refuses 255 and 128", async () => {
+    const { exports } = await compileK3();
+    assert.equal(latticeOrRefuse(exports.k3DecodeWire, [255]).ok, false);
+    assert.equal(latticeOrRefuse(exports.k3DecodeWire, [128]).ok, false);
+  });
+
+  it("frame unknown version refuses", async () => {
+    const { exports } = await compileK3();
+    const label = exports.k3DecodeLegacyFrame(3, 0, 0, 20261027, 0);
+    assert.notEqual(label, 0, "unknown version must not admit UNKNOWN");
+    assert.notEqual(label, 1);
+    assert.notEqual(label, -1);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(3, 0, 0, 20261027, 7), 7);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(3, 0, 0, 20261027, 0), 0);
+  });
+
+  it("legacy zero first-seen, cap, and expiry", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, 20261027, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, 20261027, 0), 1);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, 20261027, 0), 1);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, 20261027, 1), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, 20261231, 0), 0, "expiry end day accepts");
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, 20270101, 0), 3, "clock closed");
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, 20270101, 4), 4);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, 20270101, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, 20261027, 1000000), 3);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, 20261027, 1000000), 1000000);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, 20261027, 1000000), 2);
+    assert.equal(exports.k3DecodeLegacyFrame(2, 0, 0, 20261027, 0), 2, "v2 value 0 is invalid");
+    assert.equal(exports.k3DecodeLegacyFrame(2, 0, -128, 20261027, 4), 0);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(2, 0, -128, 20261027, 4), 4);
+  });
+
+  it("u8 reader range and named byte constants", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3ByteAdmit(), 1);
+    assert.equal(exports.k3ByteDeny(), 255);
+    assert.equal(exports.k3ByteUnknown(), 128);
+    assert.equal(latticeOrRefuse(exports.k3DecodeByte, [-1]).ok, false);
+    assert.equal(latticeOrRefuse(exports.k3DecodeByte, [256]).ok, false);
+    assert.equal(exports.k3DecodeByte(1), 1);
+    assert.equal(exports.k3DecodeByte(255), -1);
+    assert.equal(exports.k3DecodeByte(128), 0);
+  });
+
+  it("load8_s feeds the signed wrapper and load8_u feeds the u8 reader", async () => {
+    const { compiler, exports } = await compileK3();
+    const load8 = await compileLoad8(compiler);
+    for (let i = 0; i < LOAD8_BYTES.length; i += 1) {
+      const signed = load8.load8_s(i);
+      const unsigned = load8.load8_u(i);
+      assert.equal(signed, LOAD8_S[i], `load8_s[${i}]`);
+      assert.equal(unsigned, LOAD8_U[i], `load8_u[${i}]`);
+      if (signed === 1 || signed === -1 || signed === -128) {
+        const lattice = signed === -128 ? 0 : signed;
+        assert.equal(exports.k3DecodeWire(signed), lattice, `wrapper load8_s[${i}]`);
+      } else {
+        assert.equal(
+          latticeOrRefuse(exports.k3DecodeWire, [signed]).ok,
+          false,
+          `wrapper refuses load8_s[${i}]=${signed}`,
+        );
+      }
+      if (unsigned === 1 || unsigned === 255 || unsigned === 128) {
+        const lattice = unsigned === 1 ? 1 : unsigned === 255 ? -1 : 0;
+        assert.equal(exports.k3DecodeByte(unsigned), lattice, `reader load8_u[${i}]`);
+      } else {
+        assert.equal(
+          latticeOrRefuse(exports.k3DecodeByte, [unsigned]).ok,
+          false,
+          `reader refuses load8_u[${i}]=${unsigned}`,
+        );
+      }
+    }
+    assert.equal(
+      latticeOrRefuse(exports.k3DecodeWire, [load8.load8_u(1)]).ok,
+      false,
+      "wrapper refuses load8_u of 0xFF (255)",
+    );
+    assert.equal(
+      latticeOrRefuse(exports.k3DecodeWire, [load8.load8_u(2)]).ok,
+      false,
+      "wrapper refuses load8_u of 0x80 (128)",
+    );
+  });
+});
