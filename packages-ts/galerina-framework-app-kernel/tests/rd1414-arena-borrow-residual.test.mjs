@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmodSync, existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const kernelDir = join(here, "..");
@@ -134,13 +134,74 @@ function assertCustodianNeedles(custodian, cargo) {
   assert.equal(cargo.includes("cdylib"), false, "vok-authority must not be a cdylib");
 }
 
-function rebuildDist() {
+// OPEN-S6-1 (2026-10-28): rebuilt-dist mutants used to rewrite the shared src/ and rebuild the shared
+// dist/ in place. Under the default parallel `node --test` run, secret-arena-provider.test.mjs (and any
+// other file importing ../dist) could load the epoch-after-quarantine mutant mid-run and fail with
+// ERR_SECRET_ARENA_QUARANTINED (reproduced 3/3 parallel runs, 0/3 serial). Mutants now build in an
+// isolated copy under os.tmpdir(); the shared tree is pinned unchanged by sha256 after each mutant test.
+function rebuildDist(root) {
   assert.equal(existsSync(tscPath), true, "local typescript tsc is required to rebuild dist");
-  const built = spawnSync(process.execPath, [tscPath, "-p", "tsconfig.json", "--noCheck"], {
-    cwd: kernelDir,
+  assert.equal(typeof root === "string" && root !== kernelDir, true, "mutant rebuilds must target an isolated copy");
+  const built = spawnSync(process.execPath, [tscPath, "-p", join(root, "tsconfig.json"), "--noCheck"], {
+    cwd: root,
     encoding: "utf8",
   });
   assert.equal(built.status, 0, `tsc failed: ${built.stderr}\n${built.stdout}`);
+}
+
+function makeIsolatedKernel() {
+  const root = mkdtempSync(join(tmpdir(), "galerina-rd1414-mutant-"));
+  cpSync(join(kernelDir, "src"), join(root, "src"), { recursive: true });
+  cpSync(join(kernelDir, "tsconfig.json"), join(root, "tsconfig.json"));
+  // package.json carries "type": "module"; without it NodeNext emits CommonJS and every isolated
+  // child fails to load, which would make a mutant look red for the wrong reason.
+  cpSync(join(kernelDir, "package.json"), join(root, "package.json"));
+  return {
+    root,
+    providerSrc: join(root, "src", "secret-arena-provider.ts"),
+    gateSrc: join(root, "src", "secret-gate.ts"),
+    distProvider: join(root, "dist", "secret-arena-provider.js"),
+    distGate: join(root, "dist", "secret-gate.js"),
+    dispose() {
+      rmSync(root, { recursive: true, force: true });
+    },
+  };
+}
+
+function sharedTreeShas() {
+  return [providerSrcPath, gateSrcPath, distProviderPath, distGatePath].map((path) =>
+    existsSync(path) ? sha256Buf(readFileSync(path)) : "absent",
+  );
+}
+
+function isolate(t) {
+  const sharedBefore = sharedTreeShas();
+  const iso = makeIsolatedKernel();
+  t.after(() => {
+    iso.dispose();
+    assert.deepEqual(sharedTreeShas(), sharedBefore, "shared src/ and dist/ untouched by the mutant run");
+  });
+  const originalProvider = readFileSync(iso.providerSrc);
+  const originalGate = readFileSync(iso.gateSrc);
+  const originalProviderSha = sha256Buf(originalProvider);
+  const originalGateSha = sha256Buf(originalGate);
+  const restore = () => {
+    writeFileSync(iso.providerSrc, originalProvider);
+    writeFileSync(iso.gateSrc, originalGate);
+    rebuildDist(iso.root);
+    assert.equal(sha256Buf(readFileSync(iso.providerSrc)), originalProviderSha, "provider src restore-match");
+    assert.equal(sha256Buf(readFileSync(iso.gateSrc)), originalGateSha, "gate src restore-match");
+  };
+  rebuildDist(iso.root);
+  for (const distPath of [iso.distProvider, iso.distGate]) {
+    const loaded = spawnSync(
+      process.execPath,
+      ["--input-type=module", "-e", "await import(process.argv[1]);", pathToFileURL(distPath).href],
+      { encoding: "utf8" },
+    );
+    assert.equal(loaded.status, 0, `isolated dist must load as ESM before any mutant: ${loaded.stderr}`);
+  }
+  return { iso, originalProvider, originalGate, restore };
 }
 
 function writeTempScript(name, source) {
@@ -192,12 +253,12 @@ try {
 }
 `;
 
-function runWipeFailedChild() {
+function runWipeFailedChild(gatePath = distGatePath) {
   const childPath = writeTempScript("galerina-secret-gate-wipe-failed-child.mjs", WIPE_FAILED_CHILD);
   try {
     return spawnSync(process.execPath, [childPath], {
       encoding: "utf8",
-      env: { ...process.env, DIST_GATE: distGatePath },
+      env: { ...process.env, DIST_GATE: gatePath },
     });
   } finally {
     try {
@@ -280,34 +341,20 @@ test("U3 residual F5 behavioural: staged wipe failure throws SecretGateWipeFaile
   assert.equal(child.status, 0, child.stderr + child.stdout);
 });
 
-function restoreSrc(originalProvider, originalGate, originalProviderSha, originalGateSha) {
-  writeFileSync(providerSrcPath, originalProvider);
-  writeFileSync(gateSrcPath, originalGate);
-  rebuildDist();
-  assert.equal(sha256Buf(readFileSync(providerSrcPath)), originalProviderSha, "provider src restore-match");
-  assert.equal(sha256Buf(readFileSync(gateSrcPath)), originalGateSha, "gate src restore-match");
-}
-
 test("U3 residual behavioural mutant: gate-staged-wipe-fail rebuilt dist goes red then restores green", (t) => {
-  const originalProvider = readFileSync(providerSrcPath);
-  const originalGate = readFileSync(gateSrcPath);
-  const originalProviderSha = sha256Buf(originalProvider);
-  const originalGateSha = sha256Buf(originalGate);
-  t.after(() => {
-    restoreSrc(originalProvider, originalGate, originalProviderSha, originalGateSha);
-  });
+  const { iso, originalGate, restore } = isolate(t);
   const gate = originalGate.toString("utf8");
   const mutated = gate.replace(
     "if (stagedWipeFailed && deliverySucceeded)",
     "if (false && stagedWipeFailed && deliverySucceeded)",
   );
   assert.notEqual(mutated, gate, "gate-staged-wipe-fail is a real edit");
-  writeFileSync(gateSrcPath, mutated);
-  rebuildDist();
-  const red = runWipeFailedChild();
+  writeFileSync(iso.gateSrc, mutated);
+  rebuildDist(iso.root);
+  const red = runWipeFailedChild(iso.distGate);
   assert.notEqual(red.status, 0, "gate-staged-wipe-fail rebuilt-dist mutant must go red");
-  restoreSrc(originalProvider, originalGate, originalProviderSha, originalGateSha);
-  const green = runWipeFailedChild();
+  restore();
+  const green = runWipeFailedChild(iso.distGate);
   assert.equal(green.status, 0, "gate-staged-wipe-fail restore must be green");
 });
 
@@ -316,14 +363,7 @@ test("U3 residual behavioural mutants: linux rebuilt dist slot.wipe and epoch-af
     t.skip("linux rebuilt-dist slot.wipe and epoch-after-quarantine mutants");
     return;
   }
-  const originalProvider = readFileSync(providerSrcPath);
-  const originalGate = readFileSync(gateSrcPath);
-  const originalProviderSha = sha256Buf(originalProvider);
-  const originalGateSha = sha256Buf(originalGate);
-  const restore = () => restoreSrc(originalProvider, originalGate, originalProviderSha, originalGateSha);
-  t.after(() => {
-    restore();
-  });
+  const { iso, originalProvider, restore } = isolate(t);
 
   {
     const provider = originalProvider.toString("utf8");
@@ -332,8 +372,8 @@ test("U3 residual behavioural mutants: linux rebuilt dist slot.wipe and epoch-af
       "if (quarantined) throw new SecretArenaQuarantined();",
     );
     assert.notEqual(mutated, provider, "epoch-after-quarantine is a real edit");
-    writeFileSync(providerSrcPath, mutated);
-    rebuildDist();
+    writeFileSync(iso.providerSrc, mutated);
+    rebuildDist(iso.root);
     const fake = join(here, "secret-arena-fake-exit-after-hello.mjs");
     chmodSync(fake, 0o755);
     const childPath = writeTempScript(
@@ -358,7 +398,7 @@ try {
     try {
       const red = spawnSync(process.execPath, [childPath], {
         encoding: "utf8",
-        env: { ...process.env, DIST_PROVIDER: distProviderPath, FAKE: fake },
+        env: { ...process.env, DIST_PROVIDER: iso.distProvider, FAKE: fake },
       });
       assert.notEqual(red.status, 0, "epoch-after-quarantine rebuilt-dist mutant must go red");
     } finally {
@@ -387,7 +427,7 @@ process.exit(1);
     try {
       const green = spawnSync(process.execPath, [greenPath], {
         encoding: "utf8",
-        env: { ...process.env, DIST_PROVIDER: distProviderPath, FAKE: fake },
+        env: { ...process.env, DIST_PROVIDER: iso.distProvider, FAKE: fake },
       });
       assert.equal(green.status, 0, "epoch-after-quarantine restore must be green: " + green.stderr + green.stdout);
     } finally {
@@ -408,8 +448,8 @@ process.exit(1);
     const provider = originalProvider.toString("utf8");
     const mutated = provider.replace("if (detached || !slot.wipe())", "if (detached)");
     assert.notEqual(mutated, provider, "slot-wipe is a real edit");
-    writeFileSync(providerSrcPath, mutated);
-    rebuildDist();
+    writeFileSync(iso.providerSrc, mutated);
+    rebuildDist(iso.root);
     const childPath = writeTempScript(
       "galerina-slot-wipe-mutant.mjs",
       `import { pathToFileURL } from "node:url";
@@ -429,7 +469,7 @@ process.exit(0);
     try {
       const red = spawnSync(process.execPath, [childPath], {
         encoding: "utf8",
-        env: { ...process.env, DIST_PROVIDER: distProviderPath, BIN: binPath },
+        env: { ...process.env, DIST_PROVIDER: iso.distProvider, BIN: binPath },
       });
       assert.notEqual(red.status, 0, "slot.wipe rebuilt-dist mutant must go red");
     } finally {
@@ -458,7 +498,7 @@ process.exit(0);
     try {
       const green = spawnSync(process.execPath, [greenPath], {
         encoding: "utf8",
-        env: { ...process.env, DIST_PROVIDER: distProviderPath, BIN: binPath },
+        env: { ...process.env, DIST_PROVIDER: iso.distProvider, BIN: binPath },
       });
       assert.equal(green.status, 0, "slot.wipe restore must be green: " + green.stderr + green.stdout);
     } finally {

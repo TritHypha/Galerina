@@ -1,0 +1,4328 @@
+{
+  "tool": "s5-app-kernel-test-census",
+  "label": "linux-wsl-ccbuilt",
+  "node": "v24.20.0",
+  "platform": "linux",
+  "osRelease": "6.18.54.1-microsoft-standard-WSL2",
+  "files": 73,
+  "total": {
+    "tests": 724,
+    "suites": 43,
+    "pass": 724,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "rows": [
+    {
+      "file": "admission-vocabulary-drift.test.mjs",
+      "ms": 820,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "every built-in fusion capability is on the unified admission allow-list"
+        }
+      ]
+    },
+    {
+      "file": "api-server-handoff-contract.test.mjs",
+      "ms": 811,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 13,
+        "suites": 3,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "request/response field lists match GalerinaKernelRequest/Response in kernel.ts"
+        },
+        {
+          "status": "ok",
+          "name": "method vocabulary matches types.ts HttpMethod"
+        },
+        {
+          "status": "ok",
+          "name": "the api-server builds its kernel request from contract fields only"
+        },
+        {
+          "status": "ok",
+          "name": "api-server handoff contract - pinned to the shipped types"
+        },
+        {
+          "status": "ok",
+          "name": "admits the shape the api-server hands over, with and without transport facts"
+        },
+        {
+          "status": "ok",
+          "name": "is a data check, not an admission: a DENY verdict is still well-formed"
+        },
+        {
+          "status": "ok",
+          "name": "refuses verbs outside the closed vocabulary (api-server normaliseMethod casts any verb)"
+        },
+        {
+          "status": "ok",
+          "name": "refuses bad paths, ids, times and bodies without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses header/query records that are not closed, lowercase or bounded"
+        },
+        {
+          "status": "ok",
+          "name": "principalId and principalScopes travel together; scopes are dense, unique tokens"
+        },
+        {
+          "status": "ok",
+          "name": "fails closed on non-records, unknown keys, missing fields and accessors"
+        },
+        {
+          "status": "ok",
+          "name": "checkKernelHandoffRequest"
+        },
+        {
+          "status": "ok",
+          "name": "admits kernel-shaped responses"
+        },
+        {
+          "status": "ok",
+          "name": "refuses bad status, headers or body"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on hostile input"
+        },
+        {
+          "status": "ok",
+          "name": "checkKernelHandoffResponse"
+        }
+      ]
+    },
+    {
+      "file": "app-frame-hardening.test.mjs",
+      "ms": 1136,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 80,
+        "suites": 0,
+        "pass": 80,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = NaN at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = -Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = -1 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = 1.5 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = 10 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses body.maxSizeBytes = true at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 admits integer body.maxSizeBytes (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = NaN at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = -Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = -1 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = 1.5 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = 10 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.maxConcurrent = true at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 admits integer limits.maxConcurrent (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = NaN at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = -Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = -1 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = 1.5 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = 10 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.memoryBytes = true at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 admits integer limits.memoryBytes (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = NaN at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = -Infinity at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = -1 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = 1.5 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = 10 at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs = true at construction"
+        },
+        {
+          "status": "ok",
+          "name": "S1 admits integer limits.timeoutMs (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses limits.timeoutMs above the host timer ceiling"
+        },
+        {
+          "status": "ok",
+          "name": "S1 zero is fail-closed, not refused: maxSizeBytes 0 refuses every body (413)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 NaN can no longer disable the body ceiling or concurrency limit (previously 200)"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses idempotency.ttlSeconds = NaN"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses idempotency.ttlSeconds = 0"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses idempotency.ttlSeconds = -1"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses idempotency.ttlSeconds = Infinity"
+        },
+        {
+          "status": "ok",
+          "name": "S1 refuses idempotency.ttlSeconds = 60"
+        },
+        {
+          "status": "ok",
+          "name": "S1 admits a positive idempotency.ttlSeconds (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.mode = \"Required\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.mode = \"PUBLIC\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.mode = \"\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.mode = \"none\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.mode = 1"
+        },
+        {
+          "status": "ok",
+          "name": "S2 admits auth.mode required/public (controls); required without a verdict is 401"
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses a wrong-case or unknown method"
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses body.unknownFields = \"Deny\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses body.duplicateKeys = \"lastwins\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses idempotency.onDuplicate = \"Reject\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses idempotency.enabled = 1"
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses idempotency.header = \"Bad Header\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses audit.runtimeReport = \"false\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses auth.scopes = \"dup\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses secrets.require = \"\""
+        },
+        {
+          "status": "ok",
+          "name": "S2 refuses body.contentType = \" \""
+        },
+        {
+          "status": "ok",
+          "name": "S2 admits valid enum, boolean and list values (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S2 resolveEffectiveRoutePolicy refuses directly too, and rejects an unknown resolved posture"
+        },
+        {
+          "status": "ok",
+          "name": "S8 refuses body.unknownFields 'strip' (not implemented)"
+        },
+        {
+          "status": "ok",
+          "name": "S8 'deny' still refuses an extra field at request time (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S3 refuses posture \"ON\" (previously downgraded to 'off')"
+        },
+        {
+          "status": "ok",
+          "name": "S3 refuses posture \"Off\" (previously downgraded to 'off')"
+        },
+        {
+          "status": "ok",
+          "name": "S3 refuses posture \"secure\" (previously downgraded to 'off')"
+        },
+        {
+          "status": "ok",
+          "name": "S3 refuses posture \"\" (previously downgraded to 'off')"
+        },
+        {
+          "status": "ok",
+          "name": "S3 refuses an unknown env string"
+        },
+        {
+          "status": "ok",
+          "name": "S3 admits off/on/auto and omitted posture (controls); 'on' still tightens the body ceiling"
+        },
+        {
+          "status": "ok",
+          "name": "S4 refuses two declarations for the same method and path"
+        },
+        {
+          "status": "ok",
+          "name": "S4 admits the same path with different methods (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S5 a handler-forged {error} body is NOT recorded as a kernel gate code"
+        },
+        {
+          "status": "ok",
+          "name": "S5 a real kernel refusal records its own gate code (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S5 a handler success records origin 'handler' and no code"
+        },
+        {
+          "status": "ok",
+          "name": "S7 malformed bodies use up the rate budget (previously 3x422 then 200)"
+        },
+        {
+          "status": "ok",
+          "name": "S7 a well-formed body inside the budget is admitted (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S9 a truthy non-boolean registry verdict refuses the fuse"
+        },
+        {
+          "status": "ok",
+          "name": "S9 a literal true registry verdict still admits (control)"
+        },
+        {
+          "status": "ok",
+          "name": "S8b refuses idempotency.onDuplicate 'replay' (not implemented)"
+        },
+        {
+          "status": "ok",
+          "name": "S8b refuses 'replay' even on a disabled idempotency block (a declaration must not lie)"
+        },
+        {
+          "status": "ok",
+          "name": "S8b resolveEffectiveRoutePolicy refuses 'replay' directly too"
+        },
+        {
+          "status": "ok",
+          "name": "S8b 'reject' still admits and a duplicate key is 409; the default resolves to 'reject' (control)"
+        }
+      ]
+    },
+    {
+      "file": "app-kernel-hold-pin.test.mjs",
+      "ms": 150,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 4,
+        "suites": 1,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "prepareProtectedMemoryRouteRequest packages REQUESTED_NOT_ADMITTED"
+        },
+        {
+          "status": "ok",
+          "name": "prepare refuses authority and malformed input"
+        },
+        {
+          "status": "ok",
+          "name": "secret-authority / fuse-border / runtime / live acts always refuse"
+        },
+        {
+          "status": "ok",
+          "name": "kernel.ts stays unwired and secret-gate stays has/use"
+        },
+        {
+          "status": "ok",
+          "name": "app-kernel HOLD pin"
+        }
+      ]
+    },
+    {
+      "file": "audit-async.test.mjs",
+      "ms": 968,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 11,
+        "suites": 0,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "posture 'on' tightens kernel body ceiling (256KB default -> 64KB hardened)"
+        },
+        {
+          "status": "ok",
+          "name": "audit events are emitted and visible after a tick (default in-memory sink)"
+        },
+        {
+          "status": "ok",
+          "name": "in-memory audit acceptance survives scheduler failure and retries before the next reservation"
+        },
+        {
+          "status": "ok",
+          "name": "audit event carries the typed error code for a rejected request"
+        },
+        {
+          "status": "ok",
+          "name": "unmatched 404/405 traffic does not consume mandatory audit capacity"
+        },
+        {
+          "status": "ok",
+          "name": "a slow audit sink does NOT delay handle()'s response"
+        },
+        {
+          "status": "ok",
+          "name": "a throwing audit sink refuses a route that requires a runtime report"
+        },
+        {
+          "status": "ok",
+          "name": "default audit sink is used when none is supplied (no crash, response intact)"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: unknown-path 404s cannot exhaust mandatory audit capacity"
+        },
+        {
+          "status": "ok",
+          "name": "mandatory audit capacity is reserved before handler effects"
+        },
+        {
+          "status": "ok",
+          "name": "audit reservations are exact affine capabilities"
+        }
+      ]
+    },
+    {
+      "file": "auth-provider-boundary.test.mjs",
+      "ms": 176,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed bearer + jwt boundary"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses NaN / none algorithm / header-presence fallback without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty providers, duplicate ids, and kind consistency violations"
+        },
+        {
+          "status": "ok",
+          "name": "admits mTLS with client certificate location and empty header"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on flipping proxies"
+        },
+        {
+          "status": "ok",
+          "name": "auth provider boundary contract"
+        }
+      ]
+    },
+    {
+      "file": "core-runtime-handoff-contract.test.mjs",
+      "ms": 171,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 13,
+        "suites": 2,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "mirrors GOVERNED_RUNTIME_SEAM_VERSION from core-runtime source without a package import"
+        },
+        {
+          "status": "ok",
+          "name": "mirrors DEFAULT_RUNTIME_EFFECT_POLICY from core-runtime source"
+        },
+        {
+          "status": "ok",
+          "name": "omits GovernedRuntimeRequest / RuntimeContext fields that exist on the producer seam"
+        },
+        {
+          "status": "ok",
+          "name": "app-kernel package.json has no core-runtime dependency"
+        },
+        {
+          "status": "ok",
+          "name": "kernel.ts does not import or name the governed-runtime seam"
+        },
+        {
+          "status": "ok",
+          "name": "effect-policy field list is closed"
+        },
+        {
+          "status": "ok",
+          "name": "core-runtime handoff contract - pinned to shipped siblings"
+        },
+        {
+          "status": "ok",
+          "name": "admits a closed deny-all handoff that references SAW / QJC / RAR"
+        },
+        {
+          "status": "ok",
+          "name": "is a data check, not an admission"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, proxies, symbols, custom prototypes and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses relaxed schema / seam / executor / name tokens without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses widened effect policy without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses nested copies of SAW / QJC / RAR instead of schema-token references"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-empty input diagnostics and missing required fields"
+        },
+        {
+          "status": "ok",
+          "name": "createCoreRuntimeHandoff / readCoreRuntimeHandoff / checkCoreRuntimeHandoff"
+        }
+      ]
+    },
+    {
+      "file": "fuse-compose.test.mjs",
+      "ms": 910,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 23,
+        "suites": 0,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "plan: a provider is ordered BEFORE the consumer that imports it"
+        },
+        {
+          "status": "ok",
+          "name": "plan: a declared capability with no provider falls back to the built-in host shim"
+        },
+        {
+          "status": "ok",
+          "name": "plan: SET-SIGNED — one unsigned member refuses the whole set"
+        },
+        {
+          "status": "ok",
+          "name": "plan: DENY-BY-DEFAULT — an unsatisfied capability refuses the set"
+        },
+        {
+          "status": "ok",
+          "name": "plan: ambiguous provider (two providers for a CONSUMED capability) is refused"
+        },
+        {
+          "status": "ok",
+          "name": "plan: an unconsumed `provides` (a seam like 'rest') is inert — not required to have a shape"
+        },
+        {
+          "status": "ok",
+          "name": "plan: a CONSUMED capability with a provider but no registered host-import shape is refused"
+        },
+        {
+          "status": "ok",
+          "name": "plan: a package that both provides AND declares the same capability is refused"
+        },
+        {
+          "status": "ok",
+          "name": "plan: a provider cycle is refused"
+        },
+        {
+          "status": "ok",
+          "name": "makeProviderFactory mirrors the capability shape and routes every function to the provider"
+        },
+        {
+          "status": "ok",
+          "name": "buildCapabilityImports treats prototype-shaped namespaces as own, closed maps"
+        },
+        {
+          "status": "ok",
+          "name": "buildCapabilityImports output cannot bypass the initialization lifecycle"
+        },
+        {
+          "status": "ok",
+          "name": "buildCapabilityImports refuses a declared handler inherited from a factory result"
+        },
+        {
+          "status": "ok",
+          "name": "buildCapabilityImports refuses namespace collisions between capabilities"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: the set-signed invariant refuses a placeholder-signed package without allowUnsigned"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: a one-package set composes (allowUnsigned) and invoke('main') runs the governed wasm"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: a duplicate package name in the set is refused"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: a REAL cross-module call — consumer.main() routes through the provider (→ 42)"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: composition order is independent — consumer listed FIRST still links (topo sort)"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages: WITHOUT the provider, the consumer's clock.read falls back to the host shim (→ 0)"
+        },
+        {
+          "status": "ok",
+          "name": "requireSignature OVERRIDES allowUnsigned (fail-secure) — fusePackages refuses an unsigned set"
+        },
+        {
+          "status": "ok",
+          "name": "requireSignature OVERRIDES allowUnsigned for a single fusePackage too"
+        },
+        {
+          "status": "ok",
+          "name": "buildImportClosure: an UNTRUSTED inventory (trusted:false) with wasmSha256 + signature per module"
+        }
+      ]
+    },
+    {
+      "file": "fuse-loader.test.mjs",
+      "ms": 1720,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 38,
+        "suites": 0,
+        "pass": 38,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "single fusion refuses before package access when no central ALLOW authority is supplied"
+        },
+        {
+          "status": "ok",
+          "name": "set fusion refuses before package access when no central ALLOW authority is supplied"
+        },
+        {
+          "status": "ok",
+          "name": "registryCheck DENY refuses the fuse even for an otherwise-admissible package"
+        },
+        {
+          "status": "ok",
+          "name": "registryCheck ALLOW lets the fuse proceed and receives the package identity"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages (multi-module) ALSO enforces registryCheck — an unlisted member refuses the whole set"
+        },
+        {
+          "status": "ok",
+          "name": "fusePackages refuses malformed ALLOW verdicts before instantiating any set member"
+        },
+        {
+          "status": "ok",
+          "name": "single fusion refuses a module whose start function calls a host import"
+        },
+        {
+          "status": "ok",
+          "name": "set fusion refuses a module whose start function calls a host import"
+        },
+        {
+          "status": "ok",
+          "name": "startup refusal remains sticky if the WASM engine catches the import exception"
+        },
+        {
+          "status": "ok",
+          "name": "a startup refusal does not invoke the host capability factory"
+        },
+        {
+          "status": "ok",
+          "name": "capability descriptor mutation after admission cannot replace its captured factory"
+        },
+        {
+          "status": "ok",
+          "name": "capability registry descriptors are snapshotted before asynchronous admission"
+        },
+        {
+          "status": "ok",
+          "name": "successful handler construction is cached and its source map cannot replace dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "a failed capability handler build is terminal and is not retried"
+        },
+        {
+          "status": "ok",
+          "name": "a successfully initialized component rejects a factory result with inherited handlers"
+        },
+        {
+          "status": "ok",
+          "name": "set startup cannot call an earlier provider's host-backed import before the full set initializes"
+        },
+        {
+          "status": "ok",
+          "name": "set imports activate only after every member has initialized successfully"
+        },
+        {
+          "status": "ok",
+          "name": "explicit host import calls remain available after successful initialization"
+        },
+        {
+          "status": "ok",
+          "name": "requireSignature without a revocation check refuses production fusion"
+        },
+        {
+          "status": "ok",
+          "name": "requireSignature refuses production fusion when central ALLOW authority is missing"
+        },
+        {
+          "status": "ok",
+          "name": "the built demo package fuses (allowUnsigned: placeholder-signed) and invokes main → 200"
+        },
+        {
+          "status": "ok",
+          "name": "missing package descriptor refuses with FUNGI-FUSE-NO-PACKAGE and preserves the valid control"
+        },
+        {
+          "status": "ok",
+          "name": "missing manifest refuses with FUNGI-FUSE-NO-MANIFEST and preserves the valid control"
+        },
+        {
+          "status": "ok",
+          "name": "malformed sidecar refuses with FUNGI-FUSE-BAD-SIDECAR and preserves the valid control"
+        },
+        {
+          "status": "ok",
+          "name": "a tampered .wasm (sha256 mismatch vs signed descriptor) is rejected"
+        },
+        {
+          "status": "ok",
+          "name": "a host import for a NON-declared capability is absent (deny-by-default)"
+        },
+        {
+          "status": "ok",
+          "name": "a capability with no host-import factory is refused (FUNGI-FUSE-UNKNOWN-CAP)"
+        },
+        {
+          "status": "ok",
+          "name": "an unsigned (placeholder) manifest is refused without allowUnsigned"
+        },
+        {
+          "status": "ok",
+          "name": "a real Ed25519-signed manifest is verified; tampering the body is rejected"
+        },
+        {
+          "status": "ok",
+          "name": "a package cannot supply the trust anchor used to admit its own signature"
+        },
+        {
+          "status": "ok",
+          "name": "a path-shaped keyId cannot escape the admitted governance directory"
+        },
+        {
+          "status": "ok",
+          "name": "a validly-signed manifest whose signing key is REVOKED is refused (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "a manifest asserting a REVOKED keyId is refused even when its signature degrades to unsigned (allowUnsigned)"
+        },
+        {
+          "status": "ok",
+          "name": "a jcs (RFC 8785 canonical) Ed25519 signature verifies through the loader (legacy ⇄ jcs both work)"
+        },
+        {
+          "status": "ok",
+          "name": "a .fuse.json whose wasmSha256 disagrees with the signed manifest is rejected"
+        },
+        {
+          "status": "ok",
+          "name": "injected hybridVerifier is honored fail-closed for a HYBRID manifest"
+        },
+        {
+          "status": "ok",
+          "name": "admitFusePackageName accepts a single filename token"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: package name cannot escape dist/"
+        }
+      ]
+    },
+    {
+      "file": "handler-reference-bound.test.mjs",
+      "ms": 199,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 1,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "reuses typed-api-boundary MAX_ROUTES = 256"
+        },
+        {
+          "status": "ok",
+          "name": "accepts a dense table at the bound"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a sparse oversized table in bounded time"
+        },
+        {
+          "status": "ok",
+          "name": "checkHandlerReferences table bound"
+        }
+      ]
+    },
+    {
+      "file": "handler-reference-check-bypass.test.mjs",
+      "ms": 637,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "accepts routes whose handlers are own function entries"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an ordinary missing handler"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a missing-handler array whose own forEach is replaced"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an array-index getter and never invokes it"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a Proxy dispatch and never runs getOwnPropertyDescriptor traps"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a handler that resolves only through the prototype chain"
+        },
+        {
+          "status": "ok",
+          "name": "checkHandlerReferences bypass controls"
+        }
+      ]
+    },
+    {
+      "file": "handler-reference-check.test.mjs",
+      "ms": 630,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 10,
+        "suites": 1,
+        "pass": 10,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "accepts routes whose handlers are own function entries"
+        },
+        {
+          "status": "ok",
+          "name": "accepts a null-prototype dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a missing handler with the route index"
+        },
+        {
+          "status": "ok",
+          "name": "refuses names that resolve only through the prototype chain"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-function entries and never invokes accessors"
+        },
+        {
+          "status": "ok",
+          "name": "refuses malformed inputs"
+        },
+        {
+          "status": "ok",
+          "name": "does not read an inherited or accessor 'handler' on the route itself"
+        },
+        {
+          "status": "ok",
+          "name": "never echoes the handler name"
+        },
+        {
+          "status": "ok",
+          "name": "assertHandlerReferences is silent when every reference resolves"
+        },
+        {
+          "status": "ok",
+          "name": "documents the gaps it closes: missing handler accepted at boot, inherited handler dispatched"
+        },
+        {
+          "status": "ok",
+          "name": "checkHandlerReferences"
+        }
+      ]
+    },
+    {
+      "file": "host-floor.test.mjs",
+      "ms": 152,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "host floor exposes only each consumer's fixed primitive slice"
+        }
+      ]
+    },
+    {
+      "file": "idempotency-replay-policy.test.mjs",
+      "ms": 690,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 13,
+        "suites": 1,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits the fail-closed baseline and returns a frozen detached copy"
+        },
+        {
+          "status": "ok",
+          "name": "matches the shipped route-defaults for a mutating route"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-plain inputs"
+        },
+        {
+          "status": "ok",
+          "name": "refuses unknown and symbol keys without echoing them"
+        },
+        {
+          "status": "ok",
+          "name": "refuses each missing required field by name"
+        },
+        {
+          "status": "ok",
+          "name": "refuses accessors without running them"
+        },
+        {
+          "status": "ok",
+          "name": "refuses wrong schema and bad names"
+        },
+        {
+          "status": "ok",
+          "name": "header must be a bounded HTTP token"
+        },
+        {
+          "status": "ok",
+          "name": "ttlSeconds and maxKeyBytes are bounded positive safe integers"
+        },
+        {
+          "status": "ok",
+          "name": "every behaviour field admits only its fail-closed value"
+        },
+        {
+          "status": "ok",
+          "name": "onDuplicate replay is reserved, as route admission refuses it"
+        },
+        {
+          "status": "ok",
+          "name": "input diagnostics must be a closed empty list"
+        },
+        {
+          "status": "ok",
+          "name": "create never throws and returns a refused fail-closed shape"
+        },
+        {
+          "status": "ok",
+          "name": "idempotency replay policy"
+        }
+      ]
+    },
+    {
+      "file": "kernel.test.mjs",
+      "ms": 758,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 23,
+        "suites": 0,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "auth-required route with no Authorization header -> 401, handler NOT run"
+        },
+        {
+          "status": "ok",
+          "name": "auth: channel verdict DENY (-1) refuses admission, handler NOT run"
+        },
+        {
+          "status": "ok",
+          "name": "auth: channel verdict INDETERMINATE (0) refuses admission (fail-closed), handler NOT run"
+        },
+        {
+          "status": "ok",
+          "name": "auth: channel verdict ALLOW (+1) admits even with NO Authorization header (handler runs)"
+        },
+        {
+          "status": "ok",
+          "name": "auth: required + no verdict + header PRESENT but no opt-in → 401 (tightened default)"
+        },
+        {
+          "status": "ok",
+          "name": "auth: legacy header-presence opt-in is refused even with a non-empty header"
+        },
+        {
+          "status": "ok",
+          "name": "auth: legacy header-presence opt-in is refused when no header is present"
+        },
+        {
+          "status": "ok",
+          "name": "auth: legacy header-presence opt-in is refused with an empty header"
+        },
+        {
+          "status": "ok",
+          "name": "auth: legacy header-presence opt-in is refused with a whitespace-only header"
+        },
+        {
+          "status": "ok",
+          "name": "public route is allowed without Authorization (handler runs)"
+        },
+        {
+          "status": "ok",
+          "name": "unknown path -> 404"
+        },
+        {
+          "status": "ok",
+          "name": "known path, wrong method -> 405"
+        },
+        {
+          "status": "ok",
+          "name": "oversize body -> 413, handler NOT run"
+        },
+        {
+          "status": "ok",
+          "name": "content-type mismatch -> 415"
+        },
+        {
+          "status": "ok",
+          "name": "invalid JSON body -> 422"
+        },
+        {
+          "status": "ok",
+          "name": "handler runs ONLY after all gates pass (correct ordering)"
+        },
+        {
+          "status": "ok",
+          "name": "handler that throws -> safe 500, no leak"
+        },
+        {
+          "status": "ok",
+          "name": "idempotency: duplicate key -> 409 without echoing the key"
+        },
+        {
+          "status": "ok",
+          "name": "idempotency claim is deferred until rate admission succeeds"
+        },
+        {
+          "status": "ok",
+          "name": "malformed atomic claim result fails closed before handler dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "over concurrency limit -> 429"
+        },
+        {
+          "status": "ok",
+          "name": "F3: a THROWING handler releases the concurrency slot (no phantom-slot self-DoS)"
+        },
+        {
+          "status": "ok",
+          "name": "the pipeline order is fixed: there is no way to register middleware"
+        }
+      ]
+    },
+    {
+      "file": "literal-verification-success-fungi-conversion.test.mjs",
+      "ms": 2385,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 2,
+        "suites": 1,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "tracks the private TypeScript predicate as an exact governed package asset"
+        },
+        {
+          "status": "ok",
+          "name": "matches all source states and denies every sampled surplus physical tag"
+        },
+        {
+          "status": "ok",
+          "name": "app-kernel package-owned literal verification success decision"
+        }
+      ]
+    },
+    {
+      "file": "posture-resolution.test.mjs",
+      "ms": 674,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 5,
+        "suites": 0,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "posture 'auto' + production → resolves 'on' (fail-secure, chose the secure default), recorded in audit"
+        },
+        {
+          "status": "ok",
+          "name": "posture 'auto' + development → resolves 'off' (host trusted in dev)"
+        },
+        {
+          "status": "ok",
+          "name": "posture 'auto' + unknown env (omitted) → fail-secure 'on'"
+        },
+        {
+          "status": "ok",
+          "name": "posture 'auto' + production tightens the body ceiling (behaviour matches 'on')"
+        },
+        {
+          "status": "ok",
+          "name": "pre-resolved 'on'/'off' and the default (omitted) do NOT add resolvedPosture (strictly additive)"
+        }
+      ]
+    },
+    {
+      "file": "production-boot-composition-candidate.test.mjs",
+      "ms": 656,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 4,
+        "suites": 1,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "registers only a frozen data-only K3 0 candidate"
+        },
+        {
+          "status": "ok",
+          "name": "refuses copied capabilities, missing evidence and forged authority claims as K3 -1"
+        },
+        {
+          "status": "ok",
+          "name": "refuses the complete policy-to-profile mismatch matrix as K3 -1"
+        },
+        {
+          "status": "ok",
+          "name": "exports no production activation, restore-authority or release function"
+        },
+        {
+          "status": "ok",
+          "name": "sealed production boot composition candidate"
+        }
+      ]
+    },
+    {
+      "file": "production-posture-refusal.test.mjs",
+      "ms": 3772,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 2,
+        "suites": 0,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "production posture REFUSES --allow-unsigned by code, fail-closed"
+        },
+        {
+          "status": "ok",
+          "name": "CONTROL: a non-production posture does NOT emit the refusal"
+        }
+      ]
+    },
+    {
+      "file": "production-slide-restore-admission.test.mjs",
+      "ms": 655,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 4,
+        "suites": 1,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "executes the complete known-answer table and registers only the returned profile"
+        },
+        {
+          "status": "ok",
+          "name": "refuses hostile manifest, authority and retained-object substitutions"
+        },
+        {
+          "status": "ok",
+          "name": "refuses every malformed or disagreeing execution observation"
+        },
+        {
+          "status": "ok",
+          "name": "refuses callback mutation of a manifest after its initial validation"
+        },
+        {
+          "status": "ok",
+          "name": "authenticated SLIDE restore profile"
+        }
+      ]
+    },
+    {
+      "file": "queue-job-contract.test.mjs",
+      "ms": 151,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed queue/job contract"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, custom prototypes and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses relaxed default decision / audit / backoff, untyped payloads and reserved idempotency without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses NaN / Infinity / zero / unsafe ceilings and inconsistent retry delays"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty / duplicate / unsorted / sparse lists, unadmitted queues and non-empty input diagnostics"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on hostile proxies and refused output carries no null / NaN / undefined"
+        },
+        {
+          "status": "ok",
+          "name": "app-kernel queue/job contract"
+        }
+      ]
+    },
+    {
+      "file": "rate-limit-workload-policy.test.mjs",
+      "ms": 142,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed rate-limit + workload policy"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses allow/bypass default, NaN ceilings, and bad key kinds without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty rules, duplicate ids, and keyKind outside admitted set"
+        },
+        {
+          "status": "ok",
+          "name": "refuses unsorted admittedKeyKinds / rules and dense-array violations"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on flipping proxies"
+        },
+        {
+          "status": "ok",
+          "name": "rate-limit and workload control policy"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-fuse-admission-execution.test.mjs",
+      "ms": 1807,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 Packages · fuse-admission: R0 build → R1 \\#105-admit → R3 label-verified gates + admitVerdict composition ≡ spec"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-kernel-auth-gate-execution.test.mjs",
+      "ms": 2448,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 kernel · auth gate 6: R0 build → R1 \\#105-admit → R3 WASM ≡ real kernel handle (string-arg twin)"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-packages-execution-cutover.test.mjs",
+      "ms": 2235,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 2,
+        "suites": 0,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 packages · registry-index: R0 build → R1 \\#105-admit → R3 WASM ≡ real .ts lookup"
+        },
+        {
+          "status": "ok",
+          "name": "RD-0361 packages · package-admission: R0 build → R1 \\#105-admit → R3 WASM ≡ real package-resolver.ts"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-real-ts-frozen.test.mjs",
+      "ms": 649,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 S6b · route-defaults: frozen set == REAL shipped .ts on every realisable case"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-registry-index-frozen.test.mjs",
+      "ms": 2251,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 frozen reference · registry-index: WASM == frozen == reference oracle; planted fault fires"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-registry-rotation-policy-execution.test.mjs",
+      "ms": 2210,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "registry-rotation-policy twin: build, admit, and match the TypeScript verdicts"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-route-defaults-execution.test.mjs",
+      "ms": 1826,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 Packages · route-defaults: R0 build → R1 \\#105-admit → R3 differential ≡ secure-default spec"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-route-defaults-frozen.test.mjs",
+      "ms": 1799,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 frozen reference · route-defaults: WASM == frozen == reference oracle; planted fault fires"
+        }
+      ]
+    },
+    {
+      "file": "rd0361-secret-gate-execution.test.mjs",
+      "ms": 2261,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-0361 secret-gate × RD-0389: R0 build → R1 \\#105-admit → R3 WASM ≡ real createSecretGate().admit()"
+        }
+      ]
+    },
+    {
+      "file": "rd1413-release-commit-point.test.mjs",
+      "ms": 704,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 26,
+        "suites": 0,
+        "pass": 26,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "CAS: missing lease refuses"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: stale ordering token refuses and fences the unused lease"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: stale epoch refuses as one compare-and-consume step"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: replayed consumed lease refuses"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: revoke-before-release fences; consume refuses"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: release-before-revoke completes once; later fence cannot recall"
+        },
+        {
+          "status": "ok",
+          "name": "CAS: uncertain delivery is status-only; no retry redisclosure"
+        },
+        {
+          "status": "ok",
+          "name": "getSecret: revoke-before-release (epoch advanced after open) refuses with no consumer entry"
+        },
+        {
+          "status": "ok",
+          "name": "getSecret: release-before-revoke delivers once; later revoke cannot recall or reuse"
+        },
+        {
+          "status": "ok",
+          "name": "getSecret: consumer throw after D is delivery-unknown; retry refuses without redisclosure"
+        },
+        {
+          "status": "ok",
+          "name": "getSecret: SealArena-like transient wipe still delivers when has() stays true"
+        },
+        {
+          "status": "ok",
+          "name": "getSecret: SealArena-like revoke after use (has false) fences without consumer entry"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: result-sink fence maps to 503 secret_unavailable without leaking"
+        },
+        {
+          "status": "ok",
+          "name": "R1: no deliverable copy before D; D then copy then provider wipe"
+        },
+        {
+          "status": "ok",
+          "name": "R2: revoke inside use before D refuses, no consumer, lease fenced"
+        },
+        {
+          "status": "ok",
+          "name": "R3: no provider callback between epoch read and D mark"
+        },
+        {
+          "status": "ok",
+          "name": "R4: empty operationId refuses missing with no provider open"
+        },
+        {
+          "status": "ok",
+          "name": "R5: provider without revocationEpoch still delivers (fixture residual: epoch 0)"
+        },
+        {
+          "status": "ok",
+          "name": "R6: lease map stays at cap; evicted id cannot be minted again"
+        },
+        {
+          "status": "ok",
+          "name": "R7: forged Error named SecretReleaseRefused is 500 not 503"
+        },
+        {
+          "status": "ok",
+          "name": "lease cap: 1025 unused mints refuse the last and size stays at cap"
+        },
+        {
+          "status": "ok",
+          "name": "lease cap: getSecret whose use never callbacks leaves size unchanged"
+        },
+        {
+          "status": "ok",
+          "name": "F1: mint of an in-flight unused operationId refuses and leaves the outer lease"
+        },
+        {
+          "status": "ok",
+          "name": "F1: dropIfUnused drops only the minted token"
+        },
+        {
+          "status": "ok",
+          "name": "F1: nested getSecret with shared operationId cannot drop the outer unused lease"
+        },
+        {
+          "status": "ok",
+          "name": "F1 controls: failed-open, consumed, fenced, and retired-ID stay unchanged"
+        }
+      ]
+    },
+    {
+      "file": "rd1413-revocation-before-delivery.test.mjs",
+      "ms": 122,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 0,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "RD-1413: revocation between presence observation and delivery fences the consumer"
+        },
+        {
+          "status": "ok",
+          "name": "RD-1413: revocation after admission refuses before provider open"
+        },
+        {
+          "status": "ok",
+          "name": "RD-1413 positive control: an active credential is delivered once"
+        }
+      ]
+    },
+    {
+      "file": "rd1413-route-dispatcher-strict-cli.test.mjs",
+      "ms": 295,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "the selected auth route dispatcher passes the real strict Fungi CLI"
+        }
+      ]
+    },
+    {
+      "file": "rd1414-arena-borrow-residual.test.mjs",
+      "ms": 24484,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 5,
+        "suites": 0,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "U3 residual: wipe-or-quarantine, EPOCH after quarantine, borrow wipe, gate staged wipe"
+        },
+        {
+          "status": "ok",
+          "name": "U3 residual SOURCE-PIN ONLY: source needles refuse listed edits (not behavioural)"
+        },
+        {
+          "status": "ok",
+          "name": "U3 residual F5 behavioural: staged wipe failure throws SecretGateWipeFailed"
+        },
+        {
+          "status": "ok",
+          "name": "U3 residual behavioural mutant: gate-staged-wipe-fail rebuilt dist goes red then restores green"
+        },
+        {
+          "status": "ok",
+          "name": "U3 residual behavioural mutants: linux rebuilt dist slot.wipe and epoch-after-quarantine"
+        }
+      ]
+    },
+    {
+      "file": "rd1414-hostile-intrinsics.test.mjs",
+      "ms": 2080,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 0,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "an inherited thenable getter cannot expose and weaken private route policy"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot suppress mandatory audit retention by replacing Array.prototype.push"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot replace Promise.race and strand deadline settlement"
+        }
+      ]
+    },
+    {
+      "file": "rd1414-sync-deadline.test.mjs",
+      "ms": 1702,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 19,
+        "suites": 0,
+        "pass": 19,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "a synchronous handler that returns after its deadline is refused"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot replace AbortController.abort and strand timeout settlement"
+        },
+        {
+          "status": "ok",
+          "name": "response serialization that crosses the deadline cannot publish success"
+        },
+        {
+          "status": "ok",
+          "name": "response serialization failure after the deadline remains a timeout refusal"
+        },
+        {
+          "status": "ok",
+          "name": "response size uses the typed-array intrinsic without invoking an own byteLength getter"
+        },
+        {
+          "status": "ok",
+          "name": "an own typed-array byteLength getter cannot conceal an over-budget response"
+        },
+        {
+          "status": "ok",
+          "name": "deadline refusal takes precedence when a blocking body getter also exceeds the response budget"
+        },
+        {
+          "status": "ok",
+          "name": "deadline arbitration ignores a handler-installed AbortSignal aborted getter"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot replace Reflect.apply to bypass intrinsic response sizing"
+        },
+        {
+          "status": "ok",
+          "name": "response encoding enforces the private route budget despite handler mutation"
+        },
+        {
+          "status": "ok",
+          "name": "published typed-array bytes are stable against handler microtasks"
+        },
+        {
+          "status": "ok",
+          "name": "serialization cannot replace the monotonic clock used for deadline arbitration"
+        },
+        {
+          "status": "ok",
+          "name": "public handle re-arbitrates after the internal pipeline await"
+        },
+        {
+          "status": "ok",
+          "name": "handler-installed audit getters are not invoked after the publication deadline check"
+        },
+        {
+          "status": "ok",
+          "name": "audit timestamps do not execute a handler-replaced Date.now callback"
+        },
+        {
+          "status": "ok",
+          "name": "a synchronous handler cannot acquire a secret after its deadline"
+        },
+        {
+          "status": "ok",
+          "name": "a provider that crosses the deadline cannot deliver plaintext to the consumer"
+        },
+        {
+          "status": "ok",
+          "name": "a provider that blocks after staging cannot deliver plaintext past the deadline"
+        },
+        {
+          "status": "ok",
+          "name": "a late synchronous throw after deadline releases its in-flight slot"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-ack-after-publication-audit.test.mjs",
+      "ms": 271,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 0,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "audit-sink commit throw is HTTP 503 and status is not acknowledged"
+        },
+        {
+          "status": "ok",
+          "name": "late provider callback before publication seal is error HTTP and not acknowledged"
+        },
+        {
+          "status": "ok",
+          "name": "clean publication and audit commit leaves the lease delivery-unknown, never acknowledged (MB-06)"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-ack-throw-fail-closed.test.mjs",
+      "ms": 270,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 0,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "kernel: successful delivery never calls acknowledgeMinted and is delivery-unknown (MB-06)"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: delivery-unknown mark throw fails closed and is never acknowledged (MB-06)"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: A failure leaves concurrent B released until B finishes delivery-unknown (MB-06)"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-epoch-required.test.mjs",
+      "ms": 748,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 0,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "kernel: no revocationEpoch seals 503, consumer not called, zero escapes"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: throwing revocationEpoch seals 503, consumer not called, zero escapes"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: negative epoch seals 503, consumer not called, zero escapes"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: NaN epoch seals 503, consumer not called, zero escapes"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: unsafe integer epoch seals 503, consumer not called, zero escapes"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: in-flight microtask missing epoch seals 503 with zero uncaughtException"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-hostile-proxy-dispatch.test.mjs",
+      "ms": 372,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 8,
+        "suites": 0,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "kernel: sync-revoked is HTTP 500 and delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: async-revoked is HTTP 500 and delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: sync-revoked-no-report is HTTP 500 and delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: async-revoked-no-report is HTTP 500 and delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: sync-getPrototypeOf is HTTP 500 and delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "concurrent hostile A during in-flight B does not touch B's lease"
+        },
+        {
+          "status": "ok",
+          "name": "spent A throw while B waits is A delivery-unknown and B delivery-unknown after success (MB-06)"
+        },
+        {
+          "status": "ok",
+          "name": "503 refusal then throwing request does not touch the earlier operation"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-op-bound-ack.test.mjs",
+      "ms": 198,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 15,
+        "suites": 0,
+        "pass": 15,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "matrix: clean release + ACK"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: ACK wrong operation id / wrong token / before release refuses and changes nothing"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: duplicate ACK is a no-op"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: consumer throw after delivery is delivery-unknown; retry refuses"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: simulated crash between consume and ACK is status-only; recovery never calls use"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: noteUnknown after ACK is a no-op (acknowledged stays acknowledged)"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: timeout and abort of a released lease become delivery-unknown"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: same-operation retry after ACK / unknown / fenced refuses"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: eviction past RELEASE_LEASE_CAP then retry refuses, never mints fresh"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: omitted operationId and missing revocationEpoch refuse on the bound path"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: fixture residuals remain the default (oneshot + epoch 0)"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: recovery and audit never include secret bytes, lengths, digests or tokens"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: audit log and retired set stay at cap"
+        },
+        {
+          "status": "ok",
+          "name": "matrix: non-string operationId is coerced before freeze"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: requireRevocationEpoch and post-handler noteUnknown are wired"
+        }
+      ]
+    },
+    {
+      "file": "rd1415-staging-refusal-after-consume.test.mjs",
+      "ms": 324,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 0,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "kernel: has-throw uncaught does not leave the lease released"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: has-throw handler-caught does not leave the lease released"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: live-mutation uncaught does not leave the lease released"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: live-mutation handler-caught does not leave the lease released"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: has-false uncaught does not leave the lease released"
+        },
+        {
+          "status": "ok",
+          "name": "kernel: has-false handler-caught does not leave the lease released"
+        }
+      ]
+    },
+    {
+      "file": "registry-activation-simulator.test.mjs",
+      "ms": 735,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 11,
+        "suites": 1,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "selects only the verified candidate on the complete control schedule"
+        },
+        {
+          "status": "ok",
+          "name": "binds every replay-relevant input into the receipt digest"
+        },
+        {
+          "status": "ok",
+          "name": "keeps prior authority for every pre-acceptance crash-before boundary"
+        },
+        {
+          "status": "ok",
+          "name": "retains new authority after an accepted checkpoint crash"
+        },
+        {
+          "status": "ok",
+          "name": "falls back to prior authority after an explicit canary denial"
+        },
+        {
+          "status": "ok",
+          "name": "marks a failed fallback indeterminate and grants no authority"
+        },
+        {
+          "status": "ok",
+          "name": "marks an exhausted exploration budget indeterminate"
+        },
+        {
+          "status": "ok",
+          "name": "refuses malformed, ambiguous, duplicate, and unreachable schedules"
+        },
+        {
+          "status": "ok",
+          "name": "never lets corruption, short write, collision, refusal, or reordering authorize"
+        },
+        {
+          "status": "ok",
+          "name": "executes a non-vacuous deterministic matrix with every boundary covered"
+        },
+        {
+          "status": "ok",
+          "name": "cannot be confused with a production persistence receipt"
+        },
+        {
+          "status": "ok",
+          "name": "registry activation deterministic simulator"
+        }
+      ]
+    },
+    {
+      "file": "registry-authority.test.mjs",
+      "ms": 657,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 15,
+        "suites": 0,
+        "pass": 15,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "root-signed operational delegation verifies with the two exact signing roles"
+        },
+        {
+          "status": "ok",
+          "name": "delegation preimage domain-separates the root signature"
+        },
+        {
+          "status": "ok",
+          "name": "tampering with the operational identity or fingerprints invalidates the root signature"
+        },
+        {
+          "status": "ok",
+          "name": "root pin mismatch and unavailable root refuse the delegation"
+        },
+        {
+          "status": "ok",
+          "name": "not-yet-valid and expired delegations are terminal refusals"
+        },
+        {
+          "status": "ok",
+          "name": "revocation of either authority refuses the delegation"
+        },
+        {
+          "status": "ok",
+          "name": "roles are closed, unique, and must include the caller's required roles"
+        },
+        {
+          "status": "ok",
+          "name": "delegation serial must be strictly newer than the accepted floor"
+        },
+        {
+          "status": "ok",
+          "name": "malformed dates, validity inversion, and malformed fingerprints are refused"
+        },
+        {
+          "status": "ok",
+          "name": "throwing and truthy non-boolean verifiers cannot authorize"
+        },
+        {
+          "status": "ok",
+          "name": "missing or downgraded root signature halves cannot authorize delegation"
+        },
+        {
+          "status": "ok",
+          "name": "registry index verification is bound to the delegated operational key"
+        },
+        {
+          "status": "ok",
+          "name": "package manifest verification is bound to delegated operational authority"
+        },
+        {
+          "status": "ok",
+          "name": "delegated package manifest refuses fingerprint and signer substitution"
+        },
+        {
+          "status": "ok",
+          "name": "delegated package manifest requires role, active serial, and non-revoked key"
+        }
+      ]
+    },
+    {
+      "file": "registry-bounded-read.test.mjs",
+      "ms": 611,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 2,
+        "suites": 0,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "readBoundedRegularFile admits a real file under the byte ceiling"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: bounded read refuses oversize without calling readFile"
+        }
+      ]
+    },
+    {
+      "file": "registry-durability-admission.test.mjs",
+      "ms": 715,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "keeps the production digest allow-set empty"
+        },
+        {
+          "status": "ok",
+          "name": "recognizes a source-bound local candidate without admitting production"
+        },
+        {
+          "status": "ok",
+          "name": "refuses network, removable, overlay, virtual, and unknown volumes"
+        },
+        {
+          "status": "ok",
+          "name": "refuses platform, architecture, target, filesystem, and ABI mismatch"
+        },
+        {
+          "status": "ok",
+          "name": "refuses missing, malformed, unsorted, extra, or accessor-backed evidence"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a host or descriptor object with inherited authority fields"
+        },
+        {
+          "status": "ok",
+          "name": "registry durability adapter candidate admission"
+        }
+      ]
+    },
+    {
+      "file": "registry-durability-artifact.test.mjs",
+      "ms": 682,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 7,
+        "suites": 1,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "materializes and hashes the exact fixed-path PE candidate without loading it"
+        },
+        {
+          "status": "ok",
+          "name": "refuses mutated bytes, a malformed container, and the wrong PE architecture"
+        },
+        {
+          "status": "ok",
+          "name": "binds ELF and Mach-O candidates to their declared architecture markers"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a relative root, missing fixed path, and multi-link artifact"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a symlinked loader component when the host can create one"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a package root below a symlinked ancestor when the host can create one"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an artifact above the bounded materialization ceiling"
+        },
+        {
+          "status": "ok",
+          "name": "registry durability artifact candidate inspection"
+        }
+      ]
+    },
+    {
+      "file": "registry-durability-evidence.test.mjs",
+      "ms": 647,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "owns and deeply freezes every exact evidence class without releasing authority"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a claim above its evidence class with one stable identity"
+        },
+        {
+          "status": "ok",
+          "name": "refuses incomplete, surplus, inherited and accessor-backed evidence"
+        },
+        {
+          "status": "ok",
+          "name": "refuses malformed identities, duplicate boundaries and local-path-shaped facts"
+        },
+        {
+          "status": "ok",
+          "name": "refuses platform, commit and exact-boundary policy mismatch"
+        },
+        {
+          "status": "ok",
+          "name": "converts hostile proxies into a bounded malformed refusal"
+        },
+        {
+          "status": "ok",
+          "name": "registry durability evidence"
+        }
+      ]
+    },
+    {
+      "file": "registry-durability-production-admission.test.mjs",
+      "ms": 669,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 9,
+        "suites": 1,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "issues one private, frozen profile only after both root components verify"
+        },
+        {
+          "status": "ok",
+          "name": "releases authority only through a separate owner-signed exact-profile authorization"
+        },
+        {
+          "status": "ok",
+          "name": "refuses copied candidates, mismatched targets, stale windows and failed owner verifiers"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: proxy notAfter cannot pass an expired signed authorization"
+        },
+        {
+          "status": "ok",
+          "name": "refuses copied evidence, stale authority, revocation, and either missing signature verifier"
+        },
+        {
+          "status": "ok",
+          "name": "refuses mixed platform, implementation, storage, evidence, and operational identities"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: an extra unsigned manifest field is refused before branding"
+        },
+        {
+          "status": "ok",
+          "name": "materializes the signed manifest before branding so a Proxy cannot swap fields after verify"
+        },
+        {
+          "status": "ok",
+          "name": "binds generation, key, delegation, index, adapter, checkpoint, and active window"
+        },
+        {
+          "status": "ok",
+          "name": "production registry durability composition"
+        }
+      ]
+    },
+    {
+      "file": "registry-generation.test.mjs",
+      "ms": 1862,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 11,
+        "suites": 2,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "issues one exact generation-bound forward probe and refuses copies or reuse"
+        },
+        {
+          "status": "ok",
+          "name": "re-signs every manifest, signs the index, and verifies exact correspondence"
+        },
+        {
+          "status": "ok",
+          "name": "refuses malformed generation identities and binds the context separator"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty input, incomplete custody, duplicate packages, and stale index time"
+        },
+        {
+          "status": "ok",
+          "name": "refuses substituted keys and mutation of either signed layer"
+        },
+        {
+          "status": "ok",
+          "name": "publishes, re-opens, and independently verifies an immutable generation"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-durable publication, existing-different bytes, and mutation"
+        },
+        {
+          "status": "ok",
+          "name": "refuses relative and reparse-point generation directories"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a structurally forged host-evidence adapter"
+        },
+        {
+          "status": "ok",
+          "name": "content-addressed registry generation"
+        },
+        {
+          "status": "ok",
+          "name": "binds the exact running host, consumes its native brand once, and reopens exact bytes"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: publication chmod is applied to the staging handle, not a replaceable pathname"
+        },
+        {
+          "status": "ok",
+          "name": "statically linked production generation seam"
+        }
+      ]
+    },
+    {
+      "file": "registry-index-fuse-e2e.test.mjs",
+      "ms": 767,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 7,
+        "suites": 0,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "B5a e2e: a package PINNED in a validly-signed index fuses (the gate is not vacuous)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: a FORKED package — same name@version, different bytes — is REFUSED (hash mismatch)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: an UNLISTED package is REFUSED even though its manifest gate passes"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: an UNSIGNED central index refuses everything (the index itself must be signed)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: an index TAMPERED after signing is REFUSED (signature covers the entries)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: an index signed by an UNKNOWN authority is REFUSED (no-key ⇒ deny, not skip)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a e2e: policy denial refuses a pinned package (level below the deployment's floor)"
+        }
+      ]
+    },
+    {
+      "file": "registry-index-hybrid.test.mjs",
+      "ms": 749,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 7,
+        "suites": 0,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "v2 hybrid index signs and verifies both component signatures"
+        },
+        {
+          "status": "ok",
+          "name": "v2 signature preimage carries a fixed domain before canonical bytes"
+        },
+        {
+          "status": "ok",
+          "name": "missing or tampered hybrid halves are terminal refusals"
+        },
+        {
+          "status": "ok",
+          "name": "legacy verifier injection and algorithm downgrade cannot verify v2"
+        },
+        {
+          "status": "ok",
+          "name": "the legacy signer cannot silently sign a v2 index"
+        },
+        {
+          "status": "ok",
+          "name": "v2 refuses missing authority identity, non-string signatures, and throwing verifiers"
+        },
+        {
+          "status": "ok",
+          "name": "historical v1 remains verifiable but is not the builder default"
+        }
+      ]
+    },
+    {
+      "file": "registry-index.test.mjs",
+      "ms": 693,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 59,
+        "suites": 7,
+        "pass": 59,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "REJECTS a truthy NON-BOOLEAN verifier return (fail-open fix: result !== true)"
+        },
+        {
+          "status": "ok",
+          "name": "REJECTS a stale/replayed index below the issuedAt floor (rollback defense)"
+        },
+        {
+          "status": "ok",
+          "name": "REJECTS a flipped (unauthenticated) canon tag"
+        },
+        {
+          "status": "ok",
+          "name": "REJECTS an unexpected (but validly-signed) schema — post-verify validation"
+        },
+        {
+          "status": "ok",
+          "name": "REFUSES a duplicate (name,version) entry — order must not decide facts"
+        },
+        {
+          "status": "ok",
+          "name": "admitFromRegistry threads the issuedAt floor (stale → structured deny, no throw)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a hardening — adversarial fail-closed (review wn8v30euh)"
+        },
+        {
+          "status": "ok",
+          "name": "verifies a correctly signed index"
+        },
+        {
+          "status": "ok",
+          "name": "build sorts entries by (name, version) — canonical catalog"
+        },
+        {
+          "status": "ok",
+          "name": "signing input excludes the signature field and is stable"
+        },
+        {
+          "status": "ok",
+          "name": "rejects an UNSIGNED index (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "rejects a TAMPERED index (signature no longer matches content)"
+        },
+        {
+          "status": "ok",
+          "name": "rejects when no public key is registered for the authority keyId (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a registry index — hybrid envelope logic (real Ed25519 + deterministic ML test witness)"
+        },
+        {
+          "status": "ok",
+          "name": "resolves a pinned package by name+version+hash"
+        },
+        {
+          "status": "ok",
+          "name": "denies an unknown package"
+        },
+        {
+          "status": "ok",
+          "name": "denies an unknown version"
+        },
+        {
+          "status": "ok",
+          "name": "denies a hash mismatch (supply-chain integrity)"
+        },
+        {
+          "status": "ok",
+          "name": "denies a keyId mismatch when the package keyId is supplied"
+        },
+        {
+          "status": "ok",
+          "name": "B5a registry index — lookup (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "allows a package whose level is permitted"
+        },
+        {
+          "status": "ok",
+          "name": "denies a package whose level is not permitted"
+        },
+        {
+          "status": "ok",
+          "name": "denies a package whose risk exceeds the policy maximum"
+        },
+        {
+          "status": "ok",
+          "name": "B5a registry index — policy (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"extreme\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"HIGH\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"High\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"Low\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"CRITICAL\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \" low\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"low \" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"constructor\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"__proto__\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating \"toString\" under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating 0 under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating 3 under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating {} under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies riskRating [] under a risk gate (was admitted: fail-open)"
+        },
+        {
+          "status": "ok",
+          "name": "denies an unrecognised riskRating under every valid maximum"
+        },
+        {
+          "status": "ok",
+          "name": "valid ratings are unchanged: within the maximum → ok, above it → denied (not the unknown-rating reason)"
+        },
+        {
+          "status": "ok",
+          "name": "a disallowed certification level is still denied first (gate order unchanged)"
+        },
+        {
+          "status": "ok",
+          "name": "admitFromRegistry denies a signed, listed entry whose riskRating is unrecognised"
+        },
+        {
+          "status": "ok",
+          "name": "registry policy — unrecognised riskRating is DENIED (zero-trust; RD-0361 S6b D1)"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"extreme\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"HIGH\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"Critical\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \" low\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"constructor\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating \"__proto__\" even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating 0 even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating 3 even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating {} even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies under maxRiskRating [] even for the lowest valid entry rating"
+        },
+        {
+          "status": "ok",
+          "name": "denies every valid entry rating under an unrecognised maximum"
+        },
+        {
+          "status": "ok",
+          "name": "extreme/extreme (both unrecognised) is denied"
+        },
+        {
+          "status": "ok",
+          "name": "no risk gate set keeps the documented contract: risk is not gated"
+        },
+        {
+          "status": "ok",
+          "name": "valid maxima are unchanged (low admits low; critical admits critical)"
+        },
+        {
+          "status": "ok",
+          "name": "admitFromRegistry denies a valid signed entry when the policy maximum is unrecognised"
+        },
+        {
+          "status": "ok",
+          "name": "registry policy — unrecognised policy maxRiskRating is DENIED (zero-trust default, owner may revisit)"
+        },
+        {
+          "status": "ok",
+          "name": "admits a verified, listed, policy-passing package"
+        },
+        {
+          "status": "ok",
+          "name": "denies via a structured result when the index is unsigned (no throw)"
+        },
+        {
+          "status": "ok",
+          "name": "denies an unlisted package"
+        },
+        {
+          "status": "ok",
+          "name": "denies a listed-but-policy-failing package (community level not allowed)"
+        },
+        {
+          "status": "ok",
+          "name": "B5a registry index — admitFromRegistry (verify → lookup → policy)"
+        }
+      ]
+    },
+    {
+      "file": "registry-package-manifest.test.mjs",
+      "ms": 653,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 7,
+        "suites": 0,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "operational hybrid signature verifies a reviewed package manifest"
+        },
+        {
+          "status": "ok",
+          "name": "manifest signature preimage carries a fixed domain and signing identity"
+        },
+        {
+          "status": "ok",
+          "name": "tampering with any signed manifest fact is refused"
+        },
+        {
+          "status": "ok",
+          "name": "missing, partial, malformed, and downgraded signatures refuse"
+        },
+        {
+          "status": "ok",
+          "name": "delegated signer identity is pinned and both verifiers are required"
+        },
+        {
+          "status": "ok",
+          "name": "throwing and truthy non-boolean verifiers cannot authorize a manifest"
+        },
+        {
+          "status": "ok",
+          "name": "signer refuses an empty identity or incomplete hybrid result"
+        }
+      ]
+    },
+    {
+      "file": "registry-rotation-authority.test.mjs",
+      "ms": 1276,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "mints an unforgeable admitted receipt only after concrete hybrid verification"
+        },
+        {
+          "status": "ok",
+          "name": "refuses substituted keys, stale/expired authority, revocation, and unsigned delegation"
+        },
+        {
+          "status": "ok",
+          "name": "stages only the exact root-admitted candidate receipt"
+        },
+        {
+          "status": "ok",
+          "name": "admits only a fresh candidate-signed index whose entries have migrated to the candidate identity"
+        },
+        {
+          "status": "ok",
+          "name": "automatically advances one admitted phase at a time and rolls back a failed canary"
+        },
+        {
+          "status": "ok",
+          "name": "refuses production rotation until a platform durability adapter is admitted"
+        },
+        {
+          "status": "ok",
+          "name": "registry rotation root authority"
+        }
+      ]
+    },
+    {
+      "file": "registry-rotation-cli.test.mjs",
+      "ms": 1831,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 5,
+        "suites": 0,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "self-test runs the whole root -> policy -> issuer -> chain flow with throwaway keys"
+        },
+        {
+          "status": "ok",
+          "name": "keygen refuses an output directory inside the repository"
+        },
+        {
+          "status": "ok",
+          "name": "keygen writes the env + public bundle outside the repo and refuses to overwrite"
+        },
+        {
+          "status": "ok",
+          "name": "unknown commands and repeated options are refused"
+        },
+        {
+          "status": "ok",
+          "name": "the CLI source never reads key material outside the documented private-file loader"
+        }
+      ]
+    },
+    {
+      "file": "registry-rotation-policy.test.mjs",
+      "ms": 2631,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 29,
+        "suites": 0,
+        "pass": 29,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "healthy chain: root policy -> anchor -> serial 3 (Galerina key) -> serial 4 verifies"
+        },
+        {
+          "status": "ok",
+          "name": "no gap: every instant from the anchor start to the chain end is covered"
+        },
+        {
+          "status": "ok",
+          "name": "policy hash binds delegations to exactly one root-signed policy"
+        },
+        {
+          "status": "ok",
+          "name": "forged root: a policy signed by a different key under the root id is refused"
+        },
+        {
+          "status": "ok",
+          "name": "forged root: a policy for a different root id is refused"
+        },
+        {
+          "status": "ok",
+          "name": "tampered policy bounds invalidate the root signature"
+        },
+        {
+          "status": "ok",
+          "name": "an unsigned policy and a downgraded signature envelope are refused"
+        },
+        {
+          "status": "ok",
+          "name": "a root delegation signature cannot be replayed as a policy signature"
+        },
+        {
+          "status": "ok",
+          "name": "lifetime over the policy cap is refused (and the hard 90-day ceiling holds)"
+        },
+        {
+          "status": "ok",
+          "name": "role outside the policy is refused"
+        },
+        {
+          "status": "ok",
+          "name": "serial replay and rollback are refused"
+        },
+        {
+          "status": "ok",
+          "name": "expired policy is refused even though the delegation window is open"
+        },
+        {
+          "status": "ok",
+          "name": "policy rollback floor is enforced"
+        },
+        {
+          "status": "ok",
+          "name": "a gap between consecutive delegations is refused"
+        },
+        {
+          "status": "ok",
+          "name": "an overlap shorter than the policy minimum is refused; exactly the minimum passes"
+        },
+        {
+          "status": "ok",
+          "name": "a delegation that starts before its predecessor is refused"
+        },
+        {
+          "status": "ok",
+          "name": "operational key rules: denied SLIDE key, root/issuer ids, fingerprints, first rotation"
+        },
+        {
+          "status": "ok",
+          "name": "forged issuer: wrong signing key, and issuer public bytes that differ from the root-signed fingerprints"
+        },
+        {
+          "status": "ok",
+          "name": "tampering with an issued delegation breaks its issuer signature"
+        },
+        {
+          "status": "ok",
+          "name": "backdated issuance and delegations outside the policy window are refused"
+        },
+        {
+          "status": "ok",
+          "name": "revocation: root, issuer and the selected operational key kill the chain; retired links do not"
+        },
+        {
+          "status": "ok",
+          "name": "anchor: must be the exact root-signed delegation the policy names"
+        },
+        {
+          "status": "ok",
+          "name": "the selected delegation must be part of the supplied chain and bound to the policy"
+        },
+        {
+          "status": "ok",
+          "name": "policy and delegation formats are closed and strictly validated"
+        },
+        {
+          "status": "ok",
+          "name": "verdict functions: exact boundaries"
+        },
+        {
+          "status": "ok",
+          "name": "scheduler extends the chain with the policy overlap and refuses to open a gap"
+        },
+        {
+          "status": "ok",
+          "name": "planned windows always verify: a full simulated year of rotations never leaves a gap"
+        },
+        {
+          "status": "ok",
+          "name": "end to end: the issued operational key signs a registry index the chain accepts"
+        },
+        {
+          "status": "ok",
+          "name": "tower-citizen exposes the two new verifier roles with distinct contexts"
+        }
+      ]
+    },
+    {
+      "file": "registry-runtime.test.mjs",
+      "ms": 890,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 2,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "refuses bootstrap while no current signed live index is published"
+        },
+        {
+          "status": "ok",
+          "name": "caller freshness and revocation scalars cannot revive an absent live index"
+        },
+        {
+          "status": "ok",
+          "name": "binds production loading to authenticated rotation floors and active identity"
+        },
+        {
+          "status": "ok",
+          "name": "production registry runtime"
+        },
+        {
+          "status": "ok",
+          "name": "keeps serial 1 until serial 2 becomes active"
+        },
+        {
+          "status": "ok",
+          "name": "returns nothing outside every window so the verifier refuses the highest serial"
+        },
+        {
+          "status": "ok",
+          "name": "pins the accepted artifact serial regardless of the clock"
+        },
+        {
+          "status": "ok",
+          "name": "registry delegation serial selection"
+        }
+      ]
+    },
+    {
+      "file": "relaxation-report.test.mjs",
+      "ms": 752,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 9,
+        "suites": 0,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "a rate above the posture ceiling is a recorded relaxation (off: 60/minute)"
+        },
+        {
+          "status": "ok",
+          "name": "a rate at or below the ceiling is not a relaxation (off)"
+        },
+        {
+          "status": "ok",
+          "name": "the rate ceiling is posture-aware (on: 30/minute)"
+        },
+        {
+          "status": "ok",
+          "name": "a timeout above the posture ceiling is a recorded relaxation (off: 10000 ms)"
+        },
+        {
+          "status": "ok",
+          "name": "a timeout at or below the ceiling is not a relaxation (0 ms is fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "the timeout ceiling is posture-aware (on: 5000 ms)"
+        },
+        {
+          "status": "ok",
+          "name": "controls: maxConcurrent stays recorded, defaults record nothing, all three can stack"
+        },
+        {
+          "status": "ok",
+          "name": "a malformed rate is still refused by the kernel; resolution records no rate relaxation for it"
+        },
+        {
+          "status": "ok",
+          "name": "the runtime audit event carries the rate and timeout relaxations"
+        }
+      ]
+    },
+    {
+      "file": "request-validation-policy.test.mjs",
+      "ms": 135,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed CreateOrderRequest-shaped policy"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses NaN / Infinity / reserved strip / bad field tokens without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses deny with empty admittedFields and bodyRequired with zero size"
+        },
+        {
+          "status": "ok",
+          "name": "admits allow with empty admittedFields and bodyRequired=false with zero size"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on flipping proxies"
+        },
+        {
+          "status": "ok",
+          "name": "request validation policy contract"
+        }
+      ]
+    },
+    {
+      "file": "route-defaults.test.mjs",
+      "ms": 651,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 7,
+        "suites": 0,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "a minimal POST route is maximally secure (deny-by-default)"
+        },
+        {
+          "status": "ok",
+          "name": "GET is not idempotency-gated by default"
+        },
+        {
+          "status": "ok",
+          "name": "auth: public is recorded as an explicit relaxation"
+        },
+        {
+          "status": "ok",
+          "name": "raising the body limit / loosening unknownFields is recorded"
+        },
+        {
+          "status": "ok",
+          "name": "disabling idempotency on a mutating method is a recorded relaxation"
+        },
+        {
+          "status": "ok",
+          "name": "posture 'on' tightens body + limit ceilings"
+        },
+        {
+          "status": "ok",
+          "name": "SECURE_DEFAULTS are deny-by-default"
+        }
+      ]
+    },
+    {
+      "file": "route-pattern-container.test.mjs",
+      "ms": 217,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 5,
+        "suites": 1,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "still matches an issued pattern and refuses overlapping issued patterns"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a Proxy array without running get traps"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an ordinary array index getter without invoking it"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a sparse oversized table in bounded time using the existing MAX_ROUTES size"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an issued pattern from a second module instance (per-instance ownership)"
+        },
+        {
+          "status": "ok",
+          "name": "checkRoutePatternConflicts container boundary"
+        }
+      ]
+    },
+    {
+      "file": "route-pattern-issuance.test.mjs",
+      "ms": 669,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 5,
+        "suites": 1,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "matches a request path against an issued compiled pattern"
+        },
+        {
+          "status": "ok",
+          "name": "does not match a Proxy wrapper and never runs get traps"
+        },
+        {
+          "status": "ok",
+          "name": "does not match a forged plain object with the compiled shape"
+        },
+        {
+          "status": "ok",
+          "name": "refuses an unissued entry in a conflict check without inventing precedence"
+        },
+        {
+          "status": "ok",
+          "name": "still refuses overlapping issued patterns with no precedence"
+        },
+        {
+          "status": "ok",
+          "name": "compileRoutePattern issuance boundary"
+        }
+      ]
+    },
+    {
+      "file": "route-pattern.test.mjs",
+      "ms": 667,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 20,
+        "suites": 3,
+        "pass": 20,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "compiles literals, :param and {param} into one canonical form"
+        },
+        {
+          "status": "ok",
+          "name": "compiles the root path with no segments"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-strings, relative paths, empty, trailing and double slashes"
+        },
+        {
+          "status": "ok",
+          "name": "refuses over-length patterns"
+        },
+        {
+          "status": "ok",
+          "name": "refuses segments outside the literal / identifier grammar"
+        },
+        {
+          "status": "ok",
+          "name": "accepts __proto__ as a name only into a null-prototype record (no pollution)"
+        },
+        {
+          "status": "ok",
+          "name": "refuses a repeated parameter name, including across :x and {x}"
+        },
+        {
+          "status": "ok",
+          "name": "bounds segment and parameter counts"
+        },
+        {
+          "status": "ok",
+          "name": "never echoes pattern text in diagnostics"
+        },
+        {
+          "status": "ok",
+          "name": "compileRoutePattern: closed grammar"
+        },
+        {
+          "status": "ok",
+          "name": "returns raw values in a frozen null-prototype record"
+        },
+        {
+          "status": "ok",
+          "name": "does not decode values"
+        },
+        {
+          "status": "ok",
+          "name": "requires exact segment count and case-sensitive literals"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty, dot, encoded-separator, malformed-percent and over-long values"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-string and over-length request paths"
+        },
+        {
+          "status": "ok",
+          "name": "matches the root only against the root pattern"
+        },
+        {
+          "status": "ok",
+          "name": "matches literal-only patterns exactly like the current exact-path table"
+        },
+        {
+          "status": "ok",
+          "name": "matchRoutePattern"
+        },
+        {
+          "status": "ok",
+          "name": "refuses literal-vs-param overlap rather than inventing precedence"
+        },
+        {
+          "status": "ok",
+          "name": "refuses same-shape patterns with different parameter names"
+        },
+        {
+          "status": "ok",
+          "name": "accepts disjoint patterns"
+        },
+        {
+          "status": "ok",
+          "name": "reports every overlapping pair"
+        },
+        {
+          "status": "ok",
+          "name": "checkRoutePatternConflicts: no precedence, overlaps refused"
+        }
+      ]
+    },
+    {
+      "file": "runtime-audit-report-format.test.mjs",
+      "ms": 123,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed runtime audit report format"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, custom prototypes and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses allow default, optional redaction, secret inclusion and unbound limits"
+        },
+        {
+          "status": "ok",
+          "name": "refuses reserved idempotency report kind, unknown kinds, duplicates and unsorted lists"
+        },
+        {
+          "status": "ok",
+          "name": "refuses non-empty input diagnostics and keeps refused placeholder distinguishable"
+        },
+        {
+          "status": "ok",
+          "name": "create and read agree; never throws on hostile proxy"
+        },
+        {
+          "status": "ok",
+          "name": "app-kernel runtime audit report format"
+        }
+      ]
+    },
+    {
+      "file": "scope-role-policy.test.mjs",
+      "ms": 121,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed role→scope grant table"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses allow default, wildcards, and bad tokens without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty roles, duplicate ids, and scopes outside admitted set"
+        },
+        {
+          "status": "ok",
+          "name": "refuses unsorted admittedScopes / roles and dense-array violations"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on flipping proxies"
+        },
+        {
+          "status": "ok",
+          "name": "scope role policy model"
+        }
+      ]
+    },
+    {
+      "file": "secret-arena-provider.test.mjs",
+      "ms": 13530,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 11,
+        "suites": 0,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "construction refuses on non-Linux or when the native custodian is unavailable"
+        },
+        {
+          "status": "ok",
+          "name": "linux SecretArena provider wipes every exit path, quarantines, and serves the secret gate"
+        },
+        {
+          "status": "ok",
+          "name": "linux provider failure and timeout wipe adapter-owned bytes"
+        },
+        {
+          "status": "ok",
+          "name": "linux child-death quarantines without a production test hook"
+        },
+        {
+          "status": "ok",
+          "name": "linux decreasing custodian epoch quarantines and refuses stale authority"
+        },
+        {
+          "status": "ok",
+          "name": "linux short custodian read wipes and refuses construction"
+        },
+        {
+          "status": "ok",
+          "name": "linux captured transfer paths cannot copy live secret bytes"
+        },
+        {
+          "status": "ok",
+          "name": "linux Memory throw during use wipes the GET copy and quarantines"
+        },
+        {
+          "status": "ok",
+          "name": "linux GET timeout kills the custodian and drops late secret bytes"
+        },
+        {
+          "status": "ok",
+          "name": "linux SIGTERM-ignoring custodian is SIGKILL'd within the grace bound"
+        },
+        {
+          "status": "ok",
+          "name": "linux backing.set throw wipes allocated wasm memory and does not retain it"
+        }
+      ]
+    },
+    {
+      "file": "secret-gate.test.mjs",
+      "ms": 877,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 39,
+        "suites": 0,
+        "pass": 39,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "secrets: arena backing in use = local RefArena fallback"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: required secret ABSENT → 503 secret_unavailable, handler NOT run"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: required secret PRESENT → handler runs and reads it via view"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: required secret FAULTED → 503, handler NOT run, getSecret(faulted) → undefined"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider ABSENT → 503, handler NOT run (fail-closed)"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: route with NO required secret is unaffected (no-op) even with NO provider"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: ANTI-VACUITY — removing the admit() refusal flips absent-secret to handler-ran"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: malformed provider presence values refuse and never dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider loss during async idempotency admission refuses before dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider revocation during staging refuses before consumer delivery"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: getSecret refuses callback return and async escape channels"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider callback cannot turn undefined into an empty byte view"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider-caught empty byte value is terminal before consumer code"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: prototype-spoofed Uint16Array is refused before consumer code"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: handler cannot catch a failed required-secret use and still succeed"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: swallowed callback violation during final presence check refuses before delivery"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: swallowed callback violation during consumer execution refuses the request"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: callback violation still observes a forbidden consumer rejection"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: a caught secret-use failure prevents provider re-entry"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: synchronous re-entry during consume refuses the request"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: caught re-entry failure prevents the pending outer secret delivery"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: handler callback refusal cannot return a successful request"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: captured getSecret cannot reacquire after a successful response"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: response serialization cannot use the retired request capability"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: a caught provider callback refusal during response serialization prevents success"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: a provider refusal queued during response serialization prevents publication"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: refusal from an audit hook cannot revise the sealed response or its event"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: a successful request acquisition spends the accessor before any second provider call"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: caught late provider callback violation fails a still-live request"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: in-flight microtask may use capability, but serialization and post-response may not"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: timed-out noncooperative handler cannot reacquire after its late continuation"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider callback saved past use cannot later deliver a secret view"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: callback saved after one valid use cannot stage a second value"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider Promise return is refused and its rejection is observed"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: invalid async provider return cannot run consumer effects before refusal"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: staged view is wiped on provider and consumer throw paths"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: consumer cannot shadow the gate's staged-buffer wipe"
+        },
+        {
+          "status": "ok",
+          "name": "secrets: provider replacement of global Uint8Array cannot alias provider-owned bytes"
+        },
+        {
+          "status": "ok",
+          "name": "F2: consumer transfer-then-throw keeps original error, wipes gate-owned bytes, runs lease cleanup"
+        }
+      ]
+    },
+    {
+      "file": "security-closure.test.mjs",
+      "ms": 715,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 20,
+        "suites": 0,
+        "pass": 20,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "required scopes deny an admitted channel that lacks a route scope"
+        },
+        {
+          "status": "ok",
+          "name": "legacy header-presence authentication is refused at kernel construction"
+        },
+        {
+          "status": "ok",
+          "name": "handler secret access is declaration-bound and callback-returned views are refused"
+        },
+        {
+          "status": "ok",
+          "name": "handler mutation cannot expand the kernel's private secret authorization snapshot"
+        },
+        {
+          "status": "ok",
+          "name": "post-construction mutation of a route declaration cannot rewrite the kernel policy"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot erase a private required scope through Array.prototype.some"
+        },
+        {
+          "status": "ok",
+          "name": "a handler cannot obtain and mutate a private route policy through Map.prototype.get"
+        },
+        {
+          "status": "ok",
+          "name": "handler mutation of Array.prototype cannot rewrite secret authorization"
+        },
+        {
+          "status": "ok",
+          "name": "handler-installed array iterator cannot mutate the private secret allowlist during the next request"
+        },
+        {
+          "status": "ok",
+          "name": "transferred handler copies survive gate wipe and cleanup does not throw after delivery"
+        },
+        {
+          "status": "ok",
+          "name": "duplicate JSON keys are denied before the handler"
+        },
+        {
+          "status": "ok",
+          "name": "named request types require and execute a closed-schema validator"
+        },
+        {
+          "status": "ok",
+          "name": "route rate, deadline, and response-memory budgets are enforced"
+        },
+        {
+          "status": "ok",
+          "name": "default idempotency storage expires entries, rejects oversized keys, and stays bounded"
+        },
+        {
+          "status": "ok",
+          "name": "atomic claims admit exactly one concurrent duplicate"
+        },
+        {
+          "status": "ok",
+          "name": "default audit retention refuses overflow without breaking accepted seals"
+        },
+        {
+          "status": "ok",
+          "name": "JSON bodies without a closed request type refuse null and surplus input"
+        },
+        {
+          "status": "ok",
+          "name": "enabled idempotency requires a bounded key before dispatch"
+        },
+        {
+          "status": "ok",
+          "name": "authenticated rate windows are isolated by a required principal identity"
+        },
+        {
+          "status": "ok",
+          "name": "a timed-out handler retains its in-flight slot until underlying work settles"
+        }
+      ]
+    },
+    {
+      "file": "structured-await-policy.test.mjs",
+      "ms": 114,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed Structured Await policy"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, custom prototypes and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses relaxed scope / cancel / child-error / background / external-timeout tokens without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses NaN / Infinity / zero / unsafe limits and external timeout above request timeout"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty / duplicate / unsorted / wildcard / sparse await-mode lists and non-empty input diagnostics"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on hostile proxies and refused output carries no null / NaN / undefined"
+        },
+        {
+          "status": "ok",
+          "name": "request Structured Await scope and cancellation policy"
+        }
+      ]
+    },
+    {
+      "file": "tower-subpath-imports.test.mjs",
+      "ms": 194,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 3,
+        "suites": 0,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "positive: kernel.ts imports Tower /governance only"
+        },
+        {
+          "status": "ok",
+          "name": "hostile: no app-kernel src file imports the Tower root barrel"
+        },
+        {
+          "status": "ok",
+          "name": "registry modules import /custody (and /governance when they fold trits)"
+        }
+      ]
+    },
+    {
+      "file": "typed-api-boundary.test.mjs",
+      "ms": 128,
+      "status": 0,
+      "timedOut": false,
+      "summary": {
+        "tests": 6,
+        "suites": 1,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "names": [
+        {
+          "status": "ok",
+          "name": "admits a closed OrdersApi-shaped boundary"
+        },
+        {
+          "status": "ok",
+          "name": "refuses getters, symbols, and unknown keys without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses NaN / Infinity / reserved modes / bad path without echo"
+        },
+        {
+          "status": "ok",
+          "name": "refuses empty routes and duplicate method+path"
+        },
+        {
+          "status": "ok",
+          "name": "admits null optional policy blocks and null type names"
+        },
+        {
+          "status": "ok",
+          "name": "never throws on flipping proxies"
+        },
+        {
+          "status": "ok",
+          "name": "typed API boundary contract"
+        }
+      ]
+    }
+  ]
+}
