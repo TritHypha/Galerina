@@ -144,9 +144,13 @@ Open follow-ups (low; none blocks the merged rows):
 - [x] **Bridge-flag mutant** (step 2c): done 2026-10-28. The pin
   `bridge_flag_is_pinned_open_until_the_step_z_sunset` fails when the
   legacy bridge constant is flipped; the Step Z sunset changes it on purpose.
-- [ ] **Frame epoch format:** the frame epoch is still YYYYMMDD (interim,
-  accepted); the final format follows Linux time practice after the
-  trusted-clock R&D.
+- [x] **Frame epoch format:** DONE K3-EP (2026-10-28), R&D rec 4 of
+  `rd-trusted-clock-linux-time-20261027.md` section 5. Canonical frame epoch
+  is i64 Unix seconds UTC. YYYYMMDD is a marked transitional legacy input
+  (real Gregorian date in `[20261027, 20991231]` as 00:00:00Z). Fail closed
+  on `<= 0`, unparseable, below the trusted floor or above the ceiling.
+  `k3-wire.fungi` and VOK accept both forms; TS remains frozen cite-only.
+  Display `LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH` is kept. Shared fixture v3.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

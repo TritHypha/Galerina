@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v2 adds the unsigned u8 oracle, signed-wrapper boundary set, encode-lattice bytes, load8_s/load8_u expected values, and pure-frame rows. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: bridge flag, trusted clock (nowUnixSeconds < 1798761600), then cap. Frame epoch remains YYYYMMDD in [0, 20261231] else LEGACY_CLOSED. A2-F: clock input is i64 Unix seconds UTC.",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v3 (K3-EP): canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, bridge flag, trusted clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC.",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,8 +57,11 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 2,
-    "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600
+    "vectorsVersion": 3,
+    "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600,
+    "K3_EPOCH_YMD_MIN": 20261027,
+    "K3_EPOCH_YMD_MAX": 20991231,
+    "TRUSTED_CLOCK_FLOOR_UNIX_S": 1790812800
   },
   "sectionTrees": {
     "header": "THREE-WAY",
@@ -1207,7 +1210,7 @@
     {
       "id": "v1-framed-0-first",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "UNKNOWN",
@@ -1219,7 +1222,7 @@
     {
       "id": "v1-framed-0-second",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1,
       "label": "UNKNOWN",
@@ -1230,7 +1233,7 @@
     {
       "id": "v1-framed-0-last-valid-day",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "UNKNOWN",
@@ -1242,7 +1245,7 @@
     {
       "id": "v1-framed-0-refused-day",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1254,7 +1257,7 @@
     {
       "id": "v1-framed-0-cap-minus-1",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 999999,
       "label": "UNKNOWN",
@@ -1265,7 +1268,7 @@
     {
       "id": "v1-framed-0-at-cap",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
@@ -1277,7 +1280,7 @@
     {
       "id": "v1-framed-0-cap-plus-1",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000001,
       "label": "LEGACY_CLOSED",
@@ -1288,7 +1291,7 @@
     {
       "id": "v1-framed-0-clock-and-cap",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
@@ -1404,10 +1407,10 @@
       "epoch": 20270101,
       "value": 0,
       "readsSoFar": 0,
-      "label": "LEGACY_CLOSED",
-      "readsAfter": 0,
-      "alert": "NONE",
-      "note": "Frame epoch can only close. epoch > EXPIRY is LEGACY_CLOSED even if nowUnixSeconds is open.",
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "note": "K3-EP: 20270101 is a real Gregorian date in the transitional YYYYMMDD window [20261027, 20991231].",
       "nowUnixSeconds": 1793059200
     },
     {
@@ -1416,15 +1419,16 @@
       "epoch": 2147483647,
       "value": 0,
       "readsSoFar": 0,
-      "label": "LEGACY_CLOSED",
-      "readsAfter": 0,
-      "alert": "NONE",
-      "nowUnixSeconds": 1793059200
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: 2147483647 is unix 2038-01-19T03:14:07Z, inside the trusted window. Ceiling 4102444800 is an i64-only unit test."
     },
     {
       "id": "nowUnixSeconds-i32-max",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1435,7 +1439,7 @@
     {
       "id": "nowUnixSeconds-negative-fails-closed",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1447,7 +1451,7 @@
     {
       "id": "nowUnixSeconds-zero-fails-closed",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1455,7 +1459,103 @@
       "alert": "NONE",
       "note": "A2-F: nowUnixSeconds 0 fails closed as LEGACY_CLOSED.",
       "nowUnixSeconds": 0
+    },
+    {
+      "id": "epoch-zero-fails-closed",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: epoch <= 0 fails closed."
+    },
+    {
+      "id": "epoch-ymd-20261026",
+      "version": 1,
+      "epoch": 20261026,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20261026 is outside the transitional YYYYMMDD window."
+    },
+    {
+      "id": "epoch-ymd-20261027",
+      "version": 1,
+      "epoch": 20261027,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20261027 is the first admitted transitional YYYYMMDD (00:00:00Z = 1793059200)."
+    },
+    {
+      "id": "epoch-ymd-20260230",
+      "version": 1,
+      "epoch": 20260230,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20260230 is not a real Gregorian date."
+    },
+    {
+      "id": "epoch-ymd-20991231",
+      "version": 1,
+      "epoch": 20991231,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20991231 is the last admitted transitional YYYYMMDD."
+    },
+    {
+      "id": "epoch-ymd-21000101",
+      "version": 1,
+      "epoch": 21000101,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 21000101 is outside the transitional YYYYMMDD window."
+    },
+    {
+      "id": "epoch-unix-floor",
+      "version": 1,
+      "epoch": 1790812800,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: unix epoch at TRUSTED_CLOCK_FLOOR_UNIX_S is admitted."
+    },
+    {
+      "id": "epoch-unix-below-floor",
+      "version": 1,
+      "epoch": 1790812799,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: unix epoch one second below the trusted floor fails closed."
     }
   ],
-  "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowUnixSeconds that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."
+  "jsSafeIntegerNote": "Shared JSON rows stay inside Number.isSafeInteger and Fungi Int (i32). Canonical epoch is i64 Unix seconds; the trusted ceiling 4102444800 is an i64-only SLIDE/VOK unit test because it does not fit i32. A JS-only wrapper refuses any epoch or nowUnixSeconds that fails Number.isSafeInteger before the domain checks."
 }

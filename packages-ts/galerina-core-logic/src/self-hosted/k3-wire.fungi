@@ -50,6 +50,24 @@ contract { intent { "Legacy unknown-zero expiry Unix seconds exclusive (2027-01-
   return 1798761600
 }
 
+pure flow k3TrustedClockFloorUnixS() -> Int
+contract { intent { "Trusted-clock floor Unix seconds (2026-10-01Z). Ceiling 4102444800 does not fit Int." } }
+{
+  return 1790812800
+}
+
+pure flow k3EpochYmdMin() -> Int
+contract { intent { "Transitional YYYYMMDD lower bound (2026-10-27), inclusive." } }
+{
+  return 20261027
+}
+
+pure flow k3EpochYmdMax() -> Int
+contract { intent { "Transitional YYYYMMDD upper bound (2099-12-31), inclusive." } }
+{
+  return 20991231
+}
+
 pure flow k3LegacyZeroCap() -> Int
 contract { intent { "Legacy unknown-zero read cap." } }
 {
@@ -141,6 +159,36 @@ contract { intent { "1 iff ymd is a positive in-range YYYYMMDD." } }
   return 1
 }
 
+pure flow k3YmdTransitional(ymd: Int) -> Int
+contract { intent { "1 iff ymd is a real Gregorian date in [20261027, 20991231]." } }
+{
+  if k3YmdInRange(ymd) == 0 {
+    return 0
+  }
+  if ymd < k3EpochYmdMin() {
+    return 0
+  }
+  if ymd > k3EpochYmdMax() {
+    return 0
+  }
+  return 1
+}
+
+pure flow k3EpochAdmitted(epoch: Int) -> Int
+contract { intent { "1 iff epoch is transitional YYYYMMDD or unix seconds at/above the trusted floor. Int cannot hold the 2100-01-01Z ceiling; every Int unix at/above the floor is below it." } }
+{
+  if epoch <= 0 {
+    return 0
+  }
+  if k3YmdTransitional(epoch) == 1 {
+    return 1
+  }
+  if epoch < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  return 1
+}
+
 pure flow k3DecodeCanonicalLabel(value: Int) -> Int
 contract { intent { "Map canonical signed wire 1 / -1 / unknown-wire to lattice or refuse 2." } }
 {
@@ -211,10 +259,7 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
   }
   if version == k3VersionLegacy() {
     if value == 0 {
-      if epoch < 0 {
-        return 3
-      }
-      if epoch > k3ExpiryEpoch() {
+      if k3EpochAdmitted(epoch) == 0 {
         return 3
       }
       if nowUnixSeconds <= 0 {

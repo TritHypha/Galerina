@@ -4,8 +4,9 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::{
-    Trit, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
-    LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+    Trit, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
+    LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+    TRUSTED_CLOCK_CEILING_UNIX_S, TRUSTED_CLOCK_FLOOR_UNIX_S,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -87,12 +88,59 @@ fn is_positive_in_range_ymd(ymd: i32) -> bool {
         && day <= days_in_month(year, month)
 }
 
+/// Howard Hinnant days_from_civil. Days since 1970-01-01 for a valid Gregorian date.
+fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
+    let y = if month <= 2 { year - 1 } else { year };
+    let era = if y >= 0 { y } else { y - 399 } / 400;
+    let yoe = y - era * 400;
+    let mp = if month > 2 { month - 3 } else { month + 9 };
+    let doy = (153 * mp + 2) / 5 + day - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    era * 146_097 + doe - 719_468
+}
+
+fn unix_s_from_ymd(ymd: i64) -> Option<i64> {
+    if ymd <= 0 || ymd > i64::from(i32::MAX) {
+        return None;
+    }
+    if !is_positive_in_range_ymd(ymd as i32) {
+        return None;
+    }
+    let year = ymd / 10_000;
+    let month = (ymd / 100) % 100;
+    let day = ymd % 100;
+    days_from_civil(year, month, day).checked_mul(86_400)
+}
+
+fn k3_ymd_transitional(ymd: i64) -> bool {
+    ymd >= i64::from(K3_EPOCH_YMD_MIN)
+        && ymd <= i64::from(K3_EPOCH_YMD_MAX)
+        && ymd <= i64::from(i32::MAX)
+        && is_positive_in_range_ymd(ymd as i32)
+}
+
+fn k3_epoch_admitted(epoch: i64) -> bool {
+    if epoch <= 0 {
+        return false;
+    }
+    if k3_ymd_transitional(epoch) {
+        return match unix_s_from_ymd(epoch) {
+            Some(unix) => {
+                unix >= TRUSTED_CLOCK_FLOOR_UNIX_S && unix < TRUSTED_CLOCK_CEILING_UNIX_S
+            }
+            None => false,
+        };
+    }
+    epoch >= TRUSTED_CLOCK_FLOOR_UNIX_S && epoch < TRUSTED_CLOCK_CEILING_UNIX_S
+}
+
 /// Pure framed decode. No process clock, no process counter.
 /// Clock input is i64 Unix seconds UTC. now_unix_s <= 0 fails closed.
 /// Legacy 0 is accepted only while now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S.
+/// K3-EP: epoch is i64. Canonical form is Unix seconds; YYYYMMDD is transitional.
 pub fn decode_legacy_frame_pure(
     version: i32,
-    epoch: i32,
+    epoch: i64,
     value: i32,
     now_unix_s: i64,
     reads_so_far: u64,
@@ -106,7 +154,7 @@ pub fn decode_legacy_frame_pure(
     if value != 0 {
         return decode_canonical_label(value, reads_so_far);
     }
-    if epoch < 0 || epoch > LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH {
+    if !k3_epoch_admitted(epoch) {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
     if now_unix_s <= 0 {
@@ -146,7 +194,7 @@ pub(crate) fn decode_legacy_frame_counted(
     let mut reads = counter.load(Ordering::SeqCst);
     loop {
         let decoded =
-            decode_legacy_frame_pure(K3_WIRE_VERSION_LEGACY, 0, value, now_unix_s, reads);
+            decode_legacy_frame_pure(K3_WIRE_VERSION_LEGACY, now_unix_s, value, now_unix_s, reads);
         if decoded.reads_after <= reads {
             return decoded;
         }
@@ -166,10 +214,11 @@ pub(crate) fn decode_legacy_frame_counted(
 mod tests {
     use super::*;
     use crate::{
-        legacy_unknown_zero_reads, Trit, TritWireForm, K3_UNKNOWN_WIRE,
-        K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
-        LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
-        LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+        legacy_unknown_zero_reads, Trit, TritWireForm, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN,
+        K3_UNKNOWN_WIRE, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
+        LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+        LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S, TRUSTED_CLOCK_CEILING_UNIX_S,
+        TRUSTED_CLOCK_FLOOR_UNIX_S,
     };
 
     const FRAME_RS: &str = include_str!("k3_frame.rs");
@@ -224,7 +273,7 @@ mod tests {
 
     fn expect_frame(
         version: i32,
-        epoch: i32,
+        epoch: i64,
         value: i32,
         now_unix_s: i64,
         reads: u64,
@@ -308,7 +357,7 @@ mod tests {
     fn expiry_includes_end_day() {
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             LAST_UNIX,
             0,
@@ -319,7 +368,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             CLOSED_UNIX,
             0,
@@ -334,7 +383,7 @@ mod tests {
     fn cap_off_by_one_lock() {
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP - 1,
@@ -345,7 +394,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -356,7 +405,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP + 1,
@@ -371,7 +420,7 @@ mod tests {
     fn alerts_first_seen_and_cap_reached() {
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             0,
@@ -382,7 +431,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             1,
@@ -393,7 +442,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -404,7 +453,7 @@ mod tests {
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
-            0,
+            OPEN_UNIX,
             0,
             CLOSED_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -420,7 +469,7 @@ mod tests {
         for now_unix_s in [i64::MIN, -1, 0, CLOSED_UNIX, i64::from(i32::MAX)] {
             expect_frame(
                 K3_WIRE_VERSION_LEGACY,
-                0,
+                OPEN_UNIX,
                 0,
                 now_unix_s,
                 0,
@@ -442,7 +491,16 @@ mod tests {
 
     #[test]
     fn epoch_close_gate() {
-        for epoch in [i32::MIN, -1, 20270101, i32::MAX] {
+        for epoch in [
+            i64::MIN,
+            -1,
+            0,
+            20_261_026,
+            20_260_230,
+            21_000_101,
+            TRUSTED_CLOCK_FLOOR_UNIX_S - 1,
+            TRUSTED_CLOCK_CEILING_UNIX_S,
+        ] {
             expect_frame(
                 K3_WIRE_VERSION_LEGACY,
                 epoch,
@@ -455,17 +513,41 @@ mod tests {
                 &format!("epoch {epoch}"),
             );
         }
-        expect_frame(
-            K3_WIRE_VERSION_LEGACY,
-            LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
-            0,
+        for epoch in [
+            i64::from(K3_EPOCH_YMD_MIN),
+            i64::from(LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH),
+            20_270_101,
+            i64::from(K3_EPOCH_YMD_MAX),
+            TRUSTED_CLOCK_FLOOR_UNIX_S,
             OPEN_UNIX,
-            0,
-            FrameLabel::Unknown,
-            1,
-            FrameAlert::FirstSeen,
-            "epoch at expiry still open",
-        );
+            i64::from(i32::MAX),
+        ] {
+            expect_frame(
+                K3_WIRE_VERSION_LEGACY,
+                epoch,
+                0,
+                OPEN_UNIX,
+                0,
+                FrameLabel::Unknown,
+                1,
+                FrameAlert::FirstSeen,
+                &format!("admitted epoch {epoch}"),
+            );
+        }
+    }
+
+    #[test]
+    fn ymd_unix_roundtrip_and_date_edges() {
+        assert_eq!(unix_s_from_ymd(20_261_027), Some(OPEN_UNIX));
+        assert_eq!(crate::civil_ymd_from_unix_days(OPEN_UNIX / 86_400), 20_261_027);
+        assert!(k3_ymd_transitional(i64::from(K3_EPOCH_YMD_MIN)));
+        assert!(k3_ymd_transitional(i64::from(K3_EPOCH_YMD_MAX)));
+        assert!(!k3_ymd_transitional(20_261_026));
+        assert!(!k3_ymd_transitional(20_260_230));
+        assert!(!k3_ymd_transitional(21_000_101));
+        assert!(k3_epoch_admitted(OPEN_UNIX));
+        assert!(!k3_epoch_admitted(0));
+        assert!(!k3_epoch_admitted(TRUSTED_CLOCK_CEILING_UNIX_S));
     }
 
     #[test]
@@ -478,7 +560,7 @@ mod tests {
             let expected = parts.next().expect("frame expected");
             seen += 1;
             let mut version = 0;
-            let mut epoch = 0;
+            let mut epoch = 0_i64;
             let mut value = 0;
             let mut now_unix_s = 0_i64;
             let mut reads = 0_u64;
@@ -510,7 +592,7 @@ mod tests {
             assert_eq!(got.reads_after, reads_after, "{input}");
             assert_eq!(alert_str(got.alert), alert, "{input}");
         }
-        assert!(seen >= 18, "fixture frame rows, got {seen}");
+        assert!(seen >= 28, "fixture frame rows, got {seen}");
     }
 
     #[test]
