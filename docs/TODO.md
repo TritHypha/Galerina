@@ -130,21 +130,12 @@ beside SLIDE and is not part of the production build.
 
 Open follow-ups (low; none blocks the merged rows):
 
-- [ ] **K3-SH r2** (2026-10-28): `grok/k3-selfhost-pins-20261028` from main
-  `19e061568`. Stale wat-q5n T14 AGENTS path, wat-q6 T1/T7 emitter+line pins,
-  wat-q2 T13 emitter pin; 14 self-hosted-type-checker misses because the
-  harness omitted parser-shaped `stmt.litI32Overflow` and match-arm `name`.
-  Twin contract kept (q2 T6 forbids `rhs.litI32Overflow`). TS frozen.
-  Old env-receiver rename is already on main; `grok/k3-selfhost-env-20261028`
-  abandoned. Merge stays Grok Bot.
-- [ ] **K3-SH r3** (2026-10-28): continue `grok/k3-selfhost-pins-20261028` at
-  `c03117bd6`. Work-driver 10:55 counts (bootstrap 17, i3-corpus 5, pipeline 8,
-  runtime 6) were envLookup/envBind `env.count/get/append` → secret.read;
-  already closed on main `19e061568`. Leaf on HEAD: bootstrap 21/0, i3 83/0,
-  pipeline 38/0, runtime 31/0. Leftover pin `k3sh-r3-selfhost-env-shape`:
-  runGIRBody still takes param `env` (runtime.fungi:1108); harness key `env`;
-  envLookup/envBind take `bindings`. wat-q6 T10 parked. OPEN-S5/S6 Work driver.
-  TS frozen. Merge stays Grok Bot.
+- [x] **K3-SH r2** (2026-10-28): merged to main `4499645c2`. Stale wat-q5n T14
+  AGENTS path, wat-q6 T1/T7 emitter+line pins, wat-q2 T13 emitter pin, and
+  the 14 self-hosted-type-checker misses closed on that merge.
+- [x] **K3-SH r3** (2026-10-28): merged to main `4499645c2`. envLookup/envBind
+  secret.read closed on main `19e061568`; leftover `k3sh-r3-selfhost-env-shape`
+  recorded. wat-q6 T10 parked. OPEN-S5/S6 Work driver.
 - [x] **K3C-2** (the K3-COPIES compiler change below): owner go-ahead 2026-10-28 07:46 GMT.
 - [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
   `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes
@@ -244,6 +235,21 @@ Open follow-ups (low; none blocks the merged rows):
   10. N-v: pin awaits `prebuildK3StrongKleenePin` then dynamic-imports
   fixture and dist; `tscBin` walks to repo-root `node_modules/typescript/bin/tsc`
   and refuses a bare `tsc`.
+- [x] **K3-PW** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-x merge
+  origin/main `bad441e9c` (commit `14d9be5a9`, parents `878552d9f`+`bad441e9c`).
+  Decision: the carrier must actually travel. `.fungi`
+  `k3PackageArtifactWireVersion()` = 2 (canonical) is the field SLIDE loads;
+  `k3EmitPackageArtifactCarrier` refuses unknown. SLIDE production loaders
+  `publication-loader` 568, `package-compiler` 231, `flat-package-abi` 481,
+  `loop-body-vok` 167, `vok-component-boundary` 118/120/511/513 route through
+  `decodeK3PackageGate` -> `decodeK3PackageFrame` with a canonical wrap so
+  bare 0 stays INVALID (F1). Additive `k3WireVersion` on publication artifacts.
+  TS frozen `UNKNOWN(ts-frozen-emitter)` reason 5 at
+  `three-valued-governance.ts:1`, `trit-gates.ts:1`,
+  `receipt-bound-slide-build.mjs:50`,
+  `production-boot-composition-candidate.ts:29` (Step Y/Z). Fixture schema 11
+  `packageArtifactFrames` e2e rows. N-z prebuild compiler tsc error names
+  `npm install / npm run build` in `galerina-core-compiler`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

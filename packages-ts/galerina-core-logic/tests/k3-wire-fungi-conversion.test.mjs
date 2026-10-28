@@ -639,4 +639,19 @@ describe("core-logic k3-wire.fungi conversion", () => {
     const src = readFileSync(SOURCE, "utf8");
     assert.match(src, /UNKNOWN\(ts-frozen-emitter\)/);
   });
+
+  it("K3-PW emits k3WireVersion as a package-artifact field; TS frozen sites named", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3PackageArtifactWireVersion(), 2);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(2), 2);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(1), 1);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(3), -1);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(0), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(exports.k3PackageArtifactWireVersion(), 2), 1);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /three-valued-governance\.ts:1/);
+    assert.match(src, /trit-gates\.ts:1/);
+    assert.match(src, /receipt-bound-slide-build\.mjs:50/);
+    assert.match(src, /production-boot-composition-candidate\.ts:29/);
+  });
 });

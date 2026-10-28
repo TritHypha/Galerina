@@ -1,4 +1,4 @@
-sha256=c5220b4b3cd318d141dd80c6313c75f6a6bac42f2c56d0f3f57564719fd10483
+sha256=fd5ec3dc525e494bb55355733fd006bb10feb3e24190920e7daab4b754267153
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|10
-header|FIXTURE_SCHEMA_VERSION|10
+header|vectorsVersion|11
+header|FIXTURE_SCHEMA_VERSION|11
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -447,3 +447,8 @@ wireVersionCarrier|disagree|kind=disagree;carrier=1;header=2;expect=REFUSE;code=
 wireVersionCarrier|missing|kind=missing;carrier=null;header=1;expect=REFUSE;code=K3_WIRE_VERSION_CARRIER_MISSING
 wireVersionCarrier|unknown-version|kind=unknown-version;carrier=3;header=1;expect=REFUSE;code=K3_WIRE_VERSION_CARRIER_UNKNOWN
 wireVersionCarrier|legacy-bridge|kind=legacy-bridge;carrier=1;header=1;expect=ADMIT;code=AGREE
+packageArtifactFrames|agree|kind=agree;carrier=1;header=1;value=-128;expect=ADMIT;code=AGREE
+packageArtifactFrames|disagree|kind=disagree;carrier=1;header=2;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001
+packageArtifactFrames|missing-carrier|kind=missing-carrier;carrier=null;header=1;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001
+packageArtifactFrames|unknown-version|kind=unknown-version;carrier=3;header=1;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001
+packageArtifactFrames|legacy-bridge|kind=legacy-bridge;carrier=1;header=1;value=0;expect=ADMIT;code=AGREE

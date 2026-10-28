@@ -50,7 +50,10 @@ function runTsc(pkgRoot, args) {
   });
   if (r.status !== 0) {
     const err = r.stderr || r.stdout || `tsc exit ${r.status}`;
-    throw new Error(`k3-sk-pin prebuild tsc failed in ${pkgRoot}: ${err.slice(0, 800)}`);
+    const compilerHint = pkgRoot === COMPILER
+      ? " run npm install / npm run build in galerina-core-compiler."
+      : "";
+    throw new Error(`k3-sk-pin prebuild tsc failed in ${pkgRoot}:${compilerHint} ${err.slice(0, 800)}`);
   }
 }
 
@@ -67,7 +70,9 @@ export function prebuildK3StrongKleenePin() {
   );
 
   if (!existsSync(join(COMPILER, "dist", "index.js"))) {
-    throw new Error("k3-sk-pin prebuild: compiler dist/index.js still missing");
+    throw new Error(
+      "k3-sk-pin prebuild: compiler dist/index.js still missing; run npm install / npm run build in galerina-core-compiler",
+    );
   }
   if (!existsSync(join(DIST, "index.js")) || !existsSync(join(DIST, "three-valued-governance.js"))) {
     throw new Error("k3-sk-pin prebuild: tower-citizen dist overlay still missing");

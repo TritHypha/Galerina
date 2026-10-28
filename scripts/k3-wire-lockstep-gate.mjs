@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "c5220b4b3cd318d141dd80c6313c75f6a6bac42f2c56d0f3f57564719fd10483";
-const FIXTURE_GIT_BLOB = "3965c1e36f4e950e0f55dcd50e70f5f82ef89b12";
+const FIXTURE_DIGEST_D = "fd5ec3dc525e494bb55355733fd006bb10feb3e24190920e7daab4b754267153";
+const FIXTURE_GIT_BLOB = "2b5d489d42a4cc671788bdb77fdf3753b40f8501";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 10;
+const FIXTURE_SCHEMA_VERSION = 11;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -140,6 +140,7 @@ async function main() {
     k3WireGate,
     k3WireNot,
     k3WireOr,
+    decodeK3PackageFrame,
     verifyK3WireVersionCarrier,
     verifyReceiptK3AlertEvidence,
   } = await import(
@@ -312,6 +313,28 @@ async function main() {
       return;
     }
   }
+  const artifactFrames = doc.packageArtifactFrames ?? [];
+  if (artifactFrames.length !== 5) {
+    refuse(`packageArtifactFrames must have 5 rows, got ${artifactFrames.length}`);
+    return;
+  }
+  const artifactKinds = artifactFrames.map((row) => row.kind).join(",");
+  if (artifactKinds !== "agree,disagree,missing-carrier,unknown-version,legacy-bridge") {
+    refuse(`packageArtifactFrames kinds ${artifactKinds}`);
+    return;
+  }
+  for (const row of artifactFrames) {
+    const got = decodeK3PackageFrame(row.artifact, row.frame);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`packageArtifactFrames ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`packageArtifactFrames ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -380,6 +403,7 @@ async function main() {
     kleeneThreeWay: true,
     receiptBinding: true,
     wireVersionCarrier: true,
+    packageArtifactFrames: true,
   })}\n`);
 }
 

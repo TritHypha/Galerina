@@ -1572,6 +1572,30 @@ mod tests {
     }
 
     #[test]
+    fn k3pw_package_artifact_frames_e2e() {
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_CANONICAL)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(None, K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISSING"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(3), K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
+        );
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert!(verify_k3_wire_version_carrier(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            K3_WIRE_VERSION_CANONICAL
+        )
+        .is_ok());
+    }
+
+    #[test]
     fn k3mk_strong_kleene_wire_tables() {
         const D: i32 = -1;
         const U: i32 = -128;
