@@ -2125,7 +2125,7 @@
       "identity": "@galerina/tower-citizen",
       "version": "1.0.0-beta.2",
       "directory": "galerina-tower-citizen",
-      "contentDigest": "3bef7c477851ed6589cfaf2fab830683f74b72d181bfae354d29b82590cf2184",
+      "contentDigest": "1089674bcf1bdd8bbeddbaa608df4fff6a231f0a6bf97cb1ade9dcd4e8a63c4c",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "3607dfdbd994e0be4f09d44726bf4f4f13c06eebfa650e9e9cfe7bccbe759243"
+  "rootDigest": "6a96fdaf29b99cefe66f919b63bb3bbe5a16b705f2a59ea70ab266fe37e2871a"
 }
