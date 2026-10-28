@@ -228,7 +228,7 @@
       },
       {
         "path": "src/self-hosted/effective-verdict.fungi",
-        "sha256": "47d08b0e5e9a5fdf6583c2f1d2b0cce82801ecda23a06ad0786d16682da5fce9"
+        "sha256": "faa3df407deb1b98d27191fe2ea23882bf661eb5096ff514cf6baaef8fc479c7"
       },
       {
         "path": "src/self-hosted/gov-3vl-diagnostic.fungi",
@@ -288,7 +288,7 @@
       },
       {
         "path": "src/self-hosted/verdict-or.fungi",
-        "sha256": "97ea0baf949b8fe4ea2fda5c620ea50988a261aa7b0c49d0427d658eb7a8de49"
+        "sha256": "d6c7eacb4ae877e49feb13b71f04aee10bd866834b1be2fc7f6f4907826ac30a"
       },
       {
         "path": "src/snapshot-key-provider.ts",
