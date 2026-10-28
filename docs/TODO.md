@@ -137,6 +137,14 @@ Open follow-ups (low; none blocks the merged rows):
   Twin contract kept (q2 T6 forbids `rhs.litI32Overflow`). TS frozen.
   Old env-receiver rename is already on main; `grok/k3-selfhost-env-20261028`
   abandoned. Merge stays Grok Bot.
+- [ ] **K3-SH r3** (2026-10-28): continue `grok/k3-selfhost-pins-20261028` at
+  `c03117bd6`. Work-driver 10:55 counts (bootstrap 17, i3-corpus 5, pipeline 8,
+  runtime 6) were envLookup/envBind `env.count/get/append` → secret.read;
+  already closed on main `19e061568`. Leaf on HEAD: bootstrap 21/0, i3 83/0,
+  pipeline 38/0, runtime 31/0. Leftover pin `k3sh-r3-selfhost-env-shape`:
+  runGIRBody still takes param `env` (runtime.fungi:1108); harness key `env`;
+  envLookup/envBind take `bindings`. wat-q6 T10 parked. OPEN-S5/S6 Work driver.
+  TS frozen. Merge stays Grok Bot.
 - [x] **K3C-2** (the K3-COPIES compiler change below): owner go-ahead 2026-10-28 07:46 GMT.
 - [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
   `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes

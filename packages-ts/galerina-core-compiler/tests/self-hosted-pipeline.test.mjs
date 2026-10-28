@@ -378,6 +378,7 @@ describe("self-hosted pipeline — execute the emitted GIR (S7: source→run, in
     const body = (flows.items[0].value ?? flows.items[0]).fields.get("body");
     const g = await executeFlow("emitBodyGIR", new Map([["stmts", body]]), gir.ast);
     const stmts = g.value ?? g;
+    // runtime.fungi:1108 runGIRBody(stmts, env: Array<Binding>). Key is `env`.
     const r = await executeFlow("runGIRBody", new Map([["stmts", stmts], ["env", vList(env)]]), runtime.ast);
     const v = r.value ?? r;
     return { ty: v.fields.get("ty").value, i: v.fields.get("i").value, b: v.fields.get("b").value };

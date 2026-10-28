@@ -169,6 +169,8 @@ describe("runtime.fungi - String ordering uses value, not the zeroed Int carrier
 });
 
 async function runGIR(stmts, env = []) {
+  // runtime.fungi:1108 runGIRBody(stmts, env: Array<Binding>). Key is `env`;
+  // envLookup/envBind take `bindings` so env.count/get/append never fire.
   const r = await executeFlow(
     "runGIRBody", new Map([["stmts", vList(stmts)], ["env", vList(env)]]),
     program.ast, program.flows, undefined, undefined, { pureFastPath: false }, undefined, undefined,
