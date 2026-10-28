@@ -9,7 +9,7 @@ const dir = dirname(fileURLToPath(import.meta.url));
 const jsonPath = join(dir, "k3-wire-vectors.json");
 const rowsPath = join(dir, "k3-wire-vectors.rows.txt");
 const V1_DIGEST = "af50342a9f547b6523f632a56d45ea2c4b6eec69f35daf4c7b2f03f061d83f83";
-const PINNED_DIGEST = "133d1409ecf3b559faa2599922d16e22788ef1f629c0ade0b8639b6b3b3a5f34";
+const PINNED_DIGEST = "bd82dec6e5071fd2ac8eb0f23fb5bf1e896fe018b2bb509a074f00bbacc83204";
 const A2F_BLOB = "d204aae88e5a4f543e2803344160892f50f94b2e";
 void A2F_BLOB;
 

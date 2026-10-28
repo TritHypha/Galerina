@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink). Fixture v7 (K3-RX): k3-alert-evidence v1 rows empty/single/overflow/unsorted-keys with expected canonical bytes and sha256 digests. Fungi UNKNOWN(fungi-cannot-sha256-alert-evidence). Fixture v8 (K3-MK): strong Kleene tables on the wire {DENY=-1, UNKNOWN=-128, ALLOW=+1}: 9 AND, 9 OR, 3 NOT, gate(UNKNOWN)=refuse, DENY-sticky over 27 triples. Merge origin/main K3-SK. N-q fungi k3AlertEvidenceUnknownReason=4. Fixture v9 (K3-RB): receipt-binding rows with-field / without-field / tampered-digest / wrong-schema / wrong-version. Additive opt-in k3AlertEvidence on SLIDE receipt v3. VOK verifier constant-time compare. Fungi stays UNKNOWN(fungi-cannot-sha256-alert-evidence). Fixture v10 (K3-WV): wireVersion-carrier rows agree / disagree / missing / unknown-version / legacy-bridge. The versioned K3 frame header is the single on-wire wireVersion; Galerina package artifact k3WireVersion is the carrier SLIDE decodeK3PackageFrame reads. Missing carrier on that canonical path, header/carrier disagree, or unknown wireVersion fail closed (INVALID, no admission). .fungi emits k3WireVersionCarrier=1 (legacy header). TS three-valued-governance.ts stays frozen UNKNOWN(ts-frozen-emitter) reason 5. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged. Fixture v11 (K3-PW): packageArtifactFrames e2e rows (artifact with carrier + frame bytes: agree, disagree, missing-carrier, unknown-version, legacy-bridge). The carrier actually travels: .fungi k3PackageArtifactWireVersion=2 is the field SLIDE loads; production loaders call decodeK3PackageGate -> decodeK3PackageFrame with a canonical wrap so bare 0 stays INVALID (F1). Additive k3WireVersion on publication artifacts. TS frozen UNKNOWN(ts-frozen-emitter) reason 5 with file:line. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged. Fixture v12 (K3-CR): packageArtifactGates rows (canonical carrier + gate ALLOW/DENY/UNKNOWN(-128)/bare 0, legacy carrier + same, mismatched carrier, unknown carrier, absent-carrier fallback). The carrier the gate uses is the one on the loaded artifact. Present known carrier must agree with any frame header (else INVALID). Absent carrier during Y-to-Z falls back to canonical 2, counted and capped like the legacy-0 bridge, never silently. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged.",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink). Fixture v7 (K3-RX): k3-alert-evidence v1 rows empty/single/overflow/unsorted-keys with expected canonical bytes and sha256 digests. Fungi UNKNOWN(fungi-cannot-sha256-alert-evidence). Fixture v8 (K3-MK): strong Kleene tables on the wire {DENY=-1, UNKNOWN=-128, ALLOW=+1}: 9 AND, 9 OR, 3 NOT, gate(UNKNOWN)=refuse, DENY-sticky over 27 triples. Merge origin/main K3-SK. N-q fungi k3AlertEvidenceUnknownReason=4. Fixture v9 (K3-RB): receipt-binding rows with-field / without-field / tampered-digest / wrong-schema / wrong-version. Additive opt-in k3AlertEvidence on SLIDE receipt v3. VOK verifier constant-time compare. Fungi stays UNKNOWN(fungi-cannot-sha256-alert-evidence). Fixture v10 (K3-WV): wireVersion-carrier rows agree / disagree / missing / unknown-version / legacy-bridge. The versioned K3 frame header is the single on-wire wireVersion; Galerina package artifact k3WireVersion is the carrier SLIDE decodeK3PackageFrame reads. Missing carrier on that canonical path, header/carrier disagree, or unknown wireVersion fail closed (INVALID, no admission). .fungi emits k3WireVersionCarrier=1 (legacy header). TS three-valued-governance.ts stays frozen UNKNOWN(ts-frozen-emitter) reason 5. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged. Fixture v11 (K3-PW): packageArtifactFrames e2e rows (artifact with carrier + frame bytes: agree, disagree, missing-carrier, unknown-version, legacy-bridge). The carrier actually travels: .fungi k3PackageArtifactWireVersion=2 is the field SLIDE loads; production loaders call decodeK3PackageGate -> decodeK3PackageFrame with a canonical wrap so bare 0 stays INVALID (F1). Additive k3WireVersion on publication artifacts. TS frozen UNKNOWN(ts-frozen-emitter) reason 5 with file:line. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged. Fixture v12 (K3-CR): packageArtifactGates rows (canonical carrier + gate ALLOW/DENY/UNKNOWN(-128)/bare 0, legacy carrier + same, mismatched carrier, unknown carrier, absent-carrier fallback). The carrier the gate uses is the one on the loaded artifact. Present known carrier must agree with any frame header (else INVALID). Absent carrier during Y-to-Z falls back to canonical 2, counted and capped like the legacy-0 bridge, never silently. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged. Fixture v13 (K3-CC): descriptorSpecCarriers rows (legacy bare 0 refuse-as-UNKNOWN, canonical bare 0 INVALID, mismatch with frame header, unknown carrier, absent fallback counted once). The loaded artifact or spec carrier decides wherever one exists; the module constant is only for sites with genuinely no artifact or spec in scope. K3_WIRE_HEADER_VERSION stays 1. UNKNOWN=-128. option-B and strong Kleene unchanged.",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,8 +57,8 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 12,
-    "FIXTURE_SCHEMA_VERSION": 12,
+    "vectorsVersion": 13,
+    "FIXTURE_SCHEMA_VERSION": 13,
     "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600,
     "K3_EPOCH_YMD_MIN": 20261027,
     "K3_EPOCH_YMD_MAX": 20991231,
@@ -2581,8 +2581,9 @@
         "k3WireVersion": 1
       },
       "value": 0,
-      "expect": "REFUSE",
-      "code": "SLIDE-K3-WIRE-003"
+      "expect": "ADMIT",
+      "code": "AGREE",
+      "trit": -128
     },
     {
       "id": "mismatched",
@@ -2615,6 +2616,67 @@
       "value": 1,
       "expect": "ADMIT",
       "trit": 1,
+      "code": "ABSENT_CARRIER_FALLBACK"
+    }
+  ],
+  "descriptorSpecCarriers": [
+    {
+      "id": "spec-legacy-bare0",
+      "kind": "legacy-bare0-unknown",
+      "spec": {
+        "k3WireVersion": 1
+      },
+      "value": 0,
+      "expect": "ADMIT",
+      "trit": -128,
+      "code": "AGREE"
+    },
+    {
+      "id": "spec-canonical-bare0",
+      "kind": "canonical-bare0-invalid",
+      "spec": {
+        "k3WireVersion": 2
+      },
+      "value": 0,
+      "expect": "REFUSE",
+      "code": "SLIDE-K3-WIRE-001"
+    },
+    {
+      "id": "spec-mismatch",
+      "kind": "mismatch-frame-header",
+      "spec": {
+        "k3WireVersion": 2
+      },
+      "frame": {
+        "wireVersion": 1,
+        "epoch": 1793059200,
+        "value": -128
+      },
+      "expect": "REFUSE",
+      "code": "SLIDE-K3-WIRE-001"
+    },
+    {
+      "id": "spec-unknown",
+      "kind": "unknown-carrier",
+      "spec": {
+        "k3WireVersion": 3
+      },
+      "value": 1,
+      "expect": "REFUSE",
+      "code": "SLIDE-K3-WIRE-001"
+    },
+    {
+      "id": "spec-absent-once",
+      "kind": "absent-fallback-once",
+      "spec": {},
+      "values": [
+        1,
+        1,
+        1
+      ],
+      "expect": "ADMIT",
+      "trit": 1,
+      "count": 1,
       "code": "ABSENT_CARRIER_FALLBACK"
     }
   ]

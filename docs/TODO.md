@@ -266,6 +266,16 @@ Open follow-ups (low; none blocks the merged rows):
   Fixture schema 12 `packageArtifactGates`. SUNSET the absent-carrier
   fallback at Step Z with the legacy-0 path. Do not touch
   `packages/fungi/memory`.
+- [x] **K3-CC** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Decision:
+  the loaded artifact or spec carrier decides wherever one exists; the
+  module constant is only for sites with genuinely no artifact or spec.
+  Publication-loader early request check is shape-only; gates decode once
+  against the selected artifact. Absent-carrier fallback counted once per
+  load. Optional `k3WireVersion` on flat-package-abi admission, loop-body-vok
+  specs and vok-component-boundary specs. Remaining CONSTANT-CARRIER:
+  `src/checked-fungi-package-compiler.mjs:exactGates`. Fixture schema 13
+  `descriptorSpecCarriers`. VOK `decode_k3_package_gate` legacy + 0 is
+  UNKNOWN. Do not touch `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

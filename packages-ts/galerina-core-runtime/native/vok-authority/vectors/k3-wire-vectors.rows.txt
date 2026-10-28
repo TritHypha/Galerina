@@ -1,4 +1,4 @@
-sha256=133d1409ecf3b559faa2599922d16e22788ef1f629c0ade0b8639b6b3b3a5f34
+sha256=bd82dec6e5071fd2ac8eb0f23fb5bf1e896fe018b2bb509a074f00bbacc83204
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|12
-header|FIXTURE_SCHEMA_VERSION|12
+header|vectorsVersion|13
+header|FIXTURE_SCHEMA_VERSION|13
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -459,7 +459,12 @@ packageArtifactGates|canonical-bare0|kind=canonical-bare0;carrier=2;header=;valu
 packageArtifactGates|legacy-allow|kind=legacy-allow;carrier=1;header=;value=1;expect=ADMIT;code=AGREE;trit=1
 packageArtifactGates|legacy-deny|kind=legacy-deny;carrier=1;header=;value=-1;expect=ADMIT;code=AGREE;trit=-1
 packageArtifactGates|legacy-unknown|kind=legacy-unknown;carrier=1;header=;value=-128;expect=ADMIT;code=AGREE;trit=-128
-packageArtifactGates|legacy-bare0|kind=legacy-bare0;carrier=1;header=;value=0;expect=REFUSE;code=SLIDE-K3-WIRE-003;trit=
+packageArtifactGates|legacy-bare0|kind=legacy-bare0;carrier=1;header=;value=0;expect=ADMIT;code=AGREE;trit=-128
 packageArtifactGates|mismatched|kind=mismatched;carrier=2;header=1;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=
 packageArtifactGates|unknown-carrier|kind=unknown-carrier;carrier=3;header=;value=1;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=
 packageArtifactGates|absent-fallback|kind=absent-fallback;carrier=null;header=;value=1;expect=ADMIT;code=ABSENT_CARRIER_FALLBACK;trit=1
+descriptorSpecCarriers|spec-legacy-bare0|kind=legacy-bare0-unknown;carrier=1;header=;value=0;expect=ADMIT;code=AGREE;trit=-128;count=
+descriptorSpecCarriers|spec-canonical-bare0|kind=canonical-bare0-invalid;carrier=2;header=;value=0;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
+descriptorSpecCarriers|spec-mismatch|kind=mismatch-frame-header;carrier=2;header=1;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
+descriptorSpecCarriers|spec-unknown|kind=unknown-carrier;carrier=3;header=;value=1;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
+descriptorSpecCarriers|spec-absent-once|kind=absent-fallback-once;carrier=null;header=;value=1,1,1;expect=ADMIT;code=ABSENT_CARRIER_FALLBACK;trit=1;count=1
