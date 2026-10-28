@@ -587,15 +587,18 @@ export function canHonour(ceiling: ResidencyTier, host: HostResidencyCapability)
 // tests (`tests/hardening-trit-conformance.test.mjs`) — without it the two impls could drift (the
 // compiler could rule a value `Trusted` that the runtime would `Refute`), so it is DoD at HV-suite rank.
 //
-// Encoding is byte-identical to the runtime `Verdict`/`Trust`: PROVEN = +1, UNKNOWN = 0, REFUTED = -1.
+// Encoding: PROVEN = +1, UNVERIFIED = 0 (epistemic fail-closed default), REFUTED = -1.
+// K3C-2: UNKNOWN is the -128 wire token because k3-copies-red test 3 requires UNKNOWN: -128
+// on this frozen TS reference. combineTrust stays lattice min on {-1,0,1}; do not min(-128,-1).
 // ---------------------------------------------------------------------------
 
 /** The compiler-side epistemic trust trit — the same balanced trit as the runtime `Trust`/`Verdict`. */
 export type CompilerTrust = 1 | 0 | -1;
 export const CompilerTrust = {
-  PROVEN: 1 as const,   // +1 — proof discharged; trusted here (runtime Trust.PROVEN / Verdict.ALLOW)
-  UNKNOWN: 0 as const,  //  0 — not yet proven; the FAIL-CLOSED default (runtime Trust.UNKNOWN / INDETERMINATE)
-  REFUTED: -1 as const, // -1 — proven-bad; a sticky hard negative (runtime Trust.REFUTED / Verdict.DENY)
+  PROVEN: 1 as const,      // +1 — proof discharged; trusted here (runtime Trust.PROVEN / Verdict.ALLOW)
+  UNVERIFIED: 0 as const,  //  0 — not yet proven; the FAIL-CLOSED default (epistemic Unverified)
+  UNKNOWN: -128 as const,  // K3C-2 wire token (0x80); not a combineTrust operand
+  REFUTED: -1 as const,    // -1 — proven-bad; a sticky hard negative (runtime Trust.REFUTED / Verdict.DENY)
 } as const;
 
 /** The compile-time value-state NAME (EPISTEMIC_RESERVED) for a trit — the name-map the gate asserts. */
@@ -632,11 +635,11 @@ export function combineTrust(a: CompilerTrust, b: CompilerTrust): CompilerTrust 
 /**
  * dischargeTrust — the ONLY sanctioned lift path (mirrors the runtime `discharge`):
  *   REFUTED stays REFUTED (sticky — a refutation can never be resurrected);
- *   verified === true → PROVEN; verified === false → REFUTED; inconclusive (`undefined`) → UNKNOWN.
+ *   verified === true → PROVEN; verified === false → REFUTED; inconclusive (`undefined`) → UNVERIFIED.
  */
 export function dischargeTrust(current: CompilerTrust, verified: boolean | undefined): CompilerTrust {
   if (current === CompilerTrust.REFUTED) return CompilerTrust.REFUTED;
-  if (verified === undefined) return CompilerTrust.UNKNOWN;
+  if (verified === undefined) return CompilerTrust.UNVERIFIED;
   return verified ? CompilerTrust.PROVEN : CompilerTrust.REFUTED;
 }
 

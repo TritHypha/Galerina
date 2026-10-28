@@ -583,6 +583,15 @@ export {
   type KeyCustody,
 } from "./hardening-residency.js";
 
+export {
+  K3_WIRE_ADMIT,
+  K3_WIRE_DENY,
+  K3_WIRE_UNKNOWN,
+  K3_BYTE_ADMIT,
+  K3_BYTE_DENY,
+  K3_BYTE_UNKNOWN,
+} from "./k3-wire-constants.js";
+
 // Phase 5 / 18E / 18H / 19A — Effect Checker
 export {
   checkEffects,

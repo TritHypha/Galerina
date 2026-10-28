@@ -25,7 +25,7 @@ import {
   CompilerTrust, trustName, combineTrust, dischargeTrust, boundaryTrusted, refute as compilerRefute,
 } from "../../galerina-core-compiler/dist/index.js";
 
-const TRITS = [CompilerTrust.PROVEN, CompilerTrust.UNKNOWN, CompilerTrust.REFUTED]; // +1, 0, -1
+const TRITS = [CompilerTrust.PROVEN, CompilerTrust.UNVERIFIED, CompilerTrust.REFUTED]; // +1, 0, -1
 
 /**
  * K3U2 marshal (gcw-k3u4): the compiler trit keeps 0 = Unverified; the runtime UNKNOWN is the K3_UNKNOWN
@@ -35,28 +35,29 @@ const TRITS = [CompilerTrust.PROVEN, CompilerTrust.UNKNOWN, CompilerTrust.REFUTE
 function toCompiler(t) {
   if (t === Trust.PROVEN) return CompilerTrust.PROVEN;
   if (t === Trust.REFUTED) return CompilerTrust.REFUTED;
-  if (t === K3_UNKNOWN) return CompilerTrust.UNKNOWN;
+  if (t === K3_UNKNOWN) return CompilerTrust.UNVERIFIED;
   throw new Error("runtime trust " + String(t) + " has no compiler image — fail-closed");
 }
 
 /** A runtime Epistemic wrapper carrying a given trit — the runtime operates on wrappers, not bare trits. */
 function runtimeOf(trit) {
   if (trit === CompilerTrust.PROVEN) return trustedRoot(0, "conformance");
-  if (trit === CompilerTrust.UNKNOWN) return unverified(0, "conformance");
+  if (trit === CompilerTrust.UNVERIFIED) return unverified(0, "conformance");
   return runtimeRefute(0, "conformance");
 }
 
 test("bijection: compiler trit ≡ runtime Trust ≡ Verdict (+1/0/-1) + the Trusted/Unverified/Refuted name-map", () => {
   assert.equal(CompilerTrust.PROVEN, Trust.PROVEN);
   assert.equal(Trust.UNKNOWN, K3_UNKNOWN); // runtime UNKNOWN is the sentinel, never the trit 0
-  assert.equal(toCompiler(Trust.UNKNOWN), CompilerTrust.UNKNOWN);
+  assert.equal(toCompiler(Trust.UNKNOWN), CompilerTrust.UNVERIFIED);
   assert.equal(toCompiler(Trust.PROVEN), CompilerTrust.PROVEN);
   assert.equal(toCompiler(Trust.REFUTED), CompilerTrust.REFUTED);
   assert.throws(() => toCompiler(0)); // a runtime NEUTRAL 0 is not a trust value
   assert.equal(CompilerTrust.REFUTED, Trust.REFUTED);
   assert.equal(trustName(CompilerTrust.PROVEN), "Trusted");
-  assert.equal(trustName(CompilerTrust.UNKNOWN), "Unverified");
+  assert.equal(trustName(CompilerTrust.UNVERIFIED), "Unverified");
   assert.equal(trustName(CompilerTrust.REFUTED), "Refuted");
+  assert.equal(CompilerTrust.UNKNOWN, -128); // K3C-2 wire token; not a combineTrust operand
 });
 
 test("3×3 min-fold: compiler combineTrust ≡ runtime combine (vAnd) for all nine trit pairs", () => {
@@ -71,13 +72,13 @@ test("sticky-refute: a REFUTED can never be lifted — identical in both impls",
   assert.equal(discharge(runtimeRefute(0, "x"), () => true, "y").trust, Trust.REFUTED);
 });
 
-test("discharge-only-lift: UNKNOWN → PROVEN (verify✓) / REFUTED (verify✗) / UNKNOWN (inconclusive) — both impls", () => {
-  assert.equal(dischargeTrust(CompilerTrust.UNKNOWN, true), CompilerTrust.PROVEN);
+test("discharge-only-lift: UNVERIFIED → PROVEN (verify✓) / REFUTED (verify✗) / UNVERIFIED (inconclusive) — both impls", () => {
+  assert.equal(dischargeTrust(CompilerTrust.UNVERIFIED, true), CompilerTrust.PROVEN);
   assert.equal(discharge(unverified(0, "x"), () => true, "y").trust, Trust.PROVEN);
-  assert.equal(dischargeTrust(CompilerTrust.UNKNOWN, false), CompilerTrust.REFUTED);
+  assert.equal(dischargeTrust(CompilerTrust.UNVERIFIED, false), CompilerTrust.REFUTED);
   assert.equal(discharge(unverified(0, "x"), () => false, "y").trust, Trust.REFUTED);
-  // compiler `undefined` (inconclusive) ≡ runtime `throwing verifier` (inconclusive) → both stay UNKNOWN
-  assert.equal(dischargeTrust(CompilerTrust.UNKNOWN, undefined), CompilerTrust.UNKNOWN);
+  // compiler `undefined` (inconclusive) ≡ runtime `throwing verifier` (inconclusive) → compiler stays UNVERIFIED
+  assert.equal(dischargeTrust(CompilerTrust.UNVERIFIED, undefined), CompilerTrust.UNVERIFIED);
   assert.equal(discharge(unverified(0, "x"), () => { throw new Error("inconclusive"); }, "y").trust, Trust.UNKNOWN);
 });
 

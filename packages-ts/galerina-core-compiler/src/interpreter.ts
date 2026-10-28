@@ -1802,7 +1802,7 @@ class Interpreter {
         }
         const message =
           `Flow '${flowName}' received malformed Verdict argument '${paramName}' — ` +
-          `expected exactly Deny(-1), Unknown(0), or Allow(+1); fail-closed`;
+          `expected exactly Deny(-1), Unknown(-128), or Allow(+1); fail-closed`;
         this.diagnostics.push({ code: "FUNGI-RUNTIME-003", message });
         const value: GalerinaValue = { __tag: "runtimeError", message };
         return this.buildResult(flowName, qualifier, startedAt, value, message);
@@ -3729,7 +3729,7 @@ class Interpreter {
       if (memberName === "Deny")    return { __tag: "verdict", value: -1 };
       if (memberName === "Unknown") return { __tag: "verdict", value: 0 };
       if (memberName === "Allow")   return { __tag: "verdict", value: 1 };
-      return { __tag: "runtimeError", message: `Unknown Verdict member '${memberName}' — the K3 lattice is Deny(-1) < Unknown(0) < Allow(+1)` };
+      return { __tag: "runtimeError", message: `Unknown Verdict member '${memberName}' — the K3 lattice is Deny(-1) < Unknown(-128) < Allow(+1)` };
     }
     // Check if this is a bitfield dotted access: REGISTER.field
     // e.g. V_DPM.network_outbound → look up "V_DPM.network_outbound" in staticConstants

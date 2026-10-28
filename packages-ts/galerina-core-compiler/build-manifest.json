@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "cebda6fedc59b2d64bd1a7ed6d01edcc4cb1476c4fb21c1f812f978800062f39",
+    "aggregateSha256": "373776e60fda321e40195997b80a8f32ee17b019d2440514c9e982168058a9ad",
     "algorithm": "sha256",
     "files": [
       {
@@ -392,7 +392,7 @@
       },
       {
         "path": "src/hardening-residency.ts",
-        "sha256": "bb58907af6d140c35a5fa0525042690cb3426e0abd421885318b68c791b92414"
+        "sha256": "0313037fadc83f8408234878cd4946fc05d633ffd10ad4aba6e83fb62ef38986"
       },
       {
         "path": "src/i32-arith.ts",
@@ -408,15 +408,19 @@
       },
       {
         "path": "src/index.ts",
-        "sha256": "7f0ab470c744930e2e03b2d478174b33c8b17a0140adfa592b2d00932d19a573"
+        "sha256": "499554909e23e08a5371ce3d37609ef76a03a41ed32fe4b157932c78d1bb06ab"
       },
       {
         "path": "src/interpreter.ts",
-        "sha256": "aa7f8e417218b83c1a5d6e29789e3e9b9d69920bd59f2f90e9737debd7029cb4"
+        "sha256": "12757ed8e18f932f757cf4e6614d34ce520dfb23b38312f00285c7ed1295779c"
       },
       {
         "path": "src/invariant-discharge.ts",
         "sha256": "69a8b29347950b144e65dd10909fa1185eaffbb4b70d4e10e320063f3698fec0"
+      },
+      {
+        "path": "src/k3-wire-constants.ts",
+        "sha256": "e4609f3727cc2a6dcb9038e5de5a5acf3838adae8db58292ee121a9e7d824f20"
       },
       {
         "path": "src/leak-proof.ts",
@@ -1428,7 +1432,7 @@
       },
       {
         "path": "src/wat-emitter.ts",
-        "sha256": "4284c88cbe72083be7c1793f0bc499dd33badf9adcc1875d830edf696d9ce3a3"
+        "sha256": "e2e64f14e3eab573ad251d15575350a4c91a9a68135573c6ddebb0f55de55551"
       },
       {
         "path": "test_lexer.mjs",
@@ -1692,7 +1696,7 @@
       },
       {
         "path": "tests/discharge-trust-fungi-conversion.test.mjs",
-        "sha256": "48c22bdc69813f8a8d29404e557884e6ebf28ae5386b1bd4eb492ed4cd65f3df"
+        "sha256": "3cc5a2ef9c4bfe29c6cf28cc7fd50cb738cb4052435011772632e8b0ab75e540"
       },
       {
         "path": "tests/dispatch-completeness.test.mjs",
@@ -2360,7 +2364,7 @@
       },
       {
         "path": "tests/hardening-residency.test.mjs",
-        "sha256": "82adb09cce238ea7fad7d62f5fff0d6f7143314b08760e498cbfdc1e5286ee78"
+        "sha256": "7fb85d65ddd6a3208a489175ed9b5d0f94a6206efe30b752b64390f70ddfca27"
       },
       {
         "path": "tests/hardening-trust-fungi-conversion.test.mjs",
@@ -2456,7 +2460,7 @@
       },
       {
         "path": "tests/k3-copies-red.test.mjs",
-        "sha256": "582f2eb5ea432d8422a2685c92e86ec8855231813548dc19044c792f4b9faecd"
+        "sha256": "2fd321867f550b304c2f946a1e599ddc0cbf70930d61c1be8e80e0f9cb121790"
       },
       {
         "path": "tests/k3-operators.test.mjs",

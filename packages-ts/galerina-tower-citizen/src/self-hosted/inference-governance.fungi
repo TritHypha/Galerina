@@ -4,7 +4,7 @@
 ///   applies before dispatching to a bridge (BitNet / cloud). The host floor stays .ts: attestation signature
 ///   verify (bridge-attestation.ts::verifyAttestation), the bridge `execute`, the model itself. This pure surface
 ///   folds the host-computed checks into fail-closed verdicts: bridge admission, model-identity class, cost caps,
-///   cloud egress, and the load-bearing OUTPUT-TAINT rule. ALLOW = +1, DENY = -1, INDETERMINATE = 0.
+///   cloud egress, and the load-bearing OUTPUT-TAINT rule. ALLOW = +1, DENY = -1, UNKNOWN is the -128 wire value.
 /// @fidelity: mirrors RD-0364 §1–§4 / threats IV1–IV7. bridgeAdmissionVerdict mirrors verifyAttestation's fail-
 ///   closed AND; identityClassVerdict encodes the honest tiers (local-attested +1 / provider-asserted 0 / reject
 ///   -1); outputTrustTrit encodes §2 — a model's answer is UNKNOWN (0) until discharged by a verifier flow.

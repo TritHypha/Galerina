@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "2370daf6185e2a9435be0b5320c07e424e3793929d0a9ae8985ae6c78c780d8b",
+    "aggregateSha256": "a8ad32af0066d59f4480b04f7c0fcc44cd4d21e36cd3f71d2f18810aaf6f8aec",
     "algorithm": "sha256",
     "files": [
       {
@@ -240,7 +240,7 @@
       },
       {
         "path": "src/self-hosted/inference-governance.fungi",
-        "sha256": "67b7cb8526076ee2f2b54129467890c03896b80cb945618c8e36e5fdbd53a997"
+        "sha256": "6d864ddec6bcf8d42c4e7917d224ce2249a61c45bcc6f189e279ecffef059caa"
       },
       {
         "path": "src/self-hosted/max-container-fields.fungi",
@@ -652,7 +652,7 @@
       },
       {
         "path": "tests/hardening-trit-conformance.test.mjs",
-        "sha256": "660865e73fd7b737d537c37a89b4a083122431708162652c07c9e31b89fe5efc"
+        "sha256": "02b9bbd20c8ad07d836090d8aba78259f3b88dcb5ad20013a1d0cd1de71af002"
       },
       {
         "path": "tests/hybrid-engine.test.mjs",

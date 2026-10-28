@@ -2146,7 +2146,7 @@ export function emitWATExpr(
         // W5a K3: the Verdict member-constants — inline i32 trits (block comment, inline-safe).
         if (receiverName === "Verdict") {
           if (memberName === "Deny")    return `(i32.const -1) (; Verdict.Deny ;)`;
-          if (memberName === "Unknown") return `(i32.const 0) (; Verdict.Unknown ;)`;
+          if (memberName === "Unknown") return `(i32.const -128) (; Verdict.Unknown ;)`;
           if (memberName === "Allow")   return `(i32.const 1) (; Verdict.Allow ;)`;
           return `(unreachable) (; unknown Verdict member '${memberName}' — fail-closed (emitter cannot lower) ;)`;
         }

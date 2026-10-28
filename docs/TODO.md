@@ -130,7 +130,7 @@ beside SLIDE and is not part of the production build.
 
 Open follow-ups (low; none blocks the merged rows):
 
-- [ ] **K3C-2** (the K3-COPIES compiler change below) needs Phillip's owner nod.
+- [x] **K3C-2** (the K3-COPIES compiler change below): owner go-ahead 2026-10-28 07:46 GMT.
 - [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
   `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes
   through `decode_legacy_frame_counted` (pure decode plus one compare-exchange
@@ -171,13 +171,14 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   `governance-decisions.fungi`) import `k3-wire.fungi`; UNKNOWN goes through
   `k3UnknownWire()`; no bare `-128` wire literal. Products twin stays
   byte-identical.
-- [ ] **K3-COPIES (U8):** the compiler's native `Verdict.Unknown` is still
-  i32 0 (`wat-emitter.ts` `(i32.const 0) (; Verdict.Unknown ;)`, the
-  `Unknown(0)` messages in `interpreter.ts`), as are
-  `hardening-residency.ts` `UNKNOWN: 0` and the `INDETERMINATE = 0` comment
-  in `inference-governance.fungi`. Red tests landed `{ todo }` in
-  `packages-ts/galerina-core-compiler/tests/k3-copies-red.test.mjs`; the
-  compiler change (K3C-2) needs Phillip's owner nod.
+- [x] **K3-COPIES (U8) / K3C-2:** compiler writes `Verdict.Unknown` as
+  `(i32.const -128) (; Verdict.Unknown ;)` at the WAT byte boundary;
+  interpreter messages use `Unknown(-128)`; `hardening-residency.ts`
+  `UNKNOWN: -128` (frozen TS reference, changed because K3-COPIES test 3
+  requires it; epistemic Unverified stays 0 as `UNVERIFIED`);
+  `inference-governance.fungi:7` documents UNKNOWN as the -128 wire value.
+  `k3-copies-red.test.mjs` todos dropped and pass, plus sign-extension,
+  `load8_s`, serialization, and unsigned-read fuzz.
 - [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
   path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
   outputs from 0 to -128 (owner F5: they stay 0 until Step Z). P2 expiry is

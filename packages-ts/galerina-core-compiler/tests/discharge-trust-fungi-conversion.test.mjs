@@ -16,12 +16,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(HERE, "..", "src", "self-hosted", "hardening-trust-boundary.fungi");
 const CURRENT = Object.freeze([
   CompilerTrust.REFUTED,
-  CompilerTrust.UNKNOWN,
+  CompilerTrust.UNVERIFIED,
   CompilerTrust.PROVEN,
 ]);
 const EVIDENCE = Object.freeze([
   Object.freeze({ source: false, verdict: CompilerTrust.REFUTED }),
-  Object.freeze({ source: undefined, verdict: CompilerTrust.UNKNOWN }),
+  Object.freeze({ source: undefined, verdict: CompilerTrust.UNVERIFIED }),
   Object.freeze({ source: true, verdict: CompilerTrust.PROVEN }),
 ]);
 

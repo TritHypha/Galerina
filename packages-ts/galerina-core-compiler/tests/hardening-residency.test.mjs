@@ -159,9 +159,10 @@ test("residency lattice: register_only is strictest; stricterResidency / atLeast
 });
 
 // ── RD-0337 composition WIRED FOR REAL (Option A) — the compiler-side trit ──────────────────────────
-test("compiler-side trit: encoding matches the runtime (PROVEN +1 / UNKNOWN 0 / REFUTED -1) + name-map", () => {
+test("compiler-side trit: encoding matches the runtime (PROVEN +1 / UNVERIFIED 0 / REFUTED -1) + name-map", () => {
   assert.equal(L.CompilerTrust.PROVEN, 1);
-  assert.equal(L.CompilerTrust.UNKNOWN, 0);
+  assert.equal(L.CompilerTrust.UNVERIFIED, 0);
+  assert.equal(L.CompilerTrust.UNKNOWN, -128);
   assert.equal(L.CompilerTrust.REFUTED, -1);
   assert.equal(L.trustName(1), "Trusted");
   assert.equal(L.trustName(0), "Unverified");
@@ -172,16 +173,16 @@ test("compiler-side trit: refute is sticky, discharge is the only lift, combine 
   // sticky refute — discharge can NEVER resurrect a REFUTED
   assert.equal(L.dischargeTrust(L.refute(), true), L.CompilerTrust.REFUTED);
   // discharge = the only lift path
-  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, true), L.CompilerTrust.PROVEN);
-  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, false), L.CompilerTrust.REFUTED);
-  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, undefined), L.CompilerTrust.UNKNOWN); // inconclusive
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNVERIFIED, true), L.CompilerTrust.PROVEN);
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNVERIFIED, false), L.CompilerTrust.REFUTED);
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNVERIFIED, undefined), L.CompilerTrust.UNVERIFIED); // inconclusive
   // contagious min-fold — anything + REFUTED → REFUTED (No-Coercion)
   assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.REFUTED), L.CompilerTrust.REFUTED);
-  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.UNKNOWN), L.CompilerTrust.UNKNOWN);
+  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.UNVERIFIED), L.CompilerTrust.UNVERIFIED);
   assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.PROVEN), L.CompilerTrust.PROVEN);
   // fail-closed boundary — release IFF PROVEN
   assert.equal(L.boundaryTrusted(L.CompilerTrust.PROVEN), true);
-  assert.equal(L.boundaryTrusted(L.CompilerTrust.UNKNOWN), false);
+  assert.equal(L.boundaryTrusted(L.CompilerTrust.UNVERIFIED), false);
   assert.equal(L.boundaryTrusted(L.CompilerTrust.REFUTED), false);
 });
 
