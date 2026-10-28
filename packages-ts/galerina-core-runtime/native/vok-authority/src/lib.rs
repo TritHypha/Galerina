@@ -84,12 +84,13 @@ pub const K3_I8_UNKNOWN: i32 = K3_UNKNOWN_WIRE;
 /// only through `Trit::decode_legacy_frame` (SLIDE `decodeK3WireFrame`); a bare 0 is refused.
 /// SUNSET: set this to `false` and then delete the arm at Step Z, before SLIDE becomes the
 /// default execution path (SLIDE TODO + K3COPIES plan). P2 date 2026-12-31 / 20261231;
-/// 20270101 refuses; delete the path by 2027-01-18 (dated 2026-10-27).
+/// unix exclusive 1798761600 (2027-01-01T00:00:00Z); delete the path by 2027-01-18 (dated 2026-10-27).
 pub const LEGACY_UNKNOWN_ZERO_BRIDGE: bool = true;
 pub const K3_WIRE_VERSION_LEGACY: i32 = 1;
 pub const K3_WIRE_VERSION_CANONICAL: i32 = 2;
 pub const LEGACY_UNKNOWN_ZERO_CAP: u64 = 1_000_000;
 pub const LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH: i32 = 20261231;
+pub const LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S: i64 = 1_798_761_600;
 
 /// Failure id for a bare (unframed) 0 at a VOK boundary (F1). Mirrors SLIDE `SLIDE-K3-WIRE-003`.
 pub const VOK_TRIT_BARE_LEGACY_ZERO: &str = "VOK_TRIT_BARE_LEGACY_ZERO";
@@ -116,12 +117,28 @@ pub fn bare_legacy_zero_refusals() -> u64 {
     BARE_LEGACY_ZERO_REFUSALS.load(AtomicOrdering::SeqCst)
 }
 
-/// Trusted UTC YYYYMMDD for the process wrapper. Invalid clocks fail closed (-1).
+/// Off golden path / compatibility YYYYMMDD from the process clock. Invalid clocks fail closed (-1).
+#[allow(dead_code)]
 fn trusted_utc_ymd() -> i32 {
     let Ok(elapsed) = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) else {
         return -1;
     };
     civil_ymd_from_unix_days((elapsed.as_secs() / 86_400) as i64)
+}
+
+/// Trusted i64 Unix seconds UTC for the process wrapper. Pre-epoch fails closed as 0.
+fn trusted_unix_seconds() -> i64 {
+    match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+        Ok(elapsed) => {
+            let secs = elapsed.as_secs();
+            if secs > i64::MAX as u64 {
+                i64::MAX
+            } else {
+                secs as i64
+            }
+        }
+        Err(_) => 0,
+    }
 }
 
 pub(crate) fn civil_ymd_from_unix_days(days: i64) -> i32 {
@@ -200,13 +217,13 @@ impl Trit {
     /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes. Process clock and counter are
     /// supplied to `decode_legacy_frame_pure`; this i32 API does not take version/epoch/cap.
     pub fn decode_legacy_frame(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
-        let now_ymd = trusted_utc_ymd();
+        let now_unix_s = trusted_unix_seconds();
         let reads = LEGACY_UNKNOWN_ZERO_READS.load(AtomicOrdering::SeqCst);
         let decoded = decode_legacy_frame_pure(
             K3_WIRE_VERSION_LEGACY,
             0,
             value,
-            now_ymd,
+            now_unix_s,
             reads,
         );
         if decoded.reads_after > reads {

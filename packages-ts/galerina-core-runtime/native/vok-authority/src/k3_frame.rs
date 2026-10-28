@@ -3,7 +3,7 @@
 
 use crate::{
     Trit, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
-    LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+    LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -59,6 +59,7 @@ fn decode_canonical_label(value: i32, reads_so_far: u64) -> FrameDecode {
     }
 }
 
+/// Off golden path / compatibility YYYYMMDD helper.
 fn days_in_month(year: i32, month: i32) -> i32 {
     if month == 2 {
         let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
@@ -70,6 +71,7 @@ fn days_in_month(year: i32, month: i32) -> i32 {
     31
 }
 
+/// Off golden path / compatibility YYYYMMDD helper.
 fn is_positive_in_range_ymd(ymd: i32) -> bool {
     if ymd <= 0 {
         return false;
@@ -84,11 +86,13 @@ fn is_positive_in_range_ymd(ymd: i32) -> bool {
 }
 
 /// Pure framed decode. No process clock, no process counter.
+/// Clock input is i64 Unix seconds UTC. now_unix_s <= 0 fails closed.
+/// Legacy 0 is accepted only while now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S.
 pub fn decode_legacy_frame_pure(
     version: i32,
     epoch: i32,
     value: i32,
-    now_ymd: i32,
+    now_unix_s: i64,
     reads_so_far: u64,
 ) -> FrameDecode {
     if version == K3_WIRE_VERSION_CANONICAL {
@@ -103,13 +107,13 @@ pub fn decode_legacy_frame_pure(
     if epoch < 0 || epoch > LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
-    if !is_positive_in_range_ymd(now_ymd) {
+    if now_unix_s <= 0 {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
     if !LEGACY_UNKNOWN_ZERO_BRIDGE {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
-    if now_ymd > LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH {
+    if now_unix_s >= LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
     if reads_so_far >= LEGACY_UNKNOWN_ZERO_CAP {
@@ -131,12 +135,17 @@ mod tests {
     use super::*;
     use crate::{
         legacy_unknown_zero_reads, Trit, TritWireForm, K3_UNKNOWN_WIRE,
-        LEGACY_UNKNOWN_ZERO_BRIDGE,
+        K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
+        LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+        LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
     };
 
     const FRAME_RS: &str = include_str!("k3_frame.rs");
     const LIB_RS: &str = include_str!("lib.rs");
     const ROWS: &str = include_str!("../vectors/k3-wire-vectors.rows.txt");
+    const OPEN_UNIX: i64 = 1_793_059_200;
+    const LAST_UNIX: i64 = 1_798_761_599;
+    const CLOSED_UNIX: i64 = 1_798_761_600;
 
     fn fn_body<'a>(src: &'a str, sig: &str) -> &'a str {
         let start = src.find(sig).unwrap_or_else(|| panic!("missing {sig}"));
@@ -185,14 +194,14 @@ mod tests {
         version: i32,
         epoch: i32,
         value: i32,
-        now_ymd: i32,
+        now_unix_s: i64,
         reads: u64,
         label: FrameLabel,
         reads_after: u64,
         alert: FrameAlert,
         ctx: &str,
     ) {
-        let got = decode_legacy_frame_pure(version, epoch, value, now_ymd, reads);
+        let got = decode_legacy_frame_pure(version, epoch, value, now_unix_s, reads);
         assert_eq!(label_str(got.label), label_str(label), "{ctx} label");
         assert_eq!(got.reads_after, reads_after, "{ctx} reads_after");
         assert_eq!(alert_str(got.alert), alert_str(alert), "{ctx} alert");
@@ -205,7 +214,7 @@ mod tests {
                 version,
                 0,
                 0,
-                20261027,
+                OPEN_UNIX,
                 0,
                 FrameLabel::Invalid,
                 0,
@@ -221,7 +230,7 @@ mod tests {
             K3_WIRE_VERSION_CANONICAL,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             0,
             FrameLabel::Invalid,
             0,
@@ -232,7 +241,7 @@ mod tests {
             K3_WIRE_VERSION_CANONICAL,
             0,
             K3_UNKNOWN_WIRE,
-            20261027,
+            OPEN_UNIX,
             4,
             FrameLabel::Unknown,
             4,
@@ -243,7 +252,7 @@ mod tests {
             K3_WIRE_VERSION_CANONICAL,
             0,
             1,
-            20261027,
+            OPEN_UNIX,
             4,
             FrameLabel::Admit,
             4,
@@ -254,7 +263,7 @@ mod tests {
             K3_WIRE_VERSION_CANONICAL,
             0,
             -1,
-            20261027,
+            OPEN_UNIX,
             4,
             FrameLabel::Deny,
             4,
@@ -269,23 +278,23 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+            LAST_UNIX,
             0,
             FrameLabel::Unknown,
             1,
             FrameAlert::FirstSeen,
-            "20261231 must accept (<=)",
+            "1798761599 must accept (< 1798761600)",
         );
         expect_frame(
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20270101,
+            CLOSED_UNIX,
             0,
             FrameLabel::LegacyClosed,
             0,
             FrameAlert::None,
-            "20270101 must close",
+            "1798761600 must close",
         );
     }
 
@@ -295,7 +304,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP - 1,
             FrameLabel::Unknown,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -306,7 +315,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
             FrameLabel::LegacyClosed,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -317,7 +326,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP + 1,
             FrameLabel::LegacyClosed,
             LEGACY_UNKNOWN_ZERO_CAP + 1,
@@ -332,7 +341,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             0,
             FrameLabel::Unknown,
             1,
@@ -343,7 +352,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             1,
             FrameLabel::Unknown,
             2,
@@ -354,7 +363,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20261027,
+            OPEN_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
             FrameLabel::LegacyClosed,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -365,7 +374,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             0,
             0,
-            20270101,
+            CLOSED_UNIX,
             LEGACY_UNKNOWN_ZERO_CAP,
             FrameLabel::LegacyClosed,
             LEGACY_UNKNOWN_ZERO_CAP,
@@ -375,20 +384,28 @@ mod tests {
     }
 
     #[test]
-    fn now_ymd_invalid_fails_closed_a2_interim() {
-        for now_ymd in [i32::MIN, -1, 0, 13, 20261301, 20260001, 2147483647] {
+    fn now_unix_s_closed_a2f() {
+        for now_unix_s in [i64::MIN, -1, 0, CLOSED_UNIX, i64::from(i32::MAX)] {
             expect_frame(
                 K3_WIRE_VERSION_LEGACY,
                 0,
                 0,
-                now_ymd,
+                now_unix_s,
                 0,
                 FrameLabel::LegacyClosed,
                 0,
                 FrameAlert::None,
-                &format!("invalid now_ymd {now_ymd}"),
+                &format!("closed now_unix_s {now_unix_s}"),
             );
         }
+    }
+
+    #[test]
+    fn ymd_helpers_remain_off_golden_path() {
+        assert!(!is_positive_in_range_ymd(-1));
+        assert!(!is_positive_in_range_ymd(0));
+        assert!(!is_positive_in_range_ymd(20260231));
+        assert!(is_positive_in_range_ymd(20261027));
     }
 
     #[test]
@@ -398,7 +415,7 @@ mod tests {
                 K3_WIRE_VERSION_LEGACY,
                 epoch,
                 0,
-                20261027,
+                OPEN_UNIX,
                 0,
                 FrameLabel::LegacyClosed,
                 0,
@@ -410,7 +427,7 @@ mod tests {
             K3_WIRE_VERSION_LEGACY,
             LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
             0,
-            LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+            OPEN_UNIX,
             0,
             FrameLabel::Unknown,
             1,
@@ -420,19 +437,18 @@ mod tests {
     }
 
     #[test]
-    fn fixture_frames_including_a2_now_ymd_closed() {
+    fn fixture_frames_including_a2f_unix_clock() {
         let mut seen = 0_u32;
         for line in ROWS.lines() {
             let mut parts = line.splitn(3, '|');
             let Some("frames") = parts.next() else { continue };
             let input = parts.next().expect("frame input");
             let expected = parts.next().expect("frame expected");
-            // A2: nowYmd <= 0 is a fixture row and must fail closed.
             seen += 1;
             let mut version = 0;
             let mut epoch = 0;
             let mut value = 0;
-            let mut now_ymd = 0;
+            let mut now_unix_s = 0_i64;
             let mut reads = 0_u64;
             for field in input.split(',') {
                 let (k, v) = field.split_once('=').expect(field);
@@ -440,7 +456,7 @@ mod tests {
                     "version" => version = v.parse().unwrap(),
                     "epoch" => epoch = v.parse().unwrap(),
                     "value" => value = v.parse().unwrap(),
-                    "nowYmd" => now_ymd = v.parse().unwrap(),
+                    "nowUnixSeconds" => now_unix_s = v.parse().unwrap(),
                     "readsSoFar" => reads = v.parse().unwrap(),
                     other => panic!("unknown frame key {other}"),
                 }
@@ -457,12 +473,12 @@ mod tests {
                     label = field;
                 }
             }
-            let got = decode_legacy_frame_pure(version, epoch, value, now_ymd, reads);
+            let got = decode_legacy_frame_pure(version, epoch, value, now_unix_s, reads);
             assert_eq!(label_str(got.label), label, "{input}");
             assert_eq!(got.reads_after, reads_after, "{input}");
             assert_eq!(alert_str(got.alert), alert, "{input}");
         }
-        assert!(seen >= 18, "fixture frame rows excluding A2, got {seen}");
+        assert!(seen >= 18, "fixture frame rows, got {seen}");
     }
 
     #[test]
@@ -544,18 +560,18 @@ mod tests {
             Trit::decode_legacy_frame(1),
             Ok((Trit::Admit, TritWireForm::Canonical))
         );
-        let now_ymd = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-            Ok(elapsed) => crate::civil_ymd_from_unix_days((elapsed.as_secs() / 86_400) as i64),
-            Err(_) => -1,
+        let now_unix_s = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+            Ok(elapsed) => {
+                let secs = elapsed.as_secs();
+                if secs > i64::MAX as u64 {
+                    i64::MAX
+                } else {
+                    secs as i64
+                }
+            }
+            Err(_) => 0,
         };
-        let year = now_ymd / 10_000;
-        let month = (now_ymd / 100) % 100;
-        let day = now_ymd % 100;
-        let clock_open = now_ymd > 0
-            && (1..=9999).contains(&year)
-            && (1..=12).contains(&month)
-            && (1..=31).contains(&day)
-            && now_ymd <= LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH;
+        let clock_open = now_unix_s > 0 && now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S;
         if clock_open {
             let before = legacy_unknown_zero_reads();
             assert_eq!(
