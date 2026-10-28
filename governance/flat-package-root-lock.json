@@ -342,7 +342,7 @@
       "identity": "@galerina/core-logic",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-logic",
-      "contentDigest": "e2d29364f89e134a3b3b6ca57355b241475f568440c29ef65d7b037376d81ef6",
+      "contentDigest": "00aa327f06ee115e20ac0c7e7190cc519c37d95f61f61a373999abd163c3ac34",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -423,7 +423,7 @@
       "identity": "@galerina/core-runtime",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-runtime",
-      "contentDigest": "9b72bdafad99221f92c2732069aa0d26b5d957a78ee25ce1e120e4b775db0cb0",
+      "contentDigest": "014567e4d5b8da5eddbbc6a99e33a80b5ddeed69af0c0a1b8085369d2bcef795",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -2125,7 +2125,7 @@
       "identity": "@galerina/tower-citizen",
       "version": "1.0.0-beta.2",
       "directory": "galerina-tower-citizen",
-      "contentDigest": "5b6d525d41b101580d19371042a03077f7b96f0aca752925c7f6a5cce61e72f0",
+      "contentDigest": "dfe0698614b07982cca0f70e10cc4b1e75eb1ab46df0a293f1e300b46991cdd1",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "f19f52d939db445303bf18a03afc42a30bad1f7009743dedbb5063ddff1ae763"
+  "rootDigest": "43320878b45d59d79ace16f76bdaeefa857fb9faa64c75406d154e9c26053ca8"
 }
