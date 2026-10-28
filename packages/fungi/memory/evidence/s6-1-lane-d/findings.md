@@ -79,3 +79,17 @@ work (fuseGreeting must take a central registry verdict, no implicit allow).
 2. Build api-protocol-rest, then apply name-pinned registryCheck at lines 54/72/113/144/151 (D-3).
 3. Decide D-5 (404 counted or not) and align test or kernel.
 4. D-6 in .fungi host work; D-2 needs Phillip's signed build.
+
+## Update 2026-10-28 (gcw-wd-d7ecd6e8)
+
+- D-4 RESOLVED (environment): building the `galerina-core-compiler` dependency closure with
+  `gcw-s5j-depbuild.mjs` also builds `galerina-core-runtime-wasm` (`dist/decimal-core.js`).
+  After that, example-app `proofs.test.mjs` is 2 pass / 0 fail. No code change is needed. The census
+  must build core-runtime-wasm before running example-app.
+- D-3 NOT RUN: `api-protocol-rest` has no `dist/`, and its build is `galerina.mjs build --package .`.
+  That build auto-provisions a dev signing key and signs the manifest (zero-touch key lifecycle),
+  which this lane may not do (no signing, no `.env*` reads). It moves to Phillip with D-2: one
+  signed build of `api-protocol-rest`. After that, apply the name-pinned `registryCheck` to the
+  `e2e-fuse.test.mjs` fuse calls at lines 54, 72, 113, 144 and 151 and re-check that the refusals at
+  113 and 144 fail for the intended reason.
+- Arena parallel flake: fixed in this run, see `../s5-arena-flake/findings.md`.
