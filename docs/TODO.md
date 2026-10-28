@@ -164,6 +164,16 @@ Open follow-ups (low; none blocks the merged rows):
   civil Ints. Pure library — not wired into registry delegation. Shared
   fixture v4 names `FIXTURE_SCHEMA_VERSION` separately from
   `K3_WIRE_HEADER_VERSION`.
+- [x] **K3-AL** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-CW). P9 typed alert record `{code,alert,readsAfter,frameHeaderVersion}`
+  through one no-op sink per tree (`UNKNOWN(no audit sink)`). P6 Math.min
+  fold sites rewritten as `k3FoldAdmission` in SLIDE. Display-only unix s
+  -> YYYYMMDD (never decoder input). Sunset dry-run: pure decoder takes the
+  bridge flag; `bridge=false` closes every legacy-0 row. Legacy-0 path is
+  marked off the golden path by 2027-01-18 (nothing deleted). N-e fixture
+  20261231 open / 20270101 closed through the `.fungi` path. N-f fungi WASI
+  helper contract `UNKNOWN(fungi-int-cannot-hold-wasi-ns)`. Shared fixture
+  schema 5.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

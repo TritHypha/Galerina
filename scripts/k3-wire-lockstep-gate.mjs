@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "587e3c1fbcea3d7b9848853811b502ab7bebca30b20bedf02b1ec2e832133ff9";
-const FIXTURE_GIT_BLOB = "6930391f269a58963d0e15dab8396651a915b112";
+const FIXTURE_DIGEST_D = "b8ed283a001894570cc92d9ec79e654c7e24432d9d8a26863a1f5970f49563d4";
+const FIXTURE_GIT_BLOB = "ee0e47d447e49f794f84047619ff28f6f4a41182";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 4;
+const FIXTURE_SCHEMA_VERSION = 5;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -132,6 +132,7 @@ async function main() {
     decodeLegacyFrame,
     k3ParseSerialInstantUnixS,
     k3SerialWindowContains,
+    k3UnixSToYmd,
     k3WasiRealtimeNsToUnixS,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
@@ -171,6 +172,18 @@ async function main() {
   }
   if (decodeLegacyFrame(1, 1798761600, 0, 1793059200, 0).label !== "LEGACY_CLOSED") {
     refuse("frame-epoch at expiry");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, false).label !== "LEGACY_CLOSED") {
+    refuse("sunset dry-run bridge=false must close");
+    return;
+  }
+  if (k3UnixSToYmd(1798761599) !== 20261231 || k3UnixSToYmd(1798761600) !== 20270101 || k3UnixSToYmd(1793115900) !== 20261027) {
+    refuse("display ymd pins");
+    return;
+  }
+  if (Number.isFinite(k3UnixSToYmd(0))) {
+    refuse("display ymd out-of-window must fail closed");
     return;
   }
   const unknown = decodeLegacyFrame(99, 0, 0, 1793059200, 0);

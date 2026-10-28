@@ -531,4 +531,32 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.equal(exports.k3SerialWindowContains(1793115900, 1793115960, 1793115960), 0);
     assert.equal(exports.k3SerialWindowContains(1793115960, 1793115900, 1793115900), 0);
   });
+
+  it("K3-AL display ymd, sunset dry-run, N-e/N-f, alert record", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3UnixSToYmd(1798761599), 20261231);
+    assert.equal(exports.k3UnixSToYmd(1798761600), 20270101);
+    assert.equal(exports.k3UnixSToYmd(1793115900), 20261027);
+    assert.equal(exports.k3UnixSToYmd(0), 0);
+    assert.equal(exports.k3UnixSToYmd(1790812799), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20261231, 0, open, 0), 0, "N-e 20261231 open");
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20270101, 0, open, 0), 3, "N-e 20270101 closed");
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 0), 3, "sunset dry-run");
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 1), 0);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfterWithBridge(1, 20261027, 0, open, 0, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameAlertWithBridge(1, 20261027, 0, open, 0, 0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(2147483647), 0);
+    assert.equal(exports.k3FrameHeaderVersion(), 1);
+    assert.equal(exports.k3AlertSinkUnknownNoAudit(), 0);
+    assert.equal(exports.k3AlertRecordAlert(1, open, 0, open, 0), 1);
+    assert.equal(exports.k3AlertRecordReadsAfter(1, open, 0, open, 0), 1);
+    const src = readFileSync(SOURCE, "utf8");
+    const kindStart = src.indexOf("pure flow k3LegacyZeroKindWithBridge");
+    const kindEnd = src.indexOf("pure flow k3LegacyZeroKind(", kindStart + 1);
+    const kindBody = src.slice(kindStart, kindEnd);
+    assert.equal(kindBody.includes("k3UnixSToYmd"), false);
+    assert.match(src, /UNKNOWN\(fungi-int-cannot-hold-wasi-ns\)/);
+  });
 });

@@ -32,6 +32,53 @@ pub struct FrameDecode {
     pub alert: FrameAlert,
 }
 
+/// K3-AL (a) P9: typed alert record emitted after the decision is computed.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct K3AlertRecord {
+    pub code: &'static str,
+    pub alert: FrameAlert,
+    pub reads_after: u64,
+    pub frame_header_version: i32,
+}
+
+pub trait K3AlertSink {
+    fn emit(&self, record: K3AlertRecord);
+}
+
+pub struct K3AlertNoopSink {
+    count: AtomicU64,
+}
+
+impl K3AlertNoopSink {
+    pub const fn new() -> Self {
+        Self {
+            count: AtomicU64::new(0),
+        }
+    }
+
+    pub fn count(&self) -> u64 {
+        self.count.load(Ordering::SeqCst)
+    }
+}
+
+impl K3AlertSink for K3AlertNoopSink {
+    fn emit(&self, _record: K3AlertRecord) {
+        self.count.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
+pub static K3_ALERT_NOOP: K3AlertNoopSink = K3AlertNoopSink::new();
+pub const K3_ALERT_SINK_STATUS: &str = "UNKNOWN(no audit sink)";
+
+/// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
+/// Logs/receipts only. Never accepted as decoder input.
+pub fn k3_unix_s_to_ymd(unix_s: i64) -> Option<i32> {
+    if unix_s < TRUSTED_CLOCK_FLOOR_UNIX_S || unix_s >= TRUSTED_CLOCK_CEILING_UNIX_S {
+        return None;
+    }
+    Some(crate::civil_ymd_from_unix_days(unix_s.div_euclid(86_400)))
+}
+
 fn refuse_invalid(reads_so_far: u64) -> FrameDecode {
     FrameDecode {
         label: FrameLabel::Invalid,
@@ -245,12 +292,59 @@ pub fn k3_serial_window_contains(start_text: &str, end_text: &str, now_unix_s: i
 /// Clock input is i64 Unix seconds UTC. now_unix_s <= 0 fails closed.
 /// Legacy 0 is accepted only while now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S.
 /// K3-EP: epoch is i64. Canonical form is Unix seconds; YYYYMMDD is transitional.
+/// Process wrappers pass LEGACY_UNKNOWN_ZERO_BRIDGE. Default sink is a no-op recorder.
 pub fn decode_legacy_frame_pure(
     version: i32,
     epoch: i64,
     value: i32,
     now_unix_s: i64,
     reads_so_far: u64,
+) -> FrameDecode {
+    decode_legacy_frame_with_bridge(
+        version,
+        epoch,
+        value,
+        now_unix_s,
+        reads_so_far,
+        LEGACY_UNKNOWN_ZERO_BRIDGE,
+        &K3_ALERT_NOOP,
+    )
+}
+
+/// K3-AL (d): injected bridge flag. `bridge = false` closes every legacy-0 frame.
+pub fn decode_legacy_frame_with_bridge(
+    version: i32,
+    epoch: i64,
+    value: i32,
+    now_unix_s: i64,
+    reads_so_far: u64,
+    bridge: bool,
+    sink: &dyn K3AlertSink,
+) -> FrameDecode {
+    let decoded =
+        decode_legacy_frame_decision(version, epoch, value, now_unix_s, reads_so_far, bridge);
+    sink.emit(K3AlertRecord {
+        code: match decoded.label {
+            FrameLabel::Admit => "ADMIT",
+            FrameLabel::Deny => "DENY",
+            FrameLabel::Unknown => "UNKNOWN",
+            FrameLabel::Invalid => crate::VOK_TRIT_INVALID,
+            FrameLabel::LegacyClosed => crate::VOK_TRIT_LEGACY_CLOSED,
+        },
+        alert: decoded.alert,
+        reads_after: decoded.reads_after,
+        frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
+    });
+    decoded
+}
+
+fn decode_legacy_frame_decision(
+    version: i32,
+    epoch: i64,
+    value: i32,
+    now_unix_s: i64,
+    reads_so_far: u64,
+    bridge: bool,
 ) -> FrameDecode {
     if version == K3_WIRE_VERSION_CANONICAL {
         return decode_canonical_label(value, reads_so_far);
@@ -270,7 +364,7 @@ pub fn decode_legacy_frame_pure(
     if now_unix_s <= 0 {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
-    if !LEGACY_UNKNOWN_ZERO_BRIDGE {
+    if !bridge {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
     if now_unix_s >= LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S {
@@ -896,5 +990,77 @@ mod tests {
             "2026-10-27T15:45Z",
             1_793_115_900
         ));
+    }
+
+    #[test]
+    fn k3al_display_ymd_pins_and_window() {
+        assert_eq!(k3_unix_s_to_ymd(LAST_UNIX), Some(20_261_231));
+        assert_eq!(k3_unix_s_to_ymd(CLOSED_UNIX), Some(20_270_101));
+        assert_eq!(k3_unix_s_to_ymd(1_793_115_900), Some(20_261_027));
+        assert_eq!(k3_unix_s_to_ymd(TRUSTED_CLOCK_FLOOR_UNIX_S - 1), None);
+        assert_eq!(k3_unix_s_to_ymd(0), None);
+        assert_eq!(k3_unix_s_to_ymd(TRUSTED_CLOCK_CEILING_UNIX_S), None);
+        let decision = fn_body(FRAME_RS, "fn decode_legacy_frame_decision(");
+        assert!(
+            !decision.contains("k3_unix_s_to_ymd"),
+            "display helper must not be decoder input"
+        );
+        assert_eq!(K3_ALERT_SINK_STATUS, "UNKNOWN(no audit sink)");
+    }
+
+    #[test]
+    fn k3al_sunset_dry_run_bridge_false_closes_legacy_zero() {
+        let sink = K3AlertNoopSink::new();
+        for epoch in [OPEN_UNIX, LAST_UNIX, 20_261_231_i64, 20_261_027_i64] {
+            let got = decode_legacy_frame_with_bridge(
+                K3_WIRE_VERSION_LEGACY,
+                epoch,
+                0,
+                OPEN_UNIX,
+                0,
+                false,
+                &sink,
+            );
+            assert_eq!(label_str(got.label), "LEGACY_CLOSED", "epoch {epoch}");
+            assert_eq!(got.reads_after, 0);
+            assert_eq!(alert_str(got.alert), "NONE");
+        }
+        let open = decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            true,
+            &sink,
+        );
+        assert_eq!(label_str(open.label), "UNKNOWN");
+        assert!(sink.count() >= 5);
+    }
+
+    #[test]
+    fn k3al_n_e_ymd_20261231_open_20270101_closed() {
+        expect_frame(
+            K3_WIRE_VERSION_LEGACY,
+            20_261_231,
+            0,
+            OPEN_UNIX,
+            0,
+            FrameLabel::Unknown,
+            1,
+            FrameAlert::FirstSeen,
+            "N-e 20261231 open",
+        );
+        expect_frame(
+            K3_WIRE_VERSION_LEGACY,
+            20_270_101,
+            0,
+            OPEN_UNIX,
+            0,
+            FrameLabel::LegacyClosed,
+            0,
+            FrameAlert::None,
+            "N-e 20270101 closed",
+        );
     }
 }

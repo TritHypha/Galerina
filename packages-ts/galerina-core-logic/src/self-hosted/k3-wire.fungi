@@ -267,16 +267,77 @@ contract { intent { "WASI timestamp scale: 1_000_000_000 ns per second." } }
 }
 
 pure flow k3WasiRealtimeNsToUnixS(ns: Int) -> Int
-contract { intent { "Floor ns/1e9 then trusted-window. Int cannot hold WASI u64 ns or i64::MAX overflow; any Int ns yields 0, 1 or 2 seconds, all below the floor, so this path is fail-closed on the whole Int domain. SLIDE/VOK own the u64 overflow edge." } }
+contract { intent { "UNKNOWN(fungi-int-cannot-hold-wasi-ns): fail-closed stub. Int cannot hold WASI u64 ns or the i64::MAX overflow edge, so every Int ns is refused as 0. SLIDE/VOK own the real conversion. Do not wire this as a clock." } }
 {
   if ns <= 0 {
     return 0
   }
-  let secs: Int = ns / k3WasiNsPerS()
-  if secs < k3TrustedClockFloorUnixS() {
+  return 0
+}
+
+pure flow k3CivilEra(z: Int) -> Int
+contract { intent { "Howard Hinnant era for civil_from_days." } }
+{
+  if z >= 0 {
+    return z / 146097
+  }
+  return (z - 146096) / 146097
+}
+
+pure flow k3CivilMonthFromMp(mp: Int) -> Int
+contract { intent { "Howard Hinnant month from month-prime." } }
+{
+  if mp < 10 {
+    return mp + 3
+  }
+  return mp - 9
+}
+
+pure flow k3CivilYearAdjust(year: Int, month: Int) -> Int
+contract { intent { "Increment year when month is Jan or Feb." } }
+{
+  if month <= 2 {
+    return year + 1
+  }
+  return year
+}
+
+pure flow k3CivilYmdFromUnixDays(days: Int) -> Int
+contract { intent { "UTC YYYYMMDD from days since 1970-01-01. Display only." } }
+{
+  let z: Int = days + 719468
+  let era: Int = k3CivilEra(z)
+  let doe: Int = z - era * 146097
+  let yoe: Int = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
+  let y: Int = yoe + era * 400
+  let doy: Int = doe - (365 * yoe + yoe / 4 - yoe / 100)
+  let mp: Int = (5 * doy + 2) / 153
+  let day: Int = doy - (153 * mp + 2) / 5 + 1
+  let month: Int = k3CivilMonthFromMp(mp)
+  let year: Int = k3CivilYearAdjust(y, month)
+  return year * 10000 + month * 100 + day
+}
+
+pure flow k3UnixSToYmd(unixS: Int) -> Int
+contract { intent { "Display-only UTC YYYYMMDD from unix seconds. Never decoder input. 0 fail closed below the trusted floor. Ceiling does not fit Int." } }
+{
+  if unixS < k3TrustedClockFloorUnixS() {
     return 0
   }
-  return secs
+  let days: Int = unixS / 86400
+  return k3CivilYmdFromUnixDays(days)
+}
+
+pure flow k3FrameHeaderVersion() -> Int
+contract { intent { "K3_WIRE_HEADER_VERSION. Separate from fixture schema version." } }
+{
+  return 1
+}
+
+pure flow k3AlertSinkUnknownNoAudit() -> Int
+contract { intent { "UNKNOWN(no audit sink): Fungi is pure; alerts are sibling Ints, not an injected sink." } }
+{
+  return 0
 }
 
 pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
@@ -423,8 +484,8 @@ contract { intent { "Encode lattice 0 to unknown byte 128, never 0." } }
   return 2
 }
 
-pure flow k3LegacyZeroKind(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
-contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else label." } }
+pure flow k3LegacyZeroKindWithBridge(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int, bridge: Int) -> Int
+contract { intent { "Shared frame kind with injected bridge flag. 10 counted accept, 4 cap-closed, else label. bridge 0 is sunset dry-run close." } }
 {
   if version == k3VersionCanonical() {
     return k3DecodeCanonicalLabel(value)
@@ -440,7 +501,7 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
       if nowUnixSeconds <= 0 {
         return 3
       }
-      if k3LegacyZeroBridge() == 0 {
+      if bridge == 0 {
         return 3
       }
       if nowUnixSeconds >= k3ExpiryUnixS() {
@@ -454,6 +515,12 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
     return k3DecodeCanonicalLabel(value)
   }
   return 2
+}
+
+pure flow k3LegacyZeroKind(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
+contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else label. Process wrapper passes k3LegacyZeroBridge()." } }
+{
+  return k3LegacyZeroKindWithBridge(version, epoch, value, nowUnixSeconds, readsSoFar, k3LegacyZeroBridge())
 }
 
 pure flow k3DecodeLegacyFrame(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
@@ -493,4 +560,55 @@ contract { intent { "Alert 1 first-seen, 2 cap-reached, else 0." } }
     return 2
   }
   return 0
+}
+
+pure flow k3DecodeLegacyFrameWithBridge(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int, bridge: Int) -> Int
+contract { intent { "Frame label with injected bridge. Sunset dry-run uses bridge 0." } }
+{
+  let kind: Int = k3LegacyZeroKindWithBridge(version, epoch, value, nowUnixSeconds, readsSoFar, bridge)
+  if kind == 10 {
+    return 0
+  }
+  if kind == 4 {
+    return 3
+  }
+  return kind
+}
+
+pure flow k3DecodeLegacyFrameReadsAfterWithBridge(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int, bridge: Int) -> Int
+contract { intent { "Counted accept with injected bridge. Refusals keep readsSoFar." } }
+{
+  let kind: Int = k3LegacyZeroKindWithBridge(version, epoch, value, nowUnixSeconds, readsSoFar, bridge)
+  if kind == 10 {
+    return readsSoFar + 1
+  }
+  return readsSoFar
+}
+
+pure flow k3DecodeLegacyFrameAlertWithBridge(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int, bridge: Int) -> Int
+contract { intent { "Alert with injected bridge. 1 first-seen, 2 cap-reached, else 0." } }
+{
+  let kind: Int = k3LegacyZeroKindWithBridge(version, epoch, value, nowUnixSeconds, readsSoFar, bridge)
+  if kind == 10 {
+    if readsSoFar == 0 {
+      return 1
+    }
+    return 0
+  }
+  if kind == 4 {
+    return 2
+  }
+  return 0
+}
+
+pure flow k3AlertRecordReadsAfter(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
+contract { intent { "Typed alert record field readsAfter." } }
+{
+  return k3DecodeLegacyFrameReadsAfter(version, epoch, value, nowUnixSeconds, readsSoFar)
+}
+
+pure flow k3AlertRecordAlert(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
+contract { intent { "Typed alert record field alert (NONE/FIRST_SEEN/CAP_REACHED as 0/1/2)." } }
+{
+  return k3DecodeLegacyFrameAlert(version, epoch, value, nowUnixSeconds, readsSoFar)
 }
