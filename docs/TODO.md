@@ -246,7 +246,9 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
 - [x] **SUPERSEDED 2026-10-28 ~17:00 GMT (Phillip + external security review): Galerina K3 is
   strong Kleene, DENY AND UNKNOWN = DENY; see `docs/architecture/k3-lattice-decisions-2026-10-28.md`
   section 3.0. Follow-up: align frozen TS `vAnd`/`vOr` and `effective-verdict.fungi` /
-  `verdict-or.fungi` (still infectious).** Earlier text: **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
+  `verdict-or.fungi` (still infectious).** *(Follow-up DONE 2026-10-28 for `.fungi`: both shipped flows are now
+  strong Kleene. KNOWN DIVERGENCE kept on purpose: frozen TS `vAnd`/`vOr`/`allOf` in `three-valued-governance.ts` and
+  `galerina-auth` `compose.ts` stay infectious; they are a reference only. See lattice doc 3.0.)* Earlier text: **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
   (`6adf84b8e`), DENY AND UNKNOWN = UNKNOWN (still refused), so DENY is not
   absorbing when UNKNOWN is present. Recorded as an owner-visible decision in
   `docs/architecture/k3-lattice-decisions-2026-10-28.md` §3, contrasting

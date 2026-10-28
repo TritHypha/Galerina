@@ -105,7 +105,23 @@ deny-overrides (a Deny wins over Indeterminate and Permit).
 **Code status on 2026-10-28:** SLIDE `k3FoldAdmission` already returns DENY (pinned by
 `k3-wire-step4b` and `k3-bridge-astra`, plus `tests/k3-strong-kleene-fold.test.mjs` on SLIDE
 branch `grok/slide-k3-strong-kleene-20261028`), and VOK `authority_verdict` (`.min()`) agrees.
-**Not yet aligned (still infectious/weak):** the frozen TS `vAnd` / `vOr` / `allOf`
+**Update 2026-10-28 (K3-SK follow-up, branch `grok/k3-strong-kleene-fungi-20261028`):** the
+shipped `.fungi` flows are the real implementation and are now strong Kleene:
+`effective-verdict.fungi` is AND = min (DENY absorbs UNKNOWN) and `verdict-or.fungi` is OR = max
+(ALLOW absorbs UNKNOWN). Their conversion tests and the SLIDE/VOK integration tests now expect the
+strong-Kleene tables.
+
+**Known divergence (frozen TS reference, intentionally NOT edited):** the TS below stays
+infectious/weak. It is a frozen, known-divergent reference only, and it is not the implementation.
+- `packages-ts/galerina-tower-citizen/src/three-valued-governance.ts` `vAnd`: DENY AND UNKNOWN = UNKNOWN (strong: DENY).
+- same file `vOr`: ALLOW OR UNKNOWN = UNKNOWN (strong: ALLOW).
+- same file `allOf`: an UNKNOWN in the fold gives UNKNOWN even beside a DENY (strong: DENY).
+- `packages-ts/galerina-auth` `compose.ts`: same infectious AND rule.
+The conversion tests (`effective-verdict-fungi-conversion`, `verdict-and-fungi-supersession`,
+`verdict-or-fungi-conversion`) still pin the TS reference table, pin the Fungi flow to the strong
+table, and assert the two differ at exactly rows (D,U)/(U,D) for AND and (U,A)/(A,U) for OR.
+
+*(Superseded by the update above, kept for the record:)* **Not yet aligned (still infectious/weak):** the frozen TS `vAnd` / `vOr` / `allOf`
 (`three-valued-governance.ts`), `galerina-auth` `compose.ts`, and the shipped `.fungi`
 `effective-verdict.fungi` / `verdict-or.fungi`, which mirror the TS reference and are pinned
 to it by conversion tests. They still fail closed (only `+1` admits), but their tables differ

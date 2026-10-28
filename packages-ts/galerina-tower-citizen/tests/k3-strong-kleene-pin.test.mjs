@@ -3,8 +3,9 @@
 // keeps UNKNOWN. Gates refuse UNKNOWN; a recorded DENY cannot become ALLOW in the same request.
 // Refs: XACML deny-overrides, CWE-636. Wire encoding unchanged (ALLOW 0x01, DENY 0xFF, UNKNOWN 0x80).
 // Runs the test-only fixture tests/fixtures/k3-strong-kleene.test-only.fungi through the Fungi
-// interpreter. The frozen TS vAnd/vOr and the shipped effective-verdict.fungi / verdict-or.fungi are
-// NOT exercised here (they are still infectious-UNKNOWN; see docs/architecture/k3-lattice-decisions-2026-10-28.md).
+// interpreter. The shipped effective-verdict.fungi / verdict-or.fungi are strong Kleene too (pinned by their
+// conversion tests); the frozen TS vAnd/vOr remain infectious-UNKNOWN as a known-divergent reference
+// (see docs/architecture/k3-lattice-decisions-2026-10-28.md 3.0).
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

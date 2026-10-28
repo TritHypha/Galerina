@@ -27,6 +27,20 @@ const K3_MAX = Object.freeze([
   Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
 ]);
+// K3-SK 2026-10-28: the shipped Fungi flow is the real implementation and is strong Kleene OR = max
+// (ALLOW absorbs UNKNOWN). K3_MAX above stays as the pin of the FROZEN, known-divergent TS reference.
+const K3_STRONG_MAX = Object.freeze([
+  Object.freeze([Verdict.DENY, Verdict.DENY, Verdict.DENY]),
+  Object.freeze([Verdict.DENY, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.DENY, Verdict.ALLOW, Verdict.ALLOW]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.DENY, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.ALLOW, Verdict.ALLOW]),
+  Object.freeze([Verdict.ALLOW, Verdict.DENY, Verdict.ALLOW]),
+  Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.ALLOW]),
+  Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
+]);
+const K3_STRONG_MAX_DIVERGENT_ROWS = Object.freeze([5,7]);
 
 function readUtf8(path) {
   return readFileSync(path, "utf8").replace(/^\uFEFF/u, "");
@@ -82,13 +96,14 @@ describe("Tower-Citizen package-owned Fungi vOr decision", () => {
     );
   });
 
-  it("matches the complete independent Verdict x Verdict infectious-UNKNOWN K3 maximum table", async () => {
+  it("TS reference pins infectious-UNKNOWN; shipped Fungi pins the strong-Kleene K3 maximum table", async () => {
     const program = compileCandidate();
-    for (const [left, right, expected] of K3_MAX) {
+    for (const [i, [left, right, expected]] of K3_MAX.entries()) {
+      assert.deepEqual(K3_STRONG_MAX[i].slice(0, 2), [left, right]);
       assert.equal(vOr(left, right), expected, `TypeScript vOr(${left}, ${right})`);
       assert.deepEqual(
         await interpret(program, left, right),
-        expected,
+        K3_STRONG_MAX[i][2],
         `Fungi vOrVerdict(${left}, ${right})`,
       );
     }
@@ -101,5 +116,9 @@ describe("Tower-Citizen package-owned Fungi vOr decision", () => {
     await assert.rejects(() => fromFungi({ __tag: "verdict", value: 2 }), /not a native Verdict/u);
     assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.DENY));
     assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.ALLOW));
+  });
+  it("K3-SK: frozen TS reference diverges from the strong-Kleene Fungi flow at exactly the recorded rows", () => {
+    const diff = K3_MAX.flatMap((row, i) => (row[2] === K3_STRONG_MAX[i][2] ? [] : [i]));
+    assert.deepEqual(diff, [...K3_STRONG_MAX_DIVERGENT_ROWS]);
   });
 });

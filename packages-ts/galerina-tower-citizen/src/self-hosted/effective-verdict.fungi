@@ -1,16 +1,17 @@
 @version 1
 pure flow effectiveVerdict(ideal: Verdict, reading: Verdict) -> Verdict {
-  // K3U2 (gcw-k3u10): infectious UNKNOWN, matching the TS reference vAnd. Any Unknown operand is
-  // Unknown (audited deny), never Deny-absorbed and never Allow.
+  // K3-SK (2026-10-28): strong Kleene AND = min over DENY < UNKNOWN < ALLOW. A definite Deny absorbs
+  // Unknown (fail closed, CWE-636). Supersedes K3U2 infectious UNKNOWN; the frozen TS vAnd is now a
+  // known-divergent reference (see docs/architecture/k3-lattice-decisions-2026-10-28.md 3.0).
   check(ideal) {
-    deny: {
+    deny: { return Verdict.Deny }
+    ambig: {
       check(reading) {
         deny: { return Verdict.Deny }
         ambig: { return Verdict.Unknown }
-        if: { return Verdict.Deny }
+        if: { return Verdict.Unknown }
       }
     }
-    ambig: { return Verdict.Unknown }
     if: { return reading }
   }
 }
