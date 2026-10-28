@@ -1801,7 +1801,7 @@
         "unaryExpr": 3,
         "whileStmt": 15
       },
-      "byteLength": 39706,
+      "byteLength": 39731,
       "diagnosticCodes": [],
       "flowCount": 25,
       "memberCalls": {
@@ -1831,7 +1831,7 @@
         "||": 27
       },
       "path": "packages-ts/galerina-core-compiler/src/self-hosted/runtime.fungi",
-      "sourceSha256": "sha256:d6137c273a2a5bd62fb257501ea8bfb229137d590cc66be5f3c8b7402865aa1f",
+      "sourceSha256": "sha256:498a89202dd7c3583255f35034d10f2c8db7f65541fc8d34423e5c6b0a3fd0c1",
       "typeRefs": {
         "Array<AuditEntry>": 3,
         "Array<Auto>": 2,
@@ -5221,7 +5221,7 @@
         "unaryExpr": 1,
         "whileStmt": 39
       },
-      "byteLength": 84811,
+      "byteLength": 84841,
       "diagnosticCodes": [],
       "flowCount": 56,
       "memberCalls": {
@@ -5251,7 +5251,7 @@
         "||": 10
       },
       "path": "packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi",
-      "sourceSha256": "sha256:0aa65fe35c4207c2e8c661999fd54001425ea67b2453128a93614df7fe86cafd",
+      "sourceSha256": "sha256:b9a99157bb8ac087da04724598fbb00927acb551816e1f7f8049f05882990b1d",
       "typeRefs": {
         "Array<Auto>": 40,
         "Array<FlowDecl>": 10,
@@ -5940,31 +5940,31 @@
         "binaryExpr": 7,
         "block": 11,
         "boolLiteral": 5,
-        "callExpr": 7,
+        "callExpr": 8,
         "contractDecl": 3,
         "identifier": 14,
         "ifStmt": 6,
+        "importDecl": 1,
         "intentDecl": 3,
         "mutDecl": 1,
-        "numberLiteral": 4,
+        "numberLiteral": 3,
         "paramDecl": 7,
         "program": 1,
         "pureFlowDecl": 3,
         "returnStmt": 4,
-        "typeRef": 10,
-        "unaryExpr": 1
+        "typeRef": 10
       },
-      "byteLength": 2704,
+      "byteLength": 2834,
       "diagnosticCodes": [],
       "flowCount": 3,
       "memberCalls": {},
       "operators": {
-        "-": 2,
+        "-": 1,
         "<": 1,
         "==": 5
       },
       "path": "packages-ts/galerina-core-network/src/self-hosted/admission-feedback.fungi",
-      "sourceSha256": "sha256:31788c30da5140d7e011f4f5d0c4cdb12970ff48bdb6796903aaabd548c84c51",
+      "sourceSha256": "sha256:9a028cc084fdc51866ec57ece9e3896ab2e999c8bd79bec64df09070c66b185b",
       "typeRefs": {
         "Bool": 5,
         "Int": 5
@@ -6008,31 +6008,32 @@
         "binaryExpr": 16,
         "block": 26,
         "boolLiteral": 13,
-        "callExpr": 10,
+        "callExpr": 11,
         "contractDecl": 10,
         "identifier": 25,
         "ifStmt": 16,
+        "importDecl": 1,
         "intentDecl": 10,
-        "numberLiteral": 10,
+        "numberLiteral": 9,
         "paramDecl": 23,
         "program": 1,
         "pureFlowDecl": 10,
         "returnStmt": 25,
         "stringLiteral": 7,
         "typeRef": 33,
-        "unaryExpr": 5
+        "unaryExpr": 4
       },
-      "byteLength": 6999,
+      "byteLength": 7151,
       "diagnosticCodes": [],
       "flowCount": 10,
       "memberCalls": {},
       "operators": {
-        "-": 5,
+        "-": 4,
         "<": 1,
         "==": 15
       },
       "path": "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
-      "sourceSha256": "sha256:74c3dcf1ff7e53b5d0aeca5bdcdc6722e78eefd4c5bd1842659c0f949b70fda8",
+      "sourceSha256": "sha256:e41659c734082f97360d089402151a0c9bcb37863a72cb7720b8ca70ddb001bd",
       "typeRefs": {
         "Bool": 13,
         "Int": 17,
@@ -66327,31 +66328,32 @@
         "binaryExpr": 5,
         "block": 8,
         "boolLiteral": 3,
-        "callExpr": 3,
+        "callExpr": 4,
         "contractDecl": 3,
         "identifier": 7,
         "ifStmt": 5,
+        "importDecl": 1,
         "intentDecl": 3,
-        "numberLiteral": 5,
+        "numberLiteral": 4,
         "paramDecl": 7,
         "program": 1,
         "pureFlowDecl": 3,
         "returnStmt": 8,
         "typeRef": 10,
-        "unaryExpr": 3
+        "unaryExpr": 2
       },
-      "byteLength": 2642,
+      "byteLength": 2750,
       "diagnosticCodes": [],
       "flowCount": 3,
       "memberCalls": {},
       "operators": {
-        "-": 3,
+        "-": 2,
         "<": 1,
         "==": 3,
         ">=": 1
       },
       "path": "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
-      "sourceSha256": "sha256:bce427529918c8d9c55c77d42468f23e1d2cc99d4df4148c068866085ab38412",
+      "sourceSha256": "sha256:c06654d337fdaa5abe8836c5ee1427fac4cc97ab568ba8f510eaa4f77b9ed1ab",
       "typeRefs": {
         "Bool": 3,
         "Int": 7
@@ -66374,7 +66376,7 @@
         "returnStmt": 27,
         "typeRef": 28
       },
-      "byteLength": 6388,
+      "byteLength": 6549,
       "diagnosticCodes": [],
       "flowCount": 7,
       "memberCalls": {},
@@ -66384,7 +66386,7 @@
         "==": 19
       },
       "path": "packages-ts/galerina-tower-citizen/src/self-hosted/inference-governance.fungi",
-      "sourceSha256": "sha256:67b7cb8526076ee2f2b54129467890c03896b80cb945618c8e36e5fdbd53a997",
+      "sourceSha256": "sha256:e7afc381eeccba717c8a5458810e2dde0b18a7fc4ddc08f2e8b7b0523fcccf8b",
       "typeRefs": {
         "Bool": 20,
         "Int": 8
@@ -66684,7 +66686,7 @@
       "bitfieldDecl": 1,
       "block": 19612,
       "boolLiteral": 2516,
-      "callExpr": 7511,
+      "callExpr": 7514,
       "charLiteral": 15,
       "checkArm": 351,
       "checkExpr": 117,
@@ -66698,7 +66700,7 @@
       "guardedFlowDecl": 3,
       "identifier": 169698,
       "ifStmt": 14266,
-      "importDecl": 22,
+      "importDecl": 25,
       "intentDecl": 1330,
       "letDecl": 139856,
       "listLiteral": 115,
@@ -66706,7 +66708,7 @@
       "matchExpr": 417,
       "memberExpr": 4771,
       "mutDecl": 849,
-      "numberLiteral": 6355,
+      "numberLiteral": 6352,
       "paramDecl": 13700,
       "program": 2544,
       "pureFlowDecl": 3295,
@@ -66718,10 +66720,10 @@
       "trapDecl": 50,
       "typeDecl": 3,
       "typeRef": 15824,
-      "unaryExpr": 304,
+      "unaryExpr": 301,
       "whileStmt": 353
     },
-    "bytes": 8366182,
+    "bytes": 8366788,
     "files": 2544,
     "flows": 3307,
     "memberCalls": {
@@ -66770,7 +66772,7 @@
       "&&": 451,
       "*": 58,
       "+": 1068,
-      "-": 482,
+      "-": 479,
       "/": 26,
       "<": 641,
       "<=": 32,

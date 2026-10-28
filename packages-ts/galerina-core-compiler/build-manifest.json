@@ -956,7 +956,7 @@
       },
       {
         "path": "src/self-hosted/runtime.fungi",
-        "sha256": "d6137c273a2a5bd62fb257501ea8bfb229137d590cc66be5f3c8b7402865aa1f"
+        "sha256": "498a89202dd7c3583255f35034d10f2c8db7f65541fc8d34423e5c6b0a3fd0c1"
       },
       {
         "path": "src/self-hosted/schema-id.fungi",
@@ -1268,7 +1268,7 @@
       },
       {
         "path": "src/self-hosted/type-checker.fungi",
-        "sha256": "0aa65fe35c4207c2e8c661999fd54001425ea67b2453128a93614df7fe86cafd"
+        "sha256": "b9a99157bb8ac087da04724598fbb00927acb551816e1f7f8049f05882990b1d"
       },
       {
         "path": "src/self-hosted/unpack-flags.fungi",

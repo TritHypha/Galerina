@@ -5,7 +5,7 @@ admission, execution parity, retirement credit or production authority.
 
 - Files: 2544
 - Flows: 3307
-- Bytes: 8366182
+- Bytes: 8366788
 - Retirement graph: `sha256:bceea737a3598d3a598d102415b8c86358b31f31ed60425b7a9e42375359a6fc`
 
 ## AST kinds
@@ -20,9 +20,9 @@ admission, execution parity, retirement credit or production authority.
 | `typeRef` | 15824 |
 | `ifStmt` | 14266 |
 | `paramDecl` | 13700 |
-| `callExpr` | 7511 |
+| `callExpr` | 7514 |
 | `binaryExpr` | 7046 |
-| `numberLiteral` | 6355 |
+| `numberLiteral` | 6352 |
 | `memberExpr` | 4771 |
 | `pureFlowDecl` | 3295 |
 | `program` | 2544 |
@@ -35,12 +35,12 @@ admission, execution parity, retirement credit or production authority.
 | `matchExpr` | 417 |
 | `whileStmt` | 353 |
 | `checkArm` | 351 |
-| `unaryExpr` | 304 |
+| `unaryExpr` | 301 |
 | `recordDecl` | 211 |
 | `checkExpr` | 117 |
 | `listLiteral` | 115 |
 | `trapDecl` | 50 |
-| `importDecl` | 22 |
+| `importDecl` | 25 |
 | `charLiteral` | 15 |
 | `staticDecl` | 15 |
 | `enumVariant` | 13 |
@@ -355,7 +355,7 @@ admission, execution parity, retirement credit or production authority.
 | `!=` | 986 |
 | `\|\|` | 778 |
 | `<` | 641 |
-| `-` | 482 |
+| `-` | 479 |
 | `&&` | 451 |
 | `>` | 264 |
 | `>=` | 81 |
