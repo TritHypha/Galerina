@@ -98,7 +98,13 @@ test("scaffold: `galerina new app` emits the runnable golden layout", () => {
 test("fuse: the SIGNED greeting wasm is admitted VERIFIED (no allowUnsigned) and invoke('main') => 200", async () => {
   // No allowUnsigned: this only passes because the manifest's Ed25519 signature
   // verifies against the repo governance public key — real signed admission.
-  const greeting = await fusePackage(paths.greetingDir, { governanceDir: paths.governanceDir, warn: () => {} });
+  const greeting = await fusePackage(paths.greetingDir, {
+    governanceDir: paths.governanceDir,
+    warn: () => {},
+    // S6-1: the loader requires a central registry verdict (FUNGI-FUSE-REGISTRY-REQUIRED, 468ef12c3).
+    // Synthetic test registry: ALLOW only the exact package under test, deny everything else.
+    registryCheck: (pkg) => ({ ok: pkg.name === "greeting" }),
+  });
   assert.equal(greeting.name, "greeting");
   assert.deepEqual(greeting.capabilities, [], "fused with NO capabilities (deny-by-default)");
   assert.equal(greeting.invoke("main"), 200, "the governed compute returns HTTP 200");
