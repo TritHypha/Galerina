@@ -180,18 +180,23 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   2026-12-31 / 20261231; unix exclusive 1798761600 (2027-01-01T00:00:00Z);
   1798761599 accepts; 1798761600 refuses; delete the path by 2027-01-18.
   The SLIDE sunset red test flips when this lands.
-- [ ] **consensusTritN note:** a split or empty quorum is UNKNOWN by
+- [x] **consensusTritN note:** a split or empty quorum is UNKNOWN by
   construction (`c0940fec9`, `b498128eb`), which fails closed but is
-  audit-noisy; a unanimous 0 is NEUTRAL. Document it in the three-valued
-  governance header.
-- [ ] **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
+  audit-noisy; a unanimous 0 is NEUTRAL. The three-valued governance header
+  already states it; recorded owner-visible in
+  `docs/architecture/k3-lattice-decisions-2026-10-28.md` §2 (2026-10-28).
+- [x] **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
   (`6adf84b8e`), DENY AND UNKNOWN = UNKNOWN (still refused), so DENY is not
-  absorbing when UNKNOWN is present. Record it as an owner-visible decision and
-  contrast `trustMeet`, where REFUTED absorbs (`89cfa6039`).
-- [ ] **Runtime half of the memory guarantees (SLIDE):** alias, wipe and lease
+  absorbing when UNKNOWN is present. Recorded as an owner-visible decision in
+  `docs/architecture/k3-lattice-decisions-2026-10-28.md` §3, contrasting
+  `trustMeet` (REFUTED absorbs, `89cfa6039`) and VOK `.min()` (Refuse absorbs);
+  the `galerina-auth` README composition text now matches `compose.ts`.
+- [x] **Runtime half of the memory guarantees (SLIDE):** alias, wipe and lease
   enforcement belong to SLIDE production code and are cross-checked by VOK off
   the production build. Galerina checker evidence proves language-level memory
-  rules only and must not be cited as runtime enforcement.
+  rules only and must not be cited as runtime enforcement. Ownership table in
+  `docs/architecture/k3-lattice-decisions-2026-10-28.md` §4 (2026-10-28); the
+  SLIDE-side enforcement work itself stays with SLIDE.
 - [ ] Migration steps: Step X = WebAssembly + TypeScript, Step Y = WebAssembly +
   .fungi, Step Z = SLIDE + .fungi. WebAssembly/WAT pieces off the golden path
   are kept and marked, not deleted.

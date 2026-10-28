@@ -74,15 +74,28 @@ legacy key-presence branch).
 `scopeVerdict(required, granted)` checks an authenticated identity's granted scopes
 against a route's required scopes (the surface `AuthPolicy.scopes` already declares).
 ALLOW iff every required scope is granted; DENY on any missing required scope;
-INDETERMINATE for an empty requirement (deny-by-default — omit the factor instead of
+UNKNOWN (the typed K3_UNKNOWN, never `0`) for an empty requirement (deny-by-default — omit the factor instead of
 passing `[]`). Exact match, no wildcard broadening. Additive: it does not move any
 existing kernel behaviour.
 
 ### Composition (`compose.ts`)
 `composeAuthVerdict(factors)` folds the factors **conjunctively** (`allOf` = K3
-`min`): ALLOW iff every factor is ALLOW, DENY if any is DENY, else INDETERMINATE.
-Empty → INDETERMINATE (deny-by-default). The result is the single verdict you hand
-the kernel.
+`min`), exactly as `compose.ts` documents:
+
+- ALLOW iff every factor is ALLOW;
+- UNKNOWN if any factor is UNKNOWN (infectious, as the pinned K3 `vAnd`);
+- otherwise DENY if any factor is DENY;
+- otherwise NEUTRAL (`0`, a computed trit, refused at the boundary).
+
+Empty → UNKNOWN (the typed K3_UNKNOWN, never `0`; deny-by-default). The result is
+the single verdict you hand the kernel. Only ALLOW authorizes; UNKNOWN is refused
+with the `FUNGI-GOV-3VL-001` diagnostic.
+
+**DENY AND UNKNOWN is UNKNOWN, not DENY.** The composite is still refused, but DENY
+is not absorbing once an UNKNOWN factor is present, so do not read a composite
+UNKNOWN as "no factor refused". This is a recorded decision; see
+`docs/architecture/k3-lattice-decisions-2026-10-28.md` §3. (`INDETERMINATE` is the
+deprecated name of UNKNOWN in older tests and docs.)
 
 ## Usage
 
