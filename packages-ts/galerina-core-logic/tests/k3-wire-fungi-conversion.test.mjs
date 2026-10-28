@@ -307,17 +307,17 @@ describe("core-logic k3-wire.fungi conversion", () => {
     const open = 1793059200;
     const last = 1798761599;
     const closed = 1798761600;
-    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, open, 0), 0);
-    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, open, 0), 1);
-    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, open, 0), 1);
-    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, open, 1), 0);
-    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, last, 0), 0, "last second accepts");
-    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, closed, 0), 3, "clock closed");
-    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, closed, 4), 4);
-    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, closed, 0), 0);
-    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, open, 1000000), 3);
-    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, open, 1000000), 1000000);
-    assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, open, 1000000), 2);
+    assert.equal(exports.k3DecodeLegacyFrame(1, open, 0, open, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, open, 0, open, 0), 1);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, open, 0, open, 0), 1);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, open, 0, open, 1), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, open, 0, last, 0), 0, "last second accepts");
+    assert.equal(exports.k3DecodeLegacyFrame(1, open, 0, closed, 0), 3, "clock closed");
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, open, 0, closed, 4), 4);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, open, 0, closed, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, open, 0, open, 1000000), 3);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, open, 0, open, 1000000), 1000000);
+    assert.equal(exports.k3DecodeLegacyFrameAlert(1, open, 0, open, 1000000), 2);
     assert.equal(exports.k3DecodeLegacyFrame(2, 0, 0, open, 0), 2, "v2 value 0 is invalid");
     assert.equal(exports.k3DecodeLegacyFrame(2, 0, -128, open, 4), 0);
     assert.equal(exports.k3DecodeLegacyFrameReadsAfter(2, 0, -128, open, 4), 4);
@@ -462,14 +462,14 @@ describe("core-logic k3-wire.fungi conversion", () => {
     const closedUnix = [0, -1, 1798761600, 2147483647];
     for (const nowUnixSeconds of closedUnix) {
       assert.equal(
-        exports.k3DecodeLegacyFrame(1, 0, 0, nowUnixSeconds, 0),
+        exports.k3DecodeLegacyFrame(1, open, 0, nowUnixSeconds, 0),
         3,
         `nowUnixSeconds=${nowUnixSeconds} must close`,
       );
-      assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, 0, nowUnixSeconds, 0), 0);
-      assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, 0, nowUnixSeconds, 0), 0);
+      assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, open, 0, nowUnixSeconds, 0), 0);
+      assert.equal(exports.k3DecodeLegacyFrameAlert(1, open, 0, nowUnixSeconds, 0), 0);
     }
-    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, 1798761599, 0), 0, "last second accepts");
+    assert.equal(exports.k3DecodeLegacyFrame(1, open, 0, 1798761599, 0), 0, "last second accepts");
     assert.equal(exports.k3YmdInRange(20260231), 0, "ymd helper stays off golden path");
     assert.equal(exports.k3YmdInRange(20261027), 1);
     assert.equal(exports.k3ExpiryUnixS(), 1798761600);
@@ -479,5 +479,101 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.equal(exports.k3DecodeLegacyFrame(1, 0, -1, open, 0), -1, "v1 value=-1 deny");
     assert.equal(exports.k3DecodeLegacyFrameReadsAfter(1, 0, -1, open, 0), 0);
     assert.equal(exports.k3DecodeLegacyFrameAlert(1, 0, -1, open, 0), 0);
+  });
+
+  it("K3-EP epoch admission date edges and unix floor", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3EpochYmdMin(), 20261027);
+    assert.equal(exports.k3EpochYmdMax(), 20991231);
+    assert.equal(exports.k3TrustedClockFloorUnixS(), 1790812800);
+    assert.equal(exports.k3YmdTransitional(20261026), 0);
+    assert.equal(exports.k3YmdTransitional(20261027), 1);
+    assert.equal(exports.k3YmdTransitional(20260230), 0);
+    assert.equal(exports.k3YmdTransitional(20991231), 1);
+    assert.equal(exports.k3YmdTransitional(21000101), 0);
+    assert.equal(exports.k3EpochAdmitted(0), 0);
+    assert.equal(exports.k3EpochAdmitted(-1), 0);
+    assert.equal(exports.k3EpochAdmitted(20261026), 0);
+    assert.equal(exports.k3EpochAdmitted(20261027), 1);
+    assert.equal(exports.k3EpochAdmitted(20260230), 0);
+    assert.equal(exports.k3EpochAdmitted(20991231), 1);
+    assert.equal(exports.k3EpochAdmitted(21000101), 0);
+    assert.equal(exports.k3EpochAdmitted(1790812800), 1);
+    assert.equal(exports.k3EpochAdmitted(1790812799), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 0, 0, open, 0), 3, "epoch 0 fails closed");
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20261027, 0, open, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20261026, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20260230, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20991231, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 21000101, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(3, 20261027, 0, open, 0), 2, "unknown version");
+  });
+
+  it("K3-CW frame-side expiry, WASI Int limit, serial instant pin", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3EpochYmdExpiryMin(), 20270101);
+    assert.equal(exports.k3YmdToUnixS(20261027), 1793059200);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(1798761599), 1);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(1798761600), 0);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(20261231), 1);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(20270101), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 1798761599, 0, open, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 1798761600, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20270101, 0, open, 0), 3);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(1000000000), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(2147483647), 0);
+    assert.equal(exports.k3SerialInstantUnixS(2026, 10, 27, 15, 45, 0), 1793115900);
+    assert.equal(exports.k3SerialInstantUnixS(2026, 2, 30, 15, 45, 0), 0);
+    assert.equal(exports.k3SerialWindowContains(1793115900, 1793115960, 1793115900), 1);
+    assert.equal(exports.k3SerialWindowContains(1793115900, 1793115960, 1793115960), 0);
+    assert.equal(exports.k3SerialWindowContains(1793115960, 1793115900, 1793115900), 0);
+  });
+
+  it("K3-AL display ymd, sunset dry-run, N-e/N-f, alert record", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3UnixSToYmd(1798761599), 20261231);
+    assert.equal(exports.k3UnixSToYmd(1798761600), 20270101);
+    assert.equal(exports.k3UnixSToYmd(1793115900), 20261027);
+    assert.equal(exports.k3UnixSToYmd(0), 0);
+    assert.equal(exports.k3UnixSToYmd(1790812799), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20261231, 0, open, 0), 0, "N-e 20261231 open");
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20270101, 0, open, 0), 3, "N-e 20270101 closed");
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 0), 3, "sunset dry-run");
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 1), 0);
+    assert.equal(exports.k3DecodeLegacyFrameReadsAfterWithBridge(1, 20261027, 0, open, 0, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrameAlertWithBridge(1, 20261027, 0, open, 0, 0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(2147483647), 0);
+    assert.equal(exports.k3FrameHeaderVersion(), 1);
+    assert.equal(exports.k3AlertSinkUnknownNoAudit(), 0);
+    assert.equal(exports.k3AlertRecordAlert(1, open, 0, open, 0), 1);
+    assert.equal(exports.k3AlertRecordReadsAfter(1, open, 0, open, 0), 1);
+    const src = readFileSync(SOURCE, "utf8");
+    const kindStart = src.indexOf("pure flow k3LegacyZeroKindWithBridge");
+    const kindEnd = src.indexOf("pure flow k3LegacyZeroKind(", kindStart + 1);
+    const kindBody = src.slice(kindStart, kindEnd);
+    assert.equal(kindBody.includes("k3UnixSToYmd"), false);
+    assert.match(src, /UNKNOWN\(fungi-int-cannot-hold-wasi-ns\)/);
+  });
+
+  it("K3-RC strict bridge 2/-1 closed, recorder tally unknown", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 2), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, -1), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 1), 0);
+    assert.equal(exports.k3AlertRecorderCap(), 64);
+    assert.equal(exports.k3AlertRecorderTallyUnknown(), 0);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(fungi-alert-recorder-is-tally\)/);
+    const kindStart = src.indexOf("pure flow k3LegacyZeroKindWithBridge");
+    const kindEnd = src.indexOf("pure flow k3LegacyZeroKind(", kindStart + 1);
+    const kindBody = src.slice(kindStart, kindEnd);
+    assert.equal(kindBody.includes("if bridge != 1"), true);
   });
 });

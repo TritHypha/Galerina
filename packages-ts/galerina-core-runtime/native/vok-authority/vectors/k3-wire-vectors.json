@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v2 adds the unsigned u8 oracle, signed-wrapper boundary set, encode-lattice bytes, load8_s/load8_u expected values, and pure-frame rows. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: bridge flag, trusted clock (nowUnixSeconds < 1798761600), then cap. Frame epoch remains YYYYMMDD in [0, 20261231] else LEGACY_CLOSED. A2-F: clock input is i64 Unix seconds UTC.",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink).",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,8 +57,12 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 2,
-    "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600
+    "vectorsVersion": 6,
+    "FIXTURE_SCHEMA_VERSION": 6,
+    "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600,
+    "K3_EPOCH_YMD_MIN": 20261027,
+    "K3_EPOCH_YMD_MAX": 20991231,
+    "TRUSTED_CLOCK_FLOOR_UNIX_S": 1790812800
   },
   "sectionTrees": {
     "header": "THREE-WAY",
@@ -75,7 +79,15 @@
     "legacy": "THREE-WAY",
     "processGlobalCounter": "SLIDE-ONLY+VOK-ONLY",
     "processDateNow": "SLIDE-ONLY",
-    "A1_SUNSET": "SLIDE-ONLY"
+    "A1_SUNSET": "SLIDE-ONLY",
+    "wasiRealtimeNs": "THREE-WAY",
+    "serialInstants": "THREE-WAY",
+    "serialWindows": "THREE-WAY",
+    "displayYmd": "THREE-WAY",
+    "sunsetDryRun": "THREE-WAY",
+    "alertRecords": "THREE-WAY",
+    "strictBridge": "THREE-WAY",
+    "alertRecorder": "THREE-WAY"
   },
   "u8": [
     [
@@ -1207,7 +1219,7 @@
     {
       "id": "v1-framed-0-first",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "UNKNOWN",
@@ -1219,7 +1231,7 @@
     {
       "id": "v1-framed-0-second",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1,
       "label": "UNKNOWN",
@@ -1230,7 +1242,7 @@
     {
       "id": "v1-framed-0-last-valid-day",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "UNKNOWN",
@@ -1242,7 +1254,7 @@
     {
       "id": "v1-framed-0-refused-day",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1254,7 +1266,7 @@
     {
       "id": "v1-framed-0-cap-minus-1",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 999999,
       "label": "UNKNOWN",
@@ -1265,7 +1277,7 @@
     {
       "id": "v1-framed-0-at-cap",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
@@ -1277,7 +1289,7 @@
     {
       "id": "v1-framed-0-cap-plus-1",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000001,
       "label": "LEGACY_CLOSED",
@@ -1288,7 +1300,7 @@
     {
       "id": "v1-framed-0-clock-and-cap",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
@@ -1396,7 +1408,8 @@
       "label": "UNKNOWN",
       "readsAfter": 1,
       "alert": "FIRST_SEEN",
-      "nowUnixSeconds": 1798761599
+      "nowUnixSeconds": 1798761599,
+      "note": "N-e: 20261231 open through the .fungi path."
     },
     {
       "id": "epoch-after-expiry",
@@ -1407,7 +1420,7 @@
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "Frame epoch can only close. epoch > EXPIRY is LEGACY_CLOSED even if nowUnixSeconds is open.",
+      "note": "K3-CW (a): 20270101 as 00:00:00Z is 1798761600; a legacy-0 frame at or after that unix bound closes. Process-clock gate stays. N-e: 20270101 closed through the .fungi path.",
       "nowUnixSeconds": 1793059200
     },
     {
@@ -1419,12 +1432,13 @@
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "nowUnixSeconds": 1793059200
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-CW (a): 2147483647 is unix 2038-01-19T03:14:07Z, at or after 1798761600, so a legacy-0 frame closes. Ceiling 4102444800 remains an i64-only unit test."
     },
     {
       "id": "nowUnixSeconds-i32-max",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1435,7 +1449,7 @@
     {
       "id": "nowUnixSeconds-negative-fails-closed",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1447,7 +1461,7 @@
     {
       "id": "nowUnixSeconds-zero-fails-closed",
       "version": 1,
-      "epoch": 0,
+      "epoch": 1793059200,
       "value": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
@@ -1455,7 +1469,498 @@
       "alert": "NONE",
       "note": "A2-F: nowUnixSeconds 0 fails closed as LEGACY_CLOSED.",
       "nowUnixSeconds": 0
+    },
+    {
+      "id": "epoch-zero-fails-closed",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: epoch <= 0 fails closed."
+    },
+    {
+      "id": "epoch-ymd-20261026",
+      "version": 1,
+      "epoch": 20261026,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20261026 is outside the transitional YYYYMMDD window."
+    },
+    {
+      "id": "epoch-ymd-20261027",
+      "version": 1,
+      "epoch": 20261027,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20261027 is the first admitted transitional YYYYMMDD (00:00:00Z = 1793059200)."
+    },
+    {
+      "id": "epoch-ymd-20260230",
+      "version": 1,
+      "epoch": 20260230,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 20260230 is not a real Gregorian date."
+    },
+    {
+      "id": "epoch-ymd-20991231",
+      "version": 1,
+      "epoch": 20991231,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-CW (a): 20991231 as 00:00:00Z is after 1798761600, so a legacy-0 frame closes. K3-EP still admits the date as transitional YYYYMMDD."
+    },
+    {
+      "id": "epoch-ymd-21000101",
+      "version": 1,
+      "epoch": 21000101,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP date edge: 21000101 is outside the transitional YYYYMMDD window."
+    },
+    {
+      "id": "epoch-unix-floor",
+      "version": 1,
+      "epoch": 1790812800,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: unix epoch at TRUSTED_CLOCK_FLOOR_UNIX_S is admitted."
+    },
+    {
+      "id": "epoch-unix-below-floor",
+      "version": 1,
+      "epoch": 1790812799,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-EP: unix epoch one second below the trusted floor fails closed."
+    },
+    {
+      "id": "epoch-unix-last-open",
+      "version": 1,
+      "epoch": 1798761599,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "UNKNOWN",
+      "readsAfter": 1,
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-CW (a): unix epoch 1798761599 is the last second a legacy-0 frame stays open."
+    },
+    {
+      "id": "epoch-unix-at-expiry",
+      "version": 1,
+      "epoch": 1798761600,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200,
+      "note": "K3-CW (a): unix epoch 1798761600 refuses the legacy-0 frame (exclusive expiry)."
     }
   ],
-  "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowUnixSeconds that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."
+  "jsSafeIntegerNote": "Shared JSON rows stay inside Number.isSafeInteger and Fungi Int (i32) except WASI ns, which are decimal strings because u64 nanoseconds exceed both. Canonical epoch is i64 Unix seconds; the trusted ceiling 4102444800 is an i64-only SLIDE/VOK unit test because it does not fit i32. A JS-only wrapper refuses any epoch or nowUnixSeconds that fails Number.isSafeInteger before the domain checks.",
+  "wasiRealtimeNs": [
+    {
+      "id": "open-ns",
+      "ns": "1793059200000000000",
+      "ok": true,
+      "expectUnixS": 1793059200,
+      "note": "OPEN_UNIX * 1e9."
+    },
+    {
+      "id": "open-ns-remainder",
+      "ns": "1793059200999999999",
+      "ok": true,
+      "expectUnixS": 1793059200,
+      "note": "Floor division keeps the open second."
+    },
+    {
+      "id": "zero-ns",
+      "ns": "0",
+      "ok": false
+    },
+    {
+      "id": "one-second-ns",
+      "ns": "1000000000",
+      "ok": false,
+      "note": "Lands below the trusted floor."
+    },
+    {
+      "id": "overflow-i64",
+      "ns": "9223372036854775808",
+      "ok": false,
+      "note": "WASI overflow edge: ns > i64::MAX."
+    },
+    {
+      "id": "u64-max",
+      "ns": "18446744073709551615",
+      "ok": false
+    }
+  ],
+  "serialInstants": [
+    {
+      "id": "pin-hm",
+      "text": "2026-10-27T15:45Z",
+      "ok": true,
+      "expectUnixS": 1793115900
+    },
+    {
+      "id": "pin-hms",
+      "text": "2026-10-27T15:45:00Z",
+      "ok": true,
+      "expectUnixS": 1793115900
+    },
+    {
+      "id": "missing-z",
+      "text": "2026-10-27T15:45:00",
+      "ok": false
+    },
+    {
+      "id": "offset-utc",
+      "text": "2026-10-27T15:45:00+00:00",
+      "ok": false
+    },
+    {
+      "id": "offset-plus-one",
+      "text": "2026-10-27T15:45:00+01:00",
+      "ok": false
+    },
+    {
+      "id": "invalid-date",
+      "text": "2026-02-30T15:45Z",
+      "ok": false
+    },
+    {
+      "id": "below-floor",
+      "text": "1970-01-01T00:00:00Z",
+      "ok": false
+    },
+    {
+      "id": "at-ceiling",
+      "text": "2100-01-01T00:00:00Z",
+      "ok": false
+    }
+  ],
+  "serialWindows": [
+    {
+      "id": "start-inclusive",
+      "start": "2026-10-27T15:45Z",
+      "end": "2026-10-27T15:46Z",
+      "nowUnixSeconds": 1793115900,
+      "contains": true
+    },
+    {
+      "id": "end-exclusive",
+      "start": "2026-10-27T15:45Z",
+      "end": "2026-10-27T15:46Z",
+      "nowUnixSeconds": 1793115960,
+      "contains": false
+    },
+    {
+      "id": "end-before-start",
+      "start": "2026-10-27T15:46Z",
+      "end": "2026-10-27T15:45Z",
+      "nowUnixSeconds": 1793115900,
+      "contains": false
+    },
+    {
+      "id": "end-equals-start",
+      "start": "2026-10-27T15:45Z",
+      "end": "2026-10-27T15:45Z",
+      "nowUnixSeconds": 1793115900,
+      "contains": false
+    }
+  ],
+  "sunsetDryRun": [
+    {
+      "id": "sunset-v1-framed-0-first",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-v1-framed-0-second",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 1,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 1,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-v1-framed-0-last-valid-day",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1798761599,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-v1-framed-0-cap-minus-1",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 999999,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 999999,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-epoch-expiry-boundary",
+      "version": 1,
+      "epoch": 20261231,
+      "value": 0,
+      "nowUnixSeconds": 1798761599,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-epoch-ymd-20261027",
+      "version": 1,
+      "epoch": 20261027,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-epoch-unix-floor",
+      "version": 1,
+      "epoch": 1790812800,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    },
+    {
+      "id": "sunset-epoch-unix-last-open",
+      "version": 1,
+      "epoch": 1798761599,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "bridge": false,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "K3-AL (d): bridge=false closes every legacy-0 row. Process constant stays true until Step Z."
+    }
+  ],
+  "displayYmd": [
+    {
+      "id": "pin-last-open",
+      "unixS": 1798761599,
+      "ok": true,
+      "expectYmd": 20261231
+    },
+    {
+      "id": "pin-at-expiry",
+      "unixS": 1798761600,
+      "ok": true,
+      "expectYmd": 20270101
+    },
+    {
+      "id": "pin-serial",
+      "unixS": 1793115900,
+      "ok": true,
+      "expectYmd": 20261027
+    },
+    {
+      "id": "below-floor",
+      "unixS": 1790812799,
+      "ok": false
+    },
+    {
+      "id": "zero",
+      "unixS": 0,
+      "ok": false
+    }
+  ],
+  "alertRecords": [
+    {
+      "id": "first-seen",
+      "frameId": "v1-framed-0-first",
+      "alert": "FIRST_SEEN",
+      "readsAfter": 1,
+      "frameHeaderVersion": 1,
+      "label": "UNKNOWN"
+    },
+    {
+      "id": "cap-reached",
+      "frameId": "v1-framed-0-at-cap",
+      "alert": "CAP_REACHED",
+      "readsAfter": 1000000,
+      "frameHeaderVersion": 1,
+      "label": "LEGACY_CLOSED"
+    },
+    {
+      "id": "ymd-20261231-open",
+      "frameId": "epoch-expiry-boundary",
+      "alert": "FIRST_SEEN",
+      "readsAfter": 1,
+      "frameHeaderVersion": 1,
+      "label": "UNKNOWN",
+      "note": "N-e"
+    },
+    {
+      "id": "ymd-20270101-closed",
+      "frameId": "epoch-after-expiry",
+      "alert": "NONE",
+      "readsAfter": 0,
+      "frameHeaderVersion": 1,
+      "label": "LEGACY_CLOSED",
+      "note": "N-e"
+    }
+  ],
+  "strictBridge": [
+    {
+      "id": "bridge-int-2",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": 2,
+      "trees": "THREE-WAY",
+      "note": "K3-RC N-i"
+    },
+    {
+      "id": "bridge-int-minus1",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": -1,
+      "trees": "THREE-WAY",
+      "note": "K3-RC N-i"
+    },
+    {
+      "id": "bridge-js-number-1",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": 1,
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    },
+    {
+      "id": "bridge-js-string-true",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": "true",
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    },
+    {
+      "id": "bridge-js-null",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": null,
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    }
+  ],
+  "alertRecorder": [
+    {
+      "id": "ring-cap",
+      "cap": 64,
+      "defaultSink": "noop",
+      "status": "UNKNOWN(no audit sink)",
+      "snapshotKeys": [
+        "tallies",
+        "recent",
+        "dropped",
+        "frameHeaderVersion"
+      ],
+      "note": "K3-RC (c) bounded in-memory recorder. Default remains no-op."
+    }
+  ]
 }

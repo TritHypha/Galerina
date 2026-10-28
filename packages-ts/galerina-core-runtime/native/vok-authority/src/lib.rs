@@ -27,7 +27,12 @@ mod veo;
 mod assurance;
 
 pub use lattice::{from_lattice, to_lattice};
-pub use k3_frame::{decode_legacy_frame_pure, FrameAlert, FrameDecode, FrameLabel};
+pub use k3_frame::{
+    decode_legacy_frame_pure, decode_legacy_frame_with_bridge, k3_parse_serial_instant_unix_s,
+    k3_serial_window_contains, k3_unix_s_to_ymd, k3_wasi_realtime_ns_to_unix_s, FrameAlert,
+    FrameDecode, FrameLabel, K3AlertNoopSink, K3AlertRecord, K3AlertRecorder, K3AlertSink,
+    K3AlertSnapshot, K3_ALERT_NOOP, K3_ALERT_RECORDER_CAP, K3_ALERT_SINK_STATUS,
+};
 use k3_frame::decode_legacy_frame_counted;
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
@@ -94,6 +99,12 @@ pub const K3_WIRE_VERSION_CANONICAL: i32 = 2;
 pub const LEGACY_UNKNOWN_ZERO_CAP: u64 = 1_000_000;
 pub const LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH: i32 = 20261231;
 pub const LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S: i64 = 1_798_761_600;
+/// Trusted-clock window reused for the K3-EP frame-epoch close gate (SLIDE rec 3).
+pub const TRUSTED_CLOCK_FLOOR_UNIX_S: i64 = 1_790_812_800;
+pub const TRUSTED_CLOCK_CEILING_UNIX_S: i64 = 4_102_444_800;
+/// Transitional YYYYMMDD window (rd-trusted-clock-linux-time-20261027 rec 4).
+pub const K3_EPOCH_YMD_MIN: i32 = 20_261_027;
+pub const K3_EPOCH_YMD_MAX: i32 = 20_991_231;
 
 /// Failure id for a bare (unframed) 0 at a VOK boundary (F1). Mirrors SLIDE `SLIDE-K3-WIRE-003`.
 pub const VOK_TRIT_BARE_LEGACY_ZERO: &str = "VOK_TRIT_BARE_LEGACY_ZERO";
@@ -225,8 +236,10 @@ impl Trit {
     /// canonical values as `decode_wire`, plus legacy 0 as UNKNOWN (typed, counted) while the
     /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes. Process clock and counter are
     /// supplied to `decode_legacy_frame_pure`; this i32 API does not take version/epoch/cap.
-    /// N2 (2026-10-28): the process counter goes through `decode_legacy_frame_counted`, which
-    /// commits each accepted read with one compare-exchange, so racing callers cannot pass the cap.
+    /// K3-EP: the counted wrapper passes `now_unix_s` as the canonical frame epoch so option-B
+    /// survives epoch 0 failing closed. N2 (2026-10-28): the process counter goes through
+    /// `decode_legacy_frame_counted`, which commits each accepted read with one compare-exchange,
+    /// so racing callers cannot pass the cap.
     pub fn decode_legacy_frame(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
         let decoded =
             decode_legacy_frame_counted(value, trusted_unix_seconds(), &LEGACY_UNKNOWN_ZERO_READS);

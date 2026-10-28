@@ -159,9 +159,47 @@ Open follow-ups (low; none blocks the merged rows):
 - [x] **Bridge-flag mutant** (step 2c): done 2026-10-28. The pin
   `bridge_flag_is_pinned_open_until_the_step_z_sunset` fails when the
   legacy bridge constant is flipped; the Step Z sunset changes it on purpose.
-- [ ] **Frame epoch format:** the frame epoch is still YYYYMMDD (interim,
-  accepted); the final format follows Linux time practice after the
-  trusted-clock R&D.
+- [x] **Frame epoch format:** DONE K3-EP (2026-10-28), R&D rec 4 of
+  `rd-trusted-clock-linux-time-20261027.md` section 5. Canonical frame epoch
+  is i64 Unix seconds UTC. YYYYMMDD is a marked transitional legacy input
+  (real Gregorian date in `[20261027, 20991231]` as 00:00:00Z). Fail closed
+  on `<= 0`, unparseable, below the trusted floor or above the ceiling.
+  `k3-wire.fungi` and VOK accept both forms; TS remains frozen cite-only.
+  Display `LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH` is kept. Shared fixture v3.
+- [x] **K3-CW trusted-clock conversion + serial windows:** DONE 2026-10-28
+  on `grok/k3-frame-epoch-20261028` (continues K3-EP). Frame-side legacy-0
+  expiry restored as defence in depth: a framed 0 whose epoch, normalised to
+  unix seconds (YYYYMMDD as 00:00:00Z), is at or after
+  `LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S` 1798761600 closes; the process-clock
+  gate stays. WASI realtime `u64` ns -> i64 unix s (floor / 1e9) lives in
+  VOK and SLIDE; Fungi Int cannot hold WASI ns or the `i64::MAX` overflow
+  edge, so `k3WasiRealtimeNsToUnixS` is fail-closed on the whole Int domain.
+  Serial windows: SLIDE/VOK parse ISO 8601 / RFC 3339 with mandatory Z
+  (`2026-10-27T15:45Z` = 1793115900), half-open `[start, end)`; fungi takes
+  civil Ints. Pure library — not wired into registry delegation. Shared
+  fixture v4 names `FIXTURE_SCHEMA_VERSION` separately from
+  `K3_WIRE_HEADER_VERSION`.
+- [x] **K3-AL** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-CW). P9 typed alert record `{code,alert,readsAfter,frameHeaderVersion}`
+  through one no-op sink per tree (`UNKNOWN(no audit sink)`). P6 Math.min
+  fold sites rewritten as `k3FoldAdmission` in SLIDE. Display-only unix s
+  -> YYYYMMDD (never decoder input). Sunset dry-run: pure decoder takes the
+  bridge flag; `bridge=false` closes every legacy-0 row. Legacy-0 path is
+  marked off the golden path by 2027-01-18 (nothing deleted). N-e fixture
+  20261231 open / 20270101 closed through the `.fungi` path. N-f fungi WASI
+  helper contract `UNKNOWN(fungi-int-cannot-hold-wasi-ns)`. Shared fixture
+  schema 5.
+- [x] **K3-RC** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-AL). N-i strict bridge: `.fungi` opens only on `bridge == 1`. JS stays
+  `=== true`; Rust stays bool. Fixture rows bridge=2 / -1 closed in all
+  three trees. N-j Rust `catch_unwind(AssertUnwindSafe)` around emit; JS
+  try/catch plus throwing and mutating-record tests. Bounded in-memory
+  alert recorder ring N=64, frozen snapshot `{tallies, recent, dropped,
+  frameHeaderVersion}`. Default sink stays the no-op.
+  `K3_ALERT_SINK_STATUS` stays `UNKNOWN(no audit sink)` until a SLIDE
+  production admission/lease/receipt path exists (the JS VOK reference
+  model in `verified-object-kernel.mjs` is not that path). Merge-prep:
+  merged origin/main `4499645c2` (not rebase). Shared fixture schema 6.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
