@@ -216,18 +216,23 @@ NON_AUTHORIZING** (the HOLD boxes below are unchanged).
   code-index regenerated (`c271b58`).
 - [x] Memory knowledge-gap fixes KG-01/KG-05/KG-06 (`ee0df0ee`) merged to main
   (`05eb37a`); code-index regenerated (`1284a28d`).
-- [ ] S1 / brief 47b auth-verify end-to-end
-  (`grok/fungi-auth-verify-e2e-20261021`): MERGE CHECK **PASS-WITH-NOTES**;
-  awaiting merge (needs Phillip's yes).
-- [ ] S2 test harness (`grok/fungi-test-harness-s2-20261022`): **in progress**
-  (round 3 `e8edc306`, round check PASS-WITH-NOTES, trial merge with 47b green;
-  MERGE CHECK next). One branch rule: all S2 rounds stay on that branch.
-- [ ] **FUNGI-NAME-002 duplicate-flow rule (S2):** the kernel and
-  `auth-verify-route` both declare `mintOperation`. Owner ruling 2026-10-22:
-  red test first (synthetic closure importing `kernel.fungi` and
-  `auth-verify-route.fungi`), then register `mintOperation` as a declared shared
-  flow name with a body-equality check that ignores the contract intent line;
-  no renames.
+- [x] S1 / brief 47b auth-verify end-to-end
+  (`grok/fungi-auth-verify-e2e-20261021`) merged to main (`f919e1dbd`).
+- [x] S2 test harness (`grok/fungi-test-harness-s2-20261022`) merged to main
+  (`cf7fc2178`); code-index regenerated (`8f5158ff8`).
+- [x] **FUNGI-NAME-002 duplicate-flow rule (S2):** done under the owner ruling
+  of 2026-10-22 (no renames). S2-DUP-01..07 check clashes inside an import
+  closure; S21 (`1dcbe26ca`) froze the shared clash table
+  (`packages/fungi/memory/tests/s2-harness/clash-table.mjs`).
+- [x] **OPEN-S2-2 unit-qualified naming (S22, 2026-10-28):** decided (full
+  auto, zero-trust default) to keep the names and make the unit-qualified
+  flow-registry key (`kernel.applyClock`, `auth-verify-route.applyClock`) the
+  identity of a flow, as in `docs/registry/crr-01-decision.md`. New global guard
+  `packages/fungi/memory/tests/s2-harness/s2-qualified.test.mjs` (S2-Q-01..10)
+  binds `build/flow-registry/flow-registry.json` to the clash table across
+  every unit, not just one import closure: every cross-unit name must be
+  declared, REGISTERED copies must match everywhere, DIVERGENT unit sets and
+  body sha256 pins must match, and stale table entries are refused.
 - [x] S3 done and merged.
 
 ## Current memory-review checkpoint — 2026-10-07
