@@ -559,4 +559,21 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.equal(kindBody.includes("k3UnixSToYmd"), false);
     assert.match(src, /UNKNOWN\(fungi-int-cannot-hold-wasi-ns\)/);
   });
+
+  it("K3-RC strict bridge 2/-1 closed, recorder tally unknown", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 2), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, -1), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrameWithBridge(1, 20261027, 0, open, 0, 1), 0);
+    assert.equal(exports.k3AlertRecorderCap(), 64);
+    assert.equal(exports.k3AlertRecorderTallyUnknown(), 0);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(fungi-alert-recorder-is-tally\)/);
+    const kindStart = src.indexOf("pure flow k3LegacyZeroKindWithBridge");
+    const kindEnd = src.indexOf("pure flow k3LegacyZeroKind(", kindStart + 1);
+    const kindBody = src.slice(kindStart, kindEnd);
+    assert.equal(kindBody.includes("if bridge != 1"), true);
+  });
 });

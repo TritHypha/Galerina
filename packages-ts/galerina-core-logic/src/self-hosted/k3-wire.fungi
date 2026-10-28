@@ -340,6 +340,18 @@ contract { intent { "UNKNOWN(no audit sink): Fungi is pure; alerts are sibling I
   return 0
 }
 
+pure flow k3AlertRecorderCap() -> Int
+contract { intent { "Named ring capacity for the in-memory alert recorder (N=64)." } }
+{
+  return 64
+}
+
+pure flow k3AlertRecorderTallyUnknown() -> Int
+contract { intent { "UNKNOWN(fungi-alert-recorder-is-tally). Pure Fungi has no heap ring; callers tally sibling Ints." } }
+{
+  return 0
+}
+
 pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
 contract { intent { "Z-implied civil instant to unix seconds. 0 on invalid date/time, Int overflow, or below the trusted floor. String ISO 8601 parse is SLIDE/VOK; Int cannot hold the 2100-01-01Z ceiling." } }
 {
@@ -485,7 +497,7 @@ contract { intent { "Encode lattice 0 to unknown byte 128, never 0." } }
 }
 
 pure flow k3LegacyZeroKindWithBridge(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int, bridge: Int) -> Int
-contract { intent { "Shared frame kind with injected bridge flag. 10 counted accept, 4 cap-closed, else label. bridge 0 is sunset dry-run close." } }
+contract { intent { "Shared frame kind with injected bridge flag. 10 counted accept, 4 cap-closed, else label. Opens only on bridge 1; every other Int closes." } }
 {
   if version == k3VersionCanonical() {
     return k3DecodeCanonicalLabel(value)
@@ -501,7 +513,7 @@ contract { intent { "Shared frame kind with injected bridge flag. 10 counted acc
       if nowUnixSeconds <= 0 {
         return 3
       }
-      if bridge == 0 {
+      if bridge != 1 {
         return 3
       }
       if nowUnixSeconds >= k3ExpiryUnixS() {

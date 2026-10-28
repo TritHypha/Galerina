@@ -1,7 +1,10 @@
 //! Versioned-frame parity (Step 2c, behaviour addition).
 //! Clock and counter are inputs. The process wrapper supplies them.
 
+use std::collections::BTreeMap;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 
 use crate::{
     Trit, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
@@ -69,6 +72,88 @@ impl K3AlertSink for K3AlertNoopSink {
 
 pub static K3_ALERT_NOOP: K3AlertNoopSink = K3AlertNoopSink::new();
 pub const K3_ALERT_SINK_STATUS: &str = "UNKNOWN(no audit sink)";
+pub const K3_ALERT_RECORDER_CAP: usize = 64;
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct K3AlertSnapshot {
+    pub tallies: Vec<(String, String, u64)>,
+    pub recent: Vec<K3AlertRecord>,
+    pub dropped: u64,
+    pub frame_header_version: i32,
+}
+
+struct RecorderInner {
+    tallies: BTreeMap<(&'static str, &'static str), u64>,
+    recent: Vec<K3AlertRecord>,
+    dropped: u64,
+}
+
+pub struct K3AlertRecorder {
+    cap: usize,
+    inner: Mutex<RecorderInner>,
+}
+
+fn alert_name(alert: FrameAlert) -> &'static str {
+    match alert {
+        FrameAlert::None => "NONE",
+        FrameAlert::FirstSeen => "FIRST_SEEN",
+        FrameAlert::CapReached => "CAP_REACHED",
+    }
+}
+
+impl K3AlertRecorder {
+    pub fn new() -> Self {
+        Self::with_cap(K3_ALERT_RECORDER_CAP)
+    }
+
+    pub fn with_cap(cap: usize) -> Self {
+        Self {
+            cap: if cap == 0 { K3_ALERT_RECORDER_CAP } else { cap },
+            inner: Mutex::new(RecorderInner {
+                tallies: BTreeMap::new(),
+                recent: Vec::new(),
+                dropped: 0,
+            }),
+        }
+    }
+
+    pub fn snapshot(&self) -> K3AlertSnapshot {
+        let Ok(inner) = self.inner.lock() else {
+            return K3AlertSnapshot {
+                tallies: Vec::new(),
+                recent: Vec::new(),
+                dropped: 0,
+                frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
+            };
+        };
+        let tallies = inner
+            .tallies
+            .iter()
+            .map(|((code, alert), count)| ((*code).to_string(), (*alert).to_string(), *count))
+            .collect();
+        K3AlertSnapshot {
+            tallies,
+            recent: inner.recent.clone(),
+            dropped: inner.dropped,
+            frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
+        }
+    }
+}
+
+impl K3AlertSink for K3AlertRecorder {
+    fn emit(&self, record: K3AlertRecord) {
+        let Ok(mut inner) = self.inner.lock() else {
+            return;
+        };
+        let key = (record.code, alert_name(record.alert));
+        *inner.tallies.entry(key).or_insert(0) += 1;
+        if inner.recent.len() >= self.cap {
+            inner.recent.remove(0);
+            inner.dropped = inner.dropped.saturating_add(1);
+        }
+        inner.recent.push(record);
+    }
+}
 
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
 /// Logs/receipts only. Never accepted as decoder input.
@@ -323,7 +408,7 @@ pub fn decode_legacy_frame_with_bridge(
 ) -> FrameDecode {
     let decoded =
         decode_legacy_frame_decision(version, epoch, value, now_unix_s, reads_so_far, bridge);
-    sink.emit(K3AlertRecord {
+    let record = K3AlertRecord {
         code: match decoded.label {
             FrameLabel::Admit => "ADMIT",
             FrameLabel::Deny => "DENY",
@@ -334,7 +419,10 @@ pub fn decode_legacy_frame_with_bridge(
         alert: decoded.alert,
         reads_after: decoded.reads_after,
         frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
-    });
+    };
+    let _ = catch_unwind(AssertUnwindSafe(|| {
+        sink.emit(record);
+    }));
     decoded
 }
 
@@ -1062,5 +1150,79 @@ mod tests {
             FrameAlert::None,
             "N-e 20270101 closed",
         );
+    }
+
+    struct PanicSink;
+
+    impl K3AlertSink for PanicSink {
+        fn emit(&self, _record: K3AlertRecord) {
+            panic!("k3rc panicking sink");
+        }
+    }
+
+    #[test]
+    fn k3rc_sink_panic_returns_decision_unchanged() {
+        let open = decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            true,
+            &PanicSink,
+        );
+        assert_eq!(label_str(open.label), "UNKNOWN");
+        assert_eq!(alert_str(open.alert), "FIRST_SEEN");
+        assert_eq!(open.reads_after, 1);
+        let closed = decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            false,
+            &PanicSink,
+        );
+        assert_eq!(label_str(closed.label), "LEGACY_CLOSED");
+        assert_eq!(closed.reads_after, 0);
+    }
+
+    #[test]
+    fn k3rc_recorder_ring_and_snapshot() {
+        let rec = K3AlertRecorder::with_cap(2);
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            true,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            false,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            1_000_000,
+            true,
+            &rec,
+        );
+        let snap = rec.snapshot();
+        assert_eq!(snap.frame_header_version, K3_WIRE_VERSION_LEGACY);
+        assert_eq!(snap.recent.len(), 2);
+        assert_eq!(snap.dropped, 1);
+        assert!(!snap.tallies.is_empty());
+        assert_eq!(K3_ALERT_RECORDER_CAP, 64);
+        assert_eq!(K3_ALERT_SINK_STATUS, "UNKNOWN(no audit sink)");
     }
 }

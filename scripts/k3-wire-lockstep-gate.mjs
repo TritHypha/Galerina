@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "b8ed283a001894570cc92d9ec79e654c7e24432d9d8a26863a1f5970f49563d4";
-const FIXTURE_GIT_BLOB = "ee0e47d447e49f794f84047619ff28f6f4a41182";
+const FIXTURE_DIGEST_D = "6fe886f7fea2cbd6f0ae8fe0bba226759f1e091a60ce72fd77172067df3da173";
+const FIXTURE_GIT_BLOB = "29288b48032480b4f64aacdd0ba9f87011e604c0";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 5;
+const FIXTURE_SCHEMA_VERSION = 6;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -176,6 +176,26 @@ async function main() {
   }
   if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, false).label !== "LEGACY_CLOSED") {
     refuse("sunset dry-run bridge=false must close");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, 2).label !== "LEGACY_CLOSED") {
+    refuse("strict bridge=2 must close");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, -1).label !== "LEGACY_CLOSED") {
+    refuse("strict bridge=-1 must close");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, 1).label !== "LEGACY_CLOSED") {
+    refuse("strict bridge number 1 must close");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, "true").label !== "LEGACY_CLOSED") {
+    refuse("strict bridge string true must close");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1793059200, 0, 1793059200, 0, null).label !== "LEGACY_CLOSED") {
+    refuse("strict bridge null must close");
     return;
   }
   if (k3UnixSToYmd(1798761599) !== 20261231 || k3UnixSToYmd(1798761600) !== 20270101 || k3UnixSToYmd(1793115900) !== 20261027) {

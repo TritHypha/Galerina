@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC.",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink).",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,8 +57,8 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 5,
-    "FIXTURE_SCHEMA_VERSION": 5,
+    "vectorsVersion": 6,
+    "FIXTURE_SCHEMA_VERSION": 6,
     "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600,
     "K3_EPOCH_YMD_MIN": 20261027,
     "K3_EPOCH_YMD_MAX": 20991231,
@@ -85,7 +85,9 @@
     "serialWindows": "THREE-WAY",
     "displayYmd": "THREE-WAY",
     "sunsetDryRun": "THREE-WAY",
-    "alertRecords": "THREE-WAY"
+    "alertRecords": "THREE-WAY",
+    "strictBridge": "THREE-WAY",
+    "alertRecorder": "THREE-WAY"
   },
   "u8": [
     [
@@ -1872,6 +1874,93 @@
       "frameHeaderVersion": 1,
       "label": "LEGACY_CLOSED",
       "note": "N-e"
+    }
+  ],
+  "strictBridge": [
+    {
+      "id": "bridge-int-2",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": 2,
+      "trees": "THREE-WAY",
+      "note": "K3-RC N-i"
+    },
+    {
+      "id": "bridge-int-minus1",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": -1,
+      "trees": "THREE-WAY",
+      "note": "K3-RC N-i"
+    },
+    {
+      "id": "bridge-js-number-1",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": 1,
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    },
+    {
+      "id": "bridge-js-string-true",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": "true",
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    },
+    {
+      "id": "bridge-js-null",
+      "version": 1,
+      "epoch": 1793059200,
+      "value": 0,
+      "nowUnixSeconds": 1793059200,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "bridge": null,
+      "trees": "SLIDE-ONLY",
+      "note": "K3-RC N-i JS === true"
+    }
+  ],
+  "alertRecorder": [
+    {
+      "id": "ring-cap",
+      "cap": 64,
+      "defaultSink": "noop",
+      "status": "UNKNOWN(no audit sink)",
+      "snapshotKeys": [
+        "tallies",
+        "recent",
+        "dropped",
+        "frameHeaderVersion"
+      ],
+      "note": "K3-RC (c) bounded in-memory recorder. Default remains no-op."
     }
   ]
 }

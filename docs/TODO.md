@@ -189,6 +189,17 @@ Open follow-ups (low; none blocks the merged rows):
   20261231 open / 20270101 closed through the `.fungi` path. N-f fungi WASI
   helper contract `UNKNOWN(fungi-int-cannot-hold-wasi-ns)`. Shared fixture
   schema 5.
+- [x] **K3-RC** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-AL). N-i strict bridge: `.fungi` opens only on `bridge == 1`. JS stays
+  `=== true`; Rust stays bool. Fixture rows bridge=2 / -1 closed in all
+  three trees. N-j Rust `catch_unwind(AssertUnwindSafe)` around emit; JS
+  try/catch plus throwing and mutating-record tests. Bounded in-memory
+  alert recorder ring N=64, frozen snapshot `{tallies, recent, dropped,
+  frameHeaderVersion}`. Default sink stays the no-op.
+  `K3_ALERT_SINK_STATUS` stays `UNKNOWN(no audit sink)` until a SLIDE
+  production admission/lease/receipt path exists (the JS VOK reference
+  model in `verified-object-kernel.mjs` is not that path). Merge-prep:
+  merged origin/main `4499645c2` (not rebase). Shared fixture schema 6.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

@@ -30,8 +30,8 @@ pub use lattice::{from_lattice, to_lattice};
 pub use k3_frame::{
     decode_legacy_frame_pure, decode_legacy_frame_with_bridge, k3_parse_serial_instant_unix_s,
     k3_serial_window_contains, k3_unix_s_to_ymd, k3_wasi_realtime_ns_to_unix_s, FrameAlert,
-    FrameDecode, FrameLabel, K3AlertNoopSink, K3AlertRecord, K3AlertSink, K3_ALERT_NOOP,
-    K3_ALERT_SINK_STATUS,
+    FrameDecode, FrameLabel, K3AlertNoopSink, K3AlertRecord, K3AlertRecorder, K3AlertSink,
+    K3AlertSnapshot, K3_ALERT_NOOP, K3_ALERT_RECORDER_CAP, K3_ALERT_SINK_STATUS,
 };
 use k3_frame::decode_legacy_frame_counted;
 pub use memory_policy::{
