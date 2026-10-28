@@ -4,7 +4,7 @@
 ///   gate. The TLS/PKI library does the ASN.1 / path-building / signature / OCSP-CRL math; this surface folds
 ///   the FOUR resulting sub-verdicts with the Kleene-K3 vAnd-reduce (min over the trit) and collapses
 ///   fail-closed at the trust boundary. K3 encoding: ALLOW = +1, NEUTRAL = 0, DENY = -1, UNKNOWN = k3Unknown()
-///   (-128, the native sentinel; matching Verdict, whose INDETERMINATE is the K3_UNKNOWN alias). HEADLINE: a
+///   (k3UnknownWire(), the native sentinel; matching Verdict, whose INDETERMINATE is the K3_UNKNOWN alias). HEADLINE: a
 ///   revocation-UNKNOWN collapses the whole channel to DENY by the ALGEBRA (vAnd(UNKNOWN,+1)=UNKNOWN; +1 is the
 ///   conjunctive identity and cannot lift it), NOT a configurable flag — this closes the public web's soft-fail
 ///   hole (responder-down => allow). FAIL-CLOSED SEAM: every missing / errored / un-provable factor maps to
@@ -14,17 +14,19 @@
 ///   factor's folded evidence.
 /// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
 
+import "../../galerina-core-logic/src/self-hosted/k3-wire.fungi"
+
 // The one native UNKNOWN sentinel. Compare by equality with k3Unknown(); it is never a trit.
 pure flow k3Unknown() -> Int
-contract { intent { "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit." } }
+contract { intent { "Native K3 UNKNOWN sentinel via k3UnknownWire from k3-wire.fungi, outside {-1,0,1} and below DENY, never a trit." } }
 {
-  return -128
+  return k3UnknownWire()
 }
 
-// The Kleene-K3 conjunction vAnd(a,b) = min(a,b) over {UNKNOWN=-128, -1, 0, +1}. Commutative + associative; +1 is
+// The Kleene-K3 conjunction vAnd(a,b) = min(a,b) over {UNKNOWN=k3UnknownWire(), -1, 0, +1}. Commutative + associative; +1 is
 // the identity; UNKNOWN (below DENY) is infectious, matching the shipped vAnd (any UNKNOWN operand -> UNKNOWN).
 pure flow vAnd(a: Int, b: Int) -> Int
-contract { intent { "Kleene-K3 conjunction: the minimum of two K3 values (UNKNOWN -128 < -1 DENY < 0 NEUTRAL < +1 ALLOW)." } }
+contract { intent { "Kleene-K3 conjunction: the minimum of two K3 values (UNKNOWN k3UnknownWire() < -1 DENY < 0 NEUTRAL < +1 ALLOW)." } }
 {
   if a < b { return a }
   return b
@@ -90,7 +92,7 @@ contract { intent { "Degrade-only side-signal fold: vAnd(verdict, sideSignal) �
   return vAnd(verdict, sideSignal)
 }
 
-// The boundary collapse: the channel opens IFF the composed verdict is exactly +1 (ALLOW). UNKNOWN (-128),
+// The boundary collapse: the channel opens IFF the composed verdict is exactly +1 (ALLOW). UNKNOWN (k3UnknownWire()),
 // NEUTRAL (0) and DENY (-1) ALL fail closed. Mirrors decideAtBoundary(v).authorized (an UNKNOWN-collapse also
 // emits FUNGI-GOV-3VL-001 in the .ts — the host raises that diagnostic; this returns the admit/deny bit).
 pure flow boundaryAuthorized(verdict: Int) -> String

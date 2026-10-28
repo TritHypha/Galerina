@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "095d34940463c196154eddbbe6fa09effb12b809656f1c316bd983415c320072",
+    "aggregateSha256": "930c5579a80de897a51b3d2e23a2e4c86ed555fc63f46161cefad2505169626b",
     "algorithm": "sha256",
     "files": [
       {
@@ -263,8 +263,12 @@
         "sha256": "7f34bfddb15ffe085815aa44dd12ed625cbbe5ee3c02cc10ac56b5da69e32ff1"
       },
       {
+        "path": "tests/k3-wire-consumer-source.mjs",
+        "sha256": "b18348b38875d53e867a10a65abcab100cb88a66ffcafe1a90a0b475466ab900"
+      },
+      {
         "path": "tests/k3-wire-fungi-conversion.test.mjs",
-        "sha256": "bea52a0bf6d9bda055b4088c8f09cfeafe4c49db87df0aa5461b288ea3d1ff5b"
+        "sha256": "f9b1a58d3a77886e6c2cc541394eabad3655bb300a5df63035f369b5cf869cbf"
       },
       {
         "path": "tests/logic-contracts.test.mjs",

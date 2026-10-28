@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "ec2000bfea8c0258f453b735112e542d54451681d1e7105f64ec915c09d04b00",
+    "aggregateSha256": "09fb8aa602d44772b77c018014eedb1793e84c0fb51d1ca76b7099c904827f7e",
     "algorithm": "sha256",
     "files": [
       {
@@ -108,7 +108,7 @@
       },
       {
         "path": "src/self-hosted/admission-feedback.fungi",
-        "sha256": "31788c30da5140d7e011f4f5d0c4cdb12970ff48bdb6796903aaabd548c84c51"
+        "sha256": "9a028cc084fdc51866ec57ece9e3896ab2e999c8bd79bec64df09070c66b185b"
       },
       {
         "path": "src/self-hosted/b8-admission.fungi",
@@ -116,7 +116,7 @@
       },
       {
         "path": "src/self-hosted/cert-gate.fungi",
-        "sha256": "74c3dcf1ff7e53b5d0aeca5bdcdc6722e78eefd4c5bd1842659c0f949b70fda8"
+        "sha256": "e41659c734082f97360d089402151a0c9bcb37863a72cb7720b8ca70ddb001bd"
       },
       {
         "path": "src/self-hosted/cors-policy.fungi",
@@ -272,7 +272,7 @@
       },
       {
         "path": "tests/rd0361-admission-feedback-execution.test.mjs",
-        "sha256": "87a0431d3bc1b5ea3468607e2e224ba0e8609975fe50e8f9788fe8bbda391081"
+        "sha256": "a2f847c59585e9cbf74f87583e8bb3a5bb02a05b156bbbc6d5f9d19f5f8a6feb"
       },
       {
         "path": "tests/rd0361-admission-feedback-frozen.test.mjs",
@@ -284,7 +284,7 @@
       },
       {
         "path": "tests/rd0361-cert-gate-execution.test.mjs",
-        "sha256": "741ddb1b7f3714e8b3bcd11e500db252100a3a77df5fa9b2d6dc35d1932015e4"
+        "sha256": "245f53499e58c512e4dd4f883836198a517bf9dd3a65310e6fe39de173a8077d"
       },
       {
         "path": "tests/rd0361-cert-gate-frozen.test.mjs",

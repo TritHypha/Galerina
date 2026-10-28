@@ -16,6 +16,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { twinSourceWithK3Wire } from "../../../../../packages-ts/galerina-core-logic/tests/k3-wire-consumer-source.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, "..", "..", "..", "..", "..");
@@ -120,7 +121,8 @@ test("K3U-R6 confidence-vector garbage and ambiguity are UNKNOWN, not 0", () => 
 test("K3U-R7 native governance-decisions.fungi: malformed quorum / lease return k3Unknown(), never 0", async () => {
   assert.ok(existsSync(COMPILER), "core-compiler dist built");
   const L = await import(pathToFileURL(COMPILER).href);
-  let src = readFileSync(TWIN, "utf8"); if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
+  let twinSrc = readFileSync(TWIN, "utf8"); if (twinSrc.charCodeAt(0) === 0xFEFF) twinSrc = twinSrc.slice(1);
+  const src = twinSourceWithK3Wire(twinSrc);
   const prog = L.parseProgram(src, "governance-decisions.fungi");
   assert.equal((prog.diagnostics ?? []).filter((d) => d.severity === "error").length, 0, "twin parses clean");
   const fx = L.checkEffects(prog.flows, prog.ast);
@@ -141,7 +143,7 @@ test("K3U-R7 native governance-decisions.fungi: malformed quorum / lease return 
     assert.equal(X.leaseVerdict(1, 1, now, na), now < na ? ALLOW : DENY, "clean lease");
   }
   assert.equal(X.quorumVerdict(3, 3, 0), ALLOW); assert.equal(X.quorumVerdict(2, 3, 0), DENY);
-  assert.ok(!/return 0\b/.test(src), "governance-decisions.fungi never returns 0 for an undecided case");
+  assert.ok(!/return 0\b/.test(twinSrc), "governance-decisions.fungi never returns 0 for an undecided case");
 });
 
 test("K3U-R8 the sentinel cannot be forged or coerced", () => {
