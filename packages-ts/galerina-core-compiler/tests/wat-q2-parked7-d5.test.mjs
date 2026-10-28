@@ -399,7 +399,10 @@ describe("T13 D5 optional Auto-member compile-time refusal dropped", () => {
   it("does not add a new Auto-member compile-time refusal; instrument named", () => {
     const emitter = readFileSync(join(__dir, "../src/wat-emitter.ts"), "utf8");
     const sha = sha256(readFileSync(join(__dir, "../src/wat-emitter.ts")));
-    assert.equal(sha, "77fa9e53de89816e3ee9b10a4cda67d76d584b0195b330f9367feb0e48b8fdf7");
+    // Re-pin: K3C-2 wat-emitter wire-contract (-128 / !Verdict fail-closed) landed on
+    // main as merge d7652f72b of grok/k3c2-notes-20261028 (source commit f6fdad4ef).
+    // Previous pin 77fa9e53 was the pre-K3C-2 emitter.
+    assert.equal(sha, "662975f236bb8253d96753805ee14d8d76d899950256a4762eb299d69b969c7d");
     assert.equal(emitter.includes("uniqueInformalLayout"), true);
     // Optional D5 refusal dropped: no new compile-time Auto-member diagnostic was added.
     // Named instrument: checkProgram diagnostic-code set vs emit-time #128 count
