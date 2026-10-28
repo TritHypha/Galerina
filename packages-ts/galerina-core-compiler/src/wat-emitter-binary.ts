@@ -273,35 +273,50 @@ const FLOAT_CLASSIFIER_HELPERS: Readonly<Record<string, string>> = {
   ].join("\n"),
 };
 
-// W5a K3 verdict helpers (2026-07-08): lattice min/max over i32 trits.
-// Lattice: DENY(-1) < UNKNOWN(0) < ALLOW(+1).
+// W5a K3 verdict helpers (2026-07-08), re-based for K3C-2 (2026-10-28).
+// Lattice: DENY(-1) < UNKNOWN < ALLOW(+1).
 //
-// P2 (2026-07-21): The 2-operand fast path inlines the same select pattern as
-// the helpers, but without the function-call overhead.  `left`/`right` in the
-// binary-op emitter and `acc`/`next` in k3FoldExpr are fully-evaluated WAT
-// expression strings — there is NO duplication risk (the original "one evaluation"
-// concern was about inlining raw *source* sub-expressions, not pre-emitted WAT
-// strings).  The helpers remain in ALL_CHECKED_HELPERS as the fallback for indirect
-// call paths and the ≥3-operand chain tail (after the first step is inlined).
-//
-// Inline form:
-//   K3 AND:  (select L R (i32.lt_s L R))  — L if L < R, else R  (= signed min)
-//   K3 OR:   (select L R (i32.gt_s L R))  — L if L > R, else R  (= signed max)
-//
-// Correctness: identical truth-table to $fungi_k3_min / $fungi_k3_max (proven in
-// proofs/k3-truth-tables-proof.mjs over all 9 trit pairs).
-// Wabt note: i32.min_s / i32.max_s are NOT in the baseline WASM spec and are
-// rejected by the wabt version in this workspace — use select explicitly.
+// K3C-2 made the WASM-tier Verdict representation the wire encoding:
+// DENY = -1, UNKNOWN = -128 (byte 0x80), ALLOW = +1. Raw signed min/max over
+// that encoding is WRONG (-128 would sort below DENY: Deny && Unknown would
+// return UNKNOWN, Deny || Unknown would return DENY, flip(Unknown) = +128).
+// So every K3 operator goes through these helpers, which:
+//   1. validate each operand is exactly one of {-1, -128, +1} and trap
+//      otherwise (a bare legacy 0 is NOT accepted: legacy 0 is framed-only and
+//      is decoded at the frame boundary, never inside the WASM lane);
+//   2. map the operand to its lattice rank (-128 -> 0; -1 and +1 unchanged);
+//   3. take signed min/max over ranks with an explicit select (i32.min_s /
+//      i32.max_s are not baseline WASM and the workspace wabt rejects them);
+//   4. map the rank-0 result back to the wire token -128.
+// Operands are already fully-evaluated WAT expressions, so a call evaluates
+// each exactly once (the previous inline select pattern duplicated them).
+// Truth tables are pinned on both tiers by tests/k3-operators.test.mjs.
 const K3_HELPERS: Readonly<Record<string, string>> = {
   $fungi_k3_min: [
-    "(func $fungi_k3_min (param $a i32) (param $b i32) (result i32)",
-    "  ;; K3 `and`/all{}: lattice min — DENY absorbs, UNKNOWN never upgrades",
-    "  (select (local.get $a) (local.get $b) (i32.lt_s (local.get $a) (local.get $b))))",
+    "(func $fungi_k3_min (param $a i32) (param $b i32) (result i32) (local $ra i32) (local $rb i32)",
+    "  ;; K3 `and`/all{}: lattice min over wire trits - DENY absorbs, UNKNOWN never upgrades",
+    "  (if (i32.eqz (i32.or (i32.eq (local.get $a) (i32.const -1)) (i32.or (i32.eq (local.get $a) (i32.const -128)) (i32.eq (local.get $a) (i32.const 1))))) (then unreachable))",
+    "  (if (i32.eqz (i32.or (i32.eq (local.get $b) (i32.const -1)) (i32.or (i32.eq (local.get $b) (i32.const -128)) (i32.eq (local.get $b) (i32.const 1))))) (then unreachable))",
+    "  (local.set $ra (select (i32.const 0) (local.get $a) (i32.eq (local.get $a) (i32.const -128))))",
+    "  (local.set $rb (select (i32.const 0) (local.get $b) (i32.eq (local.get $b) (i32.const -128))))",
+    "  (local.set $ra (select (local.get $ra) (local.get $rb) (i32.lt_s (local.get $ra) (local.get $rb))))",
+    "  (select (i32.const -128) (local.get $ra) (i32.eqz (local.get $ra))))",
   ].join("\n"),
   $fungi_k3_max: [
-    "(func $fungi_k3_max (param $a i32) (param $b i32) (result i32)",
-    "  ;; K3 `or`/any{}: lattice max — ALLOW absorbs; two non-allows never manufacture one",
-    "  (select (local.get $a) (local.get $b) (i32.gt_s (local.get $a) (local.get $b))))",
+    "(func $fungi_k3_max (param $a i32) (param $b i32) (result i32) (local $ra i32) (local $rb i32)",
+    "  ;; K3 `or`/any{}: lattice max over wire trits - ALLOW absorbs; two non-allows never manufacture one",
+    "  (if (i32.eqz (i32.or (i32.eq (local.get $a) (i32.const -1)) (i32.or (i32.eq (local.get $a) (i32.const -128)) (i32.eq (local.get $a) (i32.const 1))))) (then unreachable))",
+    "  (if (i32.eqz (i32.or (i32.eq (local.get $b) (i32.const -1)) (i32.or (i32.eq (local.get $b) (i32.const -128)) (i32.eq (local.get $b) (i32.const 1))))) (then unreachable))",
+    "  (local.set $ra (select (i32.const 0) (local.get $a) (i32.eq (local.get $a) (i32.const -128))))",
+    "  (local.set $rb (select (i32.const 0) (local.get $b) (i32.eq (local.get $b) (i32.const -128))))",
+    "  (local.set $ra (select (local.get $ra) (local.get $rb) (i32.gt_s (local.get $ra) (local.get $rb))))",
+    "  (select (i32.const -128) (local.get $ra) (i32.eqz (local.get $ra))))",
+  ].join("\n"),
+  $fungi_k3_flip: [
+    "(func $fungi_k3_flip (param $a i32) (result i32)",
+    "  ;; K3 flip: DENY <-> ALLOW, UNKNOWN(-128) stays UNKNOWN (never negated to +128)",
+    "  (if (i32.eqz (i32.or (i32.eq (local.get $a) (i32.const -1)) (i32.or (i32.eq (local.get $a) (i32.const -128)) (i32.eq (local.get $a) (i32.const 1))))) (then unreachable))",
+    "  (select (local.get $a) (i32.sub (i32.const 0) (local.get $a)) (i32.eq (local.get $a) (i32.const -128))))",
   ].join("\n"),
 };
 
