@@ -27,7 +27,10 @@ mod veo;
 mod assurance;
 
 pub use lattice::{from_lattice, to_lattice};
-pub use k3_frame::{decode_legacy_frame_pure, FrameAlert, FrameDecode, FrameLabel};
+pub use k3_frame::{
+    decode_legacy_frame_pure, k3_parse_serial_instant_unix_s, k3_serial_window_contains,
+    k3_wasi_realtime_ns_to_unix_s, FrameAlert, FrameDecode, FrameLabel,
+};
 use k3_frame::decode_legacy_frame_counted;
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,

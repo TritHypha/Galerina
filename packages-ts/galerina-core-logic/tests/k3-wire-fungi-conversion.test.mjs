@@ -505,8 +505,30 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.equal(exports.k3DecodeLegacyFrame(1, 20261027, 0, open, 0), 0);
     assert.equal(exports.k3DecodeLegacyFrame(1, 20261026, 0, open, 0), 3);
     assert.equal(exports.k3DecodeLegacyFrame(1, 20260230, 0, open, 0), 3);
-    assert.equal(exports.k3DecodeLegacyFrame(1, 20991231, 0, open, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20991231, 0, open, 0), 3);
     assert.equal(exports.k3DecodeLegacyFrame(1, 21000101, 0, open, 0), 3);
     assert.equal(exports.k3DecodeLegacyFrame(3, 20261027, 0, open, 0), 2, "unknown version");
+  });
+
+  it("K3-CW frame-side expiry, WASI Int limit, serial instant pin", async () => {
+    const { exports } = await compileK3();
+    const open = 1793059200;
+    assert.equal(exports.k3EpochYmdExpiryMin(), 20270101);
+    assert.equal(exports.k3YmdToUnixS(20261027), 1793059200);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(1798761599), 1);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(1798761600), 0);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(20261231), 1);
+    assert.equal(exports.k3LegacyZeroFrameEpochOpen(20270101), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 1798761599, 0, open, 0), 0);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 1798761600, 0, open, 0), 3);
+    assert.equal(exports.k3DecodeLegacyFrame(1, 20270101, 0, open, 0), 3);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(0), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(1000000000), 0);
+    assert.equal(exports.k3WasiRealtimeNsToUnixS(2147483647), 0);
+    assert.equal(exports.k3SerialInstantUnixS(2026, 10, 27, 15, 45, 0), 1793115900);
+    assert.equal(exports.k3SerialInstantUnixS(2026, 2, 30, 15, 45, 0), 0);
+    assert.equal(exports.k3SerialWindowContains(1793115900, 1793115960, 1793115900), 1);
+    assert.equal(exports.k3SerialWindowContains(1793115900, 1793115960, 1793115960), 0);
+    assert.equal(exports.k3SerialWindowContains(1793115960, 1793115900, 1793115900), 0);
   });
 });

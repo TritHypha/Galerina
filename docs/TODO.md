@@ -151,6 +151,19 @@ Open follow-ups (low; none blocks the merged rows):
   on `<= 0`, unparseable, below the trusted floor or above the ceiling.
   `k3-wire.fungi` and VOK accept both forms; TS remains frozen cite-only.
   Display `LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH` is kept. Shared fixture v3.
+- [x] **K3-CW trusted-clock conversion + serial windows:** DONE 2026-10-28
+  on `grok/k3-frame-epoch-20261028` (continues K3-EP). Frame-side legacy-0
+  expiry restored as defence in depth: a framed 0 whose epoch, normalised to
+  unix seconds (YYYYMMDD as 00:00:00Z), is at or after
+  `LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S` 1798761600 closes; the process-clock
+  gate stays. WASI realtime `u64` ns -> i64 unix s (floor / 1e9) lives in
+  VOK and SLIDE; Fungi Int cannot hold WASI ns or the `i64::MAX` overflow
+  edge, so `k3WasiRealtimeNsToUnixS` is fail-closed on the whole Int domain.
+  Serial windows: SLIDE/VOK parse ISO 8601 / RFC 3339 with mandatory Z
+  (`2026-10-27T15:45Z` = 1793115900), half-open `[start, end)`; fungi takes
+  civil Ints. Pure library — not wired into registry delegation. Shared
+  fixture v4 names `FIXTURE_SCHEMA_VERSION` separately from
+  `K3_WIRE_HEADER_VERSION`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

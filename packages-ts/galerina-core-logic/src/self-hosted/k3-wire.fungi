@@ -189,6 +189,178 @@ contract { intent { "1 iff epoch is transitional YYYYMMDD or unix seconds at/abo
   return 1
 }
 
+pure flow k3EpochYmdExpiryMin() -> Int
+contract { intent { "YYYYMMDD whose 00:00:00Z equals LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S (2027-01-01)." } }
+{
+  return 20270101
+}
+
+pure flow k3LegacyZeroFrameEpochOpen(epoch: Int) -> Int
+contract { intent { "1 iff a legacy-0 frame epoch is before 1798761600 unix s. Transitional YYYYMMDD uses 20270101 as the bound; later YMD unix may not fit Int." } }
+{
+  if k3YmdTransitional(epoch) == 1 {
+    if epoch < k3EpochYmdExpiryMin() {
+      return 1
+    }
+    return 0
+  }
+  if epoch < k3ExpiryUnixS() {
+    return 1
+  }
+  return 0
+}
+
+pure flow k3CivilYear(year: Int, month: Int) -> Int
+contract { intent { "Howard Hinnant civil year: year-1 when month <= 2." } }
+{
+  if month <= 2 {
+    return year - 1
+  }
+  return year
+}
+
+pure flow k3CivilMonthPrime(month: Int) -> Int
+contract { intent { "Howard Hinnant month prime: Mar=0 .. Feb=11." } }
+{
+  if month > 2 {
+    return month - 3
+  }
+  return month + 9
+}
+
+pure flow k3DaysFromCivil(year: Int, month: Int, day: Int) -> Int
+contract { intent { "Days since 1970-01-01 for a caller-validated Gregorian date. Year >= 1." } }
+{
+  let y: Int = k3CivilYear(year, month)
+  let era: Int = y / 400
+  let yoe: Int = y - era * 400
+  let mp: Int = k3CivilMonthPrime(month)
+  let doy: Int = (153 * mp + 2) / 5 + day - 1
+  let doe: Int = yoe * 365 + yoe / 4 - yoe / 100 + doy
+  return era * 146097 + doe - 719468
+}
+
+pure flow k3YmdToUnixS(ymd: Int) -> Int
+contract { intent { "00:00:00Z unix seconds for a real Gregorian YYYYMMDD. 0 on invalid or Int overflow (days > 24855, ~2038-01-19)." } }
+{
+  if k3YmdInRange(ymd) == 0 {
+    return 0
+  }
+  let year: Int = ymd / 10000
+  let hundred: Int = ymd / 100
+  let month: Int = hundred % 100
+  let day: Int = ymd % 100
+  let days: Int = k3DaysFromCivil(year, month, day)
+  if days < 0 {
+    return 0
+  }
+  if days > 24855 {
+    return 0
+  }
+  return days * 86400
+}
+
+pure flow k3WasiNsPerS() -> Int
+contract { intent { "WASI timestamp scale: 1_000_000_000 ns per second." } }
+{
+  return 1000000000
+}
+
+pure flow k3WasiRealtimeNsToUnixS(ns: Int) -> Int
+contract { intent { "Floor ns/1e9 then trusted-window. Int cannot hold WASI u64 ns or i64::MAX overflow; any Int ns yields 0, 1 or 2 seconds, all below the floor, so this path is fail-closed on the whole Int domain. SLIDE/VOK own the u64 overflow edge." } }
+{
+  if ns <= 0 {
+    return 0
+  }
+  let secs: Int = ns / k3WasiNsPerS()
+  if secs < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  return secs
+}
+
+pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
+contract { intent { "Z-implied civil instant to unix seconds. 0 on invalid date/time, Int overflow, or below the trusted floor. String ISO 8601 parse is SLIDE/VOK; Int cannot hold the 2100-01-01Z ceiling." } }
+{
+  if hour < 0 {
+    return 0
+  }
+  if hour > 23 {
+    return 0
+  }
+  if minute < 0 {
+    return 0
+  }
+  if minute > 59 {
+    return 0
+  }
+  if second < 0 {
+    return 0
+  }
+  if second > 59 {
+    return 0
+  }
+  if year < 1 {
+    return 0
+  }
+  if year > 9999 {
+    return 0
+  }
+  let ymd: Int = year * 10000 + month * 100 + day
+  if k3YmdInRange(ymd) == 0 {
+    return 0
+  }
+  let dayUnix: Int = k3YmdToUnixS(ymd)
+  if dayUnix <= 0 {
+    return 0
+  }
+  let hms: Int = hour * 3600 + minute * 60 + second
+  if hms < 0 {
+    return 0
+  }
+  if dayUnix > 2147483647 - hms {
+    return 0
+  }
+  let unix: Int = dayUnix + hms
+  if unix < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  return unix
+}
+
+pure flow k3SerialWindowContains(startUnix: Int, endUnix: Int, nowUnix: Int) -> Int
+contract { intent { "1 iff now is in half-open [start, end), all three inside the trusted window, end > start. Ceiling does not fit Int." } }
+{
+  if startUnix <= 0 {
+    return 0
+  }
+  if endUnix <= 0 {
+    return 0
+  }
+  if nowUnix <= 0 {
+    return 0
+  }
+  if endUnix <= startUnix {
+    return 0
+  }
+  if startUnix < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  if endUnix < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  if nowUnix < k3TrustedClockFloorUnixS() {
+    return 0
+  }
+  if nowUnix < startUnix {
+    return 0
+  }
+  if nowUnix >= endUnix {
+    return 0
+  }
+  return 1
+}
+
 pure flow k3DecodeCanonicalLabel(value: Int) -> Int
 contract { intent { "Map canonical signed wire 1 / -1 / unknown-wire to lattice or refuse 2." } }
 {
@@ -260,6 +432,9 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
   if version == k3VersionLegacy() {
     if value == 0 {
       if k3EpochAdmitted(epoch) == 0 {
+        return 3
+      }
+      if k3LegacyZeroFrameEpochOpen(epoch) == 0 {
         return 3
       }
       if nowUnixSeconds <= 0 {

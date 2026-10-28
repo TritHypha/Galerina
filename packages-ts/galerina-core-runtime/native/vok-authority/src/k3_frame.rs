@@ -134,6 +134,113 @@ fn k3_epoch_admitted(epoch: i64) -> bool {
     epoch >= TRUSTED_CLOCK_FLOOR_UNIX_S && epoch < TRUSTED_CLOCK_CEILING_UNIX_S
 }
 
+fn k3_epoch_to_unix_s(epoch: i64) -> Option<i64> {
+    if k3_ymd_transitional(epoch) {
+        return unix_s_from_ymd(epoch);
+    }
+    if epoch >= TRUSTED_CLOCK_FLOOR_UNIX_S && epoch < TRUSTED_CLOCK_CEILING_UNIX_S {
+        return Some(epoch);
+    }
+    None
+}
+
+/// K3-CW (a): legacy-0 frame-side expiry. Defence in depth beside the process clock.
+fn k3_legacy_zero_frame_epoch_open(epoch: i64) -> bool {
+    match k3_epoch_to_unix_s(epoch) {
+        Some(unix) => unix < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+        None => false,
+    }
+}
+
+/// K3-CW (b) rec 1: WASI realtime u64 ns -> i64 unix seconds, floor / 1e9.
+/// Values above i64::MAX or outside the trusted window fail closed.
+pub fn k3_wasi_realtime_ns_to_unix_s(ns: u64) -> Option<i64> {
+    if ns > i64::MAX as u64 {
+        return None;
+    }
+    let secs = (ns as i64) / 1_000_000_000;
+    if secs < TRUSTED_CLOCK_FLOOR_UNIX_S || secs >= TRUSTED_CLOCK_CEILING_UNIX_S {
+        return None;
+    }
+    Some(secs)
+}
+
+fn parse_two_digits(bytes: &[u8], at: usize) -> Option<i64> {
+    let tens = bytes.get(at)?;
+    let ones = bytes.get(at + 1)?;
+    if !tens.is_ascii_digit() || !ones.is_ascii_digit() {
+        return None;
+    }
+    Some(i64::from(tens - b'0') * 10 + i64::from(ones - b'0'))
+}
+
+fn parse_four_digits(bytes: &[u8], at: usize) -> Option<i64> {
+    let a = parse_two_digits(bytes, at)?;
+    let b = parse_two_digits(bytes, at + 2)?;
+    Some(a * 100 + b)
+}
+
+/// K3-CW (c) rec 5: ISO 8601 / RFC 3339 instant with mandatory Z.
+/// Accepts 2026-10-27T15:45Z (17) and 2026-10-27T15:45:00Z (20). Pin = 1793115900.
+pub fn k3_parse_serial_instant_unix_s(text: &str) -> Option<i64> {
+    let bytes = text.as_bytes();
+    if bytes.last().copied() != Some(b'Z') {
+        return None;
+    }
+    let second = match bytes.len() {
+        17 => 0_i64,
+        20 => {
+            if bytes[16] != b':' {
+                return None;
+            }
+            parse_two_digits(bytes, 17)?
+        }
+        _ => return None,
+    };
+    if bytes[4] != b'-' || bytes[7] != b'-' || bytes[10] != b'T' || bytes[13] != b':' {
+        return None;
+    }
+    let year = parse_four_digits(bytes, 0)?;
+    let month = parse_two_digits(bytes, 5)?;
+    let day = parse_two_digits(bytes, 8)?;
+    let hour = parse_two_digits(bytes, 11)?;
+    let minute = parse_two_digits(bytes, 14)?;
+    if year < 1 || year > 9999 {
+        return None;
+    }
+    if !(1..=12).contains(&month) || day < 1 || day > i64::from(days_in_month(year as i32, month as i32))
+    {
+        return None;
+    }
+    if !(0..=23).contains(&hour) || !(0..=59).contains(&minute) || !(0..=59).contains(&second) {
+        return None;
+    }
+    let ymd = year * 10_000 + month * 100 + day;
+    let day_unix = unix_s_from_ymd(ymd)?;
+    let unix = day_unix.checked_add(hour * 3600 + minute * 60 + second)?;
+    if unix < TRUSTED_CLOCK_FLOOR_UNIX_S || unix >= TRUSTED_CLOCK_CEILING_UNIX_S {
+        return None;
+    }
+    Some(unix)
+}
+
+/// Half-open [start, end). Rejects unparseable instants, end <= start, out of window.
+pub fn k3_serial_window_contains(start_text: &str, end_text: &str, now_unix_s: i64) -> bool {
+    let Some(start) = k3_parse_serial_instant_unix_s(start_text) else {
+        return false;
+    };
+    let Some(end) = k3_parse_serial_instant_unix_s(end_text) else {
+        return false;
+    };
+    if end <= start {
+        return false;
+    }
+    if now_unix_s < TRUSTED_CLOCK_FLOOR_UNIX_S || now_unix_s >= TRUSTED_CLOCK_CEILING_UNIX_S {
+        return false;
+    }
+    now_unix_s >= start && now_unix_s < end
+}
+
 /// Pure framed decode. No process clock, no process counter.
 /// Clock input is i64 Unix seconds UTC. now_unix_s <= 0 fails closed.
 /// Legacy 0 is accepted only while now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S.
@@ -155,6 +262,9 @@ pub fn decode_legacy_frame_pure(
         return decode_canonical_label(value, reads_so_far);
     }
     if !k3_epoch_admitted(epoch) {
+        return refuse_closed(reads_so_far, FrameAlert::None);
+    }
+    if !k3_legacy_zero_frame_epoch_open(epoch) {
         return refuse_closed(reads_so_far, FrameAlert::None);
     }
     if now_unix_s <= 0 {
@@ -516,11 +626,9 @@ mod tests {
         for epoch in [
             i64::from(K3_EPOCH_YMD_MIN),
             i64::from(LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH),
-            20_270_101,
-            i64::from(K3_EPOCH_YMD_MAX),
             TRUSTED_CLOCK_FLOOR_UNIX_S,
             OPEN_UNIX,
-            i64::from(i32::MAX),
+            LAST_UNIX,
         ] {
             expect_frame(
                 K3_WIRE_VERSION_LEGACY,
@@ -531,7 +639,25 @@ mod tests {
                 FrameLabel::Unknown,
                 1,
                 FrameAlert::FirstSeen,
-                &format!("admitted epoch {epoch}"),
+                &format!("admitted open-expiry epoch {epoch}"),
+            );
+        }
+        for epoch in [
+            20_270_101,
+            i64::from(K3_EPOCH_YMD_MAX),
+            CLOSED_UNIX,
+            i64::from(i32::MAX),
+        ] {
+            expect_frame(
+                K3_WIRE_VERSION_LEGACY,
+                epoch,
+                0,
+                OPEN_UNIX,
+                0,
+                FrameLabel::LegacyClosed,
+                0,
+                FrameAlert::None,
+                &format!("frame-epoch expiry {epoch}"),
             );
         }
     }
@@ -592,7 +718,7 @@ mod tests {
             assert_eq!(got.reads_after, reads_after, "{input}");
             assert_eq!(alert_str(got.alert), alert, "{input}");
         }
-        assert!(seen >= 28, "fixture frame rows, got {seen}");
+        assert!(seen >= 32, "fixture frame rows, got {seen}");
     }
 
     #[test]
@@ -704,5 +830,71 @@ mod tests {
             assert_eq!(err.outcome(), Trit::Refuse);
             assert_eq!(err.failure_id(), "VOK_TRIT_LEGACY_CLOSED");
         }
+    }
+
+    #[test]
+    fn k3cw_wasi_realtime_ns_conversion() {
+        let open_ns = (OPEN_UNIX as u64).checked_mul(1_000_000_000).unwrap();
+        assert_eq!(k3_wasi_realtime_ns_to_unix_s(open_ns), Some(OPEN_UNIX));
+        assert_eq!(
+            k3_wasi_realtime_ns_to_unix_s(open_ns + 999_999_999),
+            Some(OPEN_UNIX)
+        );
+        assert_eq!(k3_wasi_realtime_ns_to_unix_s(0), None);
+        assert_eq!(k3_wasi_realtime_ns_to_unix_s(1_000_000_000), None);
+        assert_eq!(
+            k3_wasi_realtime_ns_to_unix_s(i64::MAX as u64 + 1),
+            None,
+            "WASI overflow edge ns > i64::MAX"
+        );
+        assert_eq!(k3_wasi_realtime_ns_to_unix_s(u64::MAX), None);
+        let ceiling_ns = (TRUSTED_CLOCK_CEILING_UNIX_S as u64)
+            .checked_mul(1_000_000_000)
+            .unwrap();
+        assert_eq!(k3_wasi_realtime_ns_to_unix_s(ceiling_ns), None);
+    }
+
+    #[test]
+    fn k3cw_serial_window_parser() {
+        assert_eq!(
+            k3_parse_serial_instant_unix_s("2026-10-27T15:45Z"),
+            Some(1_793_115_900)
+        );
+        assert_eq!(
+            k3_parse_serial_instant_unix_s("2026-10-27T15:45:00Z"),
+            Some(1_793_115_900)
+        );
+        assert_eq!(k3_parse_serial_instant_unix_s("2026-10-27T15:45:00"), None);
+        assert_eq!(
+            k3_parse_serial_instant_unix_s("2026-10-27T15:45:00+00:00"),
+            None
+        );
+        assert_eq!(
+            k3_parse_serial_instant_unix_s("2026-10-27T15:45:00+01:00"),
+            None
+        );
+        assert_eq!(k3_parse_serial_instant_unix_s("2026-02-30T15:45Z"), None);
+        assert_eq!(k3_parse_serial_instant_unix_s("1970-01-01T00:00:00Z"), None);
+        assert_eq!(k3_parse_serial_instant_unix_s("2100-01-01T00:00:00Z"), None);
+        assert!(k3_serial_window_contains(
+            "2026-10-27T15:45Z",
+            "2026-10-27T15:46Z",
+            1_793_115_900
+        ));
+        assert!(!k3_serial_window_contains(
+            "2026-10-27T15:45Z",
+            "2026-10-27T15:46Z",
+            1_793_115_960
+        ));
+        assert!(!k3_serial_window_contains(
+            "2026-10-27T15:46Z",
+            "2026-10-27T15:45Z",
+            1_793_115_900
+        ));
+        assert!(!k3_serial_window_contains(
+            "2026-10-27T15:45Z",
+            "2026-10-27T15:45Z",
+            1_793_115_900
+        ));
     }
 }

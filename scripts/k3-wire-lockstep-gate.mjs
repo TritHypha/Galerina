@@ -13,12 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "a32ddd7b7b85c384048e0e7a088236c1945675264efaec390402d163e28a88c4";
-const FIXTURE_GIT_BLOB = "e5ea8126a65c1042abdaa293a6d3597c0852b4c1";
+const FIXTURE_DIGEST_D = "587e3c1fbcea3d7b9848853811b502ab7bebca30b20bedf02b1ec2e832133ff9";
+const FIXTURE_GIT_BLOB = "6930391f269a58963d0e15dab8396651a915b112";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
-const HEADER_VERSION = 1;
+const FRAME_HEADER_VERSION = 1;
+const FIXTURE_SCHEMA_VERSION = 4;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -118,14 +119,60 @@ async function main() {
     return;
   }
   const doc = JSON.parse(gJson.toString("utf8"));
-  if (doc.header.K3_WIRE_HEADER_VERSION !== HEADER_VERSION) refuse("header version");
+  if (doc.header.K3_WIRE_HEADER_VERSION !== FRAME_HEADER_VERSION) refuse("frame header version");
+  if (doc.header.FIXTURE_SCHEMA_VERSION !== FIXTURE_SCHEMA_VERSION) refuse("fixture schema version");
+  if (doc.header.vectorsVersion !== FIXTURE_SCHEMA_VERSION) refuse("vectorsVersion alias");
   if (doc.header.LEGACY_UNKNOWN_ZERO_CAP !== CAP) refuse("cap");
   if (doc.header.LEGACY_UNKNOWN_ZERO_EXPIRY !== EXPIRY) refuse("expiry");
   if (doc.header.LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S !== EXPIRY_UNIX_S) refuse("expiry unix");
 
-  const { decodeK3Byte, decodeK3Boundary, decodeLegacyFrame } = await import(
+  const {
+    decodeK3Byte,
+    decodeK3Boundary,
+    decodeLegacyFrame,
+    k3ParseSerialInstantUnixS,
+    k3SerialWindowContains,
+    k3WasiRealtimeNsToUnixS,
+  } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
+  const pin = k3ParseSerialInstantUnixS("2026-10-27T15:45Z");
+  if (pin !== 1793115900) {
+    refuse(`serial pin ${pin} != 1793115900`);
+    return;
+  }
+  if (k3ParseSerialInstantUnixS("2026-10-27T15:45:00Z") !== 1793115900) {
+    refuse("serial hms pin");
+    return;
+  }
+  if (Number.isFinite(k3ParseSerialInstantUnixS("2026-10-27T15:45:00+00:00"))) {
+    refuse("serial offset must fail closed");
+    return;
+  }
+  if (k3SerialWindowContains("2026-10-27T15:45Z", "2026-10-27T15:46Z", 1793115900) !== true) {
+    refuse("serial window start inclusive");
+    return;
+  }
+  if (k3SerialWindowContains("2026-10-27T15:45Z", "2026-10-27T15:46Z", 1793115960) !== false) {
+    refuse("serial window end exclusive");
+    return;
+  }
+  if (k3WasiRealtimeNsToUnixS(1793059200000000000n) !== 1793059200) {
+    refuse("wasi open ns");
+    return;
+  }
+  if (Number.isFinite(k3WasiRealtimeNsToUnixS(9223372036854775808n))) {
+    refuse("wasi overflow must fail closed");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1798761599, 0, 1793059200, 0).label !== "UNKNOWN") {
+    refuse("frame-epoch last open");
+    return;
+  }
+  if (decodeLegacyFrame(1, 1798761600, 0, 1793059200, 0).label !== "LEGACY_CLOSED") {
+    refuse("frame-epoch at expiry");
+    return;
+  }
   const unknown = decodeLegacyFrame(99, 0, 0, 1793059200, 0);
   if (unknown.label !== "INVALID") {
     refuse("unknown header version did not fail closed");
@@ -164,7 +211,8 @@ async function main() {
     cap: CAP,
     expiry: EXPIRY,
     expiryUnixS: EXPIRY_UNIX_S,
-    headerVersion: HEADER_VERSION,
+    fixtureSchemaVersion: FIXTURE_SCHEMA_VERSION,
+    frameHeaderVersion: FRAME_HEADER_VERSION,
     k3x: k3xState,
   })}\n`);
 }

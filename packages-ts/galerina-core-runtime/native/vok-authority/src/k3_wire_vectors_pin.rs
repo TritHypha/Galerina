@@ -1,8 +1,8 @@
 //! Fixture pin: JSON digest is checked by this crate's sha256.rs (G9 preferred).
-//! Byte-identical copy of SLIDE K3-EP fixture v3
-//! sha256 a32ddd7b7b85c384048e0e7a088236c1945675264efaec390402d163e28a88c4
+//! Byte-identical copy of SLIDE K3-CW fixture v4
+//! sha256 587e3c1fbcea3d7b9848853811b502ab7bebca30b20bedf02b1ec2e832133ff9
 
-const PINNED_DIGEST: &str = "a32ddd7b7b85c384048e0e7a088236c1945675264efaec390402d163e28a88c4";
+const PINNED_DIGEST: &str = "587e3c1fbcea3d7b9848853811b502ab7bebca30b20bedf02b1ec2e832133ff9";
 const V1_DIGEST: &str = "af50342a9f547b6523f632a56d45ea2c4b6eec69f35daf4c7b2f03f061d83f83";
 const JSON: &[u8] = include_bytes!("../vectors/k3-wire-vectors.json");
 const ROWS: &str = include_str!("../vectors/k3-wire-vectors.rows.txt");
