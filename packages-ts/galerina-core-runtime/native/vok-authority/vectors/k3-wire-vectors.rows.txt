@@ -1,4 +1,4 @@
-sha256=bd82dec6e5071fd2ac8eb0f23fb5bf1e896fe018b2bb509a074f00bbacc83204
+sha256=e8e237d6eb405512120594025ae47361a9c97e0141ed1d7967d5f2d7de181ca9
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|13
-header|FIXTURE_SCHEMA_VERSION|13
+header|vectorsVersion|14
+header|FIXTURE_SCHEMA_VERSION|14
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -468,3 +468,12 @@ descriptorSpecCarriers|spec-canonical-bare0|kind=canonical-bare0-invalid;carrier
 descriptorSpecCarriers|spec-mismatch|kind=mismatch-frame-header;carrier=2;header=1;value=-128;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
 descriptorSpecCarriers|spec-unknown|kind=unknown-carrier;carrier=3;header=;value=1;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
 descriptorSpecCarriers|spec-absent-once|kind=absent-fallback-once;carrier=null;header=;value=1,1,1;expect=ADMIT;code=ABSENT_CARRIER_FALLBACK;trit=1;count=1
+compilerRequestCarriers|compiler-absent|kind=compiler-absent;carrier=null;value=1;expect=ADMIT;code=ABSENT_CARRIER_FALLBACK;trit=1;count=1
+compilerRequestCarriers|compiler-canonical|kind=compiler-canonical;carrier=2;value=1;expect=ADMIT;code=AGREE;trit=1;count=
+compilerRequestCarriers|compiler-unknown|kind=compiler-unknown;carrier=3;value=1;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
+compilerRequestCarriers|compiler-legacy-bare0|kind=compiler-legacy-bare0;carrier=1;value=0;expect=ADMIT;code=AGREE;trit=-128;count=
+compilerRequestCarriers|compiler-canonical-bare0|kind=compiler-canonical-bare0;carrier=2;value=0;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=;count=
+loaderCarrierBindings|loader-match|kind=match;left=2;right=2;expect=AGREE
+loaderCarrierBindings|loader-mismatch|kind=mismatch;left=1;right=2;expect=REFUSE
+loaderCarrierBindings|loader-absent-both|kind=absent-both;left=null;right=null;expect=AGREE
+loaderCarrierBindings|loader-tampered|kind=tampered;left=2;right=3;expect=REFUSE

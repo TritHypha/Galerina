@@ -346,6 +346,11 @@ pub fn verify_k3_wire_version_carrier(
     Ok(())
 }
 
+/// K3-CE N-ag: absent on both sides is equal. Present values compare by ==.
+pub fn k3_wire_versions_agree(left: Option<i32>, right: Option<i32>) -> bool {
+    left == right
+}
+
 pub const SLIDE_K3_WIRE_INVALID: &str = "SLIDE-K3-WIRE-001";
 pub const SLIDE_K3_WIRE_BARE_LEGACY_ZERO: &str = "SLIDE-K3-WIRE-003";
 
@@ -1678,6 +1683,37 @@ mod tests {
         );
         let absent = decode_k3_package_gate(None, 1).expect("spec absent fallback");
         assert_eq!(absent.0, Trit::Admit);
+    }
+
+    #[test]
+    fn k3ce_compiler_and_loader_carriers_e2e() {
+        use crate::Trit;
+        let absent = decode_k3_package_gate(None, 1).expect("compiler absent fallback");
+        assert_eq!(absent.0, Trit::Admit);
+        let canonical = decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 1)
+            .expect("compiler canonical");
+        assert_eq!(canonical.0, Trit::Admit);
+        assert_eq!(
+            decode_k3_package_gate(Some(3), 1).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let legacy0 = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("compiler legacy bare 0");
+        assert_eq!(legacy0.0, Trit::Unknown);
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 0).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert!(k3_wire_versions_agree(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            Some(K3_WIRE_VERSION_CANONICAL)
+        ));
+        assert!(!k3_wire_versions_agree(
+            Some(K3_WIRE_VERSION_LEGACY),
+            Some(K3_WIRE_VERSION_CANONICAL)
+        ));
+        assert!(k3_wire_versions_agree(None, None));
+        assert!(!k3_wire_versions_agree(Some(K3_WIRE_VERSION_CANONICAL), Some(3)));
     }
 
     #[test]

@@ -276,6 +276,19 @@ Open follow-ups (low; none blocks the merged rows):
   `src/checked-fungi-package-compiler.mjs:exactGates`. Fixture schema 13
   `descriptorSpecCarriers`. VOK `decode_k3_package_gate` legacy + 0 is
   UNKNOWN. Do not touch `packages/fungi/memory`.
+- [x] **K3-CE** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Decision:
+  the loaded artifact or spec carrier decides everywhere; the module
+  constant is retired. `K3_CONSTANT_CARRIER_SITES` is empty.
+  Publication-loader binds decode carrier to the loaded artifact
+  (absent-both equal, mismatch INVALID). Early refusal paths decode
+  without counting absent-carrier. Compiler compile/execute request takes
+  optional `k3WireVersion`. Fixture schema 14 `compilerRequestCarriers`
+  and `loaderCarrierBindings`. VOK `k3_wire_versions_agree`. PRE-BUILD:
+  `k3-strong-kleene-pin.test.mjs` has 7 `it()` cases; an 8-count appears
+  when a directory glob also collects the tower-citizen dist overlay from
+  `prebuildK3StrongKleenePin()` (`tsc -p tsconfig.k3-sk-pin.json`). The
+  STATUS block uses the explicit file path and reports 7. File unchanged.
+  Do not touch `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
