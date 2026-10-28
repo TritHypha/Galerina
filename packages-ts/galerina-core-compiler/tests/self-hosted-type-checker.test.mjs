@@ -313,7 +313,10 @@ const expr = (kind, value = "", litType = "", children = []) =>
   });
 
 // A match arm carries just its pattern text for exhaustiveness/reachability (`_`/`else` = wildcard).
-const arm = (pattern) => vRecord({ pattern: vStr(pattern) });
+// Parser parseMatchArms stores the pattern text on Stmt.name. A harness arm
+// that only carries `pattern` makes checkMatchArms read a missing `name` and
+// trap (`Method 'name' not found on record`), wiping FUNGI-TYPE-022/023.
+const arm = (pattern) => vRecord({ name: vStr(pattern), pattern: vStr(pattern) });
 // A list-literal initializer + its element literals (for the Array<T> collection-element checks).
 const litEl = (litType) => expr("lit", "", litType);
 const listOf = (...litTypes) => expr("listLiteral", "", "", litTypes.map(litEl));
@@ -352,10 +355,20 @@ const stmt = ({ kind, name = "", typeName = "", initType = "", expr: e = [], bod
   const { base, args } = parseGeneric(typeName);
   const dt = parseTensor(typeName);
   const it = parseTensor(initType);
+  const initExprs = e;
+  const overflow = initExprs.some((item) => {
+    const rec = item && item.fields ? item : null;
+    if (!rec) return false;
+    const flag = rec.fields.get("litI32Overflow");
+    return Boolean(flag && flag.value);
+  });
   return vRecord({
     kind: vStr(kind),
     name: vStr(name),
     typeName: vStr(typeName),
+    // Parser-shaped stmts carry litI32Overflow on the binding. The twin reads
+    // stmt.litI32Overflow; a missing field traps and wipes 002/024/025.
+    litI32Overflow: vBool(overflow),
     // typeBase + typeArgs = the parser-produced generic decomposition (empty args for a non-generic
     // type); the twin's checkGenericBinding checks FUNGI-TYPE-009/001/002/011 over them.
     typeBase: vStr(base),
