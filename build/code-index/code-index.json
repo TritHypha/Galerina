@@ -18,7 +18,7 @@
       "ref packages-ts/galerina-ext-bridge-cpp/src/addon-loader.ts:166",
       "test packages-ts/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:65",
       "test packages-ts/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:60",
-      "doc docs/TODO.md:15057"
+      "doc docs/TODO.md:15061"
     ]
   },
   {
@@ -157,7 +157,7 @@
       "test packages-ts/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:76",
       "test packages-ts/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:147",
       "test packages-ts/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:49",
-      "doc docs/TODO.md:15056"
+      "doc docs/TODO.md:15060"
     ]
   },
   {
@@ -228,7 +228,7 @@
       "test packages-ts/galerina-tower-citizen/tests/compiled-policy.test.mjs:56",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:211",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:217",
-      "doc docs/TODO.md:15384"
+      "doc docs/TODO.md:15388"
     ]
   },
   {
@@ -567,7 +567,6 @@
       "test packages-ts/galerina-tower-citizen/tests/photonic-certified-admission.test.mjs:265",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:179",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:185",
-      "doc docs/TODO.md:15381",
       "doc docs/independent-audits/2026-09-22-bridge-attestation-inflight-hold.md:79",
       "doc docs/independent-audits/2026-09-22-bridge-attestation-inflight-hold.md:99",
       "doc docs/independent-audits/2026-09-22-bridge-attestation-inflight-hold.md:147",
@@ -578,7 +577,8 @@
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:222",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:255",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:280",
-      "doc docs/reports/security-q1q2-continuation-2026-09-22.md:98"
+      "doc docs/reports/security-q1q2-continuation-2026-09-22.md:98",
+      "doc docs/TODO.md:15385"
     ]
   },
   {
@@ -853,8 +853,8 @@
       "emit packages-ts/galerina-tower-citizen/src/hybrid-engine.ts:1272",
       "test packages-ts/galerina-tower-citizen/tests/certified-profile.test.mjs:53",
       "test packages-ts/galerina-tower-citizen/tests/certified-profile.test.mjs:113",
-      "doc docs/TODO.md:14970",
-      "doc docs/TODO.md:15351"
+      "doc docs/TODO.md:14974",
+      "doc docs/TODO.md:15355"
     ]
   },
   {
@@ -883,8 +883,8 @@
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-products.test.mjs:142",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:161",
       "test packages-ts/galerina-tower-citizen/tests/rd1295-hold-pin.test.mjs:103",
-      "doc docs/TODO.md:14970",
-      "doc docs/TODO.md:15371"
+      "doc docs/TODO.md:14974",
+      "doc docs/TODO.md:15375"
     ]
   },
   {
@@ -1510,8 +1510,8 @@
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:201",
       "test packages-ts/galerina-tower-citizen/tests/trap-fixed-fields.test.mjs:24",
       "test packages-ts/galerina-tower-citizen/tests/trap-fixed-fields.test.mjs:25",
-      "doc docs/TODO.md:15382",
-      "doc docs/reports/galerina-ground-up-security-architectural-audit-report.md:625"
+      "doc docs/reports/galerina-ground-up-security-architectural-audit-report.md:625",
+      "doc docs/TODO.md:15386"
     ]
   },
   {
@@ -1768,18 +1768,19 @@
     "code": "ERR_K3_SUBJECT_TYPE",
     "namespace": "ERR",
     "family": "ERR_*",
-    "occurrences": 1,
+    "occurrences": 2,
     "docOnly": false,
     "defs": [],
     "emits": [],
-    "tests": 0,
+    "tests": 1,
     "refs": 0,
     "docs": 0,
     "names": [],
     "severities": [],
     "aliases": [],
     "allSites": [
-      "fungi packages-ts/galerina-core-compiler/src/self-hosted/runtime.fungi:976"
+      "fungi packages-ts/galerina-core-compiler/src/self-hosted/runtime.fungi:976",
+      "test packages-ts/galerina-core-compiler/tests/self-hosted-env-receiver.test.mjs:13"
     ]
   },
   {
@@ -1860,13 +1861,13 @@
     "allSites": [
       "test packages-ts/galerina-core-compiler/tests/helpers/deny-wabt-loader.mjs:3",
       "test packages-ts/galerina-core-compiler/tests/helpers/deny-wabt-loader.mjs:4",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:23",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:214",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:353",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:502",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:621",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:764",
       "doc docs/superpowers/plans/2026-08-10-zero-trust-assurance-fabric-chapter-1.md:859",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:23",
       "test scripts/tests/auth-route-dispatch-example.test.mjs:43",
       "test scripts/tests/logic-aig-source-origin-local-producer.test.mjs:29",
       "test scripts/tests/logic-aig-source-origin-local-source.test.mjs:31"
@@ -1909,8 +1910,8 @@
     "allSites": [
       "doc docs/language/fungi/01-flows-and-functions.md:49",
       "doc docs/language/fungi/07-control-flow.md:213",
-      "doc docs/language/fungi/README.md:41",
-      "doc docs/language/fungi/parameters.md:50"
+      "doc docs/language/fungi/parameters.md:50",
+      "doc docs/language/fungi/README.md:41"
     ]
   },
   {
@@ -2087,7 +2088,6 @@
       "test packages-ts/galerina-tower-citizen/tests/plan-memoization.test.mjs:37",
       "test packages-ts/galerina-tower-citizen/tests/plan-memoization.test.mjs:51",
       "test packages-ts/galerina-tower-citizen/tests/plan-memoization.test.mjs:58",
-      "doc docs/TODO.md:2778",
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:21",
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:97",
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:98",
@@ -2095,7 +2095,8 @@
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:122",
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:127",
       "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:129",
-      "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:159"
+      "doc docs/independent-audits/2026-09-22-inference-plan-admit-hold.md:159",
+      "doc docs/TODO.md:2782"
     ]
   },
   {
@@ -4093,8 +4094,8 @@
       "ref packages-ts/galerina-core-runtime/src/structured-await.ts:517",
       "ref packages-ts/galerina-core-runtime/src/structured-await.ts:585",
       "test packages-ts/galerina-core-runtime/tests/structured-await-reducer.test.mjs:333",
-      "doc docs/TODO.md:9873",
-      "doc docs/reports/full-gate-and-host-floor-reconciliation-2026-08-03.md:17"
+      "doc docs/reports/full-gate-and-host-floor-reconciliation-2026-08-03.md:17",
+      "doc docs/TODO.md:9877"
     ]
   },
   {
@@ -5065,11 +5066,11 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tower-citizen/TODO.md:20",
       "ref packages-ts/galerina-tower-citizen/src/load-graph.ts:468",
       "emit packages-ts/galerina-tower-citizen/src/product-profiles.ts:120",
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-products.test.mjs:68",
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-products.test.mjs:69",
+      "doc packages-ts/galerina-tower-citizen/TODO.md:20",
       "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:33"
     ]
   },
@@ -5129,7 +5130,7 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:4005",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2509",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:1971",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4010"
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4011"
     ]
   },
   {
@@ -5414,10 +5415,10 @@
       "test packages-ts/galerina-core-compiler/tests/governance/access-grant-resolution.test.mjs:41",
       "doc docs/ANTI_HALLUCINATION.md:64",
       "doc docs/ANTI_HALLUCINATION.md:88",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:35",
-      "doc docs/TODO.md:14931",
       "doc docs/paper/defensive-papers/dp-rd-0271-secure-by-omission-contract-field-defaults.md:62",
-      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:96"
+      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:96",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:35",
+      "doc docs/TODO.md:14935"
     ]
   },
   {
@@ -5488,7 +5489,7 @@
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:63",
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:73",
       "test packages-ts/galerina-core-compiler/tests/param-admission.test.mjs:84",
-      "doc docs/TODO.md:14474"
+      "doc docs/TODO.md:14478"
     ]
   },
   {
@@ -5607,12 +5608,12 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:5",
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:22",
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:29",
-      "doc docs/TODO.md:973",
       "doc docs/reference/value-states.md:118",
       "doc docs/reference/value-states.md:133",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:193",
       "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:51",
-      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:78"
+      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:78",
+      "doc docs/TODO.md:977"
     ]
   },
   {
@@ -5660,7 +5661,6 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/secret-unary-derivation.test.mjs:376",
       "test packages-ts/galerina-core-compiler/tests/value-state/secret-unary-derivation.test.mjs:392",
       "test packages-ts/galerina-core-compiler/tests/value-state/secret-unary-derivation.test.mjs:668",
-      "doc docs/TODO.md:11359",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:57",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:78",
       "doc docs/reports/rd1413-1415-coupled-review-20261005.md:434",
@@ -5672,7 +5672,8 @@
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:151",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:169",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:346",
-      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:54"
+      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:54",
+      "doc docs/TODO.md:11363"
     ]
   },
   {
@@ -5706,11 +5707,11 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:520",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:538",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:564",
-      "doc docs/TODO.md:11360",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:213",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:219",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:234",
-      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:55"
+      "doc docs/superpowers/specs/2026-08-02-generic-runtime-authority-type-design.md:55",
+      "doc docs/TODO.md:11364"
     ]
   },
   {
@@ -5749,8 +5750,8 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:584",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:592",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:602",
-      "doc docs/TODO.md:11361",
-      "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:178"
+      "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:178",
+      "doc docs/TODO.md:11365"
     ]
   },
   {
@@ -5812,8 +5813,8 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:410",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:417",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:425",
-      "doc docs/TODO.md:974",
-      "doc docs/TODO.md:992"
+      "doc docs/TODO.md:978",
+      "doc docs/TODO.md:996"
     ]
   },
   {
@@ -5884,8 +5885,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:34",
-      "def packages-ts/galerina-framework-app-kernel/src/typed-api-boundary.ts:19"
+      "def packages-ts/galerina-framework-app-kernel/src/typed-api-boundary.ts:19",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:34"
     ]
   },
   {
@@ -5985,8 +5986,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:36",
-      "def packages-ts/galerina-framework-app-kernel/src/auth-provider-boundary.ts:23"
+      "def packages-ts/galerina-framework-app-kernel/src/auth-provider-boundary.ts:23",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:36"
     ]
   },
   {
@@ -6086,8 +6087,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:44",
-      "def packages-ts/galerina-framework-app-kernel/src/api-server-handoff-contract.ts:37"
+      "def packages-ts/galerina-framework-app-kernel/src/api-server-handoff-contract.ts:37",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:44"
     ]
   },
   {
@@ -6187,9 +6188,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:43",
       "def packages-ts/galerina-framework-app-kernel/src/core-runtime-handoff-contract.ts:39",
-      "test packages-ts/galerina-framework-app-kernel/tests/core-runtime-handoff-contract.test.mjs:243"
+      "test packages-ts/galerina-framework-app-kernel/tests/core-runtime-handoff-contract.test.mjs:243",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:43"
     ]
   },
   {
@@ -6370,8 +6371,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:38",
-      "def packages-ts/galerina-framework-app-kernel/src/idempotency-replay-policy.ts:40"
+      "def packages-ts/galerina-framework-app-kernel/src/idempotency-replay-policy.ts:40",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:38"
     ]
   },
   {
@@ -6471,8 +6472,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:41",
-      "def packages-ts/galerina-framework-app-kernel/src/queue-job-contract.ts:38"
+      "def packages-ts/galerina-framework-app-kernel/src/queue-job-contract.ts:38",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:41"
     ]
   },
   {
@@ -6572,8 +6573,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:42",
-      "def packages-ts/galerina-framework-app-kernel/src/runtime-audit-report-format.ts:32"
+      "def packages-ts/galerina-framework-app-kernel/src/runtime-audit-report-format.ts:32",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:42"
     ]
   },
   {
@@ -6673,8 +6674,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:39",
-      "def packages-ts/galerina-framework-app-kernel/src/rate-limit-workload-policy.ts:24"
+      "def packages-ts/galerina-framework-app-kernel/src/rate-limit-workload-policy.ts:24",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:39"
     ]
   },
   {
@@ -6874,8 +6875,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:35",
-      "def packages-ts/galerina-framework-app-kernel/src/request-validation-policy.ts:20"
+      "def packages-ts/galerina-framework-app-kernel/src/request-validation-policy.ts:20",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:35"
     ]
   },
   {
@@ -6975,8 +6976,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:40",
-      "def packages-ts/galerina-framework-app-kernel/src/structured-await-policy.ts:33"
+      "def packages-ts/galerina-framework-app-kernel/src/structured-await-policy.ts:33",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:40"
     ]
   },
   {
@@ -7076,8 +7077,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-framework-app-kernel/TODO.md:37",
-      "def packages-ts/galerina-framework-app-kernel/src/scope-role-policy.ts:24"
+      "def packages-ts/galerina-framework-app-kernel/src/scope-role-policy.ts:24",
+      "doc packages-ts/galerina-framework-app-kernel/TODO.md:37"
     ]
   },
   {
@@ -7323,7 +7324,7 @@
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:79",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:92",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:172",
-      "doc docs/TODO.md:15363",
+      "doc docs/TODO.md:15367",
       "ref scripts/audit-import-governance.mjs:20"
     ]
   },
@@ -7347,7 +7348,7 @@
       "emit packages-ts/galerina-tower-citizen/src/tower-runtime.ts:165",
       "test packages-ts/galerina-tower-citizen/tests/rd-1295-products.test.mjs:172",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:99",
-      "doc docs/TODO.md:15365"
+      "doc docs/TODO.md:15369"
     ]
   },
   {
@@ -7505,7 +7506,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/index.ts:2529",
       "def packages-ts/galerina-core-compiler/src/index.ts:2545",
-      "doc docs/TODO.md:14879"
+      "doc docs/TODO.md:14883"
     ]
   },
   {
@@ -7530,7 +7531,7 @@
     "aliases": [],
     "allSites": [
       "def packages-ts/galerina-core-compiler/src/index.ts:2556",
-      "doc docs/TODO.md:14790"
+      "doc docs/TODO.md:14794"
     ]
   },
   {
@@ -7654,8 +7655,8 @@
       "def packages-ts/galerina-core-compiler/src/attribute-checker.ts:45",
       "test packages-ts/galerina-core-compiler/tests/security-gate-coverage.test.mjs:39",
       "test packages-ts/galerina-core-compiler/tests/signing-boundary-matrix.test.mjs:101",
-      "doc docs/TODO.md:15202",
-      "doc docs/TODO.md:15216"
+      "doc docs/TODO.md:15206",
+      "doc docs/TODO.md:15220"
     ]
   },
   {
@@ -7917,7 +7918,6 @@
       "ref packages-ts/galerina-core-compiler/src/monkey-patch-checker.ts:19",
       "test packages-ts/galerina-core-compiler/tests/cli.test.mjs:38",
       "test packages-ts/galerina-core-compiler/tests/governance-conformance/monkey-patch.test.mjs:12",
-      "doc docs/TODO.md:12202",
       "doc docs/independent-audits/2026-09-22-package-descriptor-name-hold.md:90",
       "doc docs/independent-audits/2026-09-22-package-descriptor-name-hold.md:119",
       "doc docs/independent-audits/2026-09-22-package-descriptor-name-hold.md:152",
@@ -7926,6 +7926,7 @@
       "doc docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md:112",
       "doc docs/reports/fungi-package-staging-translation-issues-adjudication-2026-07-31.md:40",
       "doc docs/reports/fungi-package-staging-translation-issues-adjudication-2026-07-31.md:71",
+      "doc docs/TODO.md:12206",
       "ref galerina.mjs:112"
     ]
   },
@@ -7946,8 +7947,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:43",
-      "def packages-ts/galerina-tools-benchmark/src/bool-logic-benchmark.ts:23"
+      "def packages-ts/galerina-tools-benchmark/src/bool-logic-benchmark.ts:23",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:43"
     ]
   },
   {
@@ -8065,10 +8066,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:189",
       "def packages-ts/galerina-tools-benchmark/src/comparison-report.ts:47",
       "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:65",
-      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:73"
+      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:73",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:189"
     ]
   },
   {
@@ -8088,9 +8089,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:186",
       "def packages-ts/galerina-tools-benchmark/src/comparison-report.ts:48",
-      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:49"
+      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:49",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:186"
     ]
   },
   {
@@ -8110,14 +8111,14 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:187",
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:188",
       "def packages-ts/galerina-tools-benchmark/src/comparison-report.ts:49",
       "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:61",
       "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:62",
       "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:73",
       "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:77",
-      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:79"
+      "test packages-ts/galerina-tools-benchmark/tests/comparison-report.test.mjs:79",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:187",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:188"
     ]
   },
   {
@@ -8226,8 +8227,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:185",
-      "def packages-ts/galerina-tools-benchmark/src/comparison-runner.ts:40"
+      "def packages-ts/galerina-tools-benchmark/src/comparison-runner.ts:40",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:185"
     ]
   },
   {
@@ -8247,8 +8248,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:185",
-      "def packages-ts/galerina-tools-benchmark/src/comparison-runner.ts:42"
+      "def packages-ts/galerina-tools-benchmark/src/comparison-runner.ts:42",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:185"
     ]
   },
   {
@@ -8268,8 +8269,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:47",
-      "def packages-ts/galerina-tools-benchmark/src/cpu-arithmetic-benchmark.ts:20"
+      "def packages-ts/galerina-tools-benchmark/src/cpu-arithmetic-benchmark.ts:20",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:47"
     ]
   },
   {
@@ -8369,8 +8370,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:48",
-      "def packages-ts/galerina-tools-benchmark/src/json-1mb-benchmark.ts:23"
+      "def packages-ts/galerina-tools-benchmark/src/json-1mb-benchmark.ts:23",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:48"
     ]
   },
   {
@@ -8470,8 +8471,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:167",
-      "def packages-ts/galerina-tools-benchmark/src/json-stream-generated-benchmark.ts:38"
+      "def packages-ts/galerina-tools-benchmark/src/json-stream-generated-benchmark.ts:38",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:167"
     ]
   },
   {
@@ -8571,8 +8572,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:49",
-      "def packages-ts/galerina-tools-benchmark/src/json-stream-10mb-benchmark.ts:31"
+      "def packages-ts/galerina-tools-benchmark/src/json-stream-10mb-benchmark.ts:31",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:49"
     ]
   },
   {
@@ -8672,8 +8673,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:169",
-      "def packages-ts/galerina-tools-benchmark/src/matrix-medium-benchmark.ts:27"
+      "def packages-ts/galerina-tools-benchmark/src/matrix-medium-benchmark.ts:27",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:169"
     ]
   },
   {
@@ -8773,8 +8774,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:46",
-      "def packages-ts/galerina-tools-benchmark/src/result-option-benchmark.ts:23"
+      "def packages-ts/galerina-tools-benchmark/src/result-option-benchmark.ts:23",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:46"
     ]
   },
   {
@@ -8874,8 +8875,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:30",
-      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:77"
+      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:77",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:30"
     ]
   },
   {
@@ -8895,9 +8896,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
+      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:79",
       "doc packages-ts/galerina-tools-benchmark/TODO.md:30",
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:31",
-      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:79"
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:31"
     ]
   },
   {
@@ -8977,10 +8978,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:32",
       "ref packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:50",
       "ref packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:260",
-      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:87"
+      "def packages-ts/galerina-tools-benchmark/src/benchmark-runner.ts:87",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:32"
     ]
   },
   {
@@ -9000,8 +9001,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:51",
-      "def packages-ts/galerina-tools-benchmark/src/sha256-benchmark.ts:26"
+      "def packages-ts/galerina-tools-benchmark/src/sha256-benchmark.ts:26",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:51"
     ]
   },
   {
@@ -9101,8 +9102,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:44",
-      "def packages-ts/galerina-tools-benchmark/src/tri-logic-benchmark.ts:23"
+      "def packages-ts/galerina-tools-benchmark/src/tri-logic-benchmark.ts:23",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:44"
     ]
   },
   {
@@ -9202,8 +9203,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-tools-benchmark/TODO.md:50",
-      "def packages-ts/galerina-tools-benchmark/src/small-vector-benchmark.ts:26"
+      "def packages-ts/galerina-tools-benchmark/src/small-vector-benchmark.ts:26",
+      "doc packages-ts/galerina-tools-benchmark/TODO.md:50"
     ]
   },
   {
@@ -9730,7 +9731,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:87",
       "def packages-ts/galerina-core-compiler/src/core-syntax-safety.ts:145",
       "test packages-ts/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:624",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:30",
@@ -9740,10 +9740,11 @@
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:155",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:160",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:170",
+      "doc packages-ts/galerina-core-compiler/TODO.md:87",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:456",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:162",
       "doc docs/TODO-MISSING-RD.md:725",
-      "doc docs/TODO.md:3520"
+      "doc docs/TODO.md:3524"
     ]
   },
   {
@@ -9774,14 +9775,14 @@
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:125",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:140",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:458",
-      "doc docs/TODO-MISSING-RD.md:727",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:32",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:81",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:176",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:177",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:219",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:220",
-      "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:241"
+      "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:241",
+      "doc docs/TODO-MISSING-RD.md:727"
     ]
   },
   {
@@ -9805,16 +9806,16 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:89",
       "def packages-ts/galerina-core-compiler/src/core-syntax-safety.ts:159",
       "test packages-ts/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:624",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:93",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:103",
       "test packages-ts/galerina-core-compiler/tests/typed-content-validation.test.mjs:113",
-      "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:14",
+      "doc packages-ts/galerina-core-compiler/TODO.md:89",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:180",
       "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:221",
-      "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:273"
+      "doc docs/independent-audits/2026-09-23-env-typedcontent-revocation-hold.md:273",
+      "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:14"
     ]
   },
   {
@@ -9841,13 +9842,13 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:390",
-      "doc packages-ts/galerina-core-logic/TODO.md:35",
       "ref packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:35",
       "ref packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:23",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-bool-boundary-001-failed-closed.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:561",
+      "doc packages-ts/galerina-core-logic/TODO.md:35",
       "fungi packages/fungi/products/galerina-core-logic/validate-bool-boundary.fungi:66",
       "fungi packages/fungi/products/galerina-core-logic/validate-bool-boundary.fungi:120",
       "doc docs/COVERAGE.md:460",
@@ -9971,12 +9972,12 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:390",
-      "doc packages-ts/galerina-core-logic/TODO.md:35",
       "ref packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:24",
       "emit packages-ts/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:76",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-bool-boundary-005-result-misused.fungi:5",
-      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:565"
+      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:565",
+      "doc packages-ts/galerina-core-logic/TODO.md:35"
     ]
   },
   {
@@ -10119,10 +10120,10 @@
       "doc packages-ts/galerina-core-compiler/README.md:408",
       "doc packages-ts/galerina-core-compiler/README.md:462",
       "doc packages-ts/galerina-devtools-project-graph/README.md:193",
-      "doc docs/COVERAGE.md:430",
       "doc docs/compiler-effect-and-boundary-checker.md:527",
       "doc docs/compiler-effect-and-boundary-checker.md:779",
       "doc docs/compiler-effect-and-boundary-checker.md:978",
+      "doc docs/COVERAGE.md:430",
       "doc docs/package-implementation-and-runtime-gaps.md:282"
     ]
   },
@@ -10317,9 +10318,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:64",
       "doc packages-ts/galerina-core-cli/README.md:74",
+      "def packages-ts/galerina-core-cli/src/build/build-contracts.ts:28",
       "doc packages-ts/galerina-core-cli/TODO.md:26",
       "doc packages-ts/galerina-core-cli/TODO.md:29",
-      "def packages-ts/galerina-core-cli/src/build/build-contracts.ts:28",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:271",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:1000",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:272",
@@ -10356,8 +10357,8 @@
     "allSites": [
       "def packages-ts/galerina-core-cli/src/build/build-contracts.ts:30",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:864",
-      "doc docs/TODO.md:15203",
-      "doc docs/TODO.md:15207"
+      "doc docs/TODO.md:15207",
+      "doc docs/TODO.md:15211"
     ]
   },
   {
@@ -10419,11 +10420,11 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:65",
       "doc packages-ts/galerina-core-cli/README.md:71",
-      "doc packages-ts/galerina-core-cli/TODO.md:28",
-      "doc packages-ts/galerina-core-cli/TODO.md:29",
       "ref packages-ts/galerina-core-cli/src/build/build-contracts.ts:516",
       "def packages-ts/galerina-core-cli/src/build/build-contracts.ts:36",
-      "test packages-ts/galerina-core-cli/tests/build-contracts.test.mjs:175"
+      "test packages-ts/galerina-core-cli/tests/build-contracts.test.mjs:175",
+      "doc packages-ts/galerina-core-cli/TODO.md:28",
+      "doc packages-ts/galerina-core-cli/TODO.md:29"
     ]
   },
   {
@@ -10816,22 +10817,22 @@
       "emit packages-ts/galerina-core-compiler/src/parser.ts:2067",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2068",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:4133",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3285",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3302",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4104",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3286",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3303",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4105",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:7",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:55",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:59",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:60",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:62",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:63",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:22",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:43",
-      "doc docs/examples/README.md:24",
-      "doc docs/examples/README.md:145",
       "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:81",
       "doc docs/examples/gate/GATEREGEX.md:450",
-      "doc docs/reports/slide-v2-g1-capability-probe-2026-07-29.md:35"
+      "doc docs/examples/README.md:24",
+      "doc docs/examples/README.md:145",
+      "doc docs/reports/slide-v2-g1-capability-probe-2026-07-29.md:35",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:22",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:43"
     ]
   },
   {
@@ -10862,10 +10863,10 @@
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:69",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:70",
       "test packages-ts/galerina-core-compiler/tests/check-construct.test.mjs:73",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:22",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:43",
       "doc docs/examples/README.md:146",
-      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:219"
+      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:219",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:22",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:43"
     ]
   },
   {
@@ -10885,8 +10886,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:78",
-      "def packages-ts/galerina-core-cli/src/cli.ts:23"
+      "def packages-ts/galerina-core-cli/src/cli.ts:23",
+      "doc packages-ts/galerina-core-cli/TODO.md:78"
     ]
   },
   {
@@ -10906,9 +10907,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:78",
       "def packages-ts/galerina-core-cli/src/cli.ts:25",
-      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:31"
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:31",
+      "doc packages-ts/galerina-core-cli/TODO.md:78"
     ]
   },
   {
@@ -10930,13 +10931,13 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:78",
       "def packages-ts/galerina-core-cli/src/cli.ts:27",
       "emit packages-ts/galerina-core-cli/src/cli.ts:140",
       "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:69",
       "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:70",
       "test packages-ts/galerina-core-cli/tests/cli-environment.test.mjs:71",
-      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:40"
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:40",
+      "doc packages-ts/galerina-core-cli/TODO.md:78"
     ]
   },
   {
@@ -11017,10 +11018,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:73",
-      "doc packages-ts/galerina-core-cli/TODO.md:23",
-      "doc packages-ts/galerina-core-cli/TODO.md:24",
       "ref packages-ts/galerina-core-cli/src/build/build-command.ts:10",
-      "def packages-ts/galerina-core-cli/src/build/build-command.ts:39"
+      "def packages-ts/galerina-core-cli/src/build/build-command.ts:39",
+      "doc packages-ts/galerina-core-cli/TODO.md:23",
+      "doc packages-ts/galerina-core-cli/TODO.md:24"
     ]
   },
   {
@@ -11122,12 +11123,12 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:135",
       "doc packages-ts/galerina-core-cli/README.md:329",
-      "doc packages-ts/galerina-core-cli/TODO.md:47",
-      "doc packages-ts/galerina-core-cli/TODO.md:49",
       "ref packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:18",
       "def packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:61",
       "test packages-ts/galerina-core-cli/tests/deploy-command.test.mjs:272",
-      "test packages-ts/galerina-core-cli/tests/deploy-command.test.mjs:273"
+      "test packages-ts/galerina-core-cli/tests/deploy-command.test.mjs:273",
+      "doc packages-ts/galerina-core-cli/TODO.md:47",
+      "doc packages-ts/galerina-core-cli/TODO.md:49"
     ]
   },
   {
@@ -11167,10 +11168,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:77",
-      "doc packages-ts/galerina-core-cli/TODO.md:87",
       "def packages-ts/galerina-core-cli/src/cli.ts:16",
-      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:60"
+      "test packages-ts/galerina-core-cli/tests/cli-structured-errors.test.mjs:60",
+      "doc packages-ts/galerina-core-cli/TODO.md:77",
+      "doc packages-ts/galerina-core-cli/TODO.md:87"
     ]
   },
   {
@@ -11190,8 +11191,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:87",
-      "def packages-ts/galerina-core-cli/src/cli.ts:18"
+      "def packages-ts/galerina-core-cli/src/cli.ts:18",
+      "doc packages-ts/galerina-core-cli/TODO.md:87"
     ]
   },
   {
@@ -11211,8 +11212,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:88",
-      "def packages-ts/galerina-core-cli/src/cli.ts:20"
+      "def packages-ts/galerina-core-cli/src/cli.ts:20",
+      "doc packages-ts/galerina-core-cli/TODO.md:88"
     ]
   },
   {
@@ -11293,9 +11294,9 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:144",
-      "doc packages-ts/galerina-core-cli/TODO.md:60",
       "ref packages-ts/galerina-core-cli/src/explain/explain-command.ts:13",
-      "def packages-ts/galerina-core-cli/src/explain/explain-command.ts:43"
+      "def packages-ts/galerina-core-cli/src/explain/explain-command.ts:43",
+      "doc packages-ts/galerina-core-cli/TODO.md:60"
     ]
   },
   {
@@ -11499,9 +11500,9 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:404",
-      "doc packages-ts/galerina-core-cli/TODO.md:70",
       "ref packages-ts/galerina-core-cli/src/plan/plan-command.ts:10",
-      "def packages-ts/galerina-core-cli/src/plan/plan-command.ts:37"
+      "def packages-ts/galerina-core-cli/src/plan/plan-command.ts:37",
+      "doc packages-ts/galerina-core-cli/TODO.md:70"
     ]
   },
   {
@@ -11601,9 +11602,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:76",
       "ref packages-ts/galerina-core-cli/src/promote/promote-command.ts:10",
-      "def packages-ts/galerina-core-cli/src/promote/promote-command.ts:30"
+      "def packages-ts/galerina-core-cli/src/promote/promote-command.ts:30",
+      "doc packages-ts/galerina-core-cli/TODO.md:76"
     ]
   },
   {
@@ -11709,9 +11710,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:75",
       "ref packages-ts/galerina-core-cli/src/verify/verify-deploy-command.ts:9",
-      "def packages-ts/galerina-core-cli/src/verify/verify-deploy-command.ts:34"
+      "def packages-ts/galerina-core-cli/src/verify/verify-deploy-command.ts:34",
+      "doc packages-ts/galerina-core-cli/TODO.md:75"
     ]
   },
   {
@@ -11757,8 +11758,8 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:109",
-      "doc packages-ts/galerina-core-cli/TODO.md:33",
-      "def packages-ts/galerina-core-cli/src/verify/verify-command.ts:38"
+      "def packages-ts/galerina-core-cli/src/verify/verify-command.ts:38",
+      "doc packages-ts/galerina-core-cli/TODO.md:33"
     ]
   },
   {
@@ -11818,8 +11819,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:35",
-      "def packages-ts/galerina-core-cli/src/verify/verify-command.ts:44"
+      "def packages-ts/galerina-core-cli/src/verify/verify-command.ts:44",
+      "doc packages-ts/galerina-core-cli/TODO.md:35"
     ]
   },
   {
@@ -11898,14 +11899,14 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-compute/README.md:551",
-      "doc packages-ts/galerina-core-compute/TODO.md:94",
-      "doc packages-ts/galerina-core-compute/TODO.md:144",
       "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:3",
       "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:16",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:60",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:63",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:106",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107",
+      "doc packages-ts/galerina-core-compute/TODO.md:94",
+      "doc packages-ts/galerina-core-compute/TODO.md:144",
       "doc docs/COVERAGE.md:477"
     ]
   },
@@ -11978,12 +11979,12 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compute/TODO.md:94",
       "def packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:6",
       "emit packages-ts/galerina-core-compute/src/compatibility/compatibility-rules.ts:19",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:71",
       "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:80",
-      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107"
+      "test packages-ts/galerina-core-compute/tests/compatibility.test.mjs:107",
+      "doc packages-ts/galerina-core-compute/TODO.md:94"
     ]
   },
   {
@@ -12040,8 +12041,6 @@
       "test packages-ts/galerina-core-compiler/tests/parser/node-flags.test.mjs:463",
       "test packages-ts/galerina-core-compiler/tests/parser/node-flags.test.mjs:468",
       "doc packages-ts/galerina-core-compute/README.md:539",
-      "doc packages-ts/galerina-core-compute/TODO.md:29",
-      "doc packages-ts/galerina-core-compute/TODO.md:68",
       "ref packages-ts/galerina-core-compute/src/gpu/gpu-codes.ts:1",
       "ref packages-ts/galerina-core-compute/src/gpu/gpu-codes.ts:7",
       "ref packages-ts/galerina-core-compute/src/gpu/gpu-planner.ts:4",
@@ -12053,6 +12052,8 @@
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:151",
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:166",
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:253",
+      "doc packages-ts/galerina-core-compute/TODO.md:29",
+      "doc packages-ts/galerina-core-compute/TODO.md:68",
       "test packages-ts/galerina-core-reports/tests/policy-risk-specialist-reports.test.mjs:229",
       "test packages-ts/galerina-core-reports/tests/policy-risk-specialist-reports.test.mjs:230",
       "doc docs/galerina-core-compute-gpu-and-photonic-backends.md:1006"
@@ -12190,13 +12191,13 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compute/TODO.md:29",
       "ref packages-ts/galerina-core-compute/src/gpu/gpu-codes.ts:19",
       "ref packages-ts/galerina-core-compute/src/gpu/gpu-planner.ts:78",
       "emit packages-ts/galerina-core-compute/src/gpu/gpu-planner.ts:118",
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:118",
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:227",
       "test packages-ts/galerina-core-compute/tests/gpu-plan.test.mjs:243",
+      "doc packages-ts/galerina-core-compute/TODO.md:29",
       "doc docs/galerina-core-compute-gpu-and-photonic-backends.md:1012"
     ]
   },
@@ -12256,12 +12257,12 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:32",
       "doc packages-ts/galerina-core-config/README.md:72",
-      "doc packages-ts/galerina-core-config/TODO.md:24",
-      "doc packages-ts/galerina-core-config/TODO.md:38",
       "ref packages-ts/galerina-core-config/src/index.ts:249",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:50",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:70",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:72",
+      "doc packages-ts/galerina-core-config/TODO.md:24",
+      "doc packages-ts/galerina-core-config/TODO.md:38",
       "doc docs/COVERAGE.md:484",
       "doc docs/COVERAGE.md:485",
       "doc docs/COVERAGE.md:487",
@@ -12286,11 +12287,11 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:32",
       "doc packages-ts/galerina-core-config/README.md:73",
-      "doc packages-ts/galerina-core-config/TODO.md:24",
       "ref packages-ts/galerina-core-config/src/index.ts:264",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:51",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:65",
-      "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:74"
+      "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:74",
+      "doc packages-ts/galerina-core-config/TODO.md:24"
     ]
   },
   {
@@ -12444,8 +12445,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-config/TODO.md:38",
-      "ref packages-ts/galerina-core-config/src/index.ts:701"
+      "ref packages-ts/galerina-core-config/src/index.ts:701",
+      "doc packages-ts/galerina-core-config/TODO.md:38"
     ]
   },
   {
@@ -12780,18 +12781,18 @@
     "allSites": [
       "doc packages-ts/galerina-core-config/README.md:49",
       "doc packages-ts/galerina-core-config/README.md:77",
-      "doc packages-ts/galerina-core-config/TODO.md:33",
-      "doc packages-ts/galerina-core-config/TODO.md:53",
       "def packages-ts/galerina-core-config/src/index.ts:1492",
       "emit packages-ts/galerina-core-config/src/index.ts:1701",
       "emit packages-ts/galerina-core-config/src/index.ts:1715",
       "test packages-ts/galerina-core-config/tests/core-config-hold-pin.test.mjs:84",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:41",
       "test packages-ts/galerina-core-config/tests/environment-config-v2.test.mjs:108",
+      "doc packages-ts/galerina-core-config/TODO.md:33",
+      "doc packages-ts/galerina-core-config/TODO.md:53",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:483",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:163",
       "doc docs/TODO-MISSING-RD.md:860",
-      "doc docs/TODO.md:3512"
+      "doc docs/TODO.md:3516"
     ]
   },
   {
@@ -13224,7 +13225,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:75",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:20",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:257",
@@ -13267,16 +13267,17 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:568",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:572",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:573",
+      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "doc docs/examples/EXAMPLES_INDEX.md:208",
       "fungi docs/examples/Level-5-Governance/220-context-required/example.fungi:9",
       "doc docs/examples/Level-5-Governance/220-context-required/notes.md:14",
       "doc docs/examples/Level-5-Governance/223-observability/notes.md:32",
       "doc docs/examples/Level-5-Governance/224-contract-best-practices/notes.md:49",
-      "doc docs/examples/Level-5-Governance/225-context-missing/INDEX.md:13",
       "fungi docs/examples/Level-5-Governance/225-context-missing/example.fungi:4",
       "fungi docs/examples/Level-5-Governance/225-context-missing/example.fungi:5",
       "fungi docs/examples/Level-5-Governance/225-context-missing/example.fungi:8",
       "fungi docs/examples/Level-5-Governance/225-context-missing/example.fungi:12",
+      "doc docs/examples/Level-5-Governance/225-context-missing/INDEX.md:13",
       "doc docs/examples/Level-5-Governance/225-context-missing/notes.md:1",
       "doc docs/examples/Level-5-Governance/225-context-missing/notes.md:6",
       "doc docs/examples/Level-5-Governance/225-context-missing/notes.md:35",
@@ -13504,13 +13505,13 @@
       "test packages-ts/galerina-core-compiler/tests/contract-schema-export.test.mjs:71",
       "test packages-ts/galerina-core-compiler/tests/contract-schema-export.test.mjs:75",
       "test packages-ts/galerina-core-compiler/tests/contract-schema-export.test.mjs:115",
-      "doc packages-ts/galerina-docs/TODO.md:53",
       "test packages-ts/galerina-docs/tests/contract-export-refusals.test.mjs:6",
       "test packages-ts/galerina-docs/tests/contract-export-refusals.test.mjs:41",
       "test packages-ts/galerina-docs/tests/contract-export-refusals.test.mjs:46",
       "test packages-ts/galerina-docs/tests/contract-export-refusals.test.mjs:68",
-      "doc docs/TODO.md:3371",
-      "doc docs/reports/rd-1295-q1-q2-follow-up-2026-09-22.md:38"
+      "doc packages-ts/galerina-docs/TODO.md:53",
+      "doc docs/reports/rd-1295-q1-q2-follow-up-2026-09-22.md:38",
+      "doc docs/TODO.md:3375"
     ]
   },
   {
@@ -13863,12 +13864,12 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:384",
-      "doc packages-ts/galerina-core-logic/TODO.md:30",
       "ref packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:34",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-decision-001-invalid-decision.fungi:5",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:471",
+      "doc packages-ts/galerina-core-logic/TODO.md:30",
       "doc docs/COVERAGE.md:459"
     ]
   },
@@ -13987,12 +13988,12 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:384",
-      "doc packages-ts/galerina-core-logic/TODO.md:30",
       "ref packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:25",
       "def packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:26",
       "emit packages-ts/galerina-core-logic/src/decision/decision-diagnostics.ts:78",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-decision-005-empty-combine.fungi:5",
-      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:475"
+      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:475",
+      "doc packages-ts/galerina-core-logic/TODO.md:30"
     ]
   },
   {
@@ -14011,10 +14012,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:389",
-      "doc packages-ts/galerina-core-reports/TODO.md:55",
       "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:17",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:28",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:160",
+      "doc packages-ts/galerina-core-reports/TODO.md:55",
       "doc docs/COVERAGE.md:518"
     ]
   },
@@ -14091,10 +14092,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:389",
-      "doc packages-ts/galerina-core-reports/TODO.md:55",
       "ref packages-ts/galerina-core-reports/src/denials/denial-validator.ts:27",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:31",
-      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:159"
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:159",
+      "doc packages-ts/galerina-core-reports/TODO.md:55"
     ]
   },
   {
@@ -14116,10 +14117,10 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:134",
       "doc packages-ts/galerina-core-cli/README.md:325",
-      "doc packages-ts/galerina-core-cli/TODO.md:54",
-      "doc packages-ts/galerina-core-cli/TODO.md:55",
       "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:19",
       "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:195",
+      "doc packages-ts/galerina-core-cli/TODO.md:54",
+      "doc packages-ts/galerina-core-cli/TODO.md:55",
       "doc docs/COVERAGE.md:447"
     ]
   },
@@ -14160,13 +14161,13 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:53",
-      "doc packages-ts/galerina-core-cli/TODO.md:54",
       "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:23",
       "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:198",
       "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:132",
       "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:186",
-      "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:206"
+      "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:206",
+      "doc packages-ts/galerina-core-cli/TODO.md:53",
+      "doc packages-ts/galerina-core-cli/TODO.md:54"
     ]
   },
   {
@@ -14186,10 +14187,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:54",
       "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:25",
       "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:159",
-      "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:167"
+      "test packages-ts/galerina-core-cli/tests/deploy-contracts.test.mjs:167",
+      "doc packages-ts/galerina-core-cli/TODO.md:54"
     ]
   },
   {
@@ -14209,8 +14210,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:54",
-      "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:27"
+      "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:27",
+      "doc packages-ts/galerina-core-cli/TODO.md:54"
     ]
   },
   {
@@ -14301,14 +14302,14 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:135",
-      "doc packages-ts/galerina-core-cli/TODO.md:47",
-      "doc packages-ts/galerina-core-cli/TODO.md:54",
-      "doc packages-ts/galerina-core-cli/TODO.md:55",
       "emit packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:593",
       "emit packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:603",
       "emit packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:615",
       "emit packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:628",
-      "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:35"
+      "def packages-ts/galerina-core-cli/src/deploy/deploy-validator.ts:35",
+      "doc packages-ts/galerina-core-cli/TODO.md:47",
+      "doc packages-ts/galerina-core-cli/TODO.md:54",
+      "doc packages-ts/galerina-core-cli/TODO.md:55"
     ]
   },
   {
@@ -14369,7 +14370,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc docs/TODO.md:14489",
+      "doc docs/TODO.md:14493",
       "ref scripts/audit-artifact-drift.mjs:23",
       "ref scripts/audit-artifact-drift.mjs:26",
       "ref scripts/audit-artifact-drift.mjs:172",
@@ -14569,11 +14570,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:379",
-      "doc packages-ts/galerina-core-compiler/README.md:314",
-      "doc packages-ts/galerina-core-compiler/README.md:457",
-      "doc packages-ts/galerina-core-compiler/TODO.md:134",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:47",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:137",
+      "doc packages-ts/galerina-core-compiler/README.md:314",
+      "doc packages-ts/galerina-core-compiler/README.md:457",
       "ref packages-ts/galerina-core-compiler/src/checked-program.ts:156",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:722",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:725",
@@ -14678,11 +14678,12 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:354",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:972",
       "test packages-ts/galerina-core-compiler/tests/stage-b-parity.test.mjs:174",
+      "doc packages-ts/galerina-core-compiler/TODO.md:134",
       "doc packages-ts/galerina-devtools-project-graph/README.md:189",
-      "doc docs/COVERAGE.md:429",
       "doc docs/compiler-effect-and-boundary-checker.md:249",
       "doc docs/compiler-effect-and-boundary-checker.md:430",
       "doc docs/compiler-effect-and-boundary-checker.md:973",
+      "doc docs/COVERAGE.md:429",
       "doc docs/examples/EXAMPLES_INDEX.md:123",
       "doc docs/examples/EXAMPLES_INDEX.md:124",
       "doc docs/examples/EXAMPLES_INDEX.md:129",
@@ -14764,8 +14765,8 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/README.md:315",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:48",
+      "doc packages-ts/galerina-core-compiler/README.md:315",
       "emit packages-ts/galerina-core-compiler/src/effect-checker.ts:1588",
       "emit packages-ts/galerina-core-compiler/src/effect-checker.ts:1609",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:1887",
@@ -14852,8 +14853,8 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/README.md:316",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:49",
+      "doc packages-ts/galerina-core-compiler/README.md:316",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:214",
       "emit packages-ts/galerina-core-compiler/src/effect-checker.ts:1250",
       "emit packages-ts/galerina-core-compiler/src/effect-checker.ts:1264",
@@ -14965,8 +14966,8 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:379",
-      "doc packages-ts/galerina-core-compiler/README.md:317",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:50",
+      "doc packages-ts/galerina-core-compiler/README.md:317",
       "ref packages-ts/galerina-core-compiler/scripts/cec-promotion-pass.mjs:33",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:443",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:1457",
@@ -15042,8 +15043,6 @@
       "doc docs/ANTI_HALLUCINATION.md:85",
       "doc docs/ANTI_HALLUCINATION.md:134",
       "doc docs/ANTI_HALLUCINATION.md:136",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:16",
-      "doc docs/TODO.md:14596",
       "doc docs/compiler-effect-and-boundary-checker.md:976",
       "doc docs/examples/EXAMPLES_INDEX.md:137",
       "fungi docs/examples/Level-3-Effects/119-effect-name-invalid/example.fungi:7",
@@ -15054,6 +15053,8 @@
       "doc docs/language/gate/02-clauses.md:70",
       "doc docs/patterns/applications/01-crud-resource.md:94",
       "doc docs/reference/effects.md:67",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:16",
+      "doc docs/TODO.md:14600",
       "ref scripts/audit-corpus-effect-names.mjs:15",
       "ref scripts/audit-corpus-effect-names.mjs:17",
       "ref scripts/audit-muted-diagnostics.mjs:46",
@@ -15233,7 +15234,6 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:220",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:227",
       "doc docs/CONSISTENCY_GATES.md:68",
-      "doc docs/TODO.md:15146",
       "doc docs/contract-authoring-model.md:94",
       "doc docs/examples/Level-4-Security/180-hardening-spill-rejected/notes.md:18",
       "fungi docs/examples/Level-4-Security/182-hardening-spill-effect-denied/example.fungi:5",
@@ -15248,6 +15248,7 @@
       "doc docs/reference/effects.md:438",
       "doc docs/reference/effects.md:447",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:193",
+      "doc docs/TODO.md:15150",
       "ref scripts/audit-codes-full.mjs:90",
       "ref scripts/audit-codes-full.mjs:93",
       "ref scripts/audit-corpus-effect-names.mjs:188",
@@ -15761,10 +15762,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:390",
-      "doc packages-ts/galerina-core-reports/TODO.md:61",
       "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:13",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:35",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185",
+      "doc packages-ts/galerina-core-reports/TODO.md:61",
       "doc docs/COVERAGE.md:519"
     ]
   },
@@ -15866,10 +15867,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:390",
-      "doc packages-ts/galerina-core-reports/TODO.md:61",
       "ref packages-ts/galerina-core-reports/src/evidence/evidence-validator.ts:17",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:38",
-      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185"
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:185",
+      "doc packages-ts/galerina-core-reports/TODO.md:61"
     ]
   },
   {
@@ -15915,9 +15916,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:145",
       "doc packages-ts/galerina-core-cli/README.md:390",
-      "doc packages-ts/galerina-core-cli/TODO.md:65",
       "ref packages-ts/galerina-core-cli/src/explain/explain-denial.ts:108",
       "def packages-ts/galerina-core-cli/src/explain/explain-trace.ts:18",
+      "doc packages-ts/galerina-core-cli/TODO.md:65",
       "doc docs/COVERAGE.md:448"
     ]
   },
@@ -15978,9 +15979,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:62",
       "ref packages-ts/galerina-core-cli/src/explain/explain-trace.ts:368",
-      "def packages-ts/galerina-core-cli/src/explain/explain-trace.ts:24"
+      "def packages-ts/galerina-core-cli/src/explain/explain-trace.ts:24",
+      "doc packages-ts/galerina-core-cli/TODO.md:62"
     ]
   },
   {
@@ -16000,8 +16001,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:59",
-      "def packages-ts/galerina-core-cli/src/explain/explain-denial.ts:19"
+      "def packages-ts/galerina-core-cli/src/explain/explain-denial.ts:19",
+      "doc packages-ts/galerina-core-cli/TODO.md:59"
     ]
   },
   {
@@ -16106,9 +16107,9 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:145",
-      "doc packages-ts/galerina-core-cli/TODO.md:65",
       "ref packages-ts/galerina-core-cli/src/explain/explain-runtime.ts:7",
-      "def packages-ts/galerina-core-cli/src/explain/explain-runtime.ts:22"
+      "def packages-ts/galerina-core-cli/src/explain/explain-runtime.ts:22",
+      "doc packages-ts/galerina-core-cli/TODO.md:65"
     ]
   },
   {
@@ -16147,7 +16148,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:156",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2544",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:216",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:1285",
@@ -16170,6 +16170,7 @@
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:168",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:177",
       "test packages-ts/galerina-core-compiler/tests/wat-q7-k5.test.mjs:287",
+      "doc packages-ts/galerina-core-compiler/TODO.md:156",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:43"
     ]
   },
@@ -16359,10 +16360,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc docs/TODO.md:14577",
       "doc docs/reference/dss-wasm-runtime-errors.md:53",
       "doc docs/reference/dss-wasm-runtime-errors.md:57",
       "doc docs/reference/dss-wasm-runtime-errors.md:94",
+      "doc docs/TODO.md:14581",
       "ref scripts/audit-artifact-drift.mjs:68"
     ]
   },
@@ -17535,8 +17536,8 @@
       "test packages-ts/galerina-core-compiler/tests/gate-parser.test.mjs:152",
       "test packages-ts/galerina-core-compiler/tests/gate-parser.test.mjs:155",
       "test packages-ts/galerina-core-compiler/tests/gate-parser.test.mjs:158",
-      "doc docs/TODO.md:15028",
-      "doc docs/architecture/gate-cutset-version-gating-decision-2026-07-11.md:42"
+      "doc docs/architecture/gate-cutset-version-gating-decision-2026-07-11.md:42",
+      "doc docs/TODO.md:15032"
     ]
   },
   {
@@ -17585,10 +17586,6 @@
       "test packages-ts/galerina-core-compiler/tests/gate-v3-shipped-examples.test.mjs:142",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-shipped-examples.test.mjs:157",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-variants.test.mjs:26",
-      "doc docs/ROADMAP.md:2412",
-      "doc docs/SYNTAX_UPDATE_PLAN.md:18",
-      "doc docs/TODO.md:9186",
-      "doc docs/TODO.md:15032",
       "doc docs/architecture/gate-cutset-version-gating-decision-2026-07-11.md:51",
       "doc docs/architecture/gate-cutset-version-gating-decision-2026-07-11.md:53",
       "doc docs/examples/gate/AI-AUTHORING-GUIDE.md:212",
@@ -17597,6 +17594,10 @@
       "doc docs/language/gate/07-cheatsheet-and-gotchas.md:186",
       "doc docs/language/gate/README.md:33",
       "doc docs/language/gate/README.md:164",
+      "doc docs/ROADMAP.md:2412",
+      "doc docs/SYNTAX_UPDATE_PLAN.md:18",
+      "doc docs/TODO.md:9190",
+      "doc docs/TODO.md:15036",
       "test scripts/tests/gate-admission-envelope.test.mjs:103",
       "test scripts/tests/gate-admission-envelope.test.mjs:298",
       "test scripts/tests/helpers/gate-admission-fixture.mjs:83",
@@ -17646,7 +17647,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "ref packages-ts/galerina-core-compiler/src/checked-program.ts:182",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:29",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:530",
@@ -17675,6 +17675,7 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1304",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1307",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1308",
+      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "fungi docs/examples/Level-5-Governance/203-intent-mismatch-invalid/example.fungi:6",
       "fungi docs/examples/Level-5-Governance/203-intent-mismatch-invalid/example.fungi:7",
       "fungi docs/examples/Level-5-Governance/203-intent-mismatch-invalid/example.fungi:17",
@@ -17755,7 +17756,6 @@
       "ref packages-ts/galerina-devtools-intelligence/src/extractor.ts:174",
       "emit packages-ts/galerina-devtools-intelligence/src/extractor.ts:179",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:136",
-      "doc docs/TODO.md:14592",
       "doc docs/examples/EXAMPLES_INDEX.md:192",
       "fungi docs/examples/Level-5-Governance/209-audit-proof-missing/example.fungi:5",
       "fungi docs/examples/Level-5-Governance/209-audit-proof-missing/example.fungi:17",
@@ -17764,6 +17764,7 @@
       "doc docs/examples/Level-5-Governance/AI_SUMMARY.md:71",
       "doc docs/examples/README.md:130",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:194",
+      "doc docs/TODO.md:14596",
       "ref scripts/audit-mutation.mjs:642",
       "ref scripts/audit-mutation.mjs:646",
       "ref scripts/audit-muted-diagnostics.mjs:49",
@@ -17870,15 +17871,13 @@
       "test packages-ts/galerina-core-compiler/tests/wasm-lane-governance-gate.test.mjs:111",
       "doc docs/AI/CANONICAL_SYNTAX.md:387",
       "doc docs/AI/COMMON_FIXES.md:124",
-      "doc docs/TODO.md:15246",
-      "doc docs/TODO.md:15309",
       "doc docs/examples/EXAMPLES_INDEX.md:202",
       "doc docs/examples/EXAMPLES_INDEX.md:322",
-      "doc docs/examples/Level-5-Governance/219-response-denies/INDEX.md:13",
       "fungi docs/examples/Level-5-Governance/219-response-denies/example.fungi:4",
       "fungi docs/examples/Level-5-Governance/219-response-denies/example.fungi:5",
       "fungi docs/examples/Level-5-Governance/219-response-denies/example.fungi:9",
       "fungi docs/examples/Level-5-Governance/219-response-denies/example.fungi:13",
+      "doc docs/examples/Level-5-Governance/219-response-denies/INDEX.md:13",
       "doc docs/examples/Level-5-Governance/219-response-denies/notes.md:1",
       "doc docs/examples/Level-5-Governance/219-response-denies/notes.md:7",
       "doc docs/examples/Level-5-Governance/222-limits-privacy/notes.md:32",
@@ -17899,6 +17898,8 @@
       "doc docs/language/fungi/05-bindings-taint-privacy.md:268",
       "doc docs/language/fungi/DO-DONT-TERNARY.md:18",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:36",
+      "doc docs/TODO.md:15250",
+      "doc docs/TODO.md:15313",
       "ref scripts/audit-registry-fixtures.mjs:204",
       "ref scripts/audit-stdlib-gates-parity.mjs:138"
     ]
@@ -18011,7 +18012,6 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-i3-functional-corpus.test.mjs:528",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-i3-functional-corpus.test.mjs:684",
       "doc docs/AI/DO_NOT_USE_YET.md:166",
-      "doc docs/TODO.md:14482",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:3463",
       "doc docs/examples/EXAMPLES_INDEX.md:195",
       "doc docs/examples/EXAMPLES_INDEX.md:318",
@@ -18026,6 +18026,7 @@
       "doc docs/examples/README.md:139",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:93",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:101",
+      "doc docs/TODO.md:14486",
       "ref scripts/audit-diagnostic-code-collisions.mjs:76"
     ]
   },
@@ -18135,7 +18136,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:15",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:1766",
-      "doc docs/TODO.md:14482"
+      "doc docs/TODO.md:14486"
     ]
   },
   {
@@ -18633,7 +18634,7 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1092",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1095",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1096",
-      "doc docs/TODO.md:15083"
+      "doc docs/TODO.md:15087"
     ]
   },
   {
@@ -18825,10 +18826,10 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1919",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1922",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1932",
-      "doc docs/TODO.md:14889",
-      "doc docs/TODO.md:14894",
       "doc docs/examples/README.md:25",
       "doc docs/examples/README.md:138",
+      "doc docs/TODO.md:14893",
+      "doc docs/TODO.md:14898",
       "ref scripts/audit-codes-full.mjs:50",
       "ref scripts/audit-muted-diagnostics.mjs:53"
     ]
@@ -18866,7 +18867,6 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:776",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:792",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:810",
-      "doc docs/TODO.md:13049",
       "doc docs/examples/EXAMPLES_INDEX.md:190",
       "doc docs/examples/EXAMPLES_INDEX.md:316",
       "fungi docs/examples/Level-5-Governance/207-protected-data-sharing-missing-authority/example.fungi:6",
@@ -18874,7 +18874,8 @@
       "doc docs/examples/Level-5-Governance/207-protected-data-sharing-missing-authority/notes.md:5",
       "fungi docs/examples/Level-9-Enterprise/461-authority-missing/example.fungi:5",
       "fungi docs/examples/Level-9-Enterprise/461-authority-missing/example.fungi:12",
-      "fungi docs/examples/Level-9-Enterprise/461-authority-missing/example.fungi:34"
+      "fungi docs/examples/Level-9-Enterprise/461-authority-missing/example.fungi:34",
+      "doc docs/TODO.md:13053"
     ]
   },
   {
@@ -19118,7 +19119,7 @@
       "test packages-ts/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:28",
       "test packages-ts/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:39",
       "test packages-ts/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:49",
-      "doc docs/TODO.md:14453",
+      "doc docs/TODO.md:14457",
       "ref galerina.mjs:182",
       "ref galerina.mjs:215"
     ]
@@ -19185,7 +19186,7 @@
       "emit packages-ts/galerina-tower-citizen/src/governance-enforcer.ts:56",
       "ref packages-ts/galerina-tower-citizen/src/governance-enforcer.ts:57",
       "test packages-ts/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:41",
-      "doc docs/TODO.md:15354"
+      "doc docs/TODO.md:15358"
     ]
   },
   {
@@ -19203,12 +19204,12 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-target-gpu/TODO.md:42",
       "ref packages-ts/galerina-target-gpu/src/proposed-fungi-gpu-mapping.ts:1",
       "ref packages-ts/galerina-target-gpu/src/proposed-fungi-gpu-mapping.ts:16",
       "test packages-ts/galerina-target-gpu/tests/gpu-hold-pin.test.mjs:100",
       "test packages-ts/galerina-target-gpu/tests/gpu-hold-pin.test.mjs:121",
-      "test packages-ts/galerina-target-gpu/tests/gpu-hold-pin.test.mjs:138"
+      "test packages-ts/galerina-target-gpu/tests/gpu-hold-pin.test.mjs:138",
+      "doc packages-ts/galerina-target-gpu/TODO.md:42"
     ]
   },
   {
@@ -19499,8 +19500,8 @@
       "test packages-ts/galerina-core-compiler/tests/hallmark.test.mjs:85",
       "test packages-ts/galerina-core-compiler/tests/rd-0349-zero-trust-defaults.test.mjs:103",
       "test packages-ts/galerina-core-compiler/tests/rd-0349-zero-trust-defaults.test.mjs:104",
-      "doc docs/DECISIONS.md:121",
       "doc docs/architecture/roadmap-2026-07-11-post-hallmark.md:29",
+      "doc docs/DECISIONS.md:121",
       "doc docs/examples/Level-2-Types/094-hallmark-declaration/notes.md:26",
       "doc docs/examples/Level-2-Types/094-hallmark-declaration/notes.md:32",
       "fungi docs/examples/Level-2-Types/096-hallmark-reserved-name/example.fungi:5",
@@ -19722,7 +19723,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:157",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3423",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:3430",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:3462",
@@ -19730,6 +19730,7 @@
       "def packages-ts/galerina-core-compiler/src/hardening-residency.ts:44",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:86",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:91",
+      "doc packages-ts/galerina-core-compiler/TODO.md:157",
       "doc docs/language/fungi/04-types-and-values.md:293",
       "doc docs/reference/hardening.md:30",
       "doc docs/reference/hardening.md:53",
@@ -19972,8 +19973,6 @@
       "test packages-ts/galerina-core-compiler/tests/hardening-residency.test.mjs:189",
       "test packages-ts/galerina-core-compiler/tests/hardening-residency.test.mjs:192",
       "test packages-ts/galerina-core-compiler/tests/spill-retype-fungi-conversion.test.mjs:23",
-      "doc docs/ROADMAP.md:1529",
-      "doc docs/TODO.md:7674",
       "fungi docs/examples/Level-4-Security/180-hardening-spill-rejected/example.fungi:5",
       "doc docs/examples/Level-4-Security/180-hardening-spill-rejected/notes.md:16",
       "doc docs/language/fungi/03-effects-and-capabilities.md:140",
@@ -19983,8 +19982,10 @@
       "doc docs/reference/hardening.md:59",
       "doc docs/reference/hardening.md:84",
       "doc docs/reference/trust-trit.md:93",
+      "doc docs/ROADMAP.md:1529",
       "doc docs/superpowers/plans/2026-08-12-spill-retype-fungi-conversion.md:80",
       "doc docs/superpowers/specs/2026-08-12-spill-retype-fungi-conversion-design.md:30",
+      "doc docs/TODO.md:7678",
       "ref scripts/audit-reference-doc-drift.mjs:59",
       "test scripts/tests/spill-retype-fungi-slide.integration.test.mjs:24"
     ]
@@ -20112,10 +20113,10 @@
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4539",
       "doc docs/examples/EXAMPLES_INDEX.md:240",
       "doc docs/examples/EXAMPLES_INDEX.md:269",
-      "doc docs/examples/Level-6-Compute/318-compute-hint-missing/INDEX.md:13",
       "fungi docs/examples/Level-6-Compute/318-compute-hint-missing/example.fungi:5",
       "fungi docs/examples/Level-6-Compute/318-compute-hint-missing/example.fungi:12",
       "fungi docs/examples/Level-6-Compute/318-compute-hint-missing/example.fungi:18",
+      "doc docs/examples/Level-6-Compute/318-compute-hint-missing/INDEX.md:13",
       "doc docs/examples/Level-6-Compute/318-compute-hint-missing/notes.md:3",
       "doc docs/examples/Level-6-Compute/AI_SUMMARY.md:12",
       "doc docs/examples/Level-6-Compute/AI_SUMMARY.md:46",
@@ -20894,7 +20895,7 @@
     "emits": [
       "packages-ts/galerina-core-compiler/src/interpreter.ts:1977",
       "packages-ts/galerina-core-compiler/src/interpreter.ts:1984",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4017"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4018"
     ],
     "tests": 15,
     "refs": 3,
@@ -20908,7 +20909,7 @@
       "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1977",
       "emit packages-ts/galerina-core-compiler/src/interpreter.ts:1984",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4312",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4017",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4018",
       "test packages-ts/galerina-core-compiler/tests/governance/trap-decl.test.mjs:318",
       "test packages-ts/galerina-core-compiler/tests/governance/trap-decl.test.mjs:332",
       "test packages-ts/galerina-core-compiler/tests/governance/trap-decl.test.mjs:339",
@@ -20933,14 +20934,14 @@
       "fungi packages-ts/galerina-devtools-benchmarks/benchmarks/governance-violation/benchmark.fungi:25",
       "fungi packages-ts/galerina-devtools-benchmarks/benchmarks/governance-violation/benchmark.fungi:26",
       "fungi packages-ts/galerina-devtools-benchmarks/benchmarks/toxic-input/benchmark.fungi:7",
-      "doc docs/TODO.md:14334",
-      "doc docs/TODO.md:14674",
       "doc docs/reference/dss-wasm-runtime-errors.md:30",
       "doc docs/reference/dss-wasm-runtime-errors.md:49",
       "doc docs/reference/dss-wasm-runtime-errors.md:56",
       "doc docs/reference/dss-wasm-runtime-errors.md:58",
       "doc docs/reference/dss-wasm-runtime-errors.md:90",
-      "doc docs/reports/slide-v2-g1-capability-probe-2026-07-29.md:73"
+      "doc docs/reports/slide-v2-g1-capability-probe-2026-07-29.md:73",
+      "doc docs/TODO.md:14338",
+      "doc docs/TODO.md:14678"
     ]
   },
   {
@@ -20953,7 +20954,7 @@
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:2965",
       "packages-ts/galerina-core-compiler/src/interpreter.ts:1859",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4370"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4371"
     ],
     "tests": 14,
     "refs": 18,
@@ -20964,7 +20965,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:34",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2473",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2476",
@@ -20982,9 +20982,9 @@
       "ref packages-ts/galerina-core-compiler/src/invariant-discharge.ts:27",
       "ref packages-ts/galerina-core-compiler/src/invariant-discharge.ts:49",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:5894",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4508",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4530",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4370",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4509",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4531",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4371",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1688",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1535",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1546",
@@ -20999,9 +20999,10 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1690",
       "test packages-ts/galerina-core-compiler/tests/invariant-discharge.test.mjs:86",
       "test packages-ts/galerina-core-compiler/tests/wat-tri-fuse-a-elision.test.mjs:5",
+      "doc packages-ts/galerina-core-compiler/TODO.md:135",
       "ref packages-ts/galerina-devtools-wasmtime-oracle/tools/export-corpus-differential.mjs:116",
-      "doc docs/TODO.md:14620",
-      "doc docs/reference/dss-wasm-runtime-errors.md:50"
+      "doc docs/reference/dss-wasm-runtime-errors.md:50",
+      "doc docs/TODO.md:14624"
     ]
   },
   {
@@ -21013,8 +21014,8 @@
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/interpreter.ts:2051",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4391",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4399"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4392",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:4400"
     ],
     "tests": 4,
     "refs": 7,
@@ -21030,8 +21031,8 @@
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2212",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2223",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2229",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4391",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4399",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4392",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:4400",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1596",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:7",
       "test packages-ts/galerina-core-compiler/tests/output-postconditions.test.mjs:25",
@@ -21101,7 +21102,7 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:2949",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:2107",
       "ref packages-ts/galerina-core-compiler/src/interpreter.ts:4448",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4326",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4327",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1613",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1622",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:1623",
@@ -21169,7 +21170,7 @@
       "test packages-ts/galerina-target-js/tests/js-target-contracts.test.mjs:198",
       "doc docs/TODO-MISSING-RD.md:539",
       "doc docs/TODO-MISSING-RD.md:542",
-      "doc docs/TODO.md:5860"
+      "doc docs/TODO.md:5864"
     ]
   },
   {
@@ -21884,14 +21885,14 @@
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:114",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:120",
       "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:16",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:166",
       "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:173",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:176",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:180",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:183",
       "doc docs/ANTI_HALLUCINATION.md:63",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
-      "doc docs/TODO.md:14939",
       "doc docs/examples/README.md:24",
       "doc docs/examples/README.md:150",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
+      "doc docs/TODO.md:14943",
       "ref galerina.mjs:185",
       "ref galerina.mjs:215"
     ]
@@ -21900,15 +21901,15 @@
     "code": "FUNGI-K3-002",
     "namespace": "FUNGI",
     "family": "K3",
-    "occurrences": 16,
+    "occurrences": 19,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/type-checker.ts:3849",
       "packages-ts/galerina-core-compiler/src/type-checker.ts:3859"
     ],
-    "tests": 7,
-    "refs": 5,
+    "tests": 8,
+    "refs": 7,
     "docs": 2,
     "names": [
       "VERDICT_UNARY_MISMATCH"
@@ -21923,15 +21924,18 @@
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3850",
       "emit packages-ts/galerina-core-compiler/src/type-checker.ts:3859",
       "ref packages-ts/galerina-core-compiler/src/type-checker.ts:3860",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2467",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2469",
       "test packages-ts/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:191",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:64",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:148",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:146",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:180",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:181",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:182",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:187",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:188",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:189",
+      "test packages-ts/galerina-core-compiler/tests/wat-k3-inline.test.mjs:347",
       "doc docs/examples/README.md:151",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
       "ref galerina.mjs:196",
       "ref galerina.mjs:215"
     ]
@@ -21963,10 +21967,10 @@
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:66",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:157",
       "test packages-ts/galerina-core-compiler/tests/cli-security-type-gate.test.mjs:155",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:185",
-      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:186",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:192",
+      "test packages-ts/galerina-core-compiler/tests/k3-operators.test.mjs:193",
       "doc docs/examples/README.md:152",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
       "ref galerina.mjs:199",
       "ref galerina.mjs:215"
     ]
@@ -22225,7 +22229,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:129",
       "ref packages-ts/galerina-core-compiler/src/index.ts:325",
       "def packages-ts/galerina-core-compiler/src/index.ts:327",
       "ref packages-ts/galerina-core-compiler/src/lexer.ts:11",
@@ -22256,6 +22259,7 @@
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:375",
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:378",
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:379",
+      "doc packages-ts/galerina-core-compiler/TODO.md:129",
       "doc docs/COVERAGE.md:285",
       "ref scripts/audit-codes-full.mjs:61",
       "ref scripts/audit-codes-full.mjs:62"
@@ -22413,7 +22417,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:53",
       "ref packages-ts/galerina-core-compiler/src/index.ts:360",
       "def packages-ts/galerina-core-compiler/src/index.ts:362",
       "ref packages-ts/galerina-core-compiler/src/lexer.ts:15",
@@ -22435,7 +22438,7 @@
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:522",
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:525",
       "test packages-ts/galerina-core-compiler/tests/lexer.test.mjs:527",
-      "doc docs/TODO.md:2693",
+      "doc packages-ts/galerina-core-compiler/TODO.md:53",
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:1",
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:13",
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:18",
@@ -22445,7 +22448,8 @@
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:85",
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:124",
       "doc docs/independent-audits/2026-09-22-lexer-line-bounds-hold.md:149",
-      "doc docs/independent-audits/INDEX.md:54"
+      "doc docs/independent-audits/INDEX.md:54",
+      "doc docs/TODO.md:2697"
     ]
   },
   {
@@ -22511,7 +22515,7 @@
       "test packages-ts/galerina-core-compiler/tests/governance/guard-decl.test.mjs:392",
       "test packages-ts/galerina-core-compiler/tests/governance/guard-decl.test.mjs:393",
       "test packages-ts/galerina-core-compiler/tests/governance/guard-decl.test.mjs:398",
-      "doc docs/TODO.md:15187"
+      "doc docs/TODO.md:15191"
     ]
   },
   {
@@ -23641,8 +23645,8 @@
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:4420",
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:4431",
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:4432",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3131",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3771",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3132",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3772",
       "test packages-ts/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:179",
       "test packages-ts/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:2",
       "test packages-ts/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:25",
@@ -23650,22 +23654,16 @@
       "test packages-ts/galerina-core-compiler/tests/wat-match-wildcard-fallback.test.mjs:12",
       "ref packages-ts/galerina-devtools-wasmtime-oracle/tools/export-corpus-differential.mjs:110",
       "doc docs/ANTI_HALLUCINATION.md:61",
-      "doc docs/CONSISTENCY_GATES.md:29",
-      "doc docs/CONSISTENCY_GATES.md:30",
-      "doc docs/SYNTAX_UPDATE_PLAN.md:29",
-      "doc docs/SYNTAX_UPDATE_PLAN.md:60",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:33",
-      "doc docs/TODO.md:14761",
-      "doc docs/TODO.md:14927",
-      "doc docs/TODO.md:15039",
       "doc docs/architecture/self-hosting-readiness-2026-07-09.md:65",
       "doc docs/architecture/session4-5hr-autonomous-roadmap-2026-07-11.md:62",
+      "doc docs/CONSISTENCY_GATES.md:29",
+      "doc docs/CONSISTENCY_GATES.md:30",
+      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:101",
       "doc docs/examples/Level-1-Basics/012-match-result/INDEX.md:13",
       "doc docs/examples/Level-1-Basics/012-match-result/notes.md:3",
       "doc docs/examples/Level-1-Basics/013-match-option/INDEX.md:13",
       "doc docs/examples/Level-1-Basics/013-match-option/notes.md:3",
       "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:351",
-      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:101",
       "doc docs/language/fungi/07-control-flow.md:107",
       "doc docs/language/fungi/07-control-flow.md:157",
       "doc docs/language/fungi/07-control-flow.md:244",
@@ -23673,7 +23671,13 @@
       "doc docs/language/fungi/DO-DONT-TERNARY.md:13",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:84",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:85",
-      "doc docs/language/fungi/SYNTAX-REFERENCE.md:86"
+      "doc docs/language/fungi/SYNTAX-REFERENCE.md:86",
+      "doc docs/SYNTAX_UPDATE_PLAN.md:29",
+      "doc docs/SYNTAX_UPDATE_PLAN.md:60",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:33",
+      "doc docs/TODO.md:14765",
+      "doc docs/TODO.md:14931",
+      "doc docs/TODO.md:15043"
     ]
   },
   {
@@ -24160,14 +24164,14 @@
     ],
     "aliases": [],
     "allSites": [
+      "fungi packages-ts/galerina-core/examples/value-semantics-ownership.fungi:12",
+      "fungi packages-ts/galerina-core/examples/value-semantics-ownership.fungi:31",
       "doc packages-ts/galerina-core/README.md:555",
       "doc packages-ts/galerina-core/README.md:566",
       "doc packages-ts/galerina-core/README.md:720",
       "doc packages-ts/galerina-core/README.md:753",
       "doc packages-ts/galerina-core/README.md:994",
       "doc packages-ts/galerina-core/README.md:1033",
-      "fungi packages-ts/galerina-core/examples/value-semantics-ownership.fungi:12",
-      "fungi packages-ts/galerina-core/examples/value-semantics-ownership.fungi:31",
       "ref packages-ts/galerina-core-compiler/src/index.ts:2369",
       "ref packages-ts/galerina-core-compiler/src/index.ts:2373",
       "ref packages-ts/galerina-core-compiler/src/index.ts:2402",
@@ -24629,8 +24633,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc docs/TODO.md:14489",
-      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:109"
+      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:109",
+      "doc docs/TODO.md:14493"
     ]
   },
   {
@@ -24651,7 +24655,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:131",
       "ref packages-ts/galerina-core-compiler/scripts/cec-audit.mjs:27",
       "ref packages-ts/galerina-core-compiler/scripts/cec-check-468.mjs:4",
       "ref packages-ts/galerina-core-compiler/scripts/cec-debug-003.mjs:7",
@@ -24721,6 +24724,7 @@
       "test packages-ts/galerina-core-compiler/tests/wat-secret006-runtime-stage.test.mjs:103",
       "test packages-ts/galerina-core-compiler/tests/wat-secret006-runtime-stage.test.mjs:117",
       "test packages-ts/galerina-core-compiler/tests/wat-secret006-runtime-stage.test.mjs:118",
+      "doc packages-ts/galerina-core-compiler/TODO.md:131",
       "doc packages/fungi/memory/evidence/31-body-reader/mutants.md:29",
       "doc packages/fungi/memory/evidence/31-body-reader/parity.md:48",
       "doc packages/fungi/memory/evidence/32-release-commit-point/parity.md:31",
@@ -24749,13 +24753,13 @@
       "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:191",
       "test packages/fungi/memory/tests/44-adapter-profile/adapter-profile.test.mjs:205",
       "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:129",
-      "doc docs/TODO.md:15207",
-      "doc docs/TODO.md:15305",
       "doc docs/architecture/self-hosting-readiness-2026-07-09.md:135",
       "doc docs/examples/README.md:97",
       "doc docs/handover/HANDOVER-worker-cli-invoke-marshal-2026-07-10.md:42",
       "doc docs/superpowers/plans/2026-08-04-canonical-records-and-call-resolution.md:29",
-      "doc docs/superpowers/plans/2026-08-04-canonical-records-and-call-resolution.md:72"
+      "doc docs/superpowers/plans/2026-08-04-canonical-records-and-call-resolution.md:72",
+      "doc docs/TODO.md:15211",
+      "doc docs/TODO.md:15309"
     ]
   },
   {
@@ -24886,11 +24890,11 @@
       "test packages/fungi/memory/tests/s2-harness/s2-dup.test.mjs:148",
       "test packages/fungi/memory/tests/s2-harness/s2-guards.test.mjs:26",
       "test packages/fungi/memory/tests/s2-harness/s2-guards.test.mjs:31",
-      "doc docs/DECISIONS.md:120",
-      "doc docs/TODO.md:224",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:39",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4101",
+      "doc docs/DECISIONS.md:120",
       "doc docs/examples/README.md:98",
+      "doc docs/TODO.md:228",
       "ref scripts/audit-silent-overwrite.mjs:11",
       "ref scripts/audit-silent-overwrite.mjs:39",
       "ref scripts/audit-silent-overwrite.mjs:164",
@@ -25168,13 +25172,13 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-target-native/TODO.md:80",
       "ref packages-ts/galerina-target-native/src/proposed-fungi-native-mapping.ts:1",
       "ref packages-ts/galerina-target-native/src/proposed-fungi-native-mapping.ts:3",
       "ref packages-ts/galerina-target-native/src/proposed-fungi-native-mapping.ts:16",
       "test packages-ts/galerina-target-native/tests/native-diagnostic-closed-set.test.mjs:172",
       "test packages-ts/galerina-target-native/tests/native-hold-pin.test.mjs:89",
       "test packages-ts/galerina-target-native/tests/native-hold-pin.test.mjs:126",
+      "doc packages-ts/galerina-target-native/TODO.md:80",
       "doc docs/registry/crr-01-decision.md:11",
       "ref scripts/lib/code-meanings.mjs:57",
       "test scripts/tests/crr-01.test.mjs:185",
@@ -25689,12 +25693,12 @@
       "doc packages-ts/galerina-core-network/README.md:450",
       "doc packages-ts/galerina-core-network/README.md:469",
       "doc packages-ts/galerina-core-network/README.md:473",
-      "doc packages-ts/galerina-core-network/TODO.md:77",
-      "doc packages-ts/galerina-core-network/TODO.md:81",
       "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:1",
       "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:5",
       "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:88",
       "test packages-ts/galerina-core-network/tests/governed-network-runtime.test.mjs:49",
+      "doc packages-ts/galerina-core-network/TODO.md:77",
+      "doc packages-ts/galerina-core-network/TODO.md:81",
       "test packages-ts/galerina-core-reports/tests/evidence-reports.test.mjs:178",
       "test packages-ts/galerina-core-reports/tests/evidence-reports.test.mjs:191",
       "doc docs/COVERAGE.md:502"
@@ -25738,9 +25742,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-network/README.md:452",
       "doc packages-ts/galerina-core-network/README.md:475",
-      "doc packages-ts/galerina-core-network/TODO.md:41",
       "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:9",
-      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:113"
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:113",
+      "doc packages-ts/galerina-core-network/TODO.md:41"
     ]
   },
   {
@@ -25843,9 +25847,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-network/README.md:457",
       "doc packages-ts/galerina-core-network/README.md:480",
-      "doc packages-ts/galerina-core-network/TODO.md:77",
       "ref packages-ts/galerina-core-network/src/diagnostics/network-codes.ts:19",
-      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:192"
+      "ref packages-ts/galerina-core-network/src/runtime/governed-network.ts:192",
+      "doc packages-ts/galerina-core-network/TODO.md:77"
     ]
   },
   {
@@ -25865,7 +25869,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:396",
       "ref packages-ts/galerina-core-compiler/src/bytecode-vm.ts:101",
       "ref packages-ts/galerina-core-compiler/src/i64-arith.ts:12",
       "ref packages-ts/galerina-core-compiler/src/i64-arith.ts:18",
@@ -25910,6 +25913,7 @@
       "test packages-ts/galerina-core-compiler/tests/wat-i64-lift-readiness.test.mjs:11",
       "test packages-ts/galerina-core-compiler/tests/wat-i64-lift-readiness.test.mjs:25",
       "test packages-ts/galerina-core-compiler/tests/wat-i64-milestone.test.mjs:9",
+      "doc packages-ts/galerina-core-compiler/TODO.md:396",
       "ref packages-ts/galerina-devtools-hypha/src/extract.mjs:374",
       "ref galerina.mjs:1513",
       "ref galerina.mjs:1612",
@@ -26189,13 +26193,13 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:396",
-      "doc packages-ts/galerina-core-logic/TODO.md:44",
       "ref packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:32",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-omni-001-direct-boundary-use.fungi:5",
       "test packages-ts/galerina-core-logic/tests/core-logic-hold-pin.test.mjs:84",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:683",
+      "doc packages-ts/galerina-core-logic/TODO.md:44",
       "doc docs/COVERAGE.md:461",
       "doc docs/galerina-core-logic-omni-logic.md:773"
     ]
@@ -26324,7 +26328,6 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:396",
-      "doc packages-ts/galerina-core-logic/TODO.md:44",
       "ref packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:24",
       "emit packages-ts/galerina-core-logic/src/omni/omni-diagnostics.ts:78",
@@ -26333,6 +26336,7 @@
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:687",
       "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:96",
       "test packages-ts/galerina-core-logic/tests/omni-reasoning-trace.test.mjs:107",
+      "doc packages-ts/galerina-core-logic/TODO.md:44",
       "doc docs/galerina-core-logic-omni-logic.md:777"
     ]
   },
@@ -26505,12 +26509,9 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker-generic-assignment.test.mjs:18",
       "test packages-ts/galerina-core-compiler/tests/value-state-secret-source-precision.test.mjs:131",
       "test packages-ts/galerina-core-compiler/tests/value-state-secret-source-precision.test.mjs:615",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:358",
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:360",
       "doc packages/fungi/memory/evidence/45-host-adapter-audit/audit.md:96",
       "test packages/fungi/memory/tests/45-host-adapter-audit/live-intrinsics.test.mjs:186",
-      "doc docs/TODO.md:14490",
-      "doc docs/TODO.md:14592",
-      "doc docs/TODO.md:14615",
       "doc docs/examples/EXAMPLES_INDEX.md:86",
       "fungi docs/examples/Level-2-Types/070-auto-invalid/example.fungi:6",
       "doc docs/examples/Level-2-Types/096-hallmark-reserved-name/notes.md:19",
@@ -26523,6 +26524,9 @@
       "doc docs/language/fungi/07-control-flow.md:280",
       "doc docs/language/fungi/07-control-flow.md:321",
       "doc docs/language/fungi/README.md:78",
+      "doc docs/TODO.md:14494",
+      "doc docs/TODO.md:14596",
+      "doc docs/TODO.md:14619",
       "ref scripts/audit-syntax.mjs:4",
       "ref scripts/rebuild-fusable-packages.mjs:138",
       "test scripts/tests/logic-aig-source-origin-contract.test.mjs:1710",
@@ -26618,8 +26622,8 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:124",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:127",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:131",
-      "doc docs/TODO.md:14140",
-      "doc docs/architecture/slide-v2-status-and-implementation-plan-2026-07-29.md:450"
+      "doc docs/architecture/slide-v2-status-and-implementation-plan-2026-07-29.md:450",
+      "doc docs/TODO.md:14144"
     ]
   },
   {
@@ -26714,10 +26718,10 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:207",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:215",
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:356",
-      "doc docs/TODO.md:14406",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:59",
       "doc docs/security/rd0528-compiler-stages-evidence-pack.md:64",
-      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:90"
+      "doc docs/security/rd0528-compiler-stages-evidence-pack.md:90",
+      "doc docs/TODO.md:14410"
     ]
   },
   {
@@ -26744,8 +26748,8 @@
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/parser.fungi:2856",
       "test packages-ts/galerina-core-compiler/tests/parser.test.mjs:450",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser.test.mjs:303",
-      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:379",
       "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:266",
+      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:379",
       "doc docs/language/fungi/04-types-and-values.md:68",
       "doc docs/superpowers/plans/2026-08-04-canonical-records-and-call-resolution.md:28",
       "doc docs/superpowers/plans/2026-08-04-canonical-records-and-call-resolution.md:49",
@@ -26781,12 +26785,12 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:79",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:67",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-parser-failclosed.test.mjs:75",
-      "doc docs/ROADMAP.md:2477",
-      "doc docs/TODO.md:9356",
-      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:397",
       "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:268",
+      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:397",
       "doc docs/independent-audits/2026-09-22-full-record-copy-hold.md:114",
-      "doc docs/language/fungi/04-types-and-values.md:74"
+      "doc docs/language/fungi/04-types-and-values.md:74",
+      "doc docs/ROADMAP.md:2477",
+      "doc docs/TODO.md:9360"
     ]
   },
   {
@@ -26810,7 +26814,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:49",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:417",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:436",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:488",
@@ -26836,6 +26839,7 @@
       "test packages-ts/galerina-core-compiler/tests/parser/parse-depth-guard.test.mjs:33",
       "test packages-ts/galerina-core-compiler/tests/parser/parse-depth-guard.test.mjs:36",
       "test packages-ts/galerina-core-compiler/tests/parser/parse-depth-guard.test.mjs:42",
+      "doc packages-ts/galerina-core-compiler/TODO.md:49",
       "doc docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md:15",
       "doc docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md:56",
       "doc docs/independent-audits/2026-09-22-parse-depth-source-bounds-hold.md:78",
@@ -26869,9 +26873,9 @@
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:6",
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:32",
       "test packages-ts/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:36",
-      "doc docs/TODO.md:15321",
       "doc docs/reference/value-states.md:118",
-      "doc docs/reference/value-states.md:134"
+      "doc docs/reference/value-states.md:134",
+      "doc docs/TODO.md:15325"
     ]
   },
   {
@@ -27712,13 +27716,13 @@
       "doc packages-ts/galerina-core-photonic/TODO.md:104",
       "doc packages-ts/galerina-core-photonic/TODO.md:123",
       "doc packages-ts/galerina-core-vector/README.md:86",
-      "doc packages-ts/galerina-target-photonic/TODO.md:42",
       "ref packages-ts/galerina-target-photonic/src/index.ts:197",
       "ref packages-ts/galerina-target-photonic/src/index.ts:201",
       "test packages-ts/galerina-target-photonic/tests/photonic-fungi-codes-closed-set.test.mjs:64",
       "test packages-ts/galerina-target-photonic/tests/photonic-fungi-codes-closed-set.test.mjs:25",
       "test packages-ts/galerina-target-photonic/tests/photonic-fungi-codes-closed-set.test.mjs:29",
       "test packages-ts/galerina-target-photonic/tests/photonic-fungi-codes-closed-set.test.mjs:43",
+      "doc packages-ts/galerina-target-photonic/TODO.md:42",
       "doc docs/ARCHITECTURE.md:139",
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:367",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:140",
@@ -27733,7 +27737,7 @@
       "doc docs/REQUIREMENTS.md:128",
       "doc docs/TASKS.md:155",
       "doc docs/TODO-MISSING-RD.md:395",
-      "doc docs/TODO.md:3542"
+      "doc docs/TODO.md:3546"
     ]
   },
   {
@@ -27938,9 +27942,9 @@
       "doc docs/BLOCKER-CHAPTERS-NON-EVIDENCE-2026-09-21.md:719",
       "doc docs/BLOCKER-MANIFEST-NON-EVIDENCE-2026-09-20.md:134",
       "doc docs/COVERAGE.md:48",
-      "doc docs/TODO.md:3471",
-      "doc docs/TODO.md:3574",
-      "doc docs/TODO.md:4206"
+      "doc docs/TODO.md:3475",
+      "doc docs/TODO.md:3578",
+      "doc docs/TODO.md:4210"
     ]
   },
   {
@@ -28930,9 +28934,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:152",
       "doc packages-ts/galerina-core-cli/README.md:402",
+      "def packages-ts/galerina-core-cli/src/plan/plan-contracts.ts:18",
       "doc packages-ts/galerina-core-cli/TODO.md:72",
       "doc packages-ts/galerina-core-cli/TODO.md:73",
-      "def packages-ts/galerina-core-cli/src/plan/plan-contracts.ts:18",
       "doc docs/COVERAGE.md:449"
     ]
   },
@@ -28994,8 +28998,8 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:152",
-      "doc packages-ts/galerina-core-cli/TODO.md:73",
-      "def packages-ts/galerina-core-cli/src/plan/plan-contracts.ts:24"
+      "def packages-ts/galerina-core-cli/src/plan/plan-contracts.ts:24",
+      "doc packages-ts/galerina-core-cli/TODO.md:73"
     ]
   },
   {
@@ -29078,17 +29082,17 @@
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2256",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:2283",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:2284",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3345",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4159",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:3346",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:4160",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:11",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:57",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:58",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:59",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:61",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:62",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:45",
       "doc docs/examples/README.md:24",
-      "doc docs/examples/README.md:147"
+      "doc docs/examples/README.md:147",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:45"
     ]
   },
   {
@@ -29121,8 +29125,8 @@
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:67",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:68",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:71",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:45",
-      "doc docs/examples/README.md:148"
+      "doc docs/examples/README.md:148",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:45"
     ]
   },
   {
@@ -29152,8 +29156,8 @@
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:46",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:47",
       "test packages-ts/galerina-core-compiler/tests/prefilter-construct.test.mjs:50",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:45",
-      "doc docs/examples/README.md:149"
+      "doc docs/examples/README.md:149",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:45"
     ]
   },
   {
@@ -29206,10 +29210,10 @@
       "test packages-ts/galerina-core-compiler/tests/governance/rd-fungi-privacy-canonicality-guard.test.mjs:113",
       "test packages-ts/galerina-core-compiler/tests/governance/rd-fungi-privacy-canonicality-guard.test.mjs:117",
       "test packages-ts/galerina-core-compiler/tests/security-gate-coverage.test.mjs:71",
-      "doc docs/TODO.md:15071",
-      "doc docs/TODO.md:15203",
-      "doc docs/TODO.md:15218",
-      "doc docs/TODO.md:15233"
+      "doc docs/TODO.md:15075",
+      "doc docs/TODO.md:15207",
+      "doc docs/TODO.md:15222",
+      "doc docs/TODO.md:15237"
     ]
   },
   {
@@ -29288,10 +29292,6 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:856",
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:858",
       "ref packages-ts/galerina-tower-citizen/src/substrate-erasure.ts:56",
-      "doc docs/TODO.md:9186",
-      "doc docs/TODO.md:15032",
-      "doc docs/TODO.md:15412",
-      "doc docs/TODO.md:15419",
       "doc docs/language/gate/02-clauses.md:152",
       "doc docs/language/gate/04-nodes-verdicts-drains.md:24",
       "doc docs/language/gate/05-fungi-delegation.md:74",
@@ -29304,6 +29304,10 @@
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:62",
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:102",
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:129",
+      "doc docs/TODO.md:9190",
+      "doc docs/TODO.md:15036",
+      "doc docs/TODO.md:15416",
+      "doc docs/TODO.md:15423",
       "ref scripts/audit-muted-diagnostics.mjs:44",
       "ref scripts/code-index.mjs:275",
       "ref scripts/kb-index.mjs:9",
@@ -29697,10 +29701,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:76",
       "ref packages-ts/galerina-core-cli/src/promote/promote-command.ts:237",
       "def packages-ts/galerina-core-cli/src/promote/promote-contracts.ts:23",
-      "ref packages-ts/galerina-core-cli/src/promote/promote-contracts.ts:380"
+      "ref packages-ts/galerina-core-cli/src/promote/promote-contracts.ts:380",
+      "doc packages-ts/galerina-core-cli/TODO.md:76"
     ]
   },
   {
@@ -29800,10 +29804,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:388",
-      "doc packages-ts/galerina-core-reports/TODO.md:52",
       "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:14",
       "ref packages-ts/galerina-core-reports/src/proofs/proof-validator.ts:16",
-      "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:20"
+      "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:20",
+      "doc packages-ts/galerina-core-reports/TODO.md:52"
     ]
   },
   {
@@ -29890,10 +29894,10 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:388",
-      "doc packages-ts/galerina-core-reports/TODO.md:52",
       "ref packages-ts/galerina-core-reports/src/proofs/proof-report.ts:24",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:24",
-      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:142"
+      "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:142",
+      "doc packages-ts/galerina-core-reports/TODO.md:52"
     ]
   },
   {
@@ -30158,15 +30162,15 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:387",
-      "doc packages-ts/galerina-core-reports/TODO.md:31",
-      "doc packages-ts/galerina-core-reports/TODO.md:35",
-      "doc packages-ts/galerina-core-reports/TODO.md:113",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:42",
       "ref packages-ts/galerina-core-reports/src/shared/report-codes.ts:12",
       "test packages-ts/galerina-core-reports/tests/core-reports-hold-pin.test.mjs:86",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-closed-set.test.mjs:57",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-closed-set.test.mjs:131",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:58",
+      "doc packages-ts/galerina-core-reports/TODO.md:31",
+      "doc packages-ts/galerina-core-reports/TODO.md:35",
+      "doc packages-ts/galerina-core-reports/TODO.md:113",
       "doc packages-ts/galerina-devtools-project-graph/README.md:201",
       "emit packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:59",
       "ref packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:60",
@@ -30214,7 +30218,6 @@
     "allSites": [
       "test packages-ts/galerina-core-cli/tests/verify-command.test.mjs:246",
       "test packages-ts/galerina-core-cli/tests/verify-runtime.test.mjs:95",
-      "doc packages-ts/galerina-core-reports/TODO.md:45",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:40",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:41",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:43",
@@ -30316,6 +30319,7 @@
       "test packages-ts/galerina-core-reports/tests/scheduler-evidence.test.mjs:105",
       "test packages-ts/galerina-core-reports/tests/scheduler-evidence.test.mjs:110",
       "test packages-ts/galerina-core-reports/tests/scheduler-evidence.test.mjs:111",
+      "doc packages-ts/galerina-core-reports/TODO.md:45",
       "test scripts/tests/code-index-generator.test.mjs:81",
       "test scripts/tests/code-index-generator.test.mjs:83",
       "test scripts/tests/code-index-generator.test.mjs:158",
@@ -30446,7 +30450,6 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-reports/README.md:387",
-      "doc packages-ts/galerina-core-reports/TODO.md:31",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:61",
       "ref packages-ts/galerina-core-reports/src/audit/audit-events.ts:65",
       "emit packages-ts/galerina-core-reports/src/audit/audit-jsonl.ts:36",
@@ -30461,6 +30464,7 @@
       "test packages-ts/galerina-core-reports/tests/runtime-audit-closed-set.test.mjs:57",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-closed-set.test.mjs:131",
       "test packages-ts/galerina-core-reports/tests/runtime-audit-v02.test.mjs:62",
+      "doc packages-ts/galerina-core-reports/TODO.md:31",
       "emit packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:122",
       "ref packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:123",
       "emit packages-ts/galerina-devtools-project-graph/src/reporting/jsonl.ts:170"
@@ -31850,7 +31854,7 @@
       "test packages-ts/galerina-core-compiler/tests/security-gate-coverage.test.mjs:31",
       "test packages-ts/galerina-core-compiler/tests/signing-boundary-matrix.test.mjs:85",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:139",
-      "doc docs/TODO.md:15300"
+      "doc docs/TODO.md:15304"
     ]
   },
   {
@@ -31929,8 +31933,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:58",
-      "def packages-ts/galerina-core-security/src/ai-authority-contracts.ts:25"
+      "def packages-ts/galerina-core-security/src/ai-authority-contracts.ts:25",
+      "doc packages-ts/galerina-core-security/TODO.md:58"
     ]
   },
   {
@@ -32030,8 +32034,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:56",
-      "def packages-ts/galerina-core-security/src/capability-contracts.ts:26"
+      "def packages-ts/galerina-core-security/src/capability-contracts.ts:26",
+      "doc packages-ts/galerina-core-security/TODO.md:56"
     ]
   },
   {
@@ -32131,8 +32135,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:66",
-      "def packages-ts/galerina-core-security/src/crypto-inventory.ts:34"
+      "def packages-ts/galerina-core-security/src/crypto-inventory.ts:34",
+      "doc packages-ts/galerina-core-security/TODO.md:66"
     ]
   },
   {
@@ -32232,8 +32236,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:57",
-      "def packages-ts/galerina-core-security/src/capability-lease-contracts.ts:25"
+      "def packages-ts/galerina-core-security/src/capability-lease-contracts.ts:25",
+      "doc packages-ts/galerina-core-security/TODO.md:57"
     ]
   },
   {
@@ -32333,8 +32337,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:60",
-      "def packages-ts/galerina-core-security/src/owasp-cwe-mapping.ts:26"
+      "def packages-ts/galerina-core-security/src/owasp-cwe-mapping.ts:26",
+      "doc packages-ts/galerina-core-security/TODO.md:60"
     ]
   },
   {
@@ -32452,8 +32456,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:55",
-      "def packages-ts/galerina-core-security/src/policy-contracts.ts:25"
+      "def packages-ts/galerina-core-security/src/policy-contracts.ts:25",
+      "doc packages-ts/galerina-core-security/TODO.md:55"
     ]
   },
   {
@@ -32554,8 +32558,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-security/TODO.md:67",
-      "def packages-ts/galerina-core-security/src/secure-random-examples.ts:35"
+      "def packages-ts/galerina-core-security/src/secure-random-examples.ts:35",
+      "doc packages-ts/galerina-core-security/TODO.md:67"
     ]
   },
   {
@@ -32663,7 +32667,6 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core/DEMO_HELLO_WORLD.md:116",
-      "doc packages-ts/galerina-core-compiler/TODO.md:133",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:37",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:138",
       "ref packages-ts/galerina-core-compiler/src/stdlib.ts:2179",
@@ -32844,6 +32847,7 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:661",
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:669",
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:679",
+      "doc packages-ts/galerina-core-compiler/TODO.md:133",
       "doc packages-ts/galerina-core-security/README.md:16",
       "doc packages-ts/galerina-core-security/README.md:179",
       "doc packages-ts/galerina-core-security/README.md:305",
@@ -32855,9 +32859,8 @@
       "doc packages-ts/galerina-core-security/TODO.md:44",
       "doc packages-ts/galerina-core-security/TODO.md:48",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:132",
-      "doc docs/COVERAGE.md:271",
-      "doc docs/TODO.md:2976",
       "doc docs/contract-authoring-model.md:120",
+      "doc docs/COVERAGE.md:271",
       "doc docs/examples/EXAMPLES_INDEX.md:168",
       "doc docs/examples/EXAMPLES_INDEX.md:169",
       "doc docs/examples/Level-1-Basics/026-pure-flow-main/notes.md:28",
@@ -32881,6 +32884,7 @@
       "doc docs/patterns/applications/08-secrets.md:146",
       "doc docs/reference/value-states.md:93",
       "doc docs/reference/value-states.md:132",
+      "doc docs/TODO.md:2980",
       "ref scripts/audit-reference-doc-drift.mjs:65",
       "ref scripts/audit-registry-fixtures.mjs:200",
       "ref scripts/audit-registry-fixtures.mjs:206"
@@ -32958,8 +32962,6 @@
       "doc packages-ts/galerina-core-security/TODO.md:47",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:133",
       "ref packages-ts/galerina-tower-citizen/src/substrate-erasure.ts:56",
-      "doc docs/TODO.md:15184",
-      "doc docs/TODO.md:15318",
       "doc docs/examples/EXAMPLES_INDEX.md:166",
       "fungi docs/examples/Level-4-Security/169-secret-comparison/example.fungi:5",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:48",
@@ -32968,6 +32970,8 @@
       "doc docs/patterns/applications/08-secrets.md:14",
       "doc docs/patterns/applications/08-secrets.md:38",
       "doc docs/reference/value-states.md:93",
+      "doc docs/TODO.md:15188",
+      "doc docs/TODO.md:15322",
       "ref scripts/audit-muted-diagnostics.mjs:42",
       "ref scripts/audit-registry-fixtures.mjs:26"
     ]
@@ -33018,9 +33022,9 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:1018",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:134",
       "doc docs/examples/EXAMPLES_INDEX.md:174",
-      "doc docs/examples/Level-4-Security/177-secret-serialization/INDEX.md:13",
       "fungi docs/examples/Level-4-Security/177-secret-serialization/example.fungi:5",
       "fungi docs/examples/Level-4-Security/177-secret-serialization/example.fungi:13",
+      "doc docs/examples/Level-4-Security/177-secret-serialization/INDEX.md:13",
       "doc docs/examples/Level-4-Security/177-secret-serialization/notes.md:3",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:10",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:61",
@@ -33214,12 +33218,12 @@
       "ref packages-ts/galerina-core-compiler/src/value-state-checker.ts:3813",
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:1048",
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:1058",
-      "doc docs/TODO.md:13044",
       "doc docs/examples/EXAMPLES_INDEX.md:259",
       "fungi docs/examples/Level-7-AI/358-ai-secure-string-in-ai/example.fungi:6",
       "fungi docs/examples/Level-7-AI/358-ai-secure-string-in-ai/example.fungi:12",
       "fungi docs/examples/Level-7-AI/358-ai-secure-string-in-ai/example.fungi:30",
-      "doc docs/examples/Level-7-AI/358-ai-secure-string-in-ai/notes.md:5"
+      "doc docs/examples/Level-7-AI/358-ai-secure-string-in-ai/notes.md:5",
+      "doc docs/TODO.md:13048"
     ]
   },
   {
@@ -33750,7 +33754,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc docs/TODO.md:14489"
+      "doc docs/TODO.md:14493"
     ]
   },
   {
@@ -34141,12 +34145,12 @@
       "test packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:209",
       "test packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:218",
       "test packages-ts/galerina-tower-citizen/tests/substrate-model.test.mjs:221",
-      "doc docs/SYNTAX_UPDATE_PLAN.md:21",
       "doc docs/paper/defensive-papers/dp-rd-0170-l3-cache-colouring-auth-isolation.md:137",
       "doc docs/paper/defensive-papers/physics-as-authority-fallacy-refutation-corpus-defensive-publication-2026-07-08.md:50",
       "doc docs/paper/defensive-papers/spore-trust-capsule-format-defensive-publication-2026-06-23.md:37",
       "doc docs/reference/effects.md:201",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:38",
+      "doc docs/SYNTAX_UPDATE_PLAN.md:21",
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:16",
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:293",
       "ref scripts/rd-0157-0159-virtual-wavefront-silicon-proof.mjs:514",
@@ -34713,10 +34717,10 @@
       "test packages-ts/galerina-core-compiler/tests/governance/unknown-block-reject.test.mjs:110",
       "test packages-ts/galerina-core-compiler/tests/secrets-body-retention-110.test.mjs:113",
       "doc docs/ANTI_HALLUCINATION.md:61",
-      "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
-      "doc docs/TODO.md:14928",
       "fungi docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi:29",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:89",
+      "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
+      "doc docs/TODO.md:14932",
       "ref scripts/audit-fungi-corpus-check.mjs:8",
       "ref scripts/audit-fungi-corpus-check.mjs:221",
       "ref scripts/audit-fungi-corpus-check.mjs:1102",
@@ -34773,7 +34777,7 @@
       "test packages-ts/galerina-core-compiler/tests/governance/unknown-block-reject.test.mjs:124",
       "test packages-ts/galerina-core-compiler/tests/governance/unknown-block-reject.test.mjs:137",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
-      "doc docs/TODO.md:14929"
+      "doc docs/TODO.md:14933"
     ]
   },
   {
@@ -34806,9 +34810,9 @@
       "test packages-ts/galerina-core-compiler/tests/version-header.test.mjs:36",
       "test packages-ts/galerina-core-compiler/tests/version-header.test.mjs:43",
       "test packages-ts/galerina-core-compiler/tests/version-header.test.mjs:69",
+      "doc docs/examples/README.md:25",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:37",
-      "doc docs/TODO.md:14932",
-      "doc docs/examples/README.md:25"
+      "doc docs/TODO.md:14936"
     ]
   },
   {
@@ -35061,8 +35065,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:133",
-      "doc packages-ts/galerina-core-compiler/TODO.md:151",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:19",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:109",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:172",
@@ -35114,6 +35116,8 @@
       "test packages-ts/galerina-core-compiler/tests/security-denial-paths.test.mjs:116",
       "test packages-ts/galerina-core-compiler/tests/security-gate-coverage.test.mjs:23",
       "test packages-ts/galerina-core-compiler/tests/signing-boundary-matrix.test.mjs:67",
+      "doc packages-ts/galerina-core-compiler/TODO.md:133",
+      "doc packages-ts/galerina-core-compiler/TODO.md:151",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:102",
       "ref packages-ts/galerina-devtools-security/src/test-helpers.ts:10",
       "test packages-ts/galerina-devtools-security/tests/secaudit-indeterminate.test.mjs:58",
@@ -35309,7 +35313,6 @@
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:190",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:212",
       "test packages-ts/galerina-core-compiler/tests/governance-verifier.test.mjs:213",
-      "doc docs/ROADMAP.md:3870",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4580",
       "doc docs/examples/EXAMPLES_INDEX.md:294",
       "doc docs/examples/EXAMPLES_INDEX.md:296",
@@ -35323,7 +35326,8 @@
       "doc docs/examples/Level-8-Targets/AI_SUMMARY.md:12",
       "doc docs/examples/Level-8-Targets/AI_SUMMARY.md:42",
       "doc docs/examples/Level-8-Targets/AI_SUMMARY.md:51",
-      "doc docs/examples/Level-9-Enterprise/AI_SUMMARY.md:63"
+      "doc docs/examples/Level-9-Enterprise/AI_SUMMARY.md:63",
+      "doc docs/ROADMAP.md:3870"
     ]
   },
   {
@@ -35366,8 +35370,8 @@
       "test packages-ts/galerina-core-compiler/tests/governance/tenant-isolation.test.mjs:124",
       "test packages-ts/galerina-core-compiler/tests/leak-proof.test.mjs:55",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:57",
-      "doc docs/TODO.md:14738",
-      "doc docs/TODO.md:14868"
+      "doc docs/TODO.md:14742",
+      "doc docs/TODO.md:14872"
     ]
   },
   {
@@ -35621,7 +35625,6 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:307",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:691",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:689",
       "ref packages-ts/galerina-core-compiler/src/effect-checker.ts:1392",
@@ -35654,9 +35657,9 @@
       "test packages-ts/galerina-core-compiler/tests/tier-floor-fungi-tier-001.test.mjs:101",
       "test packages-ts/galerina-core-compiler/tests/tier-floor-fungi-tier-001.test.mjs:111",
       "test packages-ts/galerina-core-compiler/tests/tier-floor-fungi-tier-001.test.mjs:112",
+      "doc packages-ts/galerina-core-compiler/TODO.md:307",
       "test packages-ts/galerina-core-security/tests/dss-audit-effects.test.mjs:188",
       "test packages-ts/galerina-core-security/tests/dss-audit-effects.test.mjs:194",
-      "doc docs/TODO.md:14491",
       "doc docs/contract-authoring-model.md:27",
       "fungi docs/examples/Level-5-Governance/228-global-vault-mut-write/example.fungi:30",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:21",
@@ -35669,6 +35672,7 @@
       "doc docs/reference/effects.md:91",
       "doc docs/reference/effects.md:163",
       "doc docs/reports/rd-0873-native-fungi-assurance.md:66",
+      "doc docs/TODO.md:14495",
       "ref scripts/audit-example-diagnostics.mjs:234",
       "ref scripts/audit-example-diagnostics.mjs:236",
       "ref scripts/audit-twin-differential.mjs:26",
@@ -35798,12 +35802,12 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:378",
-      "doc packages-ts/galerina-core-logic/TODO.md:20",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-tri-001-invalid-tristate.fungi:5",
       "ref packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:11",
       "def packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:12",
       "emit packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:32",
       "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:271",
+      "doc packages-ts/galerina-core-logic/TODO.md:20",
       "doc docs/COVERAGE.md:458"
     ]
   },
@@ -35921,12 +35925,12 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-logic/README.md:378",
-      "doc packages-ts/galerina-core-logic/TODO.md:20",
       "fungi packages-ts/galerina-core-logic/src/self-hosted/fungi-tri-005-malformed-unknown-reason.fungi:5",
       "ref packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:23",
       "def packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:24",
       "emit packages-ts/galerina-core-logic/src/tri/tri-diagnostics.ts:74",
-      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:275"
+      "test packages-ts/galerina-core-logic/tests/logic-v02-contracts.test.mjs:275",
+      "doc packages-ts/galerina-core-logic/TODO.md:20"
     ]
   },
   {
@@ -35972,9 +35976,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:107",
-      "doc packages-ts/galerina-core-compiler/TODO.md:132",
-      "doc packages-ts/galerina-core-compiler/TODO.md:335",
       "ref packages-ts/galerina-core-compiler/scripts/cec-audit.mjs:35",
       "ref packages-ts/galerina-core-compiler/scripts/cec-audit.mjs:146",
       "ref packages-ts/galerina-core-compiler/scripts/cec-audit.mjs:150",
@@ -36289,16 +36290,16 @@
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:140",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:145",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:190",
-      "doc docs/TODO-MISSING-RD.md:115",
-      "doc docs/TODO-MISSING-RD.md:1130",
-      "doc docs/TODO.md:3486",
+      "doc packages-ts/galerina-core-compiler/TODO.md:107",
+      "doc packages-ts/galerina-core-compiler/TODO.md:132",
+      "doc packages-ts/galerina-core-compiler/TODO.md:335",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4088",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4097",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4099",
       "doc docs/examples/EXAMPLES_INDEX.md:100",
-      "doc docs/examples/Level-2-Types/084-unknown-type/INDEX.md:13",
       "fungi docs/examples/Level-2-Types/084-unknown-type/example.fungi:5",
       "fungi docs/examples/Level-2-Types/084-unknown-type/example.fungi:6",
+      "doc docs/examples/Level-2-Types/084-unknown-type/INDEX.md:13",
       "doc docs/examples/Level-2-Types/084-unknown-type/notes.md:3",
       "doc docs/examples/Level-2-Types/094-hallmark-declaration/notes.md:32",
       "doc docs/examples/README.md:71",
@@ -36317,6 +36318,9 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:86",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:88",
+      "doc docs/TODO-MISSING-RD.md:115",
+      "doc docs/TODO-MISSING-RD.md:1130",
+      "doc docs/TODO.md:3490",
       "ref scripts/audit-codes-full.mjs:88",
       "ref scripts/audit-codes-full.mjs:89",
       "ref scripts/audit-example-diagnostics.mjs:225",
@@ -36355,9 +36359,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:164",
-      "doc packages-ts/galerina-core-compiler/TODO.md:287",
-      "doc packages-ts/galerina-core-compiler/TODO.md:409",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:15",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:20",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:33",
@@ -36526,21 +36527,24 @@
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:262",
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:269",
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:295",
-      "doc docs/TODO.md:3219",
-      "doc docs/TODO.md:4057",
-      "doc docs/TODO.md:4074",
-      "doc docs/TODO.md:4087",
-      "doc docs/TODO.md:4273",
+      "doc packages-ts/galerina-core-compiler/TODO.md:164",
+      "doc packages-ts/galerina-core-compiler/TODO.md:287",
+      "doc packages-ts/galerina-core-compiler/TODO.md:409",
       "doc docs/examples/EXAMPLES_INDEX.md:101",
-      "doc docs/examples/Level-2-Types/085-type-mismatch/INDEX.md:13",
       "fungi docs/examples/Level-2-Types/085-type-mismatch/example.fungi:5",
       "fungi docs/examples/Level-2-Types/085-type-mismatch/example.fungi:6",
+      "doc docs/examples/Level-2-Types/085-type-mismatch/INDEX.md:13",
       "doc docs/examples/Level-2-Types/085-type-mismatch/notes.md:3",
       "doc docs/examples/Level-2-Types/097-hallmark-gate-bypass-invalid/notes.md:16",
       "doc docs/examples/Level-2-Types/AI_SUMMARY.md:46",
       "doc docs/examples/Level-2-Types/AI_SUMMARY.md:50",
       "doc docs/examples/README.md:82",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
+      "doc docs/TODO.md:3223",
+      "doc docs/TODO.md:4061",
+      "doc docs/TODO.md:4078",
+      "doc docs/TODO.md:4091",
+      "doc docs/TODO.md:4277",
       "ref scripts/audit-mutation.mjs:655",
       "ref scripts/audit-twin-emit-parity.mjs:175",
       "ref scripts/audit-twin-emit-parity.mjs:181",
@@ -36664,6 +36668,8 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1074",
       "doc docs/examples/EXAMPLES_INDEX.md:76",
       "doc docs/examples/EXAMPLES_INDEX.md:154",
+      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:291",
+      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:315",
       "fungi docs/examples/Level-2-Types/060-invalid-email-assignment/example.fungi:6",
       "doc docs/examples/Level-2-Types/094-hallmark-declaration/notes.md:30",
       "fungi docs/examples/Level-2-Types/097-hallmark-gate-bypass-invalid/example.fungi:5",
@@ -36674,8 +36680,6 @@
       "fungi docs/examples/Level-4-Security/157-invalid-email-assignment/example.fungi:6",
       "doc docs/examples/README.md:23",
       "doc docs/examples/README.md:83",
-      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:291",
-      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:315",
       "doc docs/language/fungi/04-types-and-values.md:198",
       "doc docs/language/fungi/DO-DONT-TERNARY.md:20",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:58",
@@ -36723,7 +36727,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:301",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:37",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:41",
       "ref packages-ts/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:45",
@@ -36927,6 +36930,7 @@
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:83",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:171",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:175",
+      "doc packages-ts/galerina-core-compiler/TODO.md:301",
       "doc docs/examples/EXAMPLES_INDEX.md:89",
       "doc docs/examples/EXAMPLES_INDEX.md:92",
       "doc docs/examples/EXAMPLES_INDEX.md:94",
@@ -36993,9 +36997,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:195",
-      "doc packages-ts/galerina-core-compiler/TODO.md:297",
-      "doc packages-ts/galerina-core-compiler/TODO.md:298",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:387",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:428",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:1544",
@@ -37086,12 +37087,15 @@
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:324",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:377",
       "test packages-ts/galerina-core-compiler/tests/wat-p9-typechecker-parity.test.mjs:186",
-      "doc docs/TODO.md:4075",
-      "doc docs/TODO.md:4087",
+      "doc packages-ts/galerina-core-compiler/TODO.md:195",
+      "doc packages-ts/galerina-core-compiler/TODO.md:297",
+      "doc packages-ts/galerina-core-compiler/TODO.md:298",
       "doc docs/architecture/self-hosting-evolution-plan-2026-07-10.md:28",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4087",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4089",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:4103"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:4103",
+      "doc docs/TODO.md:4079",
+      "doc docs/TODO.md:4091"
     ]
   },
   {
@@ -37142,7 +37146,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:298",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:388",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:429",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:1543",
@@ -37184,8 +37187,9 @@
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:78",
       "test packages-ts/galerina-core-compiler/tests/wat-p9-typechecker-parity.test.mjs:187",
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:358",
-      "doc docs/TODO.md:4057",
-      "doc docs/examples/README.md:86"
+      "doc packages-ts/galerina-core-compiler/TODO.md:298",
+      "doc docs/examples/README.md:86",
+      "doc docs/TODO.md:4061"
     ]
   },
   {
@@ -37209,7 +37213,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:299",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:22",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:389",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/type-checker.fungi:430",
@@ -37305,10 +37308,11 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:866",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1126",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:73",
-      "doc docs/TODO.md:3953",
-      "doc docs/TODO.md:4075",
-      "doc docs/TODO.md:4087",
-      "doc docs/examples/README.md:87"
+      "doc packages-ts/galerina-core-compiler/TODO.md:299",
+      "doc docs/examples/README.md:87",
+      "doc docs/TODO.md:3957",
+      "doc docs/TODO.md:4079",
+      "doc docs/TODO.md:4091"
     ]
   },
   {
@@ -37455,7 +37459,6 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:250",
       "test packages-ts/galerina-core-compiler/tests/value-state/authority-use-state.test.mjs:183",
       "doc packages/fungi/memory/evidence/45-host-adapter-audit/audit.md:96",
-      "doc docs/TODO.md:4029",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4094",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4557",
       "doc docs/examples/EXAMPLES_INDEX.md:81",
@@ -37470,18 +37473,19 @@
       "fungi docs/examples/Level-2-Types/083-readonly-view-invalid/example.fungi:6",
       "fungi docs/examples/Level-6-Compute/306-tensor-arity-invalid/example.fungi:6",
       "doc docs/examples/Level-6-Compute/306-tensor-arity-invalid/notes.md:5",
-      "doc docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/INDEX.md:13",
       "fungi docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/example.fungi:5",
       "fungi docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/example.fungi:6",
       "fungi docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/example.fungi:12",
       "fungi docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/example.fungi:18",
       "fungi docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/example.fungi:26",
+      "doc docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/INDEX.md:13",
       "doc docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/notes.md:3",
       "doc docs/examples/README.md:88",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:57",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:64",
       "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:47",
-      "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:51"
+      "doc docs/superpowers/plans/2026-08-02-generic-runtime-authority-type.md:51",
+      "doc docs/TODO.md:4033"
     ]
   },
   {
@@ -37621,8 +37625,8 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker-phase11.test.mjs:137",
       "test packages-ts/galerina-core-compiler/tests/type-checker-phase11.test.mjs:138",
       "doc docs/AI/DO_NOT_USE_YET.md:165",
-      "doc docs/TODO.md:4132",
-      "doc docs/TODO.md:4144",
+      "doc docs/TODO.md:4136",
+      "doc docs/TODO.md:4148",
       "ref scripts/audit-codes-full.mjs:78"
     ]
   },
@@ -37829,13 +37833,13 @@
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-checker-tensor.test.mjs:87",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-checker-tensor.test.mjs:88",
       "doc docs/AI/DO_NOT_USE_YET.md:165",
-      "doc docs/ROADMAP.md:1833",
-      "doc docs/TODO.md:7743",
       "doc docs/reports/tensor-dimension-count-compatibility-fungi-conversion-2026-08-12.md:37",
+      "doc docs/ROADMAP.md:1833",
       "doc docs/superpowers/plans/2026-08-12-tensor-dimension-count-compatibility-fungi-conversion.md:53",
       "doc docs/superpowers/plans/2026-08-12-tensor-dimension-count-compatibility-fungi-conversion.md:116",
       "doc docs/superpowers/specs/2026-08-12-tensor-dimension-count-compatibility-fungi-conversion-design.md:28",
       "doc docs/superpowers/specs/2026-08-12-tensor-dimension-count-compatibility-fungi-conversion-design.md:78",
+      "doc docs/TODO.md:7747",
       "ref scripts/audit-codes-full.mjs:83"
     ]
   },
@@ -38183,12 +38187,12 @@
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:257",
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:260",
       "test packages-ts/galerina-core-compiler/tests/wat-q2-parked7-d5.test.mjs:288",
-      "doc packages-ts/galerina-framework-example-app/README.md:71",
       "doc packages-ts/galerina-framework-example-app/packages/greeting/README.md:21",
       "fungi packages-ts/galerina-framework-example-app/packages/greeting/src/index.fungi:13",
+      "doc packages-ts/galerina-framework-example-app/README.md:71",
       "fungi packages-ts/galerina-framework-example-app/src/App.fungi:18",
-      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:350",
       "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:101",
+      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:350",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:67",
       "ref scripts/galerina-new.mjs:23",
       "ref scripts/galerina-new.mjs:154",
@@ -38338,7 +38342,7 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1116",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1117",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1128",
-      "doc docs/TODO.md:4030"
+      "doc docs/TODO.md:4034"
     ]
   },
   {
@@ -38399,12 +38403,12 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:144",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:692",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:698",
+      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:246",
+      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:648",
       "doc docs/ROADMAP.md:2505",
       "doc docs/TODO-MISSING-RD.md:1030",
-      "doc docs/TODO.md:4208",
-      "doc docs/TODO.md:9399",
-      "doc docs/examples/TYPESCRIPT-TO-FUNGI-CONTROL-AND-EFFECTS.md:648",
-      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:246"
+      "doc docs/TODO.md:4212",
+      "doc docs/TODO.md:9403"
     ]
   },
   {
@@ -38474,11 +38478,11 @@
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:290",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:267",
       "test packages-ts/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:295",
-      "doc docs/ROADMAP.md:1776",
-      "doc docs/TODO.md:7758",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4102",
       "doc docs/reports/tensor-element-type-compatibility-fungi-conversion-2026-08-12.md:26",
-      "doc docs/superpowers/specs/2026-08-12-tensor-element-type-compatibility-fungi-conversion-design.md:27"
+      "doc docs/ROADMAP.md:1776",
+      "doc docs/superpowers/specs/2026-08-12-tensor-element-type-compatibility-fungi-conversion-design.md:27",
+      "doc docs/TODO.md:7762"
     ]
   },
   {
@@ -38846,9 +38850,9 @@
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:289",
       "test packages-ts/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:366",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:114",
-      "doc docs/TODO.md:14592",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:3452",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:3453",
+      "doc docs/TODO.md:14596",
       "ref scripts/audit-codes-full.mjs:91",
       "ref scripts/audit-diagnostic-code-collisions.mjs:179",
       "ref scripts/audit-examples-vs-declared.mjs:94",
@@ -39038,7 +39042,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:133",
       "doc packages-ts/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:30",
       "ref packages-ts/galerina-core-compiler/src/value-state-checker.ts:13",
       "emit packages-ts/galerina-core-compiler/src/value-state-checker.ts:3409",
@@ -39070,6 +39073,7 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:100",
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:576",
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:591",
+      "doc packages-ts/galerina-core-compiler/TODO.md:133",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:122",
       "doc docs/COVERAGE.md:271",
       "doc docs/examples/Level-2-Types/098-hallmark-taint-transparent/notes.md:10",
@@ -39302,7 +39306,6 @@
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:124",
       "doc docs/AI/COMMON_FIXES.md:143",
       "doc docs/AI/COMMON_FIXES.md:165",
-      "doc docs/TODO.md:15280",
       "doc docs/diagrams/README.md:19",
       "doc docs/diagrams/README.md:20",
       "doc docs/examples/EXAMPLES_INDEX.md:159",
@@ -39343,6 +39346,7 @@
       "doc docs/reference/value-states.md:56",
       "doc docs/reference/value-states.md:128",
       "doc docs/superpowers/specs/2026-08-10-zero-trust-assurance-fabric-design.md:305",
+      "doc docs/TODO.md:15284",
       "ref scripts/audit-mutation.mjs:205",
       "ref scripts/audit-mutation.mjs:212",
       "ref scripts/audit-reference-doc-drift.mjs:65",
@@ -39409,18 +39413,18 @@
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:125",
       "doc docs/contract-authoring-model.md:120",
       "doc docs/examples/EXAMPLES_INDEX.md:173",
+      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:294",
       "fungi docs/examples/Level-2-Types/098-hallmark-taint-transparent/example.fungi:5",
       "doc docs/examples/Level-2-Types/098-hallmark-taint-transparent/notes.md:10",
       "doc docs/examples/Level-2-Types/098-hallmark-taint-transparent/notes.md:15",
-      "doc docs/examples/Level-4-Security/176-sql-injection-concat/INDEX.md:13",
       "fungi docs/examples/Level-4-Security/176-sql-injection-concat/example.fungi:5",
       "fungi docs/examples/Level-4-Security/176-sql-injection-concat/example.fungi:13",
+      "doc docs/examples/Level-4-Security/176-sql-injection-concat/INDEX.md:13",
       "doc docs/examples/Level-4-Security/176-sql-injection-concat/notes.md:3",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:11",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:49",
       "doc docs/examples/Level-4-Security/AI_SUMMARY.md:57",
       "doc docs/examples/README.md:106",
-      "doc docs/examples/gate/FUNGI-TO-GATE-LIKE-FOR-LIKE.md:294",
       "doc docs/language/fungi/04-types-and-values.md:206",
       "doc docs/language/fungi/DO-DONT-TERNARY.md:32",
       "doc docs/reference/value-states.md:75",
@@ -39615,7 +39619,6 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-checker.test.mjs:948",
       "ref packages-ts/galerina-devtools-security/src/audit-runner.ts:127",
       "doc docs/AI/COMMON_FIXES.md:165",
-      "doc docs/TODO.md:15319",
       "doc docs/examples/Level-1-Basics/027-print-hello-world/notes.md:31",
       "fungi docs/examples/Level-3-Effects/104-multiple-effects/example.fungi:46",
       "doc docs/examples/Level-3-Effects/104-multiple-effects/notes.md:7",
@@ -39632,6 +39635,7 @@
       "doc docs/reference/value-states.md:131",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
       "doc docs/security/slsa-deep-bola-pass-2026-07-09.md:45",
+      "doc docs/TODO.md:15323",
       "ref scripts/audit-example-diagnostics.mjs:9",
       "ref scripts/audit-example-diagnostics.mjs:229",
       "ref scripts/audit-muted-diagnostics.mjs:63",
@@ -39737,7 +39741,6 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:307",
       "ref packages-ts/galerina-core-compiler/src/cli.ts:685",
       "ref packages-ts/galerina-core-compiler/src/value-state-checker.ts:1919",
       "ref packages-ts/galerina-core-compiler/src/value-state-checker.ts:2368",
@@ -39778,7 +39781,7 @@
       "test packages-ts/galerina-core-compiler/tests/rd-0120-governed-flow-valuestate.test.mjs:25",
       "test packages-ts/galerina-core-compiler/tests/rd-0120-governed-flow-valuestate.test.mjs:27",
       "test packages-ts/galerina-core-compiler/tests/rd-0120-governed-flow-valuestate.test.mjs:43",
-      "doc docs/TODO.md:14491",
+      "doc packages-ts/galerina-core-compiler/TODO.md:307",
       "fungi docs/examples/Level-4-Security/166-safe-network-send/example.fungi:33",
       "doc docs/examples/Level-4-Security/166-safe-network-send/notes.md:5",
       "doc docs/examples/Level-4-Security/168-redacted-network-send/notes.md:5",
@@ -39796,6 +39799,7 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:86",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:88",
       "doc docs/reports/rd-0873-native-fungi-assurance.md:66",
+      "doc docs/TODO.md:14495",
       "ref scripts/audit-codes-full.mjs:53",
       "ref scripts/audit-muted-diagnostics.mjs:55",
       "ref galerina.mjs:1488",
@@ -39900,7 +39904,7 @@
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:38",
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:41",
       "test packages-ts/galerina-core-compiler/tests/value-state-egress-hardening.test.mjs:44",
-      "doc docs/TODO.md:14550"
+      "doc docs/TODO.md:14554"
     ]
   },
   {
@@ -39933,12 +39937,12 @@
       "ref packages-ts/galerina-core-compiler/src/index.ts:1535",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:6521",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6521",
-      "doc packages-ts/galerina-core-config/TODO.md:40",
       "ref packages-ts/galerina-core-config/src/index.ts:1362",
       "ref packages-ts/galerina-core-config/src/index.ts:1396",
       "def packages-ts/galerina-core-config/src/index.ts:1397",
       "emit packages-ts/galerina-core-config/src/index.ts:1408",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:312",
+      "doc packages-ts/galerina-core-config/TODO.md:40",
       "doc docs/COVERAGE.md:300",
       "doc docs/COVERAGE.md:914",
       "doc docs/examples/EXAMPLES_INDEX.md:57",
@@ -40071,7 +40075,6 @@
       "def packages-ts/galerina-core-config/src/index.ts:1403",
       "emit packages-ts/galerina-core-config/src/index.ts:1444",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:315",
-      "doc docs/TODO.md:14490",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:4",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:5",
       "fungi docs/examples/Level-5-Governance/Proposed-229-vault-write-without-mut-invalid/example.fungi:16",
@@ -40080,6 +40083,7 @@
       "doc docs/language/fungi/03-effects-and-capabilities.md:69",
       "doc docs/reference/effects.md:148",
       "doc docs/reference/effects.md:149",
+      "doc docs/TODO.md:14494",
       "test scripts/tests/audit-example-diagnostics-proposed-baseline.test.mjs:19"
     ]
   },
@@ -40109,11 +40113,11 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/governance-verifier.ts:331",
       "def packages-ts/galerina-core-compiler/src/governance-verifier.ts:333",
-      "doc packages-ts/galerina-core-config/TODO.md:40",
       "ref packages-ts/galerina-core-config/src/index.ts:1404",
       "def packages-ts/galerina-core-config/src/index.ts:1405",
       "emit packages-ts/galerina-core-config/src/index.ts:1454",
       "test packages-ts/galerina-core-config/tests/config-contracts.test.mjs:316",
+      "doc packages-ts/galerina-core-config/TODO.md:40",
       "doc docs/examples/EXAMPLES_INDEX.md:212",
       "doc docs/examples/Level-5-Governance/227-global-vault-declaration/notes.md:22",
       "fungi docs/examples/Level-5-Governance/228-global-vault-mut-write/example.fungi:6",
@@ -40208,7 +40212,7 @@
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6496",
       "emit packages-ts/galerina-core-compiler/src/parser.ts:6512",
       "ref packages-ts/galerina-core-compiler/src/parser.ts:6512",
-      "doc docs/TODO.md:14491",
+      "doc docs/TODO.md:14495",
       "ref scripts/audit-diagnostic-code-collisions.mjs:56"
     ]
   },
@@ -40334,7 +40338,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc docs/TODO.md:15288"
+      "doc docs/TODO.md:15292"
     ]
   },
   {
@@ -40375,13 +40379,13 @@
       "doc packages-ts/galerina-core-cli/README.md:80",
       "doc packages-ts/galerina-core-cli/README.md:87",
       "doc packages-ts/galerina-core-cli/README.md:338",
-      "doc packages-ts/galerina-core-cli/TODO.md:41",
-      "doc packages-ts/galerina-core-cli/TODO.md:42",
-      "doc packages-ts/galerina-core-cli/TODO.md:47",
       "ref packages-ts/galerina-core-cli/src/deploy/deploy-command.ts:21",
       "ref packages-ts/galerina-core-cli/src/deploy/deploy-module-hash.ts:6",
       "ref packages-ts/galerina-core-cli/src/verify/verify-integrity.ts:8",
       "def packages-ts/galerina-core-cli/src/verify.ts:44",
+      "doc packages-ts/galerina-core-cli/TODO.md:41",
+      "doc packages-ts/galerina-core-cli/TODO.md:42",
+      "doc packages-ts/galerina-core-cli/TODO.md:47",
       "doc docs/COVERAGE.md:446"
     ]
   },
@@ -40465,8 +40469,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-cli/TODO.md:41",
-      "def packages-ts/galerina-core-cli/src/verify.ts:52"
+      "def packages-ts/galerina-core-cli/src/verify.ts:52",
+      "doc packages-ts/galerina-core-cli/TODO.md:41"
     ]
   },
   {
@@ -40487,8 +40491,8 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:96",
-      "doc packages-ts/galerina-core-cli/TODO.md:32",
-      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:35"
+      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:35",
+      "doc packages-ts/galerina-core-cli/TODO.md:32"
     ]
   },
   {
@@ -40611,8 +40615,8 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:113",
-      "doc packages-ts/galerina-core-cli/TODO.md:34",
-      "def packages-ts/galerina-core-cli/src/verify/verify-runtime.ts:27"
+      "def packages-ts/galerina-core-cli/src/verify/verify-runtime.ts:27",
+      "doc packages-ts/galerina-core-cli/TODO.md:34"
     ]
   },
   {
@@ -40714,10 +40718,10 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:81",
       "doc packages-ts/galerina-core-cli/README.md:100",
-      "doc packages-ts/galerina-core-cli/TODO.md:31",
-      "doc packages-ts/galerina-core-cli/TODO.md:43",
       "ref packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:29",
-      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:359"
+      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:359",
+      "doc packages-ts/galerina-core-cli/TODO.md:31",
+      "doc packages-ts/galerina-core-cli/TODO.md:43"
     ]
   },
   {
@@ -40739,9 +40743,9 @@
     "allSites": [
       "doc packages-ts/galerina-core-cli/README.md:80",
       "doc packages-ts/galerina-core-cli/README.md:101",
-      "doc packages-ts/galerina-core-cli/TODO.md:43",
       "ref packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:30",
-      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:361"
+      "def packages-ts/galerina-core-cli/src/verify/verify-manifest.ts:361",
+      "doc packages-ts/galerina-core-cli/TODO.md:43"
     ]
   },
   {
@@ -40860,13 +40864,13 @@
       "test packages-ts/galerina-target-native/tests/native-diagnostic-closed-set.test.mjs:173",
       "test packages-ts/galerina-target-photonic/tests/photonic-fungi-codes-closed-set.test.mjs:44",
       "doc packages-ts/galerina-target-wasm/README.md:22",
-      "doc packages-ts/galerina-target-wasm/TODO.md:40",
       "ref packages-ts/galerina-target-wasm/src/index.ts:10",
       "ref packages-ts/galerina-target-wasm/src/index.ts:183",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:119",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:168",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:173",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:286",
+      "doc packages-ts/galerina-target-wasm/TODO.md:40",
       "doc docs/COVERAGE.md:476",
       "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:16"
     ]
@@ -41087,12 +41091,12 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-target-wasm/TODO.md:48",
       "ref packages-ts/galerina-target-wasm/src/index.ts:965",
       "ref packages-ts/galerina-target-wasm/src/index.ts:21",
       "ref packages-ts/galerina-target-wasm/src/index.ts:562",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:91",
-      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:275"
+      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:275",
+      "doc packages-ts/galerina-target-wasm/TODO.md:48"
     ]
   },
   {
@@ -41411,14 +41415,14 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-compute/TODO.md:117",
-      "doc packages-ts/galerina-target-wasm/TODO.md:44",
       "ref packages-ts/galerina-target-wasm/src/index.ts:37",
       "ref packages-ts/galerina-target-wasm/src/index.ts:891",
       "ref packages-ts/galerina-target-wasm/src/index.ts:899",
       "ref packages-ts/galerina-target-wasm/src/index.ts:933",
       "ref packages-ts/galerina-target-wasm/src/index.ts:941",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:239",
-      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:246"
+      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:246",
+      "doc packages-ts/galerina-target-wasm/TODO.md:44"
     ]
   },
   {
@@ -41436,10 +41440,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-target-wasm/TODO.md:30",
       "ref packages-ts/galerina-target-wasm/src/index.ts:38",
       "ref packages-ts/galerina-target-wasm/src/index.ts:841",
-      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:233"
+      "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:233",
+      "doc packages-ts/galerina-target-wasm/TODO.md:30"
     ]
   },
   {
@@ -41458,11 +41462,11 @@
     "aliases": [],
     "allSites": [
       "doc packages-ts/galerina-core-compute/TODO.md:129",
-      "doc packages-ts/galerina-target-wasm/TODO.md:40",
-      "doc packages-ts/galerina-target-wasm/TODO.md:47",
       "ref packages-ts/galerina-target-wasm/src/index.ts:39",
       "ref packages-ts/galerina-target-wasm/src/index.ts:970",
       "test packages-ts/galerina-target-wasm/tests/wasm-contracts.test.mjs:277",
+      "doc packages-ts/galerina-target-wasm/TODO.md:40",
+      "doc packages-ts/galerina-target-wasm/TODO.md:47",
       "doc docs/PRE-FUNGI-WORK-REGISTER-2026-09-22.md:16"
     ]
   },
@@ -41559,9 +41563,6 @@
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:271",
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:281",
       "test packages-ts/galerina-core-runtime-wasm/tests/wasm-runtime.test.mjs:303",
-      "doc docs/TODO.md:2477",
-      "doc docs/TODO.md:2485",
-      "doc docs/TODO.md:2498",
       "doc docs/independent-audits/2026-09-23-rd1296-array-record-copy-hold.md:23",
       "doc docs/independent-audits/2026-09-23-rd1296-array-record-copy-hold.md:53",
       "doc docs/independent-audits/2026-09-23-rd1296-copy-node-bound-hold.md:20",
@@ -41569,7 +41570,10 @@
       "doc docs/independent-audits/2026-09-23-rd1296-nested-record-copy-hold.md:21",
       "doc docs/independent-audits/2026-09-23-rd1296-nested-record-copy-hold.md:32",
       "doc docs/independent-audits/2026-09-23-rd1296-secret-nested-copy-hold.md:23",
-      "doc docs/independent-audits/2026-09-23-rd1296-secret-nested-copy-hold.md:36"
+      "doc docs/independent-audits/2026-09-23-rd1296-secret-nested-copy-hold.md:36",
+      "doc docs/TODO.md:2481",
+      "doc docs/TODO.md:2489",
+      "doc docs/TODO.md:2502"
     ]
   },
   {
@@ -41596,10 +41600,10 @@
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:117",
       "test packages-ts/galerina-core-compiler/tests/rd-1296-return-copy.test.mjs:59",
       "emit packages-ts/galerina-core-runtime-wasm/src/wasm-runtime.ts:1240",
-      "doc docs/TODO.md:2455",
       "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:21",
       "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:31",
-      "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:43"
+      "doc docs/independent-audits/2026-09-23-rd1296-return-copy-hold.md:43",
+      "doc docs/TODO.md:2459"
     ]
   },
   {
@@ -41624,9 +41628,9 @@
     "aliases": [],
     "allSites": [
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:156",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:5097",
-      "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:100",
-      "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:110",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:5098",
+      "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:101",
+      "test packages-ts/galerina-core-compiler/tests/slide-v2-capability-probe.test.mjs:111",
       "test packages-ts/galerina-core-compiler/tests/wat-jr4-public-bypasses.test.mjs:2",
       "test packages-ts/galerina-core-compiler/tests/wat-jr4-public-bypasses.test.mjs:23",
       "test packages-ts/galerina-core-compiler/tests/wat-jr4-public-bypasses.test.mjs:30",
@@ -41695,13 +41699,13 @@
     ],
     "aliases": [],
     "allSites": [
-      "doc packages-ts/galerina-core-compiler/TODO.md:325",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:28",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:31",
       "test packages-ts/galerina-core-compiler/tests/rounding-wat-exact-numeric.test.mjs:3",
       "test packages-ts/galerina-core-compiler/tests/rounding-wat-exact-numeric.test.mjs:40",
+      "doc packages-ts/galerina-core-compiler/TODO.md:325",
       "doc docs/TODO-MISSING-RD.md:1045",
-      "doc docs/TODO.md:3597"
+      "doc docs/TODO.md:3601"
     ]
   },
   {
@@ -41772,8 +41776,8 @@
     "emits": [
       "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:138",
       "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:147",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2858",
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2879"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2859",
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:2880"
     ],
     "tests": 32,
     "refs": 2,
@@ -41788,10 +41792,10 @@
     "allSites": [
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:138",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:147",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2857",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2858",
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2879",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2988",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2858",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2859",
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:2880",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2989",
       "test packages-ts/galerina-core-compiler/tests/wat-c02-hof-capture-refusal.test.mjs:3",
       "test packages-ts/galerina-core-compiler/tests/wat-c02-hof-capture-refusal.test.mjs:44",
       "test packages-ts/galerina-core-compiler/tests/wat-c02-hof-capture-refusal.test.mjs:61",
@@ -41850,11 +41854,11 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:57",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:60",
       "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:211",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:328",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:335",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:369",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:385",
-      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:401"
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:330",
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:337",
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:371",
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:387",
+      "test packages-ts/galerina-core-compiler/tests/wat-q6-d2-d9-i4.test.mjs:403"
     ]
   },
   {
@@ -41880,7 +41884,7 @@
     "allSites": [
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:42",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:45",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2903",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2904",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:269",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:121",
       "test packages-ts/galerina-core-compiler/tests/wat-q3-d3-unknown-method.test.mjs:133",
@@ -41926,7 +41930,7 @@
       "test packages-ts/galerina-core-compiler/tests/rounding-wat-exact-numeric.test.mjs:134",
       "test packages-ts/galerina-core-compiler/tests/rounding-wat-exact-numeric.test.mjs:133",
       "doc docs/TODO-MISSING-RD.md:1045",
-      "doc docs/TODO.md:3597"
+      "doc docs/TODO.md:3601"
     ]
   },
   {
@@ -41953,7 +41957,7 @@
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-pattern.ts:9",
       "ref packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:90",
       "emit packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:93",
-      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2893",
+      "ref packages-ts/galerina-core-compiler/src/wat-emitter.ts:2894",
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:105",
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:129",
       "test packages-ts/galerina-core-compiler/tests/pattern-c20-capability.test.mjs:96",
@@ -42010,7 +42014,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:5614"
+      "packages-ts/galerina-core-compiler/src/wat-emitter.ts:5615"
     ],
     "tests": 0,
     "refs": 0,
@@ -42019,7 +42023,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:5614"
+      "emit packages-ts/galerina-core-compiler/src/wat-emitter.ts:5615"
     ]
   },
   {
@@ -43369,12 +43373,12 @@
       "test packages-ts/galerina-core-compiler/tests/gate-v3-resource-bounds.test.mjs:51",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-resource-bounds.test.mjs:59",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-resource-bounds.test.mjs:69",
-      "doc docs/TODO.md:9151",
       "doc docs/examples/gate/AI-AUTHORING-GUIDE.md:101",
       "doc docs/examples/gate/CODES.md:46",
       "doc docs/examples/gate/GATEREGEX.md:325",
       "doc docs/examples/gate/RULES.md:23",
-      "doc docs/examples/gate/SEMANTICS.md:53"
+      "doc docs/examples/gate/SEMANTICS.md:53",
+      "doc docs/TODO.md:9155"
     ]
   },
   {
@@ -43542,8 +43546,8 @@
     "aliases": [],
     "allSites": [
       "emit packages-ts/galerina-core-compiler/src/gate-v3-registry.ts:29",
-      "doc docs/TODO.md:9152",
-      "doc docs/examples/gate/CODES.md:60"
+      "doc docs/examples/gate/CODES.md:60",
+      "doc docs/TODO.md:9156"
     ]
   },
   {
@@ -44451,7 +44455,6 @@
       "def packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:53",
       "ref packages-ts/galerina-core-compiler/src/gate-v3-condense.ts:187",
       "test packages-ts/galerina-core-compiler/tests/gate-v3-condense.test.mjs:112",
-      "doc docs/TODO.md:9156",
       "doc docs/examples/gate/CODES.md:164",
       "doc docs/examples/gate/README.md:63",
       "doc docs/examples/gate/RULES.md:79",
@@ -44459,6 +44462,7 @@
       "doc docs/examples/gate/SEMANTICS.md:274",
       "doc docs/examples/gate/SEMANTICS.md:365",
       "doc docs/examples/gate/SEMANTICS.md:398",
+      "doc docs/TODO.md:9160",
       "test scripts/tests/gate-result-shape.test.mjs:14"
     ]
   },
