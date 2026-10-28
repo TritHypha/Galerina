@@ -211,7 +211,7 @@
       "identity": "@galerina/core-compiler",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-compiler",
-      "contentDigest": "9c0494c2bebb7a47c560f46dcada923d0f34730fe8c953b46b126c7efe621e10",
+      "contentDigest": "23e178c25dea7ca678ae331fe043b9bd55a1438636b37c201a46d5d2d3a1a27c",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -2125,7 +2125,7 @@
       "identity": "@galerina/tower-citizen",
       "version": "1.0.0-beta.2",
       "directory": "galerina-tower-citizen",
-      "contentDigest": "9802e5cad2f76ed077db17ca3ab2002737b8b2231857b03a30348460ca64ff77",
+      "contentDigest": "40f8e3acb9bff092bea45bec0eef7296ff290a3b64be72f7320c409b8dfa3868",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "23770fcde714c90c1dc59c40c54bfa8fff75d5330418bbce3f5cead5484958da"
+  "rootDigest": "8cab83a9a4222ec6e27c093a3f50971dca04794da1f6b2bab6974564c8ee1ca6"
 }
