@@ -93,3 +93,32 @@ work (fuseGreeting must take a central registry verdict, no implicit allow).
   `e2e-fuse.test.mjs` fuse calls at lines 54, 72, 113, 144 and 151 and re-check that the refusals at
   113 and 144 fail for the intended reason.
 - Arena parallel flake: fixed in this run, see `../s5-arena-flake/findings.md`.
+
+## Update 2026-10-28 (gcw-wd-202610281633): D-5 decided
+
+- D-5 RESOLVED as a stale test expectation, not a kernel bug. The guess above (S6 rounds of
+  2026-10-23) was wrong: the behaviour comes from `eb1645a4f` (2026-09-22, "checkpoint runtime and
+  tooling hardening"), the fix for audit flooding by unknown paths. Its claim
+  `csf_2a86648bf19537088fa9b394` ("unknown-path 404 does not reserve/emit mandatory audit") was
+  independently verified in `docs/independent-audits/2026-09-23-patched-highs-verify-hold.md` and is
+  pinned by app-kernel `tests/audit-async.test.mjs` ("unmatched 404/405 traffic does not consume
+  mandatory audit capacity"). In `createAppKernel` an unmatched request has no route policy, so
+  nothing is reserved or emitted.
+- Decision (full auto, logged in LEDGER-002): keep the kernel as it is (it is frozen TS reference,
+  and auditing attacker-chosen paths would reopen the flood and add route-cardinality pressure on
+  the metrics collector). Realign the observability test: a 404 for an unknown path returns 404 and
+  is not counted (`totalRequests` 1, `4xx` 0, `latency.count` 0).
+- New pins in `packages-ts/galerina-observability/tests/kernel-integration.test.mjs`:
+  - S6-D5-02: unmatched 404 and 405 never reach the metrics audit pipe.
+  - S6-D5-03: 1200 distinct unknown paths add no route entry, do not trip `routesOverflowed`, and
+    leave no attacker path text in the snapshot.
+  - S6-D5-04: matched traffic after a flood of unknown paths is still counted under `/a`.
+  - S6-D5-05: a handler-chosen 404 on a matched route is audited and counted (`4xx` 1), so the
+    rule is "unmatched is not audited", not "404 is not audited".
+- Census: `kernel-integration.test.mjs` is now 25 pass / 0 fail (was 20/1).
+- Follow-up (new queue candidate, .fungi kernel work): if operators need to see scanning
+  traffic, add a bounded counts-only unmatched counter (method class and 404/405 only, no path
+  retained, saturating), outside the audit pipe so it cannot consume audit capacity.
+
+Next actions item 3 is closed. Open in this lane: D-6 (.fungi host work), D-2/D-3 (Phillip's
+signed builds).
