@@ -67,6 +67,54 @@ here.
 
 ## 3. DENY AND UNKNOWN (the trade-off)
 
+### 3.0 Strong Kleene (decided 2026-10-28 ~17:00 GMT; supersedes the decision below)
+
+**Decision (Phillip, 2026-10-28 ~17:00 GMT, confirmed by an external security review):**
+Galerina K3 uses **strong Kleene**. DENY AND UNKNOWN = **DENY**.
+
+AND is the minimum and OR the maximum over **DENY < UNKNOWN < ALLOW**; NOT swaps
+ALLOW and DENY and keeps UNKNOWN.
+
+| AND | DENY | UNKNOWN | ALLOW |
+|---|---|---|---|
+| **DENY** | DENY | DENY | DENY |
+| **UNKNOWN** | DENY | UNKNOWN | UNKNOWN |
+| **ALLOW** | DENY | UNKNOWN | ALLOW |
+
+| OR | DENY | UNKNOWN | ALLOW |
+|---|---|---|---|
+| **DENY** | DENY | UNKNOWN | ALLOW |
+| **UNKNOWN** | UNKNOWN | UNKNOWN | ALLOW |
+| **ALLOW** | ALLOW | ALLOW | ALLOW |
+
+| x | NOT x |
+|---|---|
+| DENY | ALLOW |
+| UNKNOWN | UNKNOWN |
+| ALLOW | DENY |
+
+- Gates always refuse UNKNOWN and never lift it to ALLOW (fail closed).
+- A recorded DENY cannot become ALLOW within the same request.
+- Wire encoding is unchanged: ALLOW `0x01`, DENY `0xFF`, UNKNOWN `0x80`.
+
+**Rationale:** a definite DENY is final and must not be diluted. Weak Kleene (UNKNOWN absorbs)
+turns a known DENY into uncertainty that a later stage could treat permissively. Strong Kleene
+matches fail-secure design, avoids CWE-636 (not failing securely), and aligns with XACML
+deny-overrides (a Deny wins over Indeterminate and Permit).
+
+**Code status on 2026-10-28:** SLIDE `k3FoldAdmission` already returns DENY (pinned by
+`k3-wire-step4b` and `k3-bridge-astra`, plus `tests/k3-strong-kleene-fold.test.mjs` on SLIDE
+branch `grok/slide-k3-strong-kleene-20261028`), and VOK `authority_verdict` (`.min()`) agrees.
+**Not yet aligned (still infectious/weak):** the frozen TS `vAnd` / `vOr` / `allOf`
+(`three-valued-governance.ts`), `galerina-auth` `compose.ts`, and the shipped `.fungi`
+`effective-verdict.fungi` / `verdict-or.fungi`, which mirror the TS reference and are pinned
+to it by conversion tests. They still fail closed (only `+1` admits), but their tables differ
+from this decision and are a tracked follow-up. The contract is pinned by the test-only
+`packages-ts/galerina-tower-citizen/tests/k3-strong-kleene-pin.test.mjs`.
+
+### 3.1 Earlier wording (SUPERSEDED 2026-10-28 by 3.0; kept for the record)
+
+
 Three places combine a refusal with an unknown, and they deliberately do not
 all give the same answer:
 
@@ -76,7 +124,7 @@ all give the same answer:
 | TS `trustMeet` / `trustMeetAll` (`epistemic-type-state.ts`, `89cfa6039`) | REFUTED-absorbing meet | REFUTED | REFUTED |
 | VOK `authority_verdict` (`vok-authority/src/lib.rs`, `.min()` over `Refuse < Unknown < Admit`) | lattice minimum | Refuse | Refuse |
 
-**Decision (recorded 2026-10-28, owner-visible):** keep all three as they are.
+**Decision (recorded 2026-10-28, owner-visible; SUPERSEDED 2026-10-28 ~17:00 GMT by 3.0):** keep all three as they are.
 
 - **Verdict composition is infectious.** With the pinned `vAnd`, DENY AND
   UNKNOWN is UNKNOWN. The composite is still refused, because only `+1`
@@ -95,7 +143,7 @@ all give the same answer:
   audit reason for UNKNOWN is already raised on the Galerina side. VOK's internal
   `{-1, 0, 1}` lattice is not the wire; the wire is the u8 codec in section 1.
 
-**Rule for new code:** a new governance composer in `.fungi` uses the
+**Rule for new code (SUPERSEDED 2026-10-28 by 3.0: new composers use strong Kleene):** a new governance composer in `.fungi` uses the
 infectious `vAnd` semantics. A new evidence or proof combiner uses the
 REFUTED-absorbing meet. Never reuse one for the other's job.
 

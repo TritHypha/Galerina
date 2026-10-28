@@ -205,7 +205,10 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   audit-noisy; a unanimous 0 is NEUTRAL. The three-valued governance header
   already states it; recorded owner-visible in
   `docs/architecture/k3-lattice-decisions-2026-10-28.md` §2 (2026-10-28).
-- [x] **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
+- [x] **SUPERSEDED 2026-10-28 ~17:00 GMT (Phillip + external security review): Galerina K3 is
+  strong Kleene, DENY AND UNKNOWN = DENY; see `docs/architecture/k3-lattice-decisions-2026-10-28.md`
+  section 3.0. Follow-up: align frozen TS `vAnd`/`vOr` and `effective-verdict.fungi` /
+  `verdict-or.fungi` (still infectious).** Earlier text: **Deny AND Unknown trade-off:** with the pinned infectious `vAnd`
   (`6adf84b8e`), DENY AND UNKNOWN = UNKNOWN (still refused), so DENY is not
   absorbing when UNKNOWN is present. Recorded as an owner-visible decision in
   `docs/architecture/k3-lattice-decisions-2026-10-28.md` §3, contrasting

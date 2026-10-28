@@ -1,0 +1,49 @@
+@version 1
+// TEST-ONLY strong Kleene K3 pin (Phillip 2026-10-28 ~17:00 GMT; external security review; XACML
+// deny-overrides; CWE-636). Order DENY < UNKNOWN < ALLOW. AND = minimum, OR = maximum, NOT swaps
+// ALLOW/DENY and keeps UNKNOWN. Not a loaded asset and not shipped; production composers are unchanged.
+pure flow skAnd(a: Verdict, b: Verdict) -> Verdict {
+  check(a) {
+    deny: { return Verdict.Deny }
+    ambig: {
+      check(b) {
+        deny: { return Verdict.Deny }
+        ambig: { return Verdict.Unknown }
+        if: { return Verdict.Unknown }
+      }
+    }
+    if: { return b }
+  }
+}
+pure flow skOr(a: Verdict, b: Verdict) -> Verdict {
+  check(a) {
+    deny: { return b }
+    ambig: {
+      check(b) {
+        deny: { return Verdict.Unknown }
+        ambig: { return Verdict.Unknown }
+        if: { return Verdict.Allow }
+      }
+    }
+    if: { return Verdict.Allow }
+  }
+}
+pure flow skNot(a: Verdict) -> Verdict {
+  check(a) {
+    deny: { return Verdict.Allow }
+    ambig: { return Verdict.Unknown }
+    if: { return Verdict.Deny }
+  }
+}
+// Gate: only ALLOW passes; UNKNOWN is refused (never lifted to ALLOW).
+pure flow skGate(a: Verdict) -> Verdict {
+  check(a) {
+    deny: { return Verdict.Deny }
+    ambig: { return Verdict.Deny }
+    if: { return Verdict.Allow }
+  }
+}
+// One request: three factors folded by AND, then gated. A recorded DENY is sticky.
+pure flow skRequest(first: Verdict, second: Verdict, third: Verdict) -> Verdict {
+  return skGate(skAnd(skAnd(first, second), third))
+}
