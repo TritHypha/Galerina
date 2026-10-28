@@ -130,6 +130,13 @@ beside SLIDE and is not part of the production build.
 
 Open follow-ups (low; none blocks the merged rows):
 
+- [ ] **K3-SH r2** (2026-10-28): `grok/k3-selfhost-pins-20261028` from main
+  `19e061568`. Stale wat-q5n T14 AGENTS path, wat-q6 T1/T7 emitter+line pins,
+  wat-q2 T13 emitter pin; 14 self-hosted-type-checker misses because the
+  harness omitted parser-shaped `stmt.litI32Overflow` and match-arm `name`.
+  Twin contract kept (q2 T6 forbids `rhs.litI32Overflow`). TS frozen.
+  Old env-receiver rename is already on main; `grok/k3-selfhost-env-20261028`
+  abandoned. Merge stays Grok Bot.
 - [x] **K3C-2** (the K3-COPIES compiler change below): owner go-ahead 2026-10-28 07:46 GMT.
 - [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
   `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes

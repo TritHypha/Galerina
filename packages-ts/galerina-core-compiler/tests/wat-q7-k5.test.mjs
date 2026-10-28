@@ -229,10 +229,12 @@ contract {
 });
 
 describe("T9 WASM faultStmt trap unchanged", () => {
-  it("live stacked lines :3101 / :3911 still trap", () => {
+  it("live stacked lines :3372 / :4196 still trap", () => {
     const lines = emitterSrc().split("\n");
-    assert.equal(lines[3100].includes("case \"faultStmt\""), true, lines[3100]);
-    assert.equal(lines[3910].includes("case \"faultStmt\""), true, lines[3910]);
+    // Re-pin leftover: K3C-2 wat-emitter wire-contract on main d7652f72b
+    // (source f6fdad4ef) moved the two faultStmt cases. Same traps, current lines.
+    assert.equal(lines[3371].includes("case \"faultStmt\""), true, lines[3371]);
+    assert.equal(lines[4195].includes("case \"faultStmt\""), true, lines[4195]);
     assert.equal(emitterSrc().includes("W5b T2.2 terminal audited channel, WASM tier traps"), true);
   });
 });
