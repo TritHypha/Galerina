@@ -119,7 +119,7 @@
       "identity": "@galerina/auth",
       "version": "1.0.0-beta.2",
       "directory": "galerina-auth",
-      "contentDigest": "bd20ec20730bafffdb9e634988b33b0a5d3387feaa13de4ace7690403462f832",
+      "contentDigest": "7eb34efa666ed927ca7c1f4974005ebe2dbe9ab01f54c2fd0034cbd5a211e844",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -2125,7 +2125,7 @@
       "identity": "@galerina/tower-citizen",
       "version": "1.0.0-beta.2",
       "directory": "galerina-tower-citizen",
-      "contentDigest": "40f8e3acb9bff092bea45bec0eef7296ff290a3b64be72f7320c409b8dfa3868",
+      "contentDigest": "3bef7c477851ed6589cfaf2fab830683f74b72d181bfae354d29b82590cf2184",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "8d549bb1b083d71c30b3fe64c037f41af93b522073f0d6d0535b8d334c1bdf73"
+  "rootDigest": "3607dfdbd994e0be4f09d44726bf4f4f13c06eebfa650e9e9cfe7bccbe759243"
 }
