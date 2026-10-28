@@ -28,6 +28,9 @@ const SOURCE = join(
 );
 const PACKAGE = join(PACKAGE_ROOT, "package.json");
 const TRITS = Object.freeze([-1, 0, 1]);
+// K3C-2: the WASM lane carries UNKNOWN as wire -128 (0x80); bare 0 is malformed at the ABI.
+const K3_WIRE_UNKNOWN = -128;
+const toWire = (rank) => (rank === 0 ? K3_WIRE_UNKNOWN : rank);
 const CONJUNCTION = Object.freeze([
   Object.freeze([-1, -1, -1]),
   Object.freeze([-1, 0, -1]),
@@ -97,11 +100,19 @@ describe("compiler package-owned Fungi hardening trust boundary", () => {
 
     for (const [left, right, expected] of CONJUNCTION) {
       assert.equal(combineTrust(left, right), expected, `TypeScript combineTrust(${left},${right})`);
-      assert.equal(fungi.combineTrust(left, right), expected, `Fungi combineTrust(${left},${right})`);
+      assert.equal(
+        fungi.combineTrust(toWire(left), toWire(right)),
+        toWire(expected),
+        `Fungi combineTrust(${left},${right}) on the K3C-2 wire`,
+      );
     }
     for (const [trust, expected] of RELEASE) {
       assert.equal(boundaryTrusted(trust), expected, `TypeScript boundaryTrusted(${trust})`);
-      assert.equal(Boolean(fungi.boundaryTrusted(trust)), expected, `Fungi boundaryTrusted(${trust})`);
+      assert.equal(
+        Boolean(fungi.boundaryTrusted(toWire(trust))),
+        expected,
+        `Fungi boundaryTrusted(${trust}) on the K3C-2 wire`,
+      );
     }
     for (const [trust, expected] of NAMES) {
       assert.equal(trustName(trust), expected, `TypeScript trustName(${trust})`);
@@ -127,5 +138,6 @@ describe("compiler package-owned Fungi hardening trust boundary", () => {
     );
 
     assert.deepEqual(TRITS, [-1, 0, 1]);
+    assert.throws(() => fungi.combineTrust(0, 1), WebAssembly.RuntimeError, "K3C-2: bare legacy 0 at the WASM ABI must fail closed");
   });
 });
