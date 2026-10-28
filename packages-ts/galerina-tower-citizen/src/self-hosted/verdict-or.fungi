@@ -1,16 +1,17 @@
 @version 1
 pure flow vOrVerdict(left: Verdict, right: Verdict) -> Verdict {
-  // K3U2 (gcw-k3u10): infectious UNKNOWN, matching the TS reference vOr. An Unknown operand never
-  // yields Allow, even beside an Allow.
+  // K3-SK (2026-10-28): strong Kleene OR = max over DENY < UNKNOWN < ALLOW. A definite Allow absorbs
+  // Unknown; Unknown beside Deny stays Unknown (gates refuse it). Supersedes K3U2 infectious UNKNOWN;
+  // the frozen TS vOr is now a known-divergent reference (lattice doc 3.0).
   check(left) {
     deny: { return right }
-    ambig: { return Verdict.Unknown }
-    if: {
+    ambig: {
       check(right) {
-        deny: { return Verdict.Allow }
+        deny: { return Verdict.Unknown }
         ambig: { return Verdict.Unknown }
         if: { return Verdict.Allow }
       }
     }
+    if: { return Verdict.Allow }
   }
 }

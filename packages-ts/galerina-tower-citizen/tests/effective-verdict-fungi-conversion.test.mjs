@@ -27,6 +27,20 @@ const K3_MIN = Object.freeze([
   Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.UNKNOWN]),
   Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
 ]);
+// K3-SK 2026-10-28: the shipped Fungi flow is the real implementation and is strong Kleene AND = min
+// (DENY absorbs UNKNOWN). K3_MIN above stays as the pin of the FROZEN, known-divergent TS reference.
+const K3_STRONG_MIN = Object.freeze([
+  Object.freeze([Verdict.DENY, Verdict.DENY, Verdict.DENY]),
+  Object.freeze([Verdict.DENY, Verdict.UNKNOWN, Verdict.DENY]),
+  Object.freeze([Verdict.DENY, Verdict.ALLOW, Verdict.DENY]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.DENY, Verdict.DENY]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.UNKNOWN, Verdict.ALLOW, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.ALLOW, Verdict.DENY, Verdict.DENY]),
+  Object.freeze([Verdict.ALLOW, Verdict.UNKNOWN, Verdict.UNKNOWN]),
+  Object.freeze([Verdict.ALLOW, Verdict.ALLOW, Verdict.ALLOW]),
+]);
+const K3_STRONG_MIN_DIVERGENT_ROWS = Object.freeze([1,3]);
 
 function readUtf8(path) {
   return readFileSync(path, "utf8").replace(/^\uFEFF/u, "");
@@ -84,9 +98,10 @@ describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
     );
   });
 
-  it("matches the complete independent Verdict x Verdict infectious-UNKNOWN K3 minimum table", async () => {
+  it("TS reference pins infectious-UNKNOWN; shipped Fungi pins the strong-Kleene K3 minimum table", async () => {
     const program = compileCandidate();
-    for (const [ideal, reading, expected] of K3_MIN) {
+    for (const [i, [ideal, reading, expected]] of K3_MIN.entries()) {
+      assert.deepEqual(K3_STRONG_MIN[i].slice(0, 2), [ideal, reading]);
       assert.equal(
         effectiveVerdict(ideal, reading),
         expected,
@@ -94,7 +109,7 @@ describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
       );
       assert.deepEqual(
         await interpret(program, ideal, reading),
-        expected,
+        K3_STRONG_MIN[i][2],
         `Fungi effectiveVerdict(${ideal}, ${reading})`,
       );
     }
@@ -107,5 +122,9 @@ describe("Tower-Citizen package-owned Fungi effectiveVerdict decision", () => {
     await assert.rejects(() => fromFungi({ __tag: "verdict", value: 2 }), /not a native Verdict/u);
     assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.DENY));
     assert.notDeepEqual(await toFungi(Verdict.UNKNOWN), await toFungi(Verdict.ALLOW));
+  });
+  it("K3-SK: frozen TS reference diverges from the strong-Kleene Fungi flow at exactly the recorded rows", () => {
+    const diff = K3_MIN.flatMap((row, i) => (row[2] === K3_STRONG_MIN[i][2] ? [] : [i]));
+    assert.deepEqual(diff, [...K3_STRONG_MIN_DIVERGENT_ROWS]);
   });
 });

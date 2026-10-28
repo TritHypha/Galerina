@@ -2,6 +2,8 @@
 // After K3U2 made governance vAnd/allOf UNKNOWN-infectious, epistemic combine (which delegated to vAnd)
 // let UNKNOWN absorb REFUTED: combine(refuted, unverified) became UNKNOWN, and discharge could then lift it
 // to PROVEN. RD-0337 requires REFUTED to be sticky. The trust meet is REFUTED < UNKNOWN < PROVEN.
+// K3-SK 2026-10-28: governance logic is now strong Kleene (DENY/REFUTED absorbs UNKNOWN under AND) in
+// the shipped .fungi flows; the UNKNOWN-infectious vAnd above is the frozen, known-divergent TS reference.
 // Synthetic data only.
 import assert from "node:assert/strict";
 import { test } from "node:test";

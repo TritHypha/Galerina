@@ -91,7 +91,11 @@ Empty → UNKNOWN (the typed K3_UNKNOWN, never `0`; deny-by-default). The result
 the single verdict you hand the kernel. Only ALLOW authorizes; UNKNOWN is refused
 with the `FUNGI-GOV-3VL-001` diagnostic.
 
-**DENY AND UNKNOWN is UNKNOWN, not DENY.** The composite is still refused, but DENY
+> **SUPERSEDED 2026-10-28 ~17:00 GMT:** the decided contract is strong Kleene, DENY AND
+> UNKNOWN = DENY (see `docs/architecture/k3-lattice-decisions-2026-10-28.md` section 3.0).
+> `compose.ts` is frozen TS and still implements the infectious rule below until the follow-up.
+
+**(Superseded) DENY AND UNKNOWN is UNKNOWN, not DENY.** The composite is still refused, but DENY
 is not absorbing once an UNKNOWN factor is present, so do not read a composite
 UNKNOWN as "no factor refused". This is a recorded decision; see
 `docs/architecture/k3-lattice-decisions-2026-10-28.md` §3. (`INDETERMINATE` is the

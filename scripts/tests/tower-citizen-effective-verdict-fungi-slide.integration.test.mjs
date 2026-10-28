@@ -21,14 +21,15 @@ const ALL_ALLOW = Object.freeze({
   validation: 1,
   memory: 1,
 });
-// K3U2 gcw-k3u10: effectiveVerdict is infectious-UNKNOWN AND (matches the frozen TS vAnd):
-// any native Unknown operand yields Unknown, so Deny no longer absorbs Unknown here.
+// K3-SK 2026-10-28 (supersedes K3U2 gcw-k3u10 infectious UNKNOWN): effectiveVerdict is strong Kleene
+// AND = min over DENY < UNKNOWN < ALLOW, so a definite Deny absorbs Unknown (fail closed, CWE-636).
+// The frozen TS vAnd is a known-divergent reference and is not consulted here.
 // The middle column value is SLIDE's own wire image of native Verdict.Unknown.
 const K3_MIN = Object.freeze([
   Object.freeze([-1, -1, -1]),
-  Object.freeze([-1, 0, 0]),
+  Object.freeze([-1, 0, -1]),
   Object.freeze([-1, 1, -1]),
-  Object.freeze([0, -1, 0]),
+  Object.freeze([0, -1, -1]),
   Object.freeze([0, 0, 0]),
   Object.freeze([0, 1, 0]),
   Object.freeze([1, -1, -1]),
@@ -73,7 +74,7 @@ async function prepare(slide, publicationDirectory, context) {
 }
 
 describe("Slice 91 Tower-Citizen effectiveVerdict through physical SLIDE/VOK", () => {
-  it("publishes, re-admits and executes the complete typed infectious K3 AND table", {
+  it("publishes, re-admits and executes the complete typed strong-Kleene K3 AND table", {
     skip: !SLIDE_AVAILABLE,
   }, async () => {
     const slide = await loadSlide();
