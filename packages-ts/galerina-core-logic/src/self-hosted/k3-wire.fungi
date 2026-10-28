@@ -399,6 +399,18 @@ contract { intent { "Emit k3WireVersion onto a package artifact. Unknown carrier
   return carrier
 }
 
+pure flow k3AbsentCarrierFallbackReason() -> Int
+contract { intent { "Named non-zero reason for Y-to-Z absent-carrier fallback. Distinct from lattice 0 and ts-frozen reason 5. Count lives in SLIDE; fungi cannot hold the counter. SUNSET Step Z." } }
+{
+  return 6
+}
+
+pure flow k3AbsentCarrierFallbackVersion() -> Int
+contract { intent { "Absent artifact.k3WireVersion during Y-to-Z falls back to canonical 2 so bare 0 stays INVALID. SUNSET Step Z." } }
+{
+  return k3VersionCanonical()
+}
+
 pure flow k3WireVersionCarrierAgree(carrier: Int, header: Int) -> Int
 contract { intent { "Carrier/header agreement. Missing or unknown or disagree refuse as -1. Agree is 1." } }
 {

@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "fd5ec3dc525e494bb55355733fd006bb10feb3e24190920e7daab4b754267153";
-const FIXTURE_GIT_BLOB = "2b5d489d42a4cc671788bdb77fdf3753b40f8501";
+const FIXTURE_DIGEST_D = "133d1409ecf3b559faa2599922d16e22788ef1f629c0ade0b8639b6b3b3a5f34";
+const FIXTURE_GIT_BLOB = "0279074c06771ae8b8819700aee8f1f13b542055";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 11;
+const FIXTURE_SCHEMA_VERSION = 12;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -141,6 +141,7 @@ async function main() {
     k3WireNot,
     k3WireOr,
     decodeK3PackageFrame,
+    decodeK3PackageGate,
     verifyK3WireVersionCarrier,
     verifyReceiptK3AlertEvidence,
   } = await import(
@@ -335,6 +336,37 @@ async function main() {
       return;
     }
   }
+  const artifactGates = doc.packageArtifactGates ?? [];
+  if (artifactGates.length !== 11) {
+    refuse(`packageArtifactGates must have 11 rows, got ${artifactGates.length}`);
+    return;
+  }
+  const gateKinds = artifactGates.map((row) => row.kind).join(",");
+  if (
+    gateKinds
+    !== "canonical-allow,canonical-deny,canonical-unknown,canonical-bare0,legacy-allow,legacy-deny,legacy-unknown,legacy-bare0,mismatched,unknown-carrier,absent-fallback"
+  ) {
+    refuse(`packageArtifactGates kinds ${gateKinds}`);
+    return;
+  }
+  for (const row of artifactGates) {
+    const got = row.kind === "mismatched"
+      ? decodeK3PackageFrame(row.artifact, row.frame)
+      : decodeK3PackageGate(row.artifact, row.value);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`packageArtifactGates ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`packageArtifactGates ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`packageArtifactGates ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -404,6 +436,7 @@ async function main() {
     receiptBinding: true,
     wireVersionCarrier: true,
     packageArtifactFrames: true,
+    packageArtifactGates: true,
   })}\n`);
 }
 

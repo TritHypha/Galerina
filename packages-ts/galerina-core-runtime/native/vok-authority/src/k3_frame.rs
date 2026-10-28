@@ -14,7 +14,7 @@ compile_error!(
 use crate::{
     Trit, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
     LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
-    TRUSTED_CLOCK_CEILING_UNIX_S, TRUSTED_CLOCK_FLOOR_UNIX_S,
+    TRUSTED_CLOCK_CEILING_UNIX_S, TRUSTED_CLOCK_FLOOR_UNIX_S, VOK_TRIT_BARE_LEGACY_ZERO,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -344,6 +344,36 @@ pub fn verify_k3_wire_version_carrier(
         return Err("K3_WIRE_VERSION_CARRIER_MISMATCH");
     }
     Ok(())
+}
+
+pub const SLIDE_K3_WIRE_INVALID: &str = "SLIDE-K3-WIRE-001";
+pub const SLIDE_K3_WIRE_BARE_LEGACY_ZERO: &str = "SLIDE-K3-WIRE-003";
+
+/// K3-CR: the carrier the gate uses is the one on the loaded artifact.
+/// Absent carrier falls back to canonical 2. Present unknown fails closed.
+/// Legacy carrier uses decode_wire (bare 0 = SLIDE-K3-WIRE-003). Canonical
+/// wrap uses decode_canonical (bare 0 = SLIDE-K3-WIRE-001).
+pub fn decode_k3_package_gate(
+    carrier: Option<i32>,
+    value: i32,
+) -> Result<(Trit, crate::TritWireForm), &'static str> {
+    let resolved = match carrier {
+        None => K3_WIRE_VERSION_CANONICAL,
+        Some(version) if version == K3_WIRE_VERSION_CANONICAL || version == K3_WIRE_VERSION_LEGACY => {
+            version
+        }
+        Some(_) => return Err(SLIDE_K3_WIRE_INVALID),
+    };
+    if resolved == K3_WIRE_VERSION_CANONICAL {
+        return Trit::decode_canonical(value).map_err(|_| SLIDE_K3_WIRE_INVALID);
+    }
+    match Trit::decode_wire(value) {
+        Ok(pair) => Ok(pair),
+        Err(fail) if fail.failure_id() == VOK_TRIT_BARE_LEGACY_ZERO => {
+            Err(SLIDE_K3_WIRE_BARE_LEGACY_ZERO)
+        }
+        Err(_) => Err(SLIDE_K3_WIRE_INVALID),
+    }
 }
 
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
@@ -1593,6 +1623,36 @@ mod tests {
             K3_WIRE_VERSION_CANONICAL
         )
         .is_ok());
+    }
+
+    #[test]
+    fn k3cr_package_artifact_gates_e2e() {
+        use crate::Trit;
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), -1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), -128).is_ok());
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 0).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), -1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), -128).is_ok());
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0).unwrap_err(),
+            SLIDE_K3_WIRE_BARE_LEGACY_ZERO
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_CANONICAL), K3_WIRE_VERSION_LEGACY)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            decode_k3_package_gate(Some(3), 1).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let absent = decode_k3_package_gate(None, 1).expect("absent fallback canonical");
+        assert_eq!(absent.0, Trit::Admit);
     }
 
     #[test]

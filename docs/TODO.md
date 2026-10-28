@@ -250,6 +250,22 @@ Open follow-ups (low; none blocks the merged rows):
   `production-boot-composition-candidate.ts:29` (Step Y/Z). Fixture schema 11
   `packageArtifactFrames` e2e rows. N-z prebuild compiler tsc error names
   `npm install / npm run build` in `galerina-core-compiler`.
+- [x] **K3-CR** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-ac merge
+  origin/main `c20cbbf6c` (MEM-R2 test+evidence). Decision: the carrier the
+  gate uses is the one on the artifact being loaded. Present known carrier
+  must agree with any frame header (else INVALID). Absent carrier during
+  Y-to-Z falls back to canonical 2, counted and capped like the legacy-0
+  bridge (`ABSENT_CARRIER_FALLBACK`, reason 6 in `.fungi`), never silently.
+  `.fungi` `k3AbsentCarrierFallbackVersion()` = 2;
+  `k3PackageArtifactWireVersion()` remains the emitter field. No other
+  `.fungi` package-artifact builder exists. TS/mjs emitters stay
+  `UNKNOWN(ts-frozen-emitter)` reason 5 at
+  `three-valued-governance.ts:1`, `trit-gates.ts:1`,
+  `receipt-bound-slide-build.mjs:50`,
+  `production-boot-composition-candidate.ts:29` (Step Y replaces each).
+  Fixture schema 12 `packageArtifactGates`. SUNSET the absent-carrier
+  fallback at Step Z with the legacy-0 path. Do not touch
+  `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

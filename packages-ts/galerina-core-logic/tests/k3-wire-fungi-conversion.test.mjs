@@ -654,4 +654,16 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.match(src, /receipt-bound-slide-build\.mjs:50/);
     assert.match(src, /production-boot-composition-candidate\.ts:29/);
   });
+
+  it("K3-CR absent-carrier fallback is canonical 2 with named non-zero reason 6", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3AbsentCarrierFallbackVersion(), 2);
+    assert.equal(exports.k3AbsentCarrierFallbackReason(), 6);
+    assert.notEqual(exports.k3AbsentCarrierFallbackReason(), 0);
+    assert.notEqual(exports.k3AbsentCarrierFallbackReason(), 5);
+    assert.equal(
+      exports.k3WireVersionCarrierAgree(exports.k3AbsentCarrierFallbackVersion(), 2),
+      1,
+    );
+  });
 });
