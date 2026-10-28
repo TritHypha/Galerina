@@ -352,6 +352,12 @@ contract { intent { "UNKNOWN(fungi-alert-recorder-is-tally). Pure Fungi has no h
   return 0
 }
 
+pure flow k3AlertEvidenceUnknown() -> Int
+contract { intent { "UNKNOWN(fungi-cannot-sha256-alert-evidence). Tally-only; no digest." } }
+{
+  return 0
+}
+
 pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
 contract { intent { "Z-implied civil instant to unix seconds. 0 on invalid date/time, Int overflow, or below the trusted floor. String ISO 8601 parse is SLIDE/VOK; Int cannot hold the 2100-01-01Z ceiling." } }
 {

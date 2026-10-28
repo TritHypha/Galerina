@@ -1,4 +1,4 @@
-sha256=6fe886f7fea2cbd6f0ae8fe0bba226759f1e091a60ce72fd77172067df3da173
+sha256=7c9844171b207ac897b2238e58a9c8063a3d67f1c04ef9cb8757469db888cd63
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|6
-header|FIXTURE_SCHEMA_VERSION|6
+header|vectorsVersion|7
+header|FIXTURE_SCHEMA_VERSION|7
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -382,3 +382,7 @@ strictBridge|version=1,epoch=1793059200,value=0,nowUnixSeconds=1793059200,readsS
 strictBridge|version=1,epoch=1793059200,value=0,nowUnixSeconds=1793059200,readsSoFar=0,bridge=true|LEGACY_CLOSED;readsAfter=0;alert=NONE
 strictBridge|version=1,epoch=1793059200,value=0,nowUnixSeconds=1793059200,readsSoFar=0,bridge=null|LEGACY_CLOSED;readsAfter=0;alert=NONE
 alertRecorder|ring-cap|cap=64;defaultSink=noop;status=UNKNOWN(no audit sink)
+alertEvidence|empty|digest=c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f;recentCount=0;dropped=0
+alertEvidence|single-first-seen|digest=cd0374e1d8e0780e0a82a71f45c2c431ee2878ba3f9de4109b9a072c3f1ca10c;recentCount=1;dropped=0
+alertEvidence|overflow-dropped|digest=ef23b9d90462e7b024e95b2fe86fcac55d3e50bf2875830f76f8dbd75bdc9cdc;recentCount=2;dropped=1
+alertEvidence|unsorted-tally-keys|digest=d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980;recentCount=0;dropped=0

@@ -200,6 +200,16 @@ Open follow-ups (low; none blocks the merged rows):
   production admission/lease/receipt path exists (the JS VOK reference
   model in `verified-object-kernel.mjs` is not that path). Merge-prep:
   merged origin/main `4499645c2` (not rebase). Shared fixture schema 6.
+- [x] **K3-RX** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-RC). N-m survey: a later K3 alert evidence digest would bind in SLIDE
+  `src/typed-package-execution-receipt-v3.mjs` function
+  `executePreparedDetachedScalarVok` (receipt fields ~728-764, `receiptDigest`
+  helper 460, inspector `inspectTypedPackageExecutionReceiptV3` 788). Do not
+  change that schema in this row. The JS VOK reference model in
+  `verified-object-kernel.mjs` is not a production receipt path.
+  `k3-alert-evidence` v1 builder in JS/VOK; fungi
+  `UNKNOWN(fungi-cannot-sha256-alert-evidence)`. N-n panic=unwind pin.
+  N-o JS recorder stores a frozen copy. Shared fixture schema 7.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

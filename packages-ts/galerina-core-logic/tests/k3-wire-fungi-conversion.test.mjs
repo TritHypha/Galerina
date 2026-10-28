@@ -576,4 +576,12 @@ describe("core-logic k3-wire.fungi conversion", () => {
     const kindBody = src.slice(kindStart, kindEnd);
     assert.equal(kindBody.includes("if bridge != 1"), true);
   });
+
+  it("K3-RX evidence unknown, recorder cap stays 64", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3AlertEvidenceUnknown(), 0);
+    assert.equal(exports.k3AlertRecorderCap(), 64);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(fungi-cannot-sha256-alert-evidence\)/);
+  });
 });

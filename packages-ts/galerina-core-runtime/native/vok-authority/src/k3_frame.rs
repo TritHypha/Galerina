@@ -6,6 +6,11 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
+#[cfg(not(panic = "unwind"))]
+compile_error!(
+    "K3-RX N-n: catch_unwind containment requires panic = unwind; an abort profile defeats it"
+);
+
 use crate::{
     Trit, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
     LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
@@ -153,6 +158,80 @@ impl K3AlertSink for K3AlertRecorder {
         }
         inner.recent.push(record);
     }
+}
+
+pub const K3_ALERT_EVIDENCE_SCHEMA: &str = "k3-alert-evidence";
+pub const K3_ALERT_EVIDENCE_VERSION: i32 = 1;
+pub const K3_ALERT_EVIDENCE_REFUSED: &str = "K3_ALERT_EVIDENCE_REFUSED";
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct K3AlertEvidence {
+    pub schema: &'static str,
+    pub version: i32,
+    pub frame_header_version: i32,
+    pub tallies: Vec<(String, u64)>,
+    pub recent_count: u64,
+    pub dropped: u64,
+    pub digest: String,
+    pub canonical: Vec<u8>,
+}
+
+fn hex_lower(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    out
+}
+
+/// Byte-exact canonical JSON for lockstep. No sha2 crate; hashes with crate::sha256.
+pub fn k3_alert_evidence_canonical_bytes(snapshot: &K3AlertSnapshot) -> Option<Vec<u8>> {
+    let mut entries: Vec<(String, u64)> = snapshot
+        .tallies
+        .iter()
+        .map(|(code, alert, count)| (format!("{code}|{alert}"), *count))
+        .collect();
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut tally_body = String::new();
+    for (i, (key, count)) in entries.iter().enumerate() {
+        if i > 0 {
+            tally_body.push(',');
+        }
+        tally_body.push('"');
+        tally_body.push_str(key);
+        tally_body.push_str("\":");
+        tally_body.push_str(&count.to_string());
+    }
+    let text = format!(
+        "{{\"schema\":\"{K3_ALERT_EVIDENCE_SCHEMA}\",\"version\":{K3_ALERT_EVIDENCE_VERSION},\"frameHeaderVersion\":{},\"tallies\":{{{tally_body}}},\"recentCount\":{},\"dropped\":{}}}",
+        snapshot.frame_header_version,
+        snapshot.recent.len(),
+        snapshot.dropped
+    );
+    Some(text.into_bytes())
+}
+
+pub fn k3_alert_evidence(snapshot: &K3AlertSnapshot) -> Result<K3AlertEvidence, &'static str> {
+    let canonical = k3_alert_evidence_canonical_bytes(snapshot).ok_or(K3_ALERT_EVIDENCE_REFUSED)?;
+    let digest = hex_lower(&crate::sha256::sha256(&canonical));
+    let mut tallies: Vec<(String, u64)> = snapshot
+        .tallies
+        .iter()
+        .map(|(code, alert, count)| (format!("{code}|{alert}"), *count))
+        .collect();
+    tallies.sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(K3AlertEvidence {
+        schema: K3_ALERT_EVIDENCE_SCHEMA,
+        version: K3_ALERT_EVIDENCE_VERSION,
+        frame_header_version: snapshot.frame_header_version,
+        tallies,
+        recent_count: snapshot.recent.len() as u64,
+        dropped: snapshot.dropped,
+        digest,
+        canonical,
+    })
 }
 
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
@@ -420,6 +499,7 @@ pub fn decode_legacy_frame_with_bridge(
         reads_after: decoded.reads_after,
         frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
     };
+    // K3-RX N-n: catch_unwind requires panic = unwind. An abort profile defeats containment.
     let _ = catch_unwind(AssertUnwindSafe(|| {
         sink.emit(record);
     }));
@@ -1224,5 +1304,79 @@ mod tests {
         assert!(!snap.tallies.is_empty());
         assert_eq!(K3_ALERT_RECORDER_CAP, 64);
         assert_eq!(K3_ALERT_SINK_STATUS, "UNKNOWN(no audit sink)");
+    }
+
+    #[test]
+    fn k3rx_panic_unwind_profile() {
+        assert!(
+            cfg!(panic = "unwind"),
+            "abort profile defeats catch_unwind containment"
+        );
+    }
+
+    #[test]
+    fn k3rx_alert_evidence_empty_and_overflow() {
+        let empty = K3AlertSnapshot {
+            tallies: Vec::new(),
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        let ev = k3_alert_evidence(&empty).expect("empty snapshot");
+        assert_eq!(ev.schema, K3_ALERT_EVIDENCE_SCHEMA);
+        assert_eq!(ev.version, 1);
+        assert_eq!(ev.recent_count, 0);
+        assert_eq!(ev.dropped, 0);
+        assert_eq!(
+            ev.digest,
+            "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f"
+        );
+        let rec = K3AlertRecorder::with_cap(2);
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            true,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            false,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            1_000_000,
+            true,
+            &rec,
+        );
+        let overflow = k3_alert_evidence(&rec.snapshot()).expect("overflow");
+        assert!(overflow.dropped > 0);
+        assert_eq!(overflow.recent_count, 2);
+        let unsorted = K3AlertSnapshot {
+            tallies: vec![
+                ("B".into(), "NONE".into(), 1),
+                ("A".into(), "NONE".into(), 2),
+            ],
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        let sorted = k3_alert_evidence(&unsorted).expect("sorted keys");
+        assert_eq!(sorted.tallies[0].0, "A|NONE");
+        assert_eq!(sorted.tallies[1].0, "B|NONE");
+        assert_eq!(
+            sorted.digest,
+            "d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980"
+        );
     }
 }

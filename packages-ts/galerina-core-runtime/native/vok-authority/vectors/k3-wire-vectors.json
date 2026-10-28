@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink).",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture schema version is header.FIXTURE_SCHEMA_VERSION (also mirrored as vectorsVersion). Frame header version is header.K3_WIRE_HEADER_VERSION (the live wireVersion field is 1 legacy / 2 canonical). Fixture v5 (K3-AL): (a) typed alert record {code,alert,readsAfter,frameHeaderVersion} via a no-op sink; (d) sunset dry-run bridge=false closes every legacy-0 row; (c) display-only unix s -> YYYYMMDD pins 1798761599=20261231, 1798761600=20270101, 1793115900=20261027. N-e: 20261231 open / 20270101 closed through the .fungi path. N-f: fungi WASI helper is UNKNOWN(fungi-int-cannot-hold-wasi-ns). Fixture v4 (K3-CW): (a) a legacy-0 frame whose epoch normalised to unix seconds (YYYYMMDD as 00:00:00Z) is at or after LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S 1798761600 closes; the process-clock gate stays. (b) WASI realtime u64 ns -> i64 unix s, floor / 1e9, ns above i64::MAX or outside floor/ceiling fail closed. (c) ISO 8601 / RFC 3339 instants with mandatory Z, pin 2026-10-27T15:45Z = 1793115900, half-open [start, end). Canonical frame epoch is i64 Unix seconds UTC; YYYYMMDD is a transitional Gregorian input in [20261027, 20991231] interpreted as 00:00:00Z. Fail closed on missing/unparseable, <= 0, below TRUSTED_CLOCK_FLOOR_UNIX_S 1790812800 or at/above TRUSTED_CLOCK_CEILING_UNIX_S 4102444800. Ceiling is an i64-only SLIDE/VOK unit test (it does not fit Fungi Int or this JSON's i32-domain rows). WASI ns that do not fit Number.isSafeInteger are decimal strings. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: epoch admission, frame-side legacy-0 expiry, bridge flag, trusted process clock (nowUnixSeconds < 1798761600), then cap. UNKNOWN = -128. Option-B framed 0 is unchanged. A2-F: clock input is i64 Unix seconds UTC. Fixture v6 (K3-RC): N-i strict bridge opens only on fungi 1 / JS === true / Rust bool; rows bridge=2 and bridge=-1 closed in all three trees; JS extras 1, \"true\", null closed. N-j sink containment. Bounded alert recorder ring N=64, snapshot {tallies, recent, dropped, frameHeaderVersion}. Default sink remains no-op. K3_ALERT_SINK_STATUS stays UNKNOWN(no audit sink). Fixture v7 (K3-RX): k3-alert-evidence v1 rows empty/single/overflow/unsorted-keys with expected canonical bytes and sha256 digests. Fungi UNKNOWN(fungi-cannot-sha256-alert-evidence).",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,8 +57,8 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 6,
-    "FIXTURE_SCHEMA_VERSION": 6,
+    "vectorsVersion": 7,
+    "FIXTURE_SCHEMA_VERSION": 7,
     "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600,
     "K3_EPOCH_YMD_MIN": 20261027,
     "K3_EPOCH_YMD_MAX": 20991231,
@@ -87,7 +87,8 @@
     "sunsetDryRun": "THREE-WAY",
     "alertRecords": "THREE-WAY",
     "strictBridge": "THREE-WAY",
-    "alertRecorder": "THREE-WAY"
+    "alertRecorder": "THREE-WAY",
+    "alertEvidence": "THREE-WAY"
   },
   "u8": [
     [
@@ -1961,6 +1962,57 @@
         "frameHeaderVersion"
       ],
       "note": "K3-RC (c) bounded in-memory recorder. Default remains no-op."
+    }
+  ],
+  "alertEvidence": [
+    {
+      "id": "empty",
+      "frameHeaderVersion": 1,
+      "tallies": {},
+      "recentCount": 0,
+      "dropped": 0,
+      "canonical": "{\"schema\":\"k3-alert-evidence\",\"version\":1,\"frameHeaderVersion\":1,\"tallies\":{},\"recentCount\":0,\"dropped\":0}",
+      "digest": "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f",
+      "note": "K3-RX empty snapshot"
+    },
+    {
+      "id": "single-first-seen",
+      "frameHeaderVersion": 1,
+      "tallies": {
+        "UNKNOWN|FIRST_SEEN": 1
+      },
+      "recentCount": 1,
+      "dropped": 0,
+      "canonical": "{\"schema\":\"k3-alert-evidence\",\"version\":1,\"frameHeaderVersion\":1,\"tallies\":{\"UNKNOWN|FIRST_SEEN\":1},\"recentCount\":1,\"dropped\":0}",
+      "digest": "cd0374e1d8e0780e0a82a71f45c2c431ee2878ba3f9de4109b9a072c3f1ca10c",
+      "note": "K3-RX single alert"
+    },
+    {
+      "id": "overflow-dropped",
+      "frameHeaderVersion": 1,
+      "tallies": {
+        "LEGACY_CLOSED|CAP_REACHED": 1,
+        "LEGACY_CLOSED|NONE": 1,
+        "UNKNOWN|FIRST_SEEN": 1
+      },
+      "recentCount": 2,
+      "dropped": 1,
+      "canonical": "{\"schema\":\"k3-alert-evidence\",\"version\":1,\"frameHeaderVersion\":1,\"tallies\":{\"LEGACY_CLOSED|CAP_REACHED\":1,\"LEGACY_CLOSED|NONE\":1,\"UNKNOWN|FIRST_SEEN\":1},\"recentCount\":2,\"dropped\":1}",
+      "digest": "ef23b9d90462e7b024e95b2fe86fcac55d3e50bf2875830f76f8dbd75bdc9cdc",
+      "note": "K3-RX ring overflow dropped>0"
+    },
+    {
+      "id": "unsorted-tally-keys",
+      "frameHeaderVersion": 1,
+      "tallies": {
+        "A|NONE": 2,
+        "B|NONE": 1
+      },
+      "recentCount": 0,
+      "dropped": 0,
+      "canonical": "{\"schema\":\"k3-alert-evidence\",\"version\":1,\"frameHeaderVersion\":1,\"tallies\":{\"A|NONE\":2,\"B|NONE\":1},\"recentCount\":0,\"dropped\":0}",
+      "digest": "d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980",
+      "note": "K3-RX unsorted input keys sort in canonical bytes"
     }
   ]
 }

@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "6fe886f7fea2cbd6f0ae8fe0bba226759f1e091a60ce72fd77172067df3da173";
-const FIXTURE_GIT_BLOB = "29288b48032480b4f64aacdd0ba9f87011e604c0";
+const FIXTURE_DIGEST_D = "7c9844171b207ac897b2238e58a9c8063a3d67f1c04ef9cb8757469db888cd63";
+const FIXTURE_GIT_BLOB = "03232fb0922639c535881a27e55d17d6d62708c3";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 6;
+const FIXTURE_SCHEMA_VERSION = 7;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -134,6 +134,7 @@ async function main() {
     k3SerialWindowContains,
     k3UnixSToYmd,
     k3WasiRealtimeNsToUnixS,
+    k3AlertEvidence,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
@@ -198,6 +199,22 @@ async function main() {
     refuse("strict bridge null must close");
     return;
   }
+  for (const row of doc.alertEvidence ?? []) {
+    const got = k3AlertEvidence({
+      tallies: row.tallies,
+      recentCount: row.recentCount,
+      dropped: row.dropped,
+      frameHeaderVersion: row.frameHeaderVersion,
+    });
+    if (!got.ok || got.record.digest !== row.digest) {
+      refuse(`alert evidence digest ${row.id}`);
+      return;
+    }
+  }
+  if ((doc.alertEvidence ?? []).length < 4) {
+    refuse("alert evidence rows missing");
+    return;
+  }
   if (k3UnixSToYmd(1798761599) !== 20261231 || k3UnixSToYmd(1798761600) !== 20270101 || k3UnixSToYmd(1793115900) !== 20261027) {
     refuse("display ymd pins");
     return;
@@ -247,6 +264,7 @@ async function main() {
     fixtureSchemaVersion: FIXTURE_SCHEMA_VERSION,
     frameHeaderVersion: FRAME_HEADER_VERSION,
     k3x: k3xState,
+    fungiEvidence: "UNKNOWN(fungi-cannot-sha256-alert-evidence)",
   })}\n`);
 }
 
