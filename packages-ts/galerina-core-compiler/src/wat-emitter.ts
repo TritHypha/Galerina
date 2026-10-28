@@ -2463,6 +2463,10 @@ export function emitWATExpr(
         }
         return `(call $fungi_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN (runtime value) overflows → trap
       }
+      // K3C-2 (2026-10-28): `!` is Bool-only. On a Verdict, i32.eqz would turn every wire
+      // token (-1, -128, +1) into a bare 0, a malformed Verdict. FUNGI-K3-002 is the compile-time
+      // gate and the walker returns a runtime error; the WAT lane fails closed the same way.
+      if (op === "!" && childType === "Verdict") return `(unreachable) (; unary ! on Verdict is not admitted (FUNGI-K3-002) - fail-closed (emitter cannot lower) ;)`;
       if (op === "!")  return `(i32.eqz ${operand})`;
       // W5a K3 negation: flip(x) = -x on the trit lattice (flip(-1)=+1, flip(0)=0,
       // flip(+1)=-1). Plain i32.sub — trits can never overflow, no checked helper needed.
