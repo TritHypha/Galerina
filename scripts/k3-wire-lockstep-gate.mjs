@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "7c9844171b207ac897b2238e58a9c8063a3d67f1c04ef9cb8757469db888cd63";
-const FIXTURE_GIT_BLOB = "03232fb0922639c535881a27e55d17d6d62708c3";
+const FIXTURE_DIGEST_D = "6ae155907530546c6cf3da7bae18318b07e99dbfaabc8c44fd29224107d1b0da";
+const FIXTURE_GIT_BLOB = "fa3222a28926550040d20eabad9927374eace37d";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 7;
+const FIXTURE_SCHEMA_VERSION = 8;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -135,6 +135,11 @@ async function main() {
     k3UnixSToYmd,
     k3WasiRealtimeNsToUnixS,
     k3AlertEvidence,
+    k3WireAnd,
+    k3WireAnd3,
+    k3WireGate,
+    k3WireNot,
+    k3WireOr,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
@@ -215,6 +220,67 @@ async function main() {
     refuse("alert evidence rows missing");
     return;
   }
+  if ((doc.strongKleeneAnd ?? []).length !== 9) {
+    refuse("strongKleeneAnd must have 9 rows");
+    return;
+  }
+  for (const [a, b, e] of doc.strongKleeneAnd) {
+    if (k3WireAnd(a, b) !== e) {
+      refuse(`strongKleeneAnd ${a} ${b}`);
+      return;
+    }
+  }
+  if ((doc.strongKleeneOr ?? []).length !== 9) {
+    refuse("strongKleeneOr must have 9 rows");
+    return;
+  }
+  for (const [a, b, e] of doc.strongKleeneOr) {
+    if (k3WireOr(a, b) !== e) {
+      refuse(`strongKleeneOr ${a} ${b}`);
+      return;
+    }
+  }
+  if ((doc.strongKleeneNot ?? []).length !== 3) {
+    refuse("strongKleeneNot must have 3 rows");
+    return;
+  }
+  for (const [a, e] of doc.strongKleeneNot) {
+    if (k3WireNot(a) !== e) {
+      refuse(`strongKleeneNot ${a}`);
+      return;
+    }
+  }
+  let gateUnknown = false;
+  for (const [a, e] of doc.strongKleeneGate ?? []) {
+    if (k3WireGate(a) !== e) {
+      refuse(`strongKleeneGate ${a}`);
+      return;
+    }
+    if (a === -128 && e === -1) gateUnknown = true;
+  }
+  if (!gateUnknown) {
+    refuse("gate(UNKNOWN) must refuse");
+    return;
+  }
+  if ((doc.strongKleeneDenySticky ?? []).length !== 27) {
+    refuse("strongKleeneDenySticky must have 27 rows");
+    return;
+  }
+  for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
+    if (k3WireAnd3(a, b, c) !== e) {
+      refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
+      return;
+    }
+  }
+  const kleeneReaders = {
+    js: countReaders(join(slideRoot, "src"), ["function k3WireAnd"]),
+    rust: countReaders(join(galerinaRoot, "packages-ts/galerina-core-runtime/native/vok-authority/src"), ["fn k3_wire_and"]),
+    fungi: countReaders(join(galerinaRoot, "packages-ts/galerina-core-logic/src/self-hosted"), ["pure flow k3WireAnd"]),
+  };
+  if (kleeneReaders.js["function k3WireAnd"] < 1 || kleeneReaders.rust["fn k3_wire_and"] < 1 || kleeneReaders.fungi["pure flow k3WireAnd"] < 1) {
+    refuse(`kleene three-way missing ${JSON.stringify(kleeneReaders)}`);
+    return;
+  }
   if (k3UnixSToYmd(1798761599) !== 20261231 || k3UnixSToYmd(1798761600) !== 20270101 || k3UnixSToYmd(1793115900) !== 20261027) {
     refuse("display ymd pins");
     return;
@@ -265,6 +331,7 @@ async function main() {
     frameHeaderVersion: FRAME_HEADER_VERSION,
     k3x: k3xState,
     fungiEvidence: "UNKNOWN(fungi-cannot-sha256-alert-evidence)",
+    kleeneThreeWay: true,
   })}\n`);
 }
 

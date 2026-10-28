@@ -352,10 +352,130 @@ contract { intent { "UNKNOWN(fungi-alert-recorder-is-tally). Pure Fungi has no h
   return 0
 }
 
-pure flow k3AlertEvidenceUnknown() -> Int
-contract { intent { "UNKNOWN(fungi-cannot-sha256-alert-evidence). Tally-only; no digest." } }
+pure flow k3AlertEvidenceUnknownReason() -> Int
+contract { intent { "Named non-zero reason for fungi-cannot-sha256-alert-evidence. Distinct from lattice 0." } }
 {
-  return 0
+  return 4
+}
+
+pure flow k3AlertEvidenceUnknown() -> Int
+contract { intent { "UNKNOWN(fungi-cannot-sha256-alert-evidence). Returns k3AlertEvidenceUnknownReason, never lattice 0." } }
+{
+  return k3AlertEvidenceUnknownReason()
+}
+
+pure flow k3WireToLattice(wire: Int) -> Int
+contract { intent { "Canonical wire deny/unknown-wire/admit to lattice -1/0/1. Invalid is 2." } }
+{
+  if wire == -1 {
+    return -1
+  }
+  if wire == k3UnknownWire() {
+    return 0
+  }
+  if wire == 1 {
+    return 1
+  }
+  return 2
+}
+
+pure flow k3LatticeToWireSigned(lattice: Int) -> Int
+contract { intent { "Lattice -1/0/1 to signed wire deny/unknown-wire/admit. Invalid is 2." } }
+{
+  if lattice == -1 {
+    return -1
+  }
+  if lattice == 0 {
+    return k3UnknownWire()
+  }
+  if lattice == 1 {
+    return 1
+  }
+  return 2
+}
+
+pure flow k3WireAnd(a: Int, b: Int) -> Int
+contract { intent { "Strong Kleene AND on the wire. DENY AND UNKNOWN = DENY." } }
+{
+  let la: Int = k3WireToLattice(a)
+  let lb: Int = k3WireToLattice(b)
+  if la == 2 {
+    return 2
+  }
+  if lb == 2 {
+    return 2
+  }
+  if la == -1 {
+    return -1
+  }
+  if lb == -1 {
+    return -1
+  }
+  if la == 0 {
+    return k3UnknownWire()
+  }
+  if lb == 0 {
+    return k3UnknownWire()
+  }
+  return 1
+}
+
+pure flow k3WireOr(a: Int, b: Int) -> Int
+contract { intent { "Strong Kleene OR on the wire. ALLOW OR UNKNOWN = ALLOW." } }
+{
+  let la: Int = k3WireToLattice(a)
+  let lb: Int = k3WireToLattice(b)
+  if la == 2 {
+    return 2
+  }
+  if lb == 2 {
+    return 2
+  }
+  if la == 1 {
+    return 1
+  }
+  if lb == 1 {
+    return 1
+  }
+  if la == 0 {
+    return k3UnknownWire()
+  }
+  if lb == 0 {
+    return k3UnknownWire()
+  }
+  return -1
+}
+
+pure flow k3WireNot(a: Int) -> Int
+contract { intent { "Strong Kleene NOT on the wire. NOT UNKNOWN = UNKNOWN." } }
+{
+  let la: Int = k3WireToLattice(a)
+  if la == 2 {
+    return 2
+  }
+  if la == -1 {
+    return 1
+  }
+  if la == 1 {
+    return -1
+  }
+  return k3UnknownWire()
+}
+
+pure flow k3WireGate(a: Int) -> Int
+contract { intent { "Gate: only ALLOW passes. UNKNOWN and DENY refuse as DENY." } }
+{
+  let la: Int = k3WireToLattice(a)
+  if la == 1 {
+    return 1
+  }
+  return -1
+}
+
+pure flow k3WireAnd3(a: Int, b: Int, c: Int) -> Int
+contract { intent { "Strong Kleene AND of three wire values. DENY is sticky." } }
+{
+  return k3WireAnd(k3WireAnd(a, b), c)
 }
 
 pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int

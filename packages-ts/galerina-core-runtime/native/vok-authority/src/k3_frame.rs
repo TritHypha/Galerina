@@ -213,6 +213,45 @@ pub fn k3_alert_evidence_canonical_bytes(snapshot: &K3AlertSnapshot) -> Option<V
     Some(text.into_bytes())
 }
 
+fn trit_from_canonical_wire(value: i32) -> Option<Trit> {
+    match Trit::decode_canonical(value) {
+        Ok((trit, _)) => Some(trit),
+        Err(_) => None,
+    }
+}
+
+/// Strong Kleene AND on the wire: min over DENY < UNKNOWN < ALLOW.
+pub fn k3_wire_and(a: i32, b: i32) -> Option<i32> {
+    Some(trit_from_canonical_wire(a)?.min(trit_from_canonical_wire(b)?).to_wire())
+}
+
+/// Strong Kleene OR on the wire: max over DENY < UNKNOWN < ALLOW.
+pub fn k3_wire_or(a: i32, b: i32) -> Option<i32> {
+    Some(trit_from_canonical_wire(a)?.max(trit_from_canonical_wire(b)?).to_wire())
+}
+
+/// Strong Kleene NOT on the wire: swaps DENY/ALLOW, keeps UNKNOWN.
+pub fn k3_wire_not(a: i32) -> Option<i32> {
+    Some(match trit_from_canonical_wire(a)? {
+        Trit::Refuse => Trit::Admit,
+        Trit::Admit => Trit::Refuse,
+        Trit::Unknown => Trit::Unknown,
+    }
+    .to_wire())
+}
+
+/// Gate: only ALLOW passes; UNKNOWN and DENY (and junk) refuse as DENY.
+pub fn k3_wire_gate(a: i32) -> i32 {
+    match trit_from_canonical_wire(a) {
+        Some(Trit::Admit) => Trit::Admit.to_wire(),
+        _ => Trit::Refuse.to_wire(),
+    }
+}
+
+pub fn k3_wire_and3(a: i32, b: i32, c: i32) -> Option<i32> {
+    k3_wire_and(k3_wire_and(a, b)?, c)
+}
+
 pub fn k3_alert_evidence(snapshot: &K3AlertSnapshot) -> Result<K3AlertEvidence, &'static str> {
     let canonical = k3_alert_evidence_canonical_bytes(snapshot).ok_or(K3_ALERT_EVIDENCE_REFUSED)?;
     let digest = hex_lower(&crate::sha256::sha256(&canonical));
@@ -1378,5 +1417,57 @@ mod tests {
             sorted.digest,
             "d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980"
         );
+    }
+
+    #[test]
+    fn k3mk_strong_kleene_wire_tables() {
+        const D: i32 = -1;
+        const U: i32 = -128;
+        const A: i32 = 1;
+        let and = [
+            (D, D, D),
+            (D, U, D),
+            (D, A, D),
+            (U, D, D),
+            (U, U, U),
+            (U, A, U),
+            (A, D, D),
+            (A, U, U),
+            (A, A, A),
+        ];
+        let or = [
+            (D, D, D),
+            (D, U, U),
+            (D, A, A),
+            (U, D, U),
+            (U, U, U),
+            (U, A, A),
+            (A, D, A),
+            (A, U, A),
+            (A, A, A),
+        ];
+        for (a, b, e) in and {
+            assert_eq!(k3_wire_and(a, b), Some(e), "{a} AND {b}");
+        }
+        for (a, b, e) in or {
+            assert_eq!(k3_wire_or(a, b), Some(e), "{a} OR {b}");
+        }
+        assert_eq!(k3_wire_not(D), Some(A));
+        assert_eq!(k3_wire_not(U), Some(U));
+        assert_eq!(k3_wire_not(A), Some(D));
+        assert_eq!(k3_wire_gate(U), D);
+        assert_eq!(k3_wire_gate(A), A);
+        assert_eq!(k3_wire_gate(D), D);
+        for x in [D, U, A] {
+            for y in [D, U, A] {
+                for z in [D, U, A] {
+                    let got = k3_wire_and3(x, y, z).expect("triple");
+                    if [x, y, z].contains(&D) {
+                        assert_eq!(got, D);
+                    }
+                    assert_eq!(got == A, x == A && y == A && z == A);
+                }
+            }
+        }
     }
 }

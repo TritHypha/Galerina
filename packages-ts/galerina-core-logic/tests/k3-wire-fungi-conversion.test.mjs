@@ -579,9 +579,49 @@ describe("core-logic k3-wire.fungi conversion", () => {
 
   it("K3-RX evidence unknown, recorder cap stays 64", async () => {
     const { exports } = await compileK3();
-    assert.equal(exports.k3AlertEvidenceUnknown(), 0);
+    assert.equal(exports.k3AlertEvidenceUnknownReason(), 4);
+    assert.equal(exports.k3AlertEvidenceUnknown(), 4);
+    assert.notEqual(exports.k3AlertEvidenceUnknown(), 0);
     assert.equal(exports.k3AlertRecorderCap(), 64);
     const src = readFileSync(SOURCE, "utf8");
     assert.match(src, /UNKNOWN\(fungi-cannot-sha256-alert-evidence\)/);
+  });
+
+  it("K3-MK strong Kleene AND/OR/NOT/gate and DENY-sticky triples", async () => {
+    const { exports } = await compileK3();
+    const D = -1;
+    const U = -128;
+    const A = 1;
+    const and = [
+      [D, D, D], [D, U, D], [D, A, D],
+      [U, D, D], [U, U, U], [U, A, U],
+      [A, D, D], [A, U, U], [A, A, A],
+    ];
+    const or = [
+      [D, D, D], [D, U, U], [D, A, A],
+      [U, D, U], [U, U, U], [U, A, A],
+      [A, D, A], [A, U, A], [A, A, A],
+    ];
+    for (const [a, b, e] of and) {
+      assert.equal(exports.k3WireAnd(a, b), e, `${a} AND ${b}`);
+    }
+    for (const [a, b, e] of or) {
+      assert.equal(exports.k3WireOr(a, b), e, `${a} OR ${b}`);
+    }
+    assert.equal(exports.k3WireNot(D), A);
+    assert.equal(exports.k3WireNot(U), U);
+    assert.equal(exports.k3WireNot(A), D);
+    assert.equal(exports.k3WireGate(U), D);
+    assert.equal(exports.k3WireGate(A), A);
+    assert.equal(exports.k3WireGate(D), D);
+    for (const x of [D, U, A]) {
+      for (const y of [D, U, A]) {
+        for (const z of [D, U, A]) {
+          const got = exports.k3WireAnd3(x, y, z);
+          if ([x, y, z].includes(D)) assert.equal(got, D, `${x},${y},${z}`);
+          assert.equal(got === A, x === A && y === A && z === A);
+        }
+      }
+    }
   });
 });

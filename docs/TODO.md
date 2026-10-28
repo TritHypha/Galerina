@@ -210,6 +210,16 @@ Open follow-ups (low; none blocks the merged rows):
   `k3-alert-evidence` v1 builder in JS/VOK; fungi
   `UNKNOWN(fungi-cannot-sha256-alert-evidence)`. N-n panic=unwind pin.
   N-o JS recorder stores a frozen copy. Shared fixture schema 7.
+- [x] **K3-MK** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Merge
+  origin/main `40de24627` (commit `4f98adcc0`, parents `38afae1e9`+`40de24627`).
+  Audited fold sites (strong Kleene; none weak): SLIDE `src/k3-wire.mjs`
+  `k3FoldAdmission` 726 AND, `k3FoldJoin` 738 OR, `k3WireAnd` 766,
+  `k3WireOr` 773, `k3WireNot` 780, `k3WireGate` 786; Rust `k3_frame.rs`
+  `k3_wire_and` 224 Trit.min, `k3_wire_or` 229 Trit.max, `k3_wire_not` 234,
+  `k3_wire_gate` 244; `lib.rs` `authority_verdict` 954 `.min()` and
+  gate_outcome 1078 `.min()` listed unchanged; `.fungi` `k3-wire.fungi`
+  `k3WireAnd` 397, `k3WireOr` 423, `k3WireNot` 449, `k3WireGate` 465.
+  N-q `k3AlertEvidenceUnknownReason` = 4. Shared fixture schema 8.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
