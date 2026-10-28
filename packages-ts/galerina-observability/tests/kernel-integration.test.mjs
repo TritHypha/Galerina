@@ -211,6 +211,13 @@ test("instrumented handler that THROWS ⇒ kernel 500 AND a recorded 5xx error (
   assert.equal(s.byStatusClass["5xx"], 1);
 });
 
+// OPEN-S6-1 D-5 (gcw-wd-202610281633): the kernel deliberately does NOT audit unmatched
+// 404/405 traffic. Fix csf_2a86648bf19537088fa9b394 (kernel eb1645a4f, 2026-09-22; verified by
+// docs/independent-audits/2026-09-23-patched-highs-verify-hold.md, pinned in app-kernel
+// tests/audit-async.test.mjs) stops attacker-chosen unknown paths from reserving or emitting
+// audit events. The earlier expectation here (404 "still audited", totalRequests 2) was stale.
+// The audit-fed metrics series therefore counts matched routes only; unmatched-traffic
+// visibility is a separate bounded counts-only follow-up for the .fungi kernel (no path retained).
 test("metricsAuditSink feeds counts off the kernel audit pipe (counts only, no latency)", async () => {
   const metrics = new MetricsCollector();
   const kernel = createAppKernel({
@@ -225,13 +232,85 @@ test("metricsAuditSink feeds counts off the kernel audit pipe (counts only, no l
     dispatch: { a: () => ({ status: 200, body: {} }) },
     auditSink: metricsAuditSink(metrics),
   });
-  await kernel.handle(req({ method: "GET", path: "/a" }));
-  await kernel.handle(req({ method: "GET", path: "/missing" })); // 404 — still audited
+  const ok = await kernel.handle(req({ method: "GET", path: "/a" }));
+  assert.equal(ok.status, 200);
+  const missing = await kernel.handle(req({ method: "GET", path: "/missing" }));
+  assert.equal(missing.status, 404); // unmatched: refused, never audited (csf_2a86648b)
+  const s = metrics.snapshot();
+  assert.equal(s.totalRequests, 1);
+  assert.equal(s.byStatusClass["2xx"], 1);
+  assert.equal(s.byStatusClass["4xx"], 0);
+  assert.equal(s.latency.count, 0); // audit pipe carries no duration
+});
+
+function d5Kernel(metrics, dispatch = { a: () => ({ status: 200, body: {} }) }) {
+  return createAppKernel({
+    routes: [{
+      method: "GET",
+      path: "/a",
+      handler: "a",
+      auth: { mode: "public" },
+      audit: { runtimeReport: false },
+    }],
+    dispatch,
+    auditSink: metricsAuditSink(metrics),
+  });
+}
+
+test("S6-D5-02 unmatched 404 and 405 never reach the metrics audit pipe", async () => {
+  const metrics = new MetricsCollector();
+  const kernel = d5Kernel(metrics);
+  const notFound = await kernel.handle(req({ method: "GET", path: "/nope", requestId: "rq-404" }));
+  const wrongMethod = await kernel.handle(req({ method: "POST", path: "/a", requestId: "rq-405" }));
+  assert.equal(notFound.status, 404);
+  assert.equal(wrongMethod.status, 405);
+  const s = metrics.snapshot();
+  assert.equal(s.totalRequests, 0, "unmatched traffic must not be recorded");
+  assert.equal(s.errors, 0);
+  assert.equal(s.routes.length, 0);
+});
+
+test("S6-D5-03 a flood of distinct unknown paths adds no route cardinality", async () => {
+  const metrics = new MetricsCollector();
+  const kernel = d5Kernel(metrics);
+  for (let i = 0; i < 1200; i += 1) {
+    const res = await kernel.handle(req({ method: "GET", path: `/probe-${i}`, requestId: `rq-p${i}` }));
+    assert.equal(res.status, 404);
+  }
+  const s = metrics.snapshot();
+  assert.equal(s.totalRequests, 0);
+  assert.equal(s.routes.length, 0);
+  assert.equal(s.routesOverflowed, false, "attacker paths must not push real routes into __overflow__");
+  assert.ok(!JSON.stringify(s).includes("probe-"), "no attacker-chosen path is retained");
+});
+
+test("S6-D5-04 matched traffic after an unmatched flood is still counted", async () => {
+  const metrics = new MetricsCollector();
+  const kernel = d5Kernel(metrics);
+  for (let i = 0; i < 50; i += 1) {
+    await kernel.handle(req({ method: "GET", path: `/scan-${i}` }));
+  }
+  const ok1 = await kernel.handle(req({ method: "GET", path: "/a", requestId: "rq-a1" }));
+  const ok2 = await kernel.handle(req({ method: "GET", path: "/a", requestId: "rq-a2" }));
+  assert.equal(ok1.status, 200);
+  assert.equal(ok2.status, 200);
   const s = metrics.snapshot();
   assert.equal(s.totalRequests, 2);
-  assert.equal(s.byStatusClass["2xx"], 1);
+  assert.equal(s.byStatusClass["2xx"], 2);
+  assert.equal(s.routes.length, 1);
+  assert.equal(s.routes[0].route, "/a");
+  assert.equal(s.routes[0].method, "GET");
+});
+
+test("S6-D5-05 a handler-chosen 404 on a matched route IS audited and counted", async () => {
+  const metrics = new MetricsCollector();
+  const kernel = d5Kernel(metrics, { a: () => ({ status: 404, body: { error: "no_such_item" } }) });
+  const res = await kernel.handle(req({ method: "GET", path: "/a", requestId: "rq-h404" }));
+  assert.equal(res.status, 404);
+  const s = metrics.snapshot();
+  assert.equal(s.totalRequests, 1, "matched-route 404 is real traffic and must be counted");
   assert.equal(s.byStatusClass["4xx"], 1);
-  assert.equal(s.latency.count, 0); // audit pipe carries no duration
+  assert.equal(s.routes[0].route, "/a");
 });
 
 test("metrics-only audit sink fails closed for a mandatory runtime report", async () => {

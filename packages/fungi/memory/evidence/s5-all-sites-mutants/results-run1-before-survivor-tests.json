@@ -1,0 +1,234 @@
+{
+  "baseline": {
+    "pass": 132,
+    "fail": 0,
+    "timedOut": false,
+    "killers": [],
+    "ran": [
+      "s5-secret-authority.test.mjs",
+      "secret-gate.test.mjs",
+      "rd1415-ack-after-publication-audit.test.mjs",
+      "rd1415-ack-throw-fail-closed.test.mjs",
+      "rd1415-hostile-proxy-dispatch.test.mjs",
+      "rd1415-op-bound-ack.test.mjs",
+      "kernel.test.mjs"
+    ]
+  },
+  "results": [
+    {
+      "id": "SW2-site1of1",
+      "family": "SW2",
+      "what": "widen the i32 cap guard on the classified integer",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/fungi-secret-gate-loader.js",
+      "distLine": 50,
+      "srcLine": 84,
+      "verdict": "RED",
+      "pass": 23,
+      "fail": 2,
+      "killerFile": "packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs",
+      "killers": [
+        "S5-R7a loader noteUnknownVerdict is the WebAssembly gateNoteUnknown verdict",
+        "S5-R7b loader preHandoffVerdict is the WebAssembly deliverPreHandoff verdict"
+      ]
+    },
+    {
+      "id": "SAO-site1of1",
+      "family": "SAO",
+      "what": "decider check: || becomes &&",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 424,
+      "srcLine": 558,
+      "verdict": "RED",
+      "pass": 24,
+      "fail": 1,
+      "killerFile": "packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs",
+      "killers": [
+        "S5-R10e the release shell needs BOTH decider verdict functions (kills SAO)"
+      ]
+    },
+    {
+      "id": "SSC-site1of5",
+      "family": "SSC",
+      "what": "skip a release-authority markUnknown call",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 310,
+      "srcLine": 423,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SSC-site2of5",
+      "family": "SSC",
+      "what": "skip a release-authority markUnknown call",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 343,
+      "srcLine": 454,
+      "verdict": "RED",
+      "pass": 63,
+      "fail": 1,
+      "killerFile": "packages-ts/galerina-framework-app-kernel/tests/secret-gate.test.mjs",
+      "killers": [
+        "F2: consumer transfer-then-throw keeps original error, wipes gate-owned bytes, runs lease cleanup"
+      ]
+    },
+    {
+      "id": "SSC-site3of5",
+      "family": "SSC",
+      "what": "skip a release-authority markUnknown call",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 382,
+      "srcLine": 486,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SSC-site4of5",
+      "family": "SSC",
+      "what": "skip a release-authority markUnknown call",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 401,
+      "srcLine": 507,
+      "verdict": "RED",
+      "pass": 91,
+      "fail": 2,
+      "killerFile": "packages-ts/galerina-framework-app-kernel/tests/rd1415-op-bound-ack.test.mjs",
+      "killers": [
+        "matrix: simulated crash between consume and ACK is status-only; recovery never calls use",
+        "matrix: timeout and abort of a released lease become delivery-unknown"
+      ]
+    },
+    {
+      "id": "SSC-site5of5",
+      "family": "SSC",
+      "what": "skip a release-authority markUnknown call",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/secret-gate.js",
+      "distLine": 455,
+      "srcLine": 591,
+      "verdict": "RED",
+      "pass": 24,
+      "fail": 1,
+      "killerFile": "packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs",
+      "killers": [
+        "S5-R7c createSecretReleaseShell obeys the decider and has no default decider"
+      ]
+    },
+    {
+      "id": "SPU-site1of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 851,
+      "srcLine": 1117,
+      "verdict": "RED",
+      "pass": 65,
+      "fail": 2,
+      "killerFile": "packages-ts/galerina-framework-app-kernel/tests/rd1415-ack-after-publication-audit.test.mjs",
+      "killers": [
+        "audit-sink commit throw is HTTP 503 and status is not acknowledged",
+        "clean publication and audit commit leaves the lease delivery-unknown, never acknowledged (MB-06)"
+      ]
+    },
+    {
+      "id": "SPU-site2of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 855,
+      "srcLine": 1120,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SPU-site3of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 957,
+      "srcLine": 1211,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SPU-site4of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 972,
+      "srcLine": 1225,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SPU-site5of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 977,
+      "srcLine": 1229,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SPU-site6of6",
+      "family": "SPU",
+      "what": "kernel skips a delivery-unknown note on a spent lease",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/kernel.js",
+      "distLine": 991,
+      "srcLine": 1241,
+      "verdict": "SURVIVED",
+      "pass": 132,
+      "fail": 0,
+      "killerFile": null,
+      "killers": []
+    },
+    {
+      "id": "SDA-site1of2",
+      "family": "SDA",
+      "what": "noteUnknown verdict: an UNKNOWN arm becomes no-op",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/fungi-secret-gate-loader.js",
+      "distLine": 72,
+      "srcLine": 105,
+      "verdict": "RED",
+      "pass": 24,
+      "fail": 1,
+      "killerFile": "packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs",
+      "killers": [
+        "S5-R10c a trapping noteUnknown export is typed UNKNOWN, never no-op (kills SDA)"
+      ]
+    },
+    {
+      "id": "SDA-site2of2",
+      "family": "SDA",
+      "what": "noteUnknown verdict: an UNKNOWN arm becomes no-op",
+      "file": "packages-ts/galerina-framework-app-kernel/dist/fungi-secret-gate-loader.js",
+      "distLine": 78,
+      "srcLine": 109,
+      "verdict": "RED",
+      "pass": 23,
+      "fail": 2,
+      "killerFile": "packages/fungi/memory/tests/s5-secret-authority/s5-secret-authority.test.mjs",
+      "killers": [
+        "S5-R7a loader noteUnknownVerdict is the WebAssembly gateNoteUnknown verdict",
+        "S5-R10b a -0 epoch or lease is outside the WebAssembly domain (kills SW1)"
+      ]
+    }
+  ]
+}
