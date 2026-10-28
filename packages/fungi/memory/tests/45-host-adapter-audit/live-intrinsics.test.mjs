@@ -2,9 +2,10 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, basename } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, copyFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
@@ -164,7 +165,8 @@ test("Q3 Date.now is not read on galerina run host helpers; TextEncoder is live 
 test("Q3 .fungi cannot name a JS prototype: type form check-refuses; member form traps", () => {
   const dir = mkdtempSync(join(tmpdir(), "q45-proto-"));
   const typeFile = join(dir, "proto-type.fungi");
-  const memberFile = join(dir, "proto-member.fungi");
+  // OPEN-S2-3: unique mkdtemp build name (was build/proto-member.*), removed at exit by the S2 harness.
+  const memberFile = uniqueFungiFile(dir);
   writeFileSync(
     typeFile,
     "@version 1\npure flow bad(x: Array.prototype) -> Int\ncontract {\n  intent { \"Type name Array.prototype.\" }\n}\n{\n  return 0\n}\n",
@@ -198,7 +200,7 @@ test("Q3 .fungi cannot name a JS prototype: type form check-refuses; member form
     );
     const memberBuildText = (memberBuild.stdout || "") + (memberBuild.stderr || "");
     assert.equal(memberBuild.status, 0, memberBuildText);
-    const wat = readFileSync(join(REPO, "build", "proto-member.wat"), "utf8");
+    const wat = readFileSync(join(REPO, "build", basename(memberFile, ".fungi") + ".wat"), "utf8");
     assert.match(wat, /unresolved member: prototype/);
     assert.match(wat, /unreachable/);
 

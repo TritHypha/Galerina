@@ -15,6 +15,7 @@ const TESTS = join(HERE, "..");
 const REPO = join(HERE, "..", "..", "..", "..", "..");
 const SUITE45 = join(TESTS, "45-host-adapter-audit");
 const BUILD = join(REPO, "build");
+const SELF = fileURLToPath(import.meta.url); // this guard quotes the old lines in S2-L45-03
 const ARTIFACT = /join\(\s*REPO\s*,\s*"build"\s*,\s*"[^"]*\.(?:wasm|wat|lmanifest|lmanifest\.json|dot|svg)"\s*\)/u;
 const COMMITTED_FIXTURE = /join\(\s*HERE\s*,\s*"[^"]+\.fungi"\s*\)/u;
 
@@ -35,7 +36,7 @@ function buildEntries() {
 
 test("S2-L45-01 no memory suite reads a build artifact under a fixed literal name", () => {
   const hits = [];
-  for (const file of testFiles(TESTS)) {
+  for (const file of testFiles(TESTS).filter((f) => f !== SELF)) {
     const lines = readFileSync(file, "utf8").split("\n");
     lines.forEach((line, i) => {
       if (ARTIFACT.test(line)) hits.push(relative(REPO, file) + ":" + (i + 1));
@@ -46,7 +47,7 @@ test("S2-L45-01 no memory suite reads a build artifact under a fixed literal nam
 
 test("S2-L45-02 a suite that references a committed .fungi fixture builds it through uniqueFungiFile", () => {
   const bad = [];
-  for (const file of testFiles(TESTS)) {
+  for (const file of testFiles(TESTS).filter((f) => f !== SELF)) {
     const text = readFileSync(file, "utf8");
     if (COMMITTED_FIXTURE.test(text) !== true) continue;
     if (text.includes("uniqueFungiFile(") !== true || text.includes("copyFileSync(") !== true) bad.push(relative(REPO, file));

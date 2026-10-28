@@ -3,13 +3,22 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, rmSync, existsSync, mkdtempSync, copyFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
 const GALERINA = join(REPO, "galerina.mjs");
-const ECHO = join(HERE, "echo.fungi");
+const ECHO_FIXTURE = join(HERE, "echo.fungi");
+// OPEN-S2-3: never build the committed fixture under its own fixed name (that left build/echo.* behind
+// and two files shared it). Each file builds a private copy under a unique mkdtemp name; the S2 harness
+// removes build/<name>.* at exit and the copy's folder is removed here.
+const ECHO_DIR = mkdtempSync(join(tmpdir(), "q45-echo-"));
+const ECHO = uniqueFungiFile(ECHO_DIR);
+copyFileSync(ECHO_FIXTURE, ECHO);
+process.on("exit", () => { rmSync(ECHO_DIR, { recursive: true, force: true }); });
 
 function invokeEcho(argList, galerinaPath) {
   const bin = galerinaPath || GALERINA;

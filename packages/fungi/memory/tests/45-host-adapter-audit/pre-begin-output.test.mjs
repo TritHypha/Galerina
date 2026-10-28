@@ -2,15 +2,23 @@ import { spawnSync, spawn } from "node:child_process";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, basename } from "node:path";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, copyFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { uniqueFungiFile } from "../_harness/unique-build-name.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM = join(HERE, "..", "..");
 const REPO = join(MEM, "..", "..", "..");
 const GALERINA = join(REPO, "galerina.mjs");
-const ECHO = join(HERE, "echo.fungi");
+const ECHO_FIXTURE = join(HERE, "echo.fungi");
+// OPEN-S2-3: never build the committed fixture under its own fixed name (that left build/echo.* behind
+// and two files shared it). Each file builds a private copy under a unique mkdtemp name; the S2 harness
+// removes build/<name>.* at exit and the copy's folder is removed here.
+const ECHO_DIR = mkdtempSync(join(tmpdir(), "q45-echo-"));
+const ECHO = uniqueFungiFile(ECHO_DIR);
+copyFileSync(ECHO_FIXTURE, ECHO);
+process.on("exit", () => { rmSync(ECHO_DIR, { recursive: true, force: true }); });
 const COMPILER_JS = join(REPO, "packages-ts", "galerina-core-compiler", "dist", "index.js");
 const FROZEN = "dc0f9c8c4f1365f0228cda213b2ecd001400463e";
 const AUTH = "packages-ts/galerina-framework-app-kernel/src/auth-verify-route.ts";
@@ -44,7 +52,7 @@ test("Q1 WASI fd_write is absent from galerina run host and echo wasm", async ()
   });
   const buildText = (build.stdout || "") + (build.stderr || "");
   assert.equal(build.status, 0, buildText);
-  const wat = readFileSync(join(REPO, "build", "echo.wat"), "utf8");
+  const wat = readFileSync(join(REPO, "build", basename(ECHO, ".fungi") + ".wat"), "utf8");
   assert.equal(wat.includes("fd_write"), false);
   assert.equal(wat.includes("wasi"), false);
   assert.equal(wat.includes("import"), false);
