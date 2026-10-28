@@ -39,9 +39,15 @@ contract { intent { "Legacy K3 wire version." } }
 }
 
 pure flow k3ExpiryEpoch() -> Int
-contract { intent { "Legacy unknown-zero expiry YYYYMMDD inclusive." } }
+contract { intent { "Legacy unknown-zero expiry YYYYMMDD display constant." } }
 {
   return 20261231
+}
+
+pure flow k3ExpiryUnixS() -> Int
+contract { intent { "Legacy unknown-zero expiry Unix seconds exclusive (2027-01-01Z)." } }
+{
+  return 1798761600
 }
 
 pure flow k3LegacyZeroCap() -> Int
@@ -197,7 +203,7 @@ contract { intent { "Encode lattice 0 to unknown byte 128, never 0." } }
   return 2
 }
 
-pure flow k3LegacyZeroKind(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+pure flow k3LegacyZeroKind(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
 contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else label." } }
 {
   if version == k3VersionCanonical() {
@@ -211,13 +217,13 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
       if epoch > k3ExpiryEpoch() {
         return 3
       }
-      if k3YmdInRange(nowYmd) == 0 {
+      if nowUnixSeconds <= 0 {
         return 3
       }
       if k3LegacyZeroBridge() == 0 {
         return 3
       }
-      if nowYmd > k3ExpiryEpoch() {
+      if nowUnixSeconds >= k3ExpiryUnixS() {
         return 3
       }
       if readsSoFar >= k3LegacyZeroCap() {
@@ -230,10 +236,10 @@ contract { intent { "Shared frame kind: 10 counted accept, 4 cap-closed, else la
   return 2
 }
 
-pure flow k3DecodeLegacyFrame(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+pure flow k3DecodeLegacyFrame(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
 contract { intent { "Frame label: 1 admit, -1 deny, 0 unknown, 2 invalid, 3 closed." } }
 {
-  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowYmd, readsSoFar)
+  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowUnixSeconds, readsSoFar)
   if kind == 10 {
     return 0
   }
@@ -243,20 +249,20 @@ contract { intent { "Frame label: 1 admit, -1 deny, 0 unknown, 2 invalid, 3 clos
   return kind
 }
 
-pure flow k3DecodeLegacyFrameReadsAfter(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+pure flow k3DecodeLegacyFrameReadsAfter(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
 contract { intent { "Counted accept increments. Refusals keep readsSoFar." } }
 {
-  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowYmd, readsSoFar)
+  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowUnixSeconds, readsSoFar)
   if kind == 10 {
     return readsSoFar + 1
   }
   return readsSoFar
 }
 
-pure flow k3DecodeLegacyFrameAlert(version: Int, epoch: Int, value: Int, nowYmd: Int, readsSoFar: Int) -> Int
+pure flow k3DecodeLegacyFrameAlert(version: Int, epoch: Int, value: Int, nowUnixSeconds: Int, readsSoFar: Int) -> Int
 contract { intent { "Alert 1 first-seen, 2 cap-reached, else 0." } }
 {
-  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowYmd, readsSoFar)
+  let kind: Int = k3LegacyZeroKind(version, epoch, value, nowUnixSeconds, readsSoFar)
   if kind == 10 {
     if readsSoFar == 0 {
       return 1

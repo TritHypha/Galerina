@@ -1,5 +1,5 @@
 {
-  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v2 adds the unsigned u8 oracle, signed-wrapper boundary set, encode-lattice bytes, load8_s/load8_u expected values, and pure-frame rows. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: bridge flag, trusted clock (nowYmd <= 20261231), then cap. Frame epoch must be an integer in [0, 20261231] else LEGACY_CLOSED.",
+  "comment": "K3 wire conformance vectors shared by SLIDE src/k3-wire.mjs and the Galerina VOK crate (packages-ts/galerina-core-runtime/native/vok-authority, K3U2 @ 6c2d23b05, tests.rs trit_* tests). Lattice discriminants are the INTERNAL order (Refuse < Unknown < Admit), not wire values. Fixture v2 adds the unsigned u8 oracle, signed-wrapper boundary set, encode-lattice bytes, load8_s/load8_u expected values, and pure-frame rows. N1 (Grok Bot ACK 2026-10-27): refused reads are NOT counted; readsAfter = readsSoFar on every refusal. N2 alerts: FIRST_SEEN iff accepted and readsSoFar == 0; CAP_REACHED iff refused only because readsSoFar >= CAP; otherwise NONE. Check order: bridge flag, trusted clock (nowUnixSeconds < 1798761600), then cap. Frame epoch remains YYYYMMDD in [0, 20261231] else LEGACY_CLOSED. A2-F: clock input is i64 Unix seconds UTC.",
   "lattice": {
     "REFUSE": -1,
     "UNKNOWN": 0,
@@ -57,7 +57,8 @@
     "provisional": true,
     "decidedBy": "Grok Bot under owner message pt1040u",
     "overridableBy": "Phillip",
-    "vectorsVersion": 2
+    "vectorsVersion": 2,
+    "LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S": 1798761600
   },
   "sectionTrees": {
     "header": "THREE-WAY",
@@ -1208,265 +1209,253 @@
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "UNKNOWN",
       "readsAfter": 1,
       "alert": "FIRST_SEEN",
-      "note": "N1 counted only on accept. N2 FIRST_SEEN iff accepted and readsSoFar==0."
+      "note": "N1 counted only on accept. N2 FIRST_SEEN iff accepted and readsSoFar==0.",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-framed-0-second",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 1,
       "label": "UNKNOWN",
       "readsAfter": 2,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-framed-0-last-valid-day",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261231,
       "readsSoFar": 0,
       "label": "UNKNOWN",
       "readsAfter": 1,
       "alert": "FIRST_SEEN",
-      "note": "nowYmd <= 20261231 accepts. Mutant: < instead of <=."
+      "note": "nowUnixSeconds 1798761599 (2026-12-31T23:59:59Z) accepts. Mutant: <= instead of < 1798761600.",
+      "nowUnixSeconds": 1798761599
     },
     {
       "id": "v1-framed-0-refused-day",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20270101,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "N1: refusal does not count. Clock check before cap, so alert is not CAP_REACHED."
+      "note": "N1: refusal does not count. Clock check before cap, so alert is not CAP_REACHED. 1798761600 (2027-01-01T00:00:00Z) refuses.",
+      "nowUnixSeconds": 1798761600
     },
     {
       "id": "v1-framed-0-cap-minus-1",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 999999,
       "label": "UNKNOWN",
       "readsAfter": 1000000,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-framed-0-at-cap",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
       "readsAfter": 1000000,
       "alert": "CAP_REACHED",
-      "note": "N1 readsAfter = readsSoFar on refuse. N2 CAP_REACHED iff refused only because readsSoFar >= CAP."
+      "note": "N1 readsAfter = readsSoFar on refuse. N2 CAP_REACHED iff refused only because readsSoFar >= CAP.",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-framed-0-cap-plus-1",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 1000001,
       "label": "LEGACY_CLOSED",
       "readsAfter": 1000001,
-      "alert": "CAP_REACHED"
+      "alert": "CAP_REACHED",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-framed-0-clock-and-cap",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20270101,
       "readsSoFar": 1000000,
       "label": "LEGACY_CLOSED",
       "readsAfter": 1000000,
       "alert": "NONE",
-      "note": "Check order: bridge, clock, then cap. Clock fails first so alert is NONE."
+      "note": "Check order: bridge, clock, then cap. Clock fails first so alert is NONE.",
+      "nowUnixSeconds": 1798761600
     },
     {
       "id": "unknown-version-3",
       "version": 3,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "INVALID",
       "readsAfter": 0,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "unknown-version-0",
       "version": 0,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "INVALID",
       "readsAfter": 0,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "canonical-v2-value-0",
       "version": 2,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "INVALID",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "Canonical version does not accept legacy 0."
+      "note": "Canonical version does not accept legacy 0.",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "canonical-v2-unknown",
       "version": 2,
       "epoch": 0,
       "value": -128,
-      "nowYmd": 20261027,
       "readsSoFar": 4,
       "label": "UNKNOWN",
       "readsAfter": 4,
       "alert": "NONE",
-      "note": "Canonical decode is not a legacy-0 acceptance."
+      "note": "Canonical decode is not a legacy-0 acceptance.",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-nonlegacy-unknown",
       "version": 1,
       "epoch": 0,
       "value": -128,
-      "nowYmd": 20261027,
       "readsSoFar": 4,
       "label": "UNKNOWN",
       "readsAfter": 4,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "v1-nonlegacy-admit",
       "version": 1,
       "epoch": 0,
       "value": 1,
-      "nowYmd": 20261027,
       "readsSoFar": 4,
       "label": "ADMIT",
       "readsAfter": 4,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "epoch-minus-1",
       "version": 1,
       "epoch": -1,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "epoch-i32-min",
       "version": 1,
       "epoch": -2147483648,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
-      "alert": "NONE"
+      "alert": "NONE",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "epoch-expiry-boundary",
       "version": 1,
       "epoch": 20261231,
       "value": 0,
-      "nowYmd": 20261231,
       "readsSoFar": 0,
       "label": "UNKNOWN",
       "readsAfter": 1,
-      "alert": "FIRST_SEEN"
+      "alert": "FIRST_SEEN",
+      "nowUnixSeconds": 1798761599
     },
     {
       "id": "epoch-after-expiry",
       "version": 1,
       "epoch": 20270101,
       "value": 0,
-      "nowYmd": 20261027,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "Frame epoch can only close. epoch > EXPIRY is LEGACY_CLOSED even if nowYmd is open."
+      "note": "Frame epoch can only close. epoch > EXPIRY is LEGACY_CLOSED even if nowUnixSeconds is open.",
+      "nowUnixSeconds": 1793059200
     },
     {
       "id": "epoch-i32-max",
       "version": 1,
       "epoch": 2147483647,
       "value": 0,
-      "nowYmd": 20261027,
-      "readsSoFar": 0,
-      "label": "LEGACY_CLOSED",
-      "readsAfter": 0,
-      "alert": "NONE"
-    },
-    {
-      "id": "nowYmd-i32-max",
-      "version": 1,
-      "epoch": 0,
-      "value": 0,
-      "nowYmd": 2147483647,
-      "readsSoFar": 0,
-      "label": "LEGACY_CLOSED",
-      "readsAfter": 0,
-      "alert": "NONE"
-    },
-    {
-      "id": "nowYmd-negative-fails-closed",
-      "version": 1,
-      "epoch": 0,
-      "value": 0,
-      "nowYmd": -1,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "A2: trusted-clock nowYmd <= 0 fails closed as LEGACY_CLOSED. decidedBy Grok Bot, overridableBy Phillip."
+      "nowUnixSeconds": 1793059200
     },
     {
-      "id": "nowYmd-zero-fails-closed",
+      "id": "nowUnixSeconds-i32-max",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 0,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "A2: nowYmd 0 fails closed as LEGACY_CLOSED."
+      "nowUnixSeconds": 2147483647
     },
     {
-      "id": "nowYmd-feb-31-not-a-calendar-date",
+      "id": "nowUnixSeconds-negative-fails-closed",
       "version": 1,
       "epoch": 0,
       "value": 0,
-      "nowYmd": 20260231,
       "readsSoFar": 0,
       "label": "LEGACY_CLOSED",
       "readsAfter": 0,
       "alert": "NONE",
-      "note": "A2: YYYYMMDD must be a real calendar date. 20260231 is refused."
+      "note": "A2-F: trusted-clock nowUnixSeconds <= 0 fails closed as LEGACY_CLOSED. decidedBy Grok Bot, overridableBy Phillip.",
+      "nowUnixSeconds": -1
+    },
+    {
+      "id": "nowUnixSeconds-zero-fails-closed",
+      "version": 1,
+      "epoch": 0,
+      "value": 0,
+      "readsSoFar": 0,
+      "label": "LEGACY_CLOSED",
+      "readsAfter": 0,
+      "alert": "NONE",
+      "note": "A2-F: nowUnixSeconds 0 fails closed as LEGACY_CLOSED.",
+      "nowUnixSeconds": 0
     }
   ],
-  "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowYmd that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."
+  "jsSafeIntegerNote": "JSON numbers stay inside i32 so Rust, .fungi Int, and JS Number.isSafeInteger agree. A JS-only wrapper refuses any epoch or nowUnixSeconds that fails Number.isSafeInteger before the i32-domain checks. Unsafe integers are not fixture rows because JSON cannot carry them exactly."
 }

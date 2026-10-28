@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-// K3 wire lock-step gate. Green only after Steps 1-4 land in both trees.
+// K3 wire lock-step gate.
+// Usage: node scripts/k3-wire-lockstep-gate.mjs --slide-root=PATH
+// or set SLIDE_ROOT. N-b: --slide-root=PATH / SLIDE_ROOT is required.
+// N-a: k3x UNKNOWN(not invoked) is acceptable; Grok Bot runs K3X.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -10,10 +13,11 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "c6b396d89dfd94cc1194f73c106d3cdaf24fffffd227893b639aa7bcbfefdbb0";
-const FIXTURE_GIT_BLOB = "41bc772aa91ab8658c8d36894bd57f802188942b";
+const FIXTURE_DIGEST_D = "d72c5fd004c02aa43bd421eda288446e00f95b1c94517b210809c43a31ff6359";
+const FIXTURE_GIT_BLOB = "d204aae88e5a4f543e2803344160892f50f94b2e";
 const CAP = 1000000;
 const EXPIRY = 20261231;
+const EXPIRY_UNIX_S = 1798761600;
 const HEADER_VERSION = 1;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -117,11 +121,12 @@ async function main() {
   if (doc.header.K3_WIRE_HEADER_VERSION !== HEADER_VERSION) refuse("header version");
   if (doc.header.LEGACY_UNKNOWN_ZERO_CAP !== CAP) refuse("cap");
   if (doc.header.LEGACY_UNKNOWN_ZERO_EXPIRY !== EXPIRY) refuse("expiry");
+  if (doc.header.LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S !== EXPIRY_UNIX_S) refuse("expiry unix");
 
   const { decodeK3Byte, decodeK3Boundary, decodeLegacyFrame } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
-  const unknown = decodeLegacyFrame(99, 0, 0, 20261027, 0);
+  const unknown = decodeLegacyFrame(99, 0, 0, 1793059200, 0);
   if (unknown.label !== "INVALID") {
     refuse("unknown header version did not fail closed");
     return;
@@ -158,6 +163,7 @@ async function main() {
     fuzz: { bytes: FUZZ_BYTES, i32: FUZZ_I32, frames: FUZZ_FRAMES },
     cap: CAP,
     expiry: EXPIRY,
+    expiryUnixS: EXPIRY_UNIX_S,
     headerVersion: HEADER_VERSION,
     k3x: k3xState,
   })}\n`);

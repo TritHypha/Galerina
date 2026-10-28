@@ -115,7 +115,8 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
 - [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
   path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
   outputs from 0 to -128 (owner F5: they stay 0 until Step Z). P2 expiry is
-  2026-12-31 / 20261231; 20270101 refuses; delete the path by 2027-01-18.
+  2026-12-31 / 20261231; unix exclusive 1798761600 (2027-01-01T00:00:00Z);
+  1798761599 accepts; 1798761600 refuses; delete the path by 2027-01-18.
   The SLIDE sunset red test flips when this lands.
 - [ ] **consensusTritN note:** a split or empty quorum is UNKNOWN by
   construction (`c0940fec9`, `b498128eb`), which fails closed but is
