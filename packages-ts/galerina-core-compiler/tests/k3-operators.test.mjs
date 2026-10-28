@@ -52,19 +52,12 @@ async function wasmRun(src) {
   return Number(instance.exports["f"]());
 }
 
-// K3C-2 (2026-10-28): the WASM lane carries Verdict as the WIRE encoding
-// (DENY -1, UNKNOWN -128 = byte 0x80, ALLOW +1); the tree-walker keeps the
-// lattice rank (UNKNOWN 0). Parity is therefore "same lattice element", i.e.
-// wasm === toWire(walker). A bare 0 coming back from WASM is a divergence.
-const K3_WIRE_UNKNOWN = -128;
-const toWire = (t) => (t === 0 ? K3_WIRE_UNKNOWN : t);
-
 async function bothTiers(expr) {
   const src = FLOW(expr);
   const w = await walkerRun(src);
   assert.equal(w?.__tag, "verdict", `walker verdict tag for: ${expr} (got ${w?.__tag})`);
   const g = await wasmRun(src);
-  assert.equal(g, toWire(w.value), `TIER DIVERGENCE on '${expr}': walker=${w.value} wasm=${g}`);
+  assert.equal(g, w.value, `TIER DIVERGENCE on '${expr}': walker=${w.value} wasm=${g}`);
   return w.value;
 }
 
@@ -207,109 +200,5 @@ describe("Bool lane regression guard — the K3 overload must not touch classic 
     assert.equal(w1.value, false);
     assert.equal(await wasmRun(FLOW(`true && false`, "Bool")), 0);
     assert.equal(await wasmRun(FLOW(`true || false`, "Bool")), 1);
-  });
-});
-
-describe("K3C-2 WASM lane - UNKNOWN crosses the ABI as -128 (0x80); bare 0 is malformed", () => {
-  const RANK = (w) => (w === K3_WIRE_UNKNOWN ? 0 : w);
-  const WIRE = [-1, K3_WIRE_UNKNOWN, 1];
-
-  async function exportsOf(src) {
-    const p = L.parseProgram(src, "k3c2-abi.fungi");
-    assert.equal(p.diagnostics.filter((d) => d.severity === "error").length, 0, "parse clean");
-    const fx = L.checkEffects(p.flows, p.ast);
-    const { gir } = L.emitGIR(p.ast, p.flows, fx);
-    const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "p", p.ast, true));
-    const asm = await L.assembleWAT(wat);
-    assert.ok(asm.valid, `assembles: ${JSON.stringify(asm.diagnostics).slice(0, 300)}`);
-    const { instance } = await WebAssembly.instantiate(asm.wasm);
-    return { exports: instance.exports, wat };
-  }
-  const binFlow = (expr) => `@version 1
-pure flow f(x: Verdict, y: Verdict) -> Verdict
-contract { effects {} }
-{ return ${expr} }`;
-
-  it("&& / || over wire params = lattice min / max on all 9 cells (never raw signed min)", async () => {
-    const and = await exportsOf(binFlow("x && y"));
-    const or = await exportsOf(binFlow("x || y"));
-    for (const a of WIRE) for (const b of WIRE) {
-      assert.equal(and.exports.f(a, b), toWire(Math.min(RANK(a), RANK(b))), `and(${a},${b})`);
-      assert.equal(or.exports.f(a, b), toWire(Math.max(RANK(a), RANK(b))), `or(${a},${b})`);
-    }
-    assert.doesNotMatch(and.wat, /i32\.lt_s \(local\.get \$p0\)/, "no raw signed compare of wire trits");
-  });
-
-  it("all{} / any{} folds over wire params match the lattice, and all{} empty is -128", async () => {
-    const all = await exportsOf(binFlow("all { x\ny }"));
-    const any = await exportsOf(binFlow("any { x\ny }"));
-    for (const a of WIRE) for (const b of WIRE) {
-      assert.equal(all.exports.f(a, b), toWire(Math.min(RANK(a), RANK(b))), `all(${a},${b})`);
-      assert.equal(any.exports.f(a, b), toWire(Math.max(RANK(a), RANK(b))), `any(${a},${b})`);
-    }
-    assert.equal(await wasmRun(FLOW("all { }")), K3_WIRE_UNKNOWN);
-  });
-
-  it("flip(-128) stays -128 (never +128); flip swaps DENY and ALLOW", async () => {
-    const { exports } = await exportsOf(binFlow("flip(x)"));
-    assert.equal(exports.f(K3_WIRE_UNKNOWN, 1), K3_WIRE_UNKNOWN);
-    assert.equal(exports.f(-1, 1), 1);
-    assert.equal(exports.f(1, 1), -1);
-  });
-
-  it("a bare legacy 0 at the Verdict ABI traps (legacy 0 is framed-only, never bare)", async () => {
-    const { exports } = await exportsOf(binFlow("x && y"));
-    assert.throws(() => exports.f(0, 1), WebAssembly.RuntimeError);
-    assert.throws(() => exports.f(1, 0), WebAssembly.RuntimeError);
-    assert.throws(() => exports.f(128, 1), WebAssembly.RuntimeError, "+128 is not UNKNOWN");
-  });
-
-  it("check{} routes -128 to the ambig arm and traps on a bare 0", async () => {
-    const { exports } = await exportsOf(`@version 1
-pure flow f(v: Verdict) -> Int
-contract { effects {} }
-{
-  check(v) {
-    deny: { return 1 }
-    ambig: { return 2 }
-    if: { return 3 }
-  }
-}`);
-    assert.equal(exports.f(-1), 1);
-    assert.equal(exports.f(K3_WIRE_UNKNOWN), 2);
-    assert.equal(exports.f(1), 3);
-    assert.throws(() => exports.f(0), WebAssembly.RuntimeError);
-  });
-
-  it("prefilter{} sends -128 and ALLOW to maybe, DENY to deny, and traps on a bare 0", async () => {
-    const { exports } = await exportsOf(`@version 1
-pure flow f(v: Verdict) -> Int
-contract { effects {} }
-{
-  prefilter(v) {
-    deny: { return 1 }
-    maybe: { return 2 }
-  }
-}`);
-    assert.equal(exports.f(-1), 1);
-    assert.equal(exports.f(K3_WIRE_UNKNOWN), 2);
-    assert.equal(exports.f(1), 2);
-    assert.throws(() => exports.f(0), WebAssembly.RuntimeError);
-  });
-
-  it("a K3 value computed inside the lane feeds check{} correctly (Unknown && Allow -> ambig)", async () => {
-    const { exports } = await exportsOf(`@version 1
-pure flow f(x: Verdict, y: Verdict) -> Int
-contract { effects {} }
-{
-  check(x && y) {
-    deny: { return 1 }
-    ambig: { return 2 }
-    if: { return 3 }
-  }
-}`);
-    assert.equal(exports.f(K3_WIRE_UNKNOWN, 1), 2);
-    assert.equal(exports.f(-1, K3_WIRE_UNKNOWN), 1);
-    assert.equal(exports.f(1, 1), 3);
   });
 });

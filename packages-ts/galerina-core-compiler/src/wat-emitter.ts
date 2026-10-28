@@ -2272,17 +2272,17 @@ export function emitWATExpr(
       // MUST come before the generic i32 map: bitwise i32.and(-1,1)=1 would turn
       // Deny&&Allow into ALLOW (fail-open).
       //
-      // P2 (2026-07-21) inlined a raw signed select here; K3C-2 (2026-10-28) retired it
-      // because UNKNOWN is -128 in the WASM lane and raw signed order would put it below
-      // DENY. The $fungi_k3_min/$fungi_k3_max helpers rank-map, validate and re-encode.
+      // P2 (2026-07-21): inline the select pattern for the 2-operand case instead
+      // of calling $fungi_k3_min / $fungi_k3_max.  `left` and `right` are already fully
+      // emitted WAT strings (no duplication of source sub-expressions).  Saves 2 WASM
+      // call frames per trit-op — the dominant overhead in the tri-logic benchmark.
+      // Inline form: (select L R (i32.lt_s L R)) for min, (select L R (i32.gt_s L R)) for max.
+      // i32.min_s / i32.max_s are not in baseline WASM and are rejected by the workspace wabt.
       const verdictOperand = lty === "Verdict" || rty === "Verdict";
       if ((op === "&&" || op === "||") && verdictOperand) {
-        // K3C-2 (2026-10-28): UNKNOWN is -128 in the WASM lane, so raw signed
-        // select/min is no longer the lattice order. Route through the
-        // rank-mapping, operand-validating helpers (wat-emitter-binary.ts).
         return op === "&&"
-          ? `(call $fungi_k3_min ${left} ${right})`
-          : `(call $fungi_k3_max ${left} ${right})`;
+          ? `(select ${left} ${right} (i32.lt_s ${left} ${right}))`
+          : `(select ${left} ${right} (i32.gt_s ${left} ${right}))`;
       }
       // #165: native f64 lowering for float operands. Float literals already emit f64.const, but the
       // binary-op map is i32-only — so without this a float `+ - * /` or comparison emitted an i32
@@ -2466,7 +2466,7 @@ export function emitWATExpr(
       if (op === "!")  return `(i32.eqz ${operand})`;
       // W5a K3 negation: flip(x) = -x on the trit lattice (flip(-1)=+1, flip(0)=0,
       // flip(+1)=-1). Plain i32.sub — trits can never overflow, no checked helper needed.
-      if (op === "flip") return `(call $fungi_k3_flip ${operand})`; // K3C-2: -128 must stay -128, not become +128
+      if (op === "flip") return `(i32.sub (i32.const 0) ${operand})`;
       return `(unreachable) (; unknown unary: ${op} — fail-closed (emitter cannot lower; #128-sibling) ;)`;
     }
 
@@ -2480,20 +2480,23 @@ export function emitWATExpr(
       // tree-walker short-circuits on the absorbing element. Verdict operands
       // are pure trits, so the RESULTS agree (the truth-table proof pins this).
       //
-      // K3C-2 (2026-10-28): every fold step calls the lattice helpers (UNKNOWN = -128),
-      // and the empty all{} identity is the wire UNKNOWN token -128.
+      // P2 (2026-07-21): inline i32.min_s / i32.max_s for the 2-operand first step.
+      // For the 2-operand case (kids.length === 2) this saves 2 call frames and also
+      // avoids injecting $fungi_k3_min/$fungi_k3_max into the helpers set entirely for
+      // that flow.  For ≥3-operand chains we keep using the helpers (the accumulator
+      // is already a fully-evaluated i32 expression, so inlining nested min_s is safe,
+      // but the helpers make the WAT more readable for the 3+ case).
       const isAll = node.value !== "any";
       const kids = node.children ?? [];
-      if (kids.length === 0) return isAll ? `(i32.const -128) (; all{} => UNKNOWN ;)` : `(i32.const -1) (; any{} => DENY ;)`;
+      if (kids.length === 0) return isAll ? `(i32.const 0) (; all{} => UNKNOWN ;)` : `(i32.const -1) (; any{} => DENY ;)`;
       let acc = emitWATExpr(kids[0]!, vars, staticConsts);
       for (let i = 1; i < kids.length; i++) {
         const next = emitWATExpr(kids[i]!, vars, staticConsts);
         // P2: every step inlines the select pattern (safe: acc and next are already
         // fully-evaluated WAT strings from the previous iteration).
-        // K3C-2: lattice helpers (UNKNOWN = -128), see the && / || lowering.
         acc = isAll
-          ? `(call $fungi_k3_min ${acc} ${next})`
-          : `(call $fungi_k3_max ${acc} ${next})`;
+          ? `(select ${acc} ${next} (i32.lt_s ${acc} ${next}))`
+          : `(select ${acc} ${next} (i32.gt_s ${acc} ${next}))`;
       }
       return acc;
     }
@@ -3307,7 +3310,7 @@ export function emitWATExpr(
         `  (if (result i32) (i32.eq (local.get ${scratch}) (i32.const -1))`,
         `    (then ${getArm("deny")})`,
         `    (else`,
-        `      (if (result i32) (i32.eq (local.get ${scratch}) (i32.const -128))`,
+        `      (if (result i32) (i32.eq (local.get ${scratch}) (i32.const 0))`,
         `        (then ${getArm("ambig")})`,
         `        (else`,
         `          (if (result i32) (i32.eq (local.get ${scratch}) (i32.const 1))`,
@@ -3350,7 +3353,7 @@ export function emitWATExpr(
         `    (else`,
         `      (if (result i32)`,
         `        (i32.or`,
-        `          (i32.eq (local.get ${scratch}) (i32.const -128))`,
+        `          (i32.eq (local.get ${scratch}) (i32.const 0))`,
         `          (i32.eq (local.get ${scratch}) (i32.const 1))`,
         `        )`,
         `        (then ${getArm("maybe")})`,
@@ -4110,7 +4113,7 @@ function emitBlockStatements(
         for (const l of emitArmStmts("deny")) bodyLines.push(`    ${l}`);
         bodyLines.push(`  )`);
         bodyLines.push(`  (else`);
-        bodyLines.push(`    (if (i32.eq (local.get ${scratch}) (i32.const -128))`); // K3C-2 wire UNKNOWN; bare 0 traps below
+        bodyLines.push(`    (if (i32.eq (local.get ${scratch}) (i32.const 0))`);
         bodyLines.push(`      (then`);
         for (const l of emitArmStmts("ambig")) bodyLines.push(`        ${l}`);
         bodyLines.push(`      )`);
@@ -4167,7 +4170,7 @@ function emitBlockStatements(
         bodyLines.push(`  (else`);
         bodyLines.push(`    (if`);
         bodyLines.push(`      (i32.or`);
-        bodyLines.push(`        (i32.eq (local.get ${scratch}) (i32.const -128))`); // K3C-2 wire UNKNOWN; bare 0 traps
+        bodyLines.push(`        (i32.eq (local.get ${scratch}) (i32.const 0))`);
         bodyLines.push(`        (i32.eq (local.get ${scratch}) (i32.const 1))`);
         bodyLines.push(`      )`);
         bodyLines.push(`      (then`);
@@ -5155,7 +5158,7 @@ export function buildWATModule(
         `    (i32.or`,
         `      (i32.eq (local.get ${param}) (i32.const -1))`,
         `      (i32.or`,
-        `        (i32.eq (local.get ${param}) (i32.const -128))`, // K3C-2: UNKNOWN crosses the ABI as -128; bare 0 is malformed
+        `        (i32.eq (local.get ${param}) (i32.const 0))`,
         `        (i32.eq (local.get ${param}) (i32.const 1))`,
         `      )`,
         `    )`,

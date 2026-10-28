@@ -19944,7 +19944,7 @@
     ],
     "emits": [
       "packages-ts/galerina-core-compiler/src/governance-verifier.ts:3514",
-      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:687"
+      "packages-ts/galerina-core-compiler/src/hardening-residency.ts:668"
     ],
     "tests": 10,
     "refs": 3,
@@ -19961,7 +19961,7 @@
       "emit packages-ts/galerina-core-compiler/src/governance-verifier.ts:3514",
       "ref packages-ts/galerina-core-compiler/src/hardening-residency.ts:90",
       "def packages-ts/galerina-core-compiler/src/hardening-residency.ts:92",
-      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:687",
+      "emit packages-ts/galerina-core-compiler/src/hardening-residency.ts:668",
       "fungi packages-ts/galerina-core-compiler/src/self-hosted/hardening-trust-boundary.fungi:69",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:33",
       "test packages-ts/galerina-core-compiler/tests/hardening-integration.test.mjs:41",

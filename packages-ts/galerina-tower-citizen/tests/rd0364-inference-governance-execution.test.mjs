@@ -58,8 +58,8 @@ test("RD-0364 · inference-governance: R0 build → R1 #105-admit → verdicts �
     assert.equal(identity(B(la), B(whm), B(pa)), specIdentity(la, whm, pa), `identityClassVerdict(${la},${whm},${pa})`);
   }
 
-  // §2 output taint (load-bearing): undischarged model output is UNVERIFIED (0) (epistemic trit, not the -128 K3 wire sentinel); only a verifier discharge lifts to +1.
-  assert.equal(taint(B(false)), 0, "undischarged inference output is UNVERIFIED (0) — cannot cross requireTrusted");
+  // §2 output taint (load-bearing): undischarged model output is UNKNOWN (0); only a verifier discharge lifts to +1.
+  assert.equal(taint(B(false)), 0, "undischarged inference output is UNKNOWN (0) — cannot cross requireTrusted");
   assert.equal(taint(B(true)), 1, "discharged by a verifier flow → trusted (+1)");
 
   // Composite per-call admission over identity ∈ {-1,0,1} × the boolean gates; certified profile refuses non-attested.

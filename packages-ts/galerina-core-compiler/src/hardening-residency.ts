@@ -590,14 +590,10 @@ export function canHonour(ceiling: ResidencyTier, host: HostResidencyCapability)
 // Encoding: PROVEN = +1, UNVERIFIED = 0 (epistemic fail-closed default), REFUTED = -1.
 // K3C-2: UNKNOWN is the -128 wire token because k3-copies-red test 3 requires UNKNOWN: -128
 // on this frozen TS reference. combineTrust stays lattice min on {-1,0,1}; do not min(-128,-1).
-// K3C-2 note N-i: the TYPE admits -128 so the wire token is typed, but every trust function first
-// normalises it to UNVERIFIED (the epistemic "not yet proven" trit) - it never outranks REFUTED,
-// never releases a boundary and never leaks out of combine/discharge. Any other non-trit value
-// (a corrupted byte, NaN, a fraction) fails closed to REFUTED.
 // ---------------------------------------------------------------------------
 
 /** The compiler-side epistemic trust trit — the same balanced trit as the runtime `Trust`/`Verdict`. */
-export type CompilerTrust = 1 | 0 | -1 | -128;
+export type CompilerTrust = 1 | 0 | -1;
 export const CompilerTrust = {
   PROVEN: 1 as const,      // +1 — proof discharged; trusted here (runtime Trust.PROVEN / Verdict.ALLOW)
   UNVERIFIED: 0 as const,  //  0 — not yet proven; the FAIL-CLOSED default (epistemic Unverified)
@@ -606,20 +602,8 @@ export const CompilerTrust = {
 } as const;
 
 /** The compile-time value-state NAME (EPISTEMIC_RESERVED) for a trit — the name-map the gate asserts. */
-/**
- * asLatticeTrit - K3C-2 note N-i: fold the -128 wire token onto the in-memory lattice.
- *   +1 / 0 / -1 pass through; UNKNOWN (-128) becomes UNVERIFIED (0); anything else fails closed to REFUTED.
- * Internal: callers never see -128 come back out of a trust operation.
- */
-function asLatticeTrit(t: CompilerTrust): 1 | 0 | -1 {
-  if (t === 1 || t === 0 || t === -1) return t;
-  if (t === CompilerTrust.UNKNOWN) return CompilerTrust.UNVERIFIED;
-  return CompilerTrust.REFUTED;
-}
-
 export function trustName(t: CompilerTrust): "Trusted" | "Unverified" | "Refuted" {
-  const n = asLatticeTrit(t);
-  return n === 1 ? "Trusted" : n === 0 ? "Unverified" : "Refuted";
+  return t === 1 ? "Trusted" : t === 0 ? "Unverified" : "Refuted";
 }
 
 /** refute — mark a value proven-bad. Sticky: `dischargeTrust` can never lift a REFUTED (No-Coercion). */
@@ -633,8 +617,7 @@ export function refute(): CompilerTrust {
  * LOWER the result, never manufacture trust (No-Coercion). The exact algebra of the runtime `combine()`.
  *
  * WHY this is self-contained (does not import from @galerina/core-logic):
- *   `CompilerTrust` is a balanced numeric trit (REFUTED=-1, UNVERIFIED=0, PROVEN=+1; the -128 wire token
- *   is normalised to UNVERIFIED first, K3C-2 note N-i) where the K3 min is trivially
+ *   `CompilerTrust` is a numeric trit enum (REFUTED=0, UNKNOWN=1, PROVEN=2) where the K3 min is trivially
  *   `Math.min(a, b)` / `a < b ? a : b`. The `@galerina/core-logic` TriState is an object type
  *   `{kind:"true"|"false"|"unknown", reasons?:[…]}` that carries provenance chains for type-checking and
  *   lattice-proofs. Converting between them at every call site would add noise with zero semantic gain —
@@ -646,9 +629,7 @@ export function refute(): CompilerTrust {
  *   separate representations, conformance-tested parity. (Bob review 2026-07, item 6.)
  */
 export function combineTrust(a: CompilerTrust, b: CompilerTrust): CompilerTrust {
-  const x = asLatticeTrit(a);
-  const y = asLatticeTrit(b);
-  return x < y ? x : y;
+  return (a < b ? a : b) as CompilerTrust;
 }
 
 /**
@@ -657,14 +638,14 @@ export function combineTrust(a: CompilerTrust, b: CompilerTrust): CompilerTrust 
  *   verified === true → PROVEN; verified === false → REFUTED; inconclusive (`undefined`) → UNVERIFIED.
  */
 export function dischargeTrust(current: CompilerTrust, verified: boolean | undefined): CompilerTrust {
-  if (asLatticeTrit(current) === CompilerTrust.REFUTED) return CompilerTrust.REFUTED;
+  if (current === CompilerTrust.REFUTED) return CompilerTrust.REFUTED;
   if (verified === undefined) return CompilerTrust.UNVERIFIED;
   return verified ? CompilerTrust.PROVEN : CompilerTrust.REFUTED;
 }
 
 /** boundaryTrusted — the fail-closed trust boundary: release IFF PROVEN. UNKNOWN and REFUTED both deny. */
 export function boundaryTrusted(trust: CompilerTrust): boolean {
-  return asLatticeTrit(trust) === CompilerTrust.PROVEN;
+  return trust === CompilerTrust.PROVEN;
 }
 
 /** The outcome of an unhonourable-ceiling spill: the value's new trit + the diagnostic that announces it. */

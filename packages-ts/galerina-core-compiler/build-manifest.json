@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "4d14c407bcdf0408695df23070a0de5240764815dbb7b39f05655a1e5375660a",
+    "aggregateSha256": "373776e60fda321e40195997b80a8f32ee17b019d2440514c9e982168058a9ad",
     "algorithm": "sha256",
     "files": [
       {
@@ -392,7 +392,7 @@
       },
       {
         "path": "src/hardening-residency.ts",
-        "sha256": "b1ea3d83646ab16d95c3d3cddb9da7c77dd027d7a5f7b3cd7d0191287a5ca2d8"
+        "sha256": "0313037fadc83f8408234878cd4946fc05d633ffd10ad4aba6e83fb62ef38986"
       },
       {
         "path": "src/i32-arith.ts",
@@ -412,7 +412,7 @@
       },
       {
         "path": "src/interpreter.ts",
-        "sha256": "a0fdd702542548e353f51eb702b99b3706e9d36c103ae491b574962fea0b13e7"
+        "sha256": "12757ed8e18f932f757cf4e6614d34ce520dfb23b38312f00285c7ed1295779c"
       },
       {
         "path": "src/invariant-discharge.ts",
@@ -2465,10 +2465,6 @@
       {
         "path": "tests/k3-operators.test.mjs",
         "sha256": "a2a0d53bee4e281333b75d2695e60c4d667476f434e5a3417808d2b29818182f"
-      },
-      {
-        "path": "tests/k3c2-notes.test.mjs",
-        "sha256": "9ea89ab6147e4b406969b5dfa1394d6f81543833ac2353da9288eb568e42a023"
       },
       {
         "path": "tests/leak-proof.test.mjs",

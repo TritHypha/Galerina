@@ -85,7 +85,7 @@ function expectedTrust(current, verification) {
   const currentTrust = current === -1
     ? CompilerTrust.REFUTED
     : current === 0
-      ? CompilerTrust.UNVERIFIED
+      ? CompilerTrust.UNKNOWN
       : CompilerTrust.PROVEN;
   const verified = verification === -1
     ? false
@@ -95,7 +95,7 @@ function expectedTrust(current, verification) {
   const result = dischargeTrust(currentTrust, verified);
   return result === CompilerTrust.REFUTED
     ? -1
-    : result === CompilerTrust.UNVERIFIED
+    : result === CompilerTrust.UNKNOWN
       ? 0
       : 1;
 }

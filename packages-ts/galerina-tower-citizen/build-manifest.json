@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "ca82be18da48b15218df78c8aa7a6a9060a2ded2cf5161c32f25f364ca2d72ae",
+    "aggregateSha256": "a8ad32af0066d59f4480b04f7c0fcc44cd4d21e36cd3f71d2f18810aaf6f8aec",
     "algorithm": "sha256",
     "files": [
       {
@@ -240,7 +240,7 @@
       },
       {
         "path": "src/self-hosted/inference-governance.fungi",
-        "sha256": "e7afc381eeccba717c8a5458810e2dde0b18a7fc4ddc08f2e8b7b0523fcccf8b"
+        "sha256": "6d864ddec6bcf8d42c4e7917d224ce2249a61c45bcc6f189e279ecffef059caa"
       },
       {
         "path": "src/self-hosted/max-container-fields.fungi",
@@ -728,7 +728,7 @@
       },
       {
         "path": "tests/rd0364-inference-governance-execution.test.mjs",
-        "sha256": "193f367ce3ad6426f899a0635b060da1fd3aa13d75d153e375c850e359a0d66a"
+        "sha256": "a5452626b6f91362f0de47774e374e894eaf6241fe0d4bfbf8b60e61a33eb64b"
       },
       {
         "path": "tests/rd0365-pq-admission-policy-execution.test.mjs",

@@ -7,8 +7,7 @@
 ///   cloud egress, and the load-bearing OUTPUT-TAINT rule. ALLOW = +1, DENY = -1, UNKNOWN is the -128 wire value.
 /// @fidelity: mirrors RD-0364 §1–§4 / threats IV1–IV7. bridgeAdmissionVerdict mirrors verifyAttestation's fail-
 ///   closed AND; identityClassVerdict encodes the honest tiers (local-attested +1 / provider-asserted 0 / reject
-///   -1); outputTrustTrit encodes §2 — a model's answer is UNVERIFIED (0), the RD-0337
-///   epistemic trit (not the -128 K3 wire sentinel), until discharged by a verifier flow.
+///   -1); outputTrustTrit encodes §2 — a model's answer is UNKNOWN (0) until discharged by a verifier flow.
 /// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
 
 /// bridgeAdmissionVerdict — RD-0364 IV5: mirror the fail-closed attestation AND (bridge-attestation.ts). A bridge
@@ -69,13 +68,12 @@ contract { intent { "Cloud egress gate: a cloud inference call is denied unless 
   return 1
 }
 
-/// outputTrustTrit — RD-0364 §2, THE load-bearing rule: inference output enters the program as UNVERIFIED (0) BY
+/// outputTrustTrit — RD-0364 §2, THE load-bearing rule: inference output enters the program as UNKNOWN (0) BY
 /// CONSTRUCTION — a model's answer is a CLAIM, not a fact. It reaches a trust boundary only through a declared
-/// verifier flow (dischargedByVerifier); undischarged it stays UNVERIFIED (0) - the epistemic trit,
-/// never the -128 K3 wire sentinel - and vAnd(0,x) can never LIFT a verdict, so
+/// verifier flow (dischargedByVerifier); undischarged it stays 0, and vAnd(0,x) can never LIFT a verdict, so
 /// prompt-injection cannot mint authority and a hallucination cannot cross a requireTrusted() boundary.
 pure flow outputTrustTrit(dischargedByVerifier: Bool) -> Int
-contract { intent { "Output taint: inference output is UNVERIFIED (0) until discharged by a declared verifier flow; only then may it be trusted (+1) (RD-0364 2, RD-0337 trit)." } }
+contract { intent { "Output taint: inference output is UNKNOWN (0) until discharged by a declared verifier flow; only then may it be trusted (+1) (RD-0364 2, RD-0337 trit)." } }
 {
   if dischargedByVerifier == false { return 0 }
   return 1

@@ -31538,7 +31538,7 @@
       "qualifier": "pure",
       "signature": "pure flow outputTrustTrit(dischargedByVerifier: Bool) -> Int",
       "effects": [],
-      "intent": "Output taint: inference output is UNVERIFIED (0) until discharged by a declared verifier flow; only then may it be trusted (+1) (RD-0364 2, RD-0337 trit)."
+      "intent": "Output taint: inference output is UNKNOWN (0) until discharged by a declared verifier flow; only then may it be trusted (+1) (RD-0364 2, RD-0337 trit)."
     },
     {
       "file": "packages-ts/galerina-tower-citizen/src/self-hosted/inference-governance.fungi",
