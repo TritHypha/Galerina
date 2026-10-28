@@ -28,6 +28,7 @@ mod assurance;
 
 pub use lattice::{from_lattice, to_lattice};
 pub use k3_frame::{decode_legacy_frame_pure, FrameAlert, FrameDecode, FrameLabel};
+use k3_frame::decode_legacy_frame_counted;
 pub use memory_policy::{
     admit_isolation_claim, claim_physical_erasure, IsolationClaim, MemoryErasureClass,
 };
@@ -96,6 +97,12 @@ pub const LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S: i64 = 1_798_761_600;
 
 /// Failure id for a bare (unframed) 0 at a VOK boundary (F1). Mirrors SLIDE `SLIDE-K3-WIRE-003`.
 pub const VOK_TRIT_BARE_LEGACY_ZERO: &str = "VOK_TRIT_BARE_LEGACY_ZERO";
+
+/// Failure id for a value outside the K3 table (B2, 2026-10-28: named once, used everywhere).
+pub const VOK_TRIT_INVALID: &str = "VOK_TRIT_INVALID";
+
+/// Failure id for a framed legacy 0 once the bridge is closed (flag, trusted clock, epoch or cap).
+pub const VOK_TRIT_LEGACY_CLOSED: &str = "VOK_TRIT_LEGACY_CLOSED";
 
 static LEGACY_UNKNOWN_ZERO_READS: AtomicU64 = AtomicU64::new(0);
 static BARE_LEGACY_ZERO_REFUSALS: AtomicU64 = AtomicU64::new(0);
@@ -177,7 +184,7 @@ impl Trit {
             K3_BYTE_DENY => Ok((Self::Refuse, TritWireForm::Canonical)),
             K3_BYTE_UNKNOWN => Ok((Self::Unknown, TritWireForm::Canonical)),
             0 => Err(Self::refuse_bare_legacy_zero()),
-            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            _ => Err(VokFailure::new(Self::Refuse, VOK_TRIT_INVALID)),
         }
     }
 
@@ -187,7 +194,7 @@ impl Trit {
             -1 => Ok(K3_BYTE_DENY),
             0 => Ok(K3_BYTE_UNKNOWN),
             1 => Ok(K3_BYTE_ADMIT),
-            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            _ => Err(VokFailure::new(Self::Refuse, VOK_TRIT_INVALID)),
         }
     }
 
@@ -196,7 +203,7 @@ impl Trit {
             -1 => Ok((Self::Refuse, TritWireForm::Canonical)),
             K3_UNKNOWN_WIRE => Ok((Self::Unknown, TritWireForm::Canonical)),
             1 => Ok((Self::Admit, TritWireForm::Canonical)),
-            _ => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            _ => Err(VokFailure::new(Self::Refuse, VOK_TRIT_INVALID)),
         }
     }
 
@@ -209,7 +216,7 @@ impl Trit {
             K3_I8_DENY => K3_BYTE_DENY,
             K3_I8_UNKNOWN => K3_BYTE_UNKNOWN,
             0 => return Err(Self::refuse_bare_legacy_zero()),
-            _ => return Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            _ => return Err(VokFailure::new(Self::Refuse, VOK_TRIT_INVALID)),
         };
         Self::decode_wire_u8(byte)
     }
@@ -218,24 +225,11 @@ impl Trit {
     /// canonical values as `decode_wire`, plus legacy 0 as UNKNOWN (typed, counted) while the
     /// bridge is open; VOK_TRIT_LEGACY_CLOSED once it closes. Process clock and counter are
     /// supplied to `decode_legacy_frame_pure`; this i32 API does not take version/epoch/cap.
+    /// N2 (2026-10-28): the process counter goes through `decode_legacy_frame_counted`, which
+    /// commits each accepted read with one compare-exchange, so racing callers cannot pass the cap.
     pub fn decode_legacy_frame(value: i32) -> Result<(Self, TritWireForm), VokFailure> {
-        let now_unix_s = trusted_unix_seconds();
-        let reads = LEGACY_UNKNOWN_ZERO_READS.load(AtomicOrdering::SeqCst);
-        let decoded = decode_legacy_frame_pure(
-            K3_WIRE_VERSION_LEGACY,
-            0,
-            value,
-            now_unix_s,
-            reads,
-        );
-        if decoded.reads_after > reads {
-            let delta = decoded.reads_after - reads;
-            let _ = LEGACY_UNKNOWN_ZERO_READS.fetch_update(
-                AtomicOrdering::SeqCst,
-                AtomicOrdering::SeqCst,
-                |count| Some(count.saturating_add(delta)),
-            );
-        }
+        let decoded =
+            decode_legacy_frame_counted(value, trusted_unix_seconds(), &LEGACY_UNKNOWN_ZERO_READS);
         match decoded.label {
             FrameLabel::Admit => Ok((Self::Admit, TritWireForm::Canonical)),
             FrameLabel::Deny => Ok((Self::Refuse, TritWireForm::Canonical)),
@@ -243,9 +237,9 @@ impl Trit {
                 Ok((Self::Unknown, TritWireForm::LegacyUnknownZero))
             }
             FrameLabel::Unknown => Ok((Self::Unknown, TritWireForm::Canonical)),
-            FrameLabel::Invalid => Err(VokFailure::new(Self::Refuse, "VOK_TRIT_INVALID")),
+            FrameLabel::Invalid => Err(VokFailure::new(Self::Refuse, VOK_TRIT_INVALID)),
             FrameLabel::LegacyClosed => {
-                Err(VokFailure::new(Self::Refuse, "VOK_TRIT_LEGACY_CLOSED"))
+                Err(VokFailure::new(Self::Refuse, VOK_TRIT_LEGACY_CLOSED))
             }
         }
     }

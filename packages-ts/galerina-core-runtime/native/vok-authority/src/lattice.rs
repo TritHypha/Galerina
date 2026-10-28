@@ -1,6 +1,6 @@
 //! Internal lattice {-1, 0, 1} converters. Wire decode never calls these.
 
-use crate::{Trit, VokFailure};
+use crate::{Trit, VokFailure, VOK_TRIT_INVALID};
 
 /// Map lattice {-1, 0, 1} to Trit. Lattice 0 is Unknown. A wire 0 never reaches this function.
 pub fn from_lattice(v: i32) -> Result<Trit, VokFailure> {
@@ -8,7 +8,7 @@ pub fn from_lattice(v: i32) -> Result<Trit, VokFailure> {
         -1 => Ok(Trit::Refuse),
         0 => Ok(Trit::Unknown),
         1 => Ok(Trit::Admit),
-        _ => Err(VokFailure::new(Trit::Refuse, "VOK_TRIT_INVALID")),
+        _ => Err(VokFailure::new(Trit::Refuse, VOK_TRIT_INVALID)),
     }
 }
 

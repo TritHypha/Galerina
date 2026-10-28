@@ -1,6 +1,8 @@
 //! Versioned-frame parity (Step 2c, behaviour addition).
 //! Clock and counter are inputs. The process wrapper supplies them.
 
+use std::sync::atomic::{AtomicU64, Ordering};
+
 use crate::{
     Trit, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY, LEGACY_UNKNOWN_ZERO_BRIDGE,
     LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
@@ -127,6 +129,36 @@ pub fn decode_legacy_frame_pure(
         } else {
             FrameAlert::None
         },
+    }
+}
+
+/// Counted framed decode for the process wrapper (N2, 2026-10-28).
+/// The pure decode runs against the counter value this caller read. An accepted legacy-0 read
+/// is committed with one compare_exchange from that same value; if another caller moved the
+/// counter first, the decode is redone against the new value. The cap check and the increment
+/// are therefore one atomic step, and racing callers can never push the counter past
+/// LEGACY_UNKNOWN_ZERO_CAP. Refusals and canonical values never write the counter.
+pub(crate) fn decode_legacy_frame_counted(
+    value: i32,
+    now_unix_s: i64,
+    counter: &AtomicU64,
+) -> FrameDecode {
+    let mut reads = counter.load(Ordering::SeqCst);
+    loop {
+        let decoded =
+            decode_legacy_frame_pure(K3_WIRE_VERSION_LEGACY, 0, value, now_unix_s, reads);
+        if decoded.reads_after <= reads {
+            return decoded;
+        }
+        match counter.compare_exchange(
+            reads,
+            decoded.reads_after,
+            Ordering::SeqCst,
+            Ordering::SeqCst,
+        ) {
+            Ok(_) => return decoded,
+            Err(actual) => reads = actual,
+        }
     }
 }
 

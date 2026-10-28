@@ -131,15 +131,19 @@ beside SLIDE and is not part of the production build.
 Open follow-ups (low; none blocks the merged rows):
 
 - [ ] **K3C-2** (the K3-COPIES compiler change below) needs Phillip's owner nod.
-- [ ] **VOK wrapper cap race** (step 2c note N2, deferred): the legacy-0 cap
-  in the stateful VOK wrapper can race between callers; route callers
-  through `decode_legacy_frame_pure` with a caller-owned counter, red test
-  first.
-- [ ] **`VOK_TRIT_INVALID` literal hygiene** (step 2a note B2, deferred): use
-  the named constant everywhere a raw invalid-trit literal remains.
-- [ ] **Bridge-flag mutant** (step 2c, one low survivor): add a test that
-  fails when the legacy bridge constant is flipped, before the Step Z sunset
-  flips it on purpose.
+- [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
+  `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes
+  through `decode_legacy_frame_counted` (pure decode plus one compare-exchange
+  per accepted read, retried on contention), so racing callers cannot pass
+  the cap; red tests first in `vok-authority/src/k3_frame_counter.rs`
+  (16 threads x 64 calls x 25 rounds land exactly on the cap).
+- [x] **`VOK_TRIT_INVALID` literal hygiene** (step 2a note B2): done
+  2026-10-28. `VOK_TRIT_INVALID` and `VOK_TRIT_LEGACY_CLOSED` are named
+  constants in `lib.rs`; a structural test refuses a raw literal in the
+  non-test code of `lib.rs`, `k3_frame.rs` and `lattice.rs`.
+- [x] **Bridge-flag mutant** (step 2c): done 2026-10-28. The pin
+  `bridge_flag_is_pinned_open_until_the_step_z_sunset` fails when the
+  legacy bridge constant is flipped; the Step Z sunset changes it on purpose.
 - [ ] **Frame epoch format:** the frame epoch is still YYYYMMDD (interim,
   accepted); the final format follows Linux time practice after the
   trusted-clock R&D.
