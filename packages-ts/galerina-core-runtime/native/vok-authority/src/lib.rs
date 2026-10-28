@@ -21,6 +21,8 @@ mod k3_frame;
 mod k3_wire_vectors_pin;
 #[cfg(test)]
 mod k3_wire_u8;
+#[cfg(test)]
+mod k3_frame_counter;
 mod veo;
 mod assurance;
 

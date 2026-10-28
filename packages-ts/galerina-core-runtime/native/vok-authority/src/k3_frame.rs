@@ -534,8 +534,13 @@ mod tests {
     fn decode_legacy_frame_is_delegating_wrapper() {
         let body = fn_body(LIB_RS, "pub fn decode_legacy_frame(value: i32)");
         assert!(
-            body.contains("decode_legacy_frame_pure"),
-            "decode_legacy_frame must delegate to decode_legacy_frame_pure"
+            body.contains("decode_legacy_frame_counted("),
+            "decode_legacy_frame must delegate to decode_legacy_frame_counted (N2)"
+        );
+        let counted = fn_body(FRAME_RS, "pub(crate) fn decode_legacy_frame_counted(");
+        assert!(
+            counted.contains("decode_legacy_frame_pure("),
+            "decode_legacy_frame_counted must delegate to decode_legacy_frame_pure"
         );
     }
 
