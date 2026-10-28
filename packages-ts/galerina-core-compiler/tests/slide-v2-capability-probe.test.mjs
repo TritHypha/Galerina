@@ -82,10 +82,11 @@ test("SLIDE G1 probe: current WAT preserves K3, Result, checked add, and malform
   assert.equal(typeof run, "function");
 
   assert.ok(run(3, 4, -1) < -10_000);
-  assert.ok(run(3, 4, 0) < -10_000);
+  assert.ok(run(3, 4, -128) < -10_000); // K3C-2: UNKNOWN is the wire token -128
   assert.equal(run(3, 4, 1), 10_007);
   assert.deepEqual(resultTags.map(([tag]) => tag), ["err", "err", "ok"]);
   assert.throws(() => run(3, 4, 2), WebAssembly.RuntimeError);
+  assert.throws(() => run(3, 4, 0), WebAssembly.RuntimeError); // K3C-2: bare legacy 0 is malformed on the wire
   assert.throws(() => run(2_147_483_647, 1, 1), WebAssembly.RuntimeError);
 });
 

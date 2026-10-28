@@ -9,8 +9,10 @@
 // check{}" is now real WAT, not an unreachable stub.
 //
 // Lowering strategy (implemented in wat-emitter.ts W5b additions):
-//   check: nested (if (i32.eq subj -1) (then deny) (else (if (i32.eq subj 0) (then ambig) (else if))))
-//   prefilter: (if (i32.lt_s subj 0) (then deny) (else maybe))  — ALLOW is downgraded to maybe (A8)
+//   check: nested (if (i32.eq subj -1) (then deny) (else (if (i32.eq subj -128) (then ambig) (else if))))
+//          K3C-2 (2026-10-28): UNKNOWN is the wire token -128 (0x80) in the WASM lane; the
+//          old (i32.eq subj 0) ambig test is retired and a bare 0 now traps as malformed.
+//   prefilter: validate subj in {-1,-128,+1} (else trap), then (if (i32.eq subj -1) (then deny) (else maybe))  — ALLOW is downgraded to maybe (A8)
 //   fault: (drop reason) (unreachable)  — terminal trap, no host journal in WASM tier
 
 import { test } from "node:test";
@@ -20,6 +22,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "dist", "index.js");
+
+// K3C-2 wire tokens. The TS tree-walker is frozen reference and still carries
+// UNKNOWN as 0 internally, so interpreter calls use INTERP_UNKNOWN.
+const DENY = -1;
+const UNKNOWN = -128;
+const ALLOW = 1;
+const INTERP_UNKNOWN = 0;
 
 async function loadCompiler() {
   return import(pathToFileURL(COMPILER).href);
@@ -77,10 +86,16 @@ test("check{}: DENY(-1) → deny arm → -1 (WAT + interpreter match)", async ()
   assert.equal(await runInterp(L, CHECK_SRC, "checkId", [-1], ["v"]), -1);
 });
 
-test("check{}: UNKNOWN(0) → ambig arm → 0 (WAT + interpreter match)", async () => {
+test("check{}: UNKNOWN(-128 wire) -> ambig arm -> 0 (WAT + interpreter match)", async () => {
   const L = await loadCompiler();
-  assert.equal(await runWasm(L, CHECK_SRC, "checkId", [0]), 0);
-  assert.equal(await runInterp(L, CHECK_SRC, "checkId", [0], ["v"]), 0);
+  assert.equal(await runWasm(L, CHECK_SRC, "checkId", [UNKNOWN]), 0);
+  assert.equal(await runInterp(L, CHECK_SRC, "checkId", [INTERP_UNKNOWN], ["v"]), 0);
+});
+
+test("check{}: bare legacy 0 traps on the WASM wire (K3C-2, framed-only legacy)", async () => {
+  const L = await loadCompiler();
+  await assert.rejects(() => runWasm(L, CHECK_SRC, "checkId", [0]), WebAssembly.RuntimeError);
+  await assert.rejects(() => runWasm(L, CHECK_SRC, "checkId", [128]), WebAssembly.RuntimeError);
 });
 
 test("check{}: ALLOW(+1) → if arm → 1 (WAT + interpreter match)", async () => {
@@ -132,7 +147,8 @@ test("check{}: DENY arm arithmetic (WAT validates + correct result)", async () =
     `Assembly failed: ${JSON.stringify(asm.diagnostics)}\n${wat}`);
   const fn = (await WebAssembly.instantiate(asm.wasm)).instance.exports["checkArith"];
   assert.equal(fn(-1, 5), 105);  // deny arm: 5 + 100
-  assert.equal(fn( 0, 5), 205);  // ambig arm: 5 + 200
+  assert.equal(fn(UNKNOWN, 5), 205);  // ambig arm: 5 + 200 (K3C-2 wire UNKNOWN)
+  assert.throws(() => fn(0, 5), WebAssembly.RuntimeError);  // bare 0 is malformed
   assert.equal(fn( 1, 5), 305);  // if arm: 5 + 300
 });
 
@@ -160,7 +176,8 @@ test("prefilter{}: DENY(-1) → deny arm → -99 (WAT + interpreter match)", asy
     `Assembly failed: ${JSON.stringify(asm.diagnostics)}\n${wat}`);
   const fn = (await WebAssembly.instantiate(asm.wasm)).instance.exports["pflt"];
   assert.equal(fn(-1), -99); // deny arm
-  assert.equal(fn(0),    1); // maybe arm (UNKNOWN)
+  assert.equal(fn(UNKNOWN), 1); // maybe arm (K3C-2 wire UNKNOWN)
+  assert.throws(() => fn(0), WebAssembly.RuntimeError); // bare 0 no longer reaches maybe
   assert.equal(fn(1),    1); // maybe arm (ALLOW downgraded — A8 core)
 });
 
@@ -184,6 +201,9 @@ test("prefilter{}: malformed trit traps rather than entering deny/maybe", async 
   const fn = (await WebAssembly.instantiate(asm.wasm)).instance.exports["pflt"];
   assert.throws(() => fn(-2), WebAssembly.RuntimeError);
   assert.throws(() => fn(2), WebAssembly.RuntimeError);
+  assert.throws(() => fn(0), WebAssembly.RuntimeError);
+  assert.throws(() => fn(-127), WebAssembly.RuntimeError);
+  assert.throws(() => fn(-129), WebAssembly.RuntimeError);
 
   const result = await L.executeFlow(
     "pflt",
@@ -233,9 +253,11 @@ contract { effects {} }
   return 0
 }`;
   const prog = L.parseProgram(SRC, "t.fungi");
+  // Single-arity API (flowName, argsMap, ast); the old 5-argument form is retired.
   const result = await L.executeFlow(
-    prog.ast, prog.flows, "alwaysFault",
-    [{ __tag: "int", value: 42 }], {},
+    "alwaysFault",
+    new Map([["x", { __tag: "int", value: 42 }]]),
+    prog.ast,
   );
   // A faulted flow returns audit.result = "error"; the value should be a fault/error tag
   const audit = result?.audit ?? result;
