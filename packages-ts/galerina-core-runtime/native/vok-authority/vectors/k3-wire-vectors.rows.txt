@@ -1,4 +1,4 @@
-sha256=6ae155907530546c6cf3da7bae18318b07e99dbfaabc8c44fd29224107d1b0da
+sha256=357134f33cf654cd17f1ea17ff994a653193ccf927914b620db53530d5725dc2
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|8
-header|FIXTURE_SCHEMA_VERSION|8
+header|vectorsVersion|9
+header|FIXTURE_SCHEMA_VERSION|9
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -437,3 +437,8 @@ strongKleeneDenySticky|1,-128,1|-128
 strongKleeneDenySticky|1,1,-1|-1
 strongKleeneDenySticky|1,1,-128|-128
 strongKleeneDenySticky|1,1,1|1
+receiptBinding|without-field|kind=without-field;expect=ADMIT;sha256=;code=
+receiptBinding|with-field|kind=with-field;expect=ADMIT;sha256=c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f;code=
+receiptBinding|tampered-digest|kind=tampered-digest;expect=REFUSE;sha256=c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83e;code=K3_ALERT_EVIDENCE_MISMATCH
+receiptBinding|wrong-schema|kind=wrong-schema;expect=REFUSE;sha256=c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f;code=K3_ALERT_EVIDENCE_MALFORMED
+receiptBinding|wrong-version|kind=wrong-version;expect=REFUSE;sha256=c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f;code=K3_ALERT_EVIDENCE_MALFORMED

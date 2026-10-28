@@ -273,6 +273,58 @@ pub fn k3_alert_evidence(snapshot: &K3AlertSnapshot) -> Result<K3AlertEvidence, 
     })
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct K3ReceiptAlertEvidenceField {
+    pub schema: String,
+    pub version: i32,
+    pub sha256: String,
+}
+
+fn ct_eq_bytes(left: &[u8], right: &[u8]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+    let mut acc = 0u8;
+    for (a, b) in left.iter().zip(right.iter()) {
+        acc |= a ^ b;
+    }
+    acc == 0
+}
+
+fn sha256_hex_ok(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
+/// VOK verifier: recompute k3-alert-evidence from a snapshot and compare the
+/// receipt field. Missing / extra / malformed / mismatch refuse. No production
+/// authority; reference-path lockstep with SLIDE.
+pub fn verify_receipt_k3_alert_evidence(
+    snapshot: Option<&K3AlertSnapshot>,
+    field: Option<&K3ReceiptAlertEvidenceField>,
+) -> Result<(), &'static str> {
+    match (snapshot, field) {
+        (None, None) => Ok(()),
+        (Some(_), None) => Err("K3_ALERT_EVIDENCE_MISSING"),
+        (None, Some(_)) => Err("K3_ALERT_EVIDENCE_EXTRA"),
+        (Some(snapshot), Some(field)) => {
+            if field.schema != K3_ALERT_EVIDENCE_SCHEMA
+                || field.version != K3_ALERT_EVIDENCE_VERSION
+                || !sha256_hex_ok(&field.sha256)
+            {
+                return Err("K3_ALERT_EVIDENCE_MALFORMED");
+            }
+            let expected = k3_alert_evidence(snapshot)?;
+            if !ct_eq_bytes(expected.digest.as_bytes(), field.sha256.as_bytes()) {
+                return Err("K3_ALERT_EVIDENCE_MISMATCH");
+            }
+            Ok(())
+        }
+    }
+}
+
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
 /// Logs/receipts only. Never accepted as decoder input.
 pub fn k3_unix_s_to_ymd(unix_s: i64) -> Option<i32> {
@@ -1416,6 +1468,58 @@ mod tests {
         assert_eq!(
             sorted.digest,
             "d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980"
+        );
+    }
+
+    #[test]
+    fn k3rb_receipt_alert_evidence_verify() {
+        let empty = K3AlertSnapshot {
+            tallies: Vec::new(),
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        assert!(verify_receipt_k3_alert_evidence(None, None).is_ok());
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), None).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MISSING"
+        );
+        let matching = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 1,
+            sha256: "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f".into(),
+        };
+        assert!(verify_receipt_k3_alert_evidence(Some(&empty), Some(&matching)).is_ok());
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(None, Some(&matching)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_EXTRA"
+        );
+        let tampered = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 1,
+            sha256: "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83e".into(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&tampered)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MISMATCH"
+        );
+        let wrong_schema = K3ReceiptAlertEvidenceField {
+            schema: "k3-alert-evidence-x".into(),
+            version: 1,
+            sha256: matching.sha256.clone(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&wrong_schema)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MALFORMED"
+        );
+        let wrong_version = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 2,
+            sha256: matching.sha256.clone(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&wrong_version)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MALFORMED"
         );
     }
 

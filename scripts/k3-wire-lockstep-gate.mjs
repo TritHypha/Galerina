@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "6ae155907530546c6cf3da7bae18318b07e99dbfaabc8c44fd29224107d1b0da";
-const FIXTURE_GIT_BLOB = "fa3222a28926550040d20eabad9927374eace37d";
+const FIXTURE_DIGEST_D = "357134f33cf654cd17f1ea17ff994a653193ccf927914b620db53530d5725dc2";
+const FIXTURE_GIT_BLOB = "42fea40b0604e2e93491636e66dfee3974d1b944";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 8;
+const FIXTURE_SCHEMA_VERSION = 9;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -140,6 +140,7 @@ async function main() {
     k3WireGate,
     k3WireNot,
     k3WireOr,
+    verifyReceiptK3AlertEvidence,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
@@ -266,6 +267,28 @@ async function main() {
     refuse("strongKleeneDenySticky must have 27 rows");
     return;
   }
+  const binding = doc.receiptBinding ?? [];
+  if (binding.length !== 5) {
+    refuse(`receiptBinding must have 5 rows, got ${binding.length}`);
+    return;
+  }
+  const kinds = binding.map((row) => row.kind).join(",");
+  if (kinds !== "without-field,with-field,tampered-digest,wrong-schema,wrong-version") {
+    refuse(`receiptBinding kinds ${kinds}`);
+    return;
+  }
+  for (const row of binding) {
+    const got = verifyReceiptK3AlertEvidence(row.snapshot, row.field);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`receiptBinding ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`receiptBinding ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -332,6 +355,7 @@ async function main() {
     k3x: k3xState,
     fungiEvidence: "UNKNOWN(fungi-cannot-sha256-alert-evidence)",
     kleeneThreeWay: true,
+    receiptBinding: true,
   })}\n`);
 }
 

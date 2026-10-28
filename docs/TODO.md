@@ -220,6 +220,16 @@ Open follow-ups (low; none blocks the merged rows):
   gate_outcome 1078 `.min()` listed unchanged; `.fungi` `k3-wire.fungi`
   `k3WireAnd` 397, `k3WireOr` 423, `k3WireNot` 449, `k3WireGate` 465.
   N-q `k3AlertEvidenceUnknownReason` = 4. Shared fixture schema 8.
+- [x] **K3-RB** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Additive
+  opt-in `k3AlertEvidence` on SLIDE receipt v3
+  `executePreparedDetachedScalarVok` (typed-package-execution-receipt-v3.mjs).
+  VOK `verify_receipt_k3_alert_evidence` constant-time compare. Fixture schema
+  9 receiptBinding rows (with-field, without-field, tampered-digest,
+  wrong-schema, wrong-version). N-t
+  `packages-ts/galerina-tower-citizen/tests/prebuild-k3-strong-kleene-pin.mjs`
+  plus `npm run prebuild:k3-sk-pin`; pin test imports it. Fungi stays
+  UNKNOWN(fungi-cannot-sha256-alert-evidence). K3_ALERT_SINK_STATUS stays
+  UNKNOWN(no audit sink).
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

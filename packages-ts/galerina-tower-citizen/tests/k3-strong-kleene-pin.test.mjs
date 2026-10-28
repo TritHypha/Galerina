@@ -12,6 +12,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
+import "./prebuild-k3-strong-kleene-pin.mjs";
 import { executeFlow, parseProgram } from "../../galerina-core-compiler/dist/index.js";
 import { nativeImages } from "./fixtures/k3-fungi-marshal.mjs";
 
