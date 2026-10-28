@@ -342,7 +342,7 @@
       "identity": "@galerina/core-logic",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-logic",
-      "contentDigest": "e1ea68123b210d075017abd642138e1ad2dd8487cb4923e6995b09fbc5931071",
+      "contentDigest": "89897aac6a618edd60c9368e8eb86e4a14d33f8e5189f3b486b02737b7007df5",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -423,7 +423,7 @@
       "identity": "@galerina/core-runtime",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-runtime",
-      "contentDigest": "2c0242f024c2f14e88e26adbad6f67974a590e757fbc0801c879a78023bfde9e",
+      "contentDigest": "123b432b2fa58f8bea39ee71cbe3a50c2553776ff3132aa008aa823e5947ba49",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "c4c7bd3c0e2e9f665088be6066f91534a9e9517b1834ce2e014b994a5d7e83ec"
+  "rootDigest": "a002a34b0c44d6fe02b8921dceb049be1d2d20afb4087a8986eb366ef92f9b41"
 }
