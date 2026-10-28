@@ -524,7 +524,7 @@
 | `egressVerdict` | `pure flow egressVerdict(isCloud: Bool, hostAllowed: Bool, inputRedacted: Bool) -> Int` | — | Cloud egress gate: a cloud inference call is denied unless the provider host is allowlisted and inputs passed the red… |
 | `identityClassVerdict` | `pure flow identityClassVerdict(localAttested: Bool, weightsHashMatch: Bool, providerAsserted: Bool) -> Int` | — | Honest model-identity tier: local-attested with a matching weights hash is attested (+1); cloud provider-asserted is … |
 | `inferenceCallVerdict` | `pure flow inferenceCallVerdict(bridgeAdmitted: Bool, identityClass: Int, requireCertified: Bool, costOk: Bool, egressOk: Bool) -> Int` | — | Deny-by-default per-call inference admission: ALLOW only if the bridge is admitted, the identity class is acceptable … |
-| `outputTrustTrit` | `pure flow outputTrustTrit(dischargedByVerifier: Bool) -> Int` | — | Output taint: inference output is UNKNOWN (0) until discharged by a declared verifier flow; only then may it be trust… |
+| `outputTrustTrit` | `pure flow outputTrustTrit(dischargedByVerifier: Bool) -> Int` | — | Output taint: inference output is UNVERIFIED (0) until discharged by a declared verifier flow; only then may it be trust… |
 | `maxContainerFields` | `pure flow maxContainerFields() -> Int` | — | — |
 | `maxInputBytes` | `pure flow maxInputBytes() -> Int` | — | — |
 | `maxInputDepth` | `pure flow maxInputDepth() -> Int` | — | — |
