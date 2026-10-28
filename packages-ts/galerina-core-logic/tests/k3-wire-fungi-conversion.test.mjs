@@ -38,19 +38,19 @@ const COMPILER = join(COMPILER_DIR, "index.js");
 const STEP5 = Object.freeze([
   [
     "packages-ts/galerina-core-network/src/self-hosted/cert-gate.fungi",
-    "c92de8a171bd418ab9970bf0dd8a619e95aa41db",
+    "9947aa624a08d63901006f3520c6a72ae06fb247",
   ],
   [
     "packages-ts/galerina-core-network/src/self-hosted/admission-feedback.fungi",
-    "08b2a0bca580d54274112ba49f35c25bce61e3b9",
+    "e20c9dadda1b4bab1d4a8ecbae281cbef451e7b1",
   ],
   [
     "packages/fungi/products/galerina-core-network/admission-feedback.fungi",
-    "08b2a0bca580d54274112ba49f35c25bce61e3b9",
+    "e20c9dadda1b4bab1d4a8ecbae281cbef451e7b1",
   ],
   [
     "packages-ts/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
-    "4111836d2bd7e2921d8689f05091aae0c55d364f",
+    "d0140f6daab28831c90266dfbe1b3551e28e1ca7",
   ],
 ]);
 
@@ -64,6 +64,13 @@ const LOAD8_U = Object.freeze([1, 255, 128, 0, 127, 129]);
 function gitBlob(path) {
   const git = process.platform === "win32" ? "git.exe" : "git";
   return execFileSync(git, ["-C", REPO_ROOT, "rev-parse", `HEAD:${path}`], {
+    encoding: "utf8",
+  }).trim();
+}
+
+function gitBlobWorktree(path) {
+  const git = process.platform === "win32" ? "git.exe" : "git";
+  return execFileSync(git, ["-C", REPO_ROOT, "hash-object", path], {
     encoding: "utf8",
   }).trim();
 }
@@ -217,9 +224,19 @@ describe("core-logic k3-wire.fungi conversion", () => {
     assert.equal(source.includes("import "), false, "k3-wire.fungi has no imports");
   });
 
-  it("keeps the four Step-5 fungi files byte-unchanged", () => {
+  it("pins the four Step-5 fungi consumers after k3-wire import", () => {
     for (const [path, blob] of STEP5) {
-      assert.equal(gitBlob(path), blob, path);
+      assert.equal(gitBlobWorktree(path), blob, path);
+    }
+    assert.equal(STEP5[1][1], STEP5[2][1], "admission-feedback twins share one blob");
+  });
+
+  it("Step-5 consumers import k3-wire.fungi and have no bare wire literal", () => {
+    for (const [path] of STEP5) {
+      const source = readFileSync(join(REPO_ROOT, path), "utf8");
+      assert.match(source, /k3-wire\.fungi/, `${path} imports k3-wire.fungi`);
+      assert.match(source, /k3UnknownWire\(\)/, `${path} calls k3UnknownWire`);
+      assert.equal(source.includes("-128"), false, `${path} has no -128`);
     }
   });
 

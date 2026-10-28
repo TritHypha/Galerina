@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "e4396c97bacfc73a1674fe7391f782cd966e4889923511a753cddca3fce9deda",
+    "aggregateSha256": "2370daf6185e2a9435be0b5320c07e424e3793929d0a9ae8985ae6c78c780d8b",
     "algorithm": "sha256",
     "files": [
       {
@@ -236,7 +236,7 @@
       },
       {
         "path": "src/self-hosted/governance-decisions.fungi",
-        "sha256": "bce427529918c8d9c55c77d42468f23e1d2cc99d4df4148c068866085ab38412"
+        "sha256": "c06654d337fdaa5abe8836c5ee1427fac4cc97ab568ba8f510eaa4f77b9ed1ab"
       },
       {
         "path": "src/self-hosted/inference-governance.fungi",
@@ -716,7 +716,7 @@
       },
       {
         "path": "tests/rd0361-governance-decisions-execution.test.mjs",
-        "sha256": "40afe98e0d9403dd84f59de60c7bfdfd1487b9bdae371e4472f6293e41a45c76"
+        "sha256": "15ffb75ef05b0c2bdde993a65b0710b7fd18b194b75c2b770677acdedb2b4889"
       },
       {
         "path": "tests/rd0361-transport-fsm-execution.test.mjs",

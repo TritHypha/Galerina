@@ -106,12 +106,18 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   main `9179c6d`.
 - [x] SLIDE K3 UNKNOWN bridge (owner option B, framed-only legacy 0) merged to
   SLIDE main `9179c6d` with Phillip's one-time yes (2026-10-26 13:40 GMT).
+- [x] **K3-S5 (Step 5):** four `.fungi` consumers (`cert-gate.fungi`,
+  `admission-feedback.fungi` packages-ts + products twin,
+  `governance-decisions.fungi`) import `k3-wire.fungi`; UNKNOWN goes through
+  `k3UnknownWire()`; no bare `-128` wire literal. Products twin stays
+  byte-identical.
 - [ ] **K3-COPIES (U8):** the compiler's native `Verdict.Unknown` is still
   i32 0 (`wat-emitter.ts` `(i32.const 0) (; Verdict.Unknown ;)`, the
   `Unknown(0)` messages in `interpreter.ts`), as are
   `hardening-residency.ts` `UNKNOWN: 0` and the `INDETERMINATE = 0` comment
-  in `inference-governance.fungi`. Red tests first; the compiler change
-  (K3C-2) needs Phillip's owner nod.
+  in `inference-governance.fungi`. Red tests landed `{ todo }` in
+  `packages-ts/galerina-core-compiler/tests/k3-copies-red.test.mjs`; the
+  compiler change (K3C-2) needs Phillip's owner nod.
 - [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
   path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
   outputs from 0 to -128 (owner F5: they stay 0 until Step Z). P2 expiry is

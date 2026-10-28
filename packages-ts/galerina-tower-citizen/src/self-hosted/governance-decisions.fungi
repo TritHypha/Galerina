@@ -12,13 +12,15 @@
 ///   {-1,0,1} and BELOW DENY, so any ordering misuse (> 0, >= 1, a max-fold) still reads it as not-allow.
 ///   Rejected: returning 0 for undecided (conflates NEUTRAL); +106 (a `> 0` consumer would authorize).
 
+import "../../galerina-core-logic/src/self-hosted/k3-wire.fungi"
+
 // The one native UNKNOWN sentinel. Callers must compare by equality with k3Unknown(); it is never a trit.
 pure flow k3Unknown() -> Int
 contract {
-  intent { "Native K3 UNKNOWN sentinel: -128, outside {-1,0,1} and below DENY, never a trit." }
+  intent { "Native K3 UNKNOWN sentinel via k3UnknownWire from k3-wire.fungi, outside {-1,0,1} and below DENY, never a trit." }
 }
 {
-  return -128
+  return k3UnknownWire()
 }
 
 // M-of-N distinct-signer quorum (quorum.ts quorumVerdict). distinctApprovals is the host tally's

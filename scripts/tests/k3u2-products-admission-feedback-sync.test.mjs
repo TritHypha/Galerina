@@ -53,7 +53,9 @@ test("K3UP-R2 product copy never folds an undecided degrade to trit 0", () => {
   const src = readFileSync(at(PROD), "utf8");
   assert.doesNotMatch(src, /vAnd\(\s*v\s*,\s*0\s*\)/, "undecided degrade folded to trit 0");
   assert.doesNotMatch(src, /INDETERMINATE\s*=\s*0/, "header still documents INDETERMINATE = 0");
-  assert.match(src, /pure flow k3Unknown\(\) -> Int[\s\S]*?return -128/, "native UNKNOWN sentinel -128 present");
+  assert.match(src, /k3-wire\.fungi/, "imports k3-wire.fungi");
+  assert.match(src, /return k3UnknownWire\(\)/, "UNKNOWN via k3UnknownWire");
+  assert.doesNotMatch(src, /(?<![\w])-128(?![\w])/, "no bare -128 wire literal");
   assert.equal((src.match(/vAnd\(v, k3Unknown\(\)\)/g) || []).length, 3, "all three undecided degrades use k3Unknown()");
 });
 

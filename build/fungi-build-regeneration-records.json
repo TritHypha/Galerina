@@ -370,12 +370,12 @@
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.lmanifest.json",
         "bytes": 2031,
-        "sha256": "29bb64fbc553efb53d57dd5b9ab3ff8b58a29638b7725a69bc70c6b947fdbce9"
+        "sha256": "bc86b5d1264057dc96b4375cb92350dfe885bf5e8e720592909f3b0bb35627f0"
       },
       {
         "path": "packages\\fungi\\products\\galerina-core-network\\build\\admission-feedback.governance-impact.json",
         "bytes": 822,
-        "sha256": "5dfcf800d7314f17897c3af8f035701565e66a717d693222a2403e5501e74985"
+        "sha256": "ecf486ada781a4c60521a1d0d2d9bcab571d1a366c395df545624977b0fa1fa9"
       }
     ],
     "diagnostic": null,

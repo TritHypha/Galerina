@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { twinSourceWithK3Wire } from "../../galerina-core-logic/tests/k3-wire-consumer-source.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "..", "galerina-core-compiler", "dist", "index.js");
@@ -37,6 +38,7 @@ test("RD-0361 TLSTP · admission-feedback: R0 build → R1 #105-admit → R3 WAS
   assert.ok(existsSync(COMPILER), "core-compiler dist not built — run the full suite first");
   const L = await import(pathToFileURL(COMPILER).href);
   let src = readFileSync(TWIN, "utf8"); if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
+  src = twinSourceWithK3Wire(src);
   const prog = L.parseProgram(src, "admission-feedback.fungi");
   assert.equal((prog.diagnostics ?? []).filter((d) => d.severity === "error").length, 0, "twin parses clean (R0)");
   const fx = L.checkEffects(prog.flows, prog.ast);

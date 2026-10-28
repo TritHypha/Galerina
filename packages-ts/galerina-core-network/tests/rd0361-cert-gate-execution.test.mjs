@@ -21,6 +21,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { decodeK3, encodeK3 } from "./fixtures/rd0361-k3-codec.mjs";
+import { twinSourceWithK3Wire } from "../../galerina-core-logic/tests/k3-wire-consumer-source.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "..", "galerina-core-compiler", "dist", "index.js");
@@ -48,6 +49,7 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
   // ── R0 · build ──
   let src = readFileSync(TWIN, "utf8");
   if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
+  src = twinSourceWithK3Wire(src);
   const prog = L.parseProgram(src, "cert-gate.fungi");
   assert.equal((prog.diagnostics ?? []).filter((d) => d.severity === "error").length, 0, "twin parses clean (R0)");
   const fx = L.checkEffects(prog.flows, prog.ast);

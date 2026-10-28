@@ -19,7 +19,7 @@
   },
   "schemaVersion": "galerina.package.build-manifest.v1",
   "sources": {
-    "aggregateSha256": "3f4a39131ef087083e8808d6beb5c701a0d0885b43657df19d18685b57b78611",
+    "aggregateSha256": "cebda6fedc59b2d64bd1a7ed6d01edcc4cb1476c4fb21c1f812f978800062f39",
     "algorithm": "sha256",
     "files": [
       {
@@ -2453,6 +2453,10 @@
       {
         "path": "tests/json-c19b-codec.test.mjs",
         "sha256": "0d7de5013bfcb281b128eb7f0188e1b573f36ceda85466e68739d4864da889bf"
+      },
+      {
+        "path": "tests/k3-copies-red.test.mjs",
+        "sha256": "582f2eb5ea432d8422a2685c92e86ec8855231813548dc19044c792f4b9faecd"
       },
       {
         "path": "tests/k3-operators.test.mjs",
