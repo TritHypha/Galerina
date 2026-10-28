@@ -88,6 +88,62 @@ NON_AUTHORIZING** for deployment; only the code-level gate changes.
   moving the accepted artifacts to serial 2 needs the open crash-safe
   re-activation work below.
 
+## K3 wire lock-step chapter — 2026-10-28
+
+Status sync only; it closes no RD and releases no authority. It records the
+K3 gaps plan rows (SuperGrok rows on `grok/k3-wire-lockstep-20261027`, each
+block-checked and ACKed by Grok Bot, merged under full auto with a backup
+first). Production is GIR -> SLIDE; VOK
+(`packages-ts/galerina-core-runtime/native/vok-authority`) is the Rust checker
+beside SLIDE and is not part of the production build.
+
+- [x] **Steps 1-4 + LS** merged to main (fast-forward `52bff543f..65d18ca21`,
+  then code-index regen `69ee7ae79`):
+  - Step 1 (`ad16b69b`): SLIDE S1 fixture v2 copied into the VOK vectors,
+    byte-identical, pinned by sha256.
+  - Step 2a (`81dd5c36`): VOK `decode_wire_u8` single unsigned-read codec
+    (`0x01` ADMIT, `0xFF` DENY, `0x80` UNKNOWN, bare `0x00` refused) plus
+    the signed wrapper.
+  - Step 2b (`9fe2bfdd`): VOK `from_lattice` / `to_lattice` with exhaustive
+    matches and a u8 bare-`0x00` counter test.
+  - Step 2c (`b6efbabd`): `decode_legacy_frame_pure`, versioned-frame parity
+    with SLIDE `decodeK3WireFrame`; N1 clock-aware test fix `1b3593db`.
+  - Step 3 (`8bc98301`): `k3-wire.fungi` codecs; T1/T2 test binding to the
+    shared fixture (`76ed4f96`).
+  - A2 (`64f3b99f`): trusted clock `<= 0` (including `-1`) and non-calendar
+    dates fail closed as `LEGACY_CLOSED`.
+  - LS (`4c865ccb`): the K3 lock-step gate. It reports `LOCKSTEP_GREEN` only
+    when Galerina's fixture copy matches SLIDE main, and refuses skew, so a
+    SLIDE/VOK mismatch blocks a Galerina K3 merge.
+- [x] **A2-F** (`c469ee1b`, lock refresh `cc787aa3`) merged to main
+  (`afb60b099`, code-index regen `93ba3e58f`): the trusted clock is i64 Unix
+  seconds UTC; `1798761599` accepts, `1798761600` (2027-01-01T00:00:00Z)
+  refuses; fixture and LS pins match SLIDE `93cb840`.
+- [x] **K3-S5** merged to main (`d02135e0b`): see the 2026-10-26 wrap-up row
+  below; block pass conv+pin+copies 23 pass / 0 fail / 4 todo, products sync
+  5/5, vok-authority `cargo test --lib` 125 pass / 0 fail / 7 ignored,
+  `flat-package-root-lock` REFERENCE_LOCK_VERIFIED, LS `LOCKSTEP_GREEN`
+  against SLIDE main `93cb840`, `code-index --check` clean.
+- [x] Backups before each merge are on the D: drive
+  (`pre-k3-merge-20261027`, `pre-a2f-merge-20261028`,
+  `pre-s5-merge-20261028`, verified git bundles with SHA256SUMS).
+
+Open follow-ups (low; none blocks the merged rows):
+
+- [ ] **K3C-2** (the K3-COPIES compiler change below) needs Phillip's owner nod.
+- [ ] **VOK wrapper cap race** (step 2c note N2, deferred): the legacy-0 cap
+  in the stateful VOK wrapper can race between callers; route callers
+  through `decode_legacy_frame_pure` with a caller-owned counter, red test
+  first.
+- [ ] **`VOK_TRIT_INVALID` literal hygiene** (step 2a note B2, deferred): use
+  the named constant everywhere a raw invalid-trit literal remains.
+- [ ] **Bridge-flag mutant** (step 2c, one low survivor): add a test that
+  fails when the legacy bridge constant is flipped, before the Step Z sunset
+  flips it on purpose.
+- [ ] **Frame epoch format:** the frame epoch is still YYYYMMDD (interim,
+  accepted); the final format follows Linux time practice after the
+  trusted-clock R&D.
+
 ## Fungi memory chapter wrap-up — 2026-10-26
 
 Status sync only; it closes no RD. RD-0361 and RD-1413/1414/1415 stay **[!] HOLD /
