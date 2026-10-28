@@ -4,7 +4,8 @@
 // and SDA with a first-of-N substitution, so later sites were never shown to be covered.
 //
 // Usage (from the repository root, after building packages-ts/galerina-framework-app-kernel):
-//   node packages/fungi/memory/tests/s5-secret-authority/s5-all-sites-mutants.mjs [--json out.json]
+//   node packages/fungi/memory/tests/s5-secret-authority/s5-all-sites-mutants.mjs [--json out.json] [--families SSC,SPU]
+// --families limits the mutant loop to the named families (the baseline always runs every file).
 //
 // The runner mutates the BUILT dist JavaScript of app-kernel one site at a time, runs the killing
 // test set, then restores the file byte-for-byte and checks it with a sha256 compare. It never
@@ -21,8 +22,11 @@ const ROOT = process.cwd();
 const AK = "packages-ts/galerina-framework-app-kernel";
 const M = "packages/fungi/memory";
 const S5 = `${M}/tests/s5-secret-authority/s5-secret-authority.test.mjs`;
+const SURV = `${M}/tests/s5-secret-authority/s5-all-sites-survivors.test.mjs`;
 const TK = [
   S5,
+  // Killing tests for the seven first-run survivors (SSC sites 1 and 3, SPU sites 2 to 6).
+  SURV,
   `${AK}/tests/secret-gate.test.mjs`,
   `${AK}/tests/rd1415-ack-after-publication-audit.test.mjs`,
   `${AK}/tests/rd1415-ack-throw-fail-closed.test.mjs`,
@@ -111,6 +115,8 @@ function runTests(files, stopAtRed = false) {
 function main() {
   const jsonAt = process.argv.indexOf("--json");
   const jsonOut = jsonAt > 0 ? process.argv[jsonAt + 1] : undefined;
+  const famAt = process.argv.indexOf("--families");
+  const only = famAt > 0 ? new Set(String(process.argv[famAt + 1] ?? "").split(",")) : undefined;
   const refusals = [];
   for (const f of FAMILIES) {
     const d = join(ROOT, AK, f.dist);
@@ -128,6 +134,7 @@ function main() {
 
   const results = [];
   for (const f of FAMILIES) {
+    if (only !== undefined && !only.has(f.id)) continue;
     const distPath = join(ROOT, AK, f.dist);
     const original = readFileSync(distPath);
     const text = original.toString("utf8");
