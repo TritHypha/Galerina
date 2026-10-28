@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "357134f33cf654cd17f1ea17ff994a653193ccf927914b620db53530d5725dc2";
-const FIXTURE_GIT_BLOB = "42fea40b0604e2e93491636e66dfee3974d1b944";
+const FIXTURE_DIGEST_D = "c5220b4b3cd318d141dd80c6313c75f6a6bac42f2c56d0f3f57564719fd10483";
+const FIXTURE_GIT_BLOB = "3965c1e36f4e950e0f55dcd50e70f5f82ef89b12";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 9;
+const FIXTURE_SCHEMA_VERSION = 10;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -140,6 +140,7 @@ async function main() {
     k3WireGate,
     k3WireNot,
     k3WireOr,
+    verifyK3WireVersionCarrier,
     verifyReceiptK3AlertEvidence,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
@@ -289,6 +290,28 @@ async function main() {
       return;
     }
   }
+  const carriers = doc.wireVersionCarrier ?? [];
+  if (carriers.length !== 5) {
+    refuse(`wireVersionCarrier must have 5 rows, got ${carriers.length}`);
+    return;
+  }
+  const carrierKinds = carriers.map((row) => row.kind).join(",");
+  if (carrierKinds !== "agree,disagree,missing,unknown-version,legacy-bridge") {
+    refuse(`wireVersionCarrier kinds ${carrierKinds}`);
+    return;
+  }
+  for (const row of carriers) {
+    const got = verifyK3WireVersionCarrier(row.carrier, row.header);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`wireVersionCarrier ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (row.code && got.code !== row.code) {
+      refuse(`wireVersionCarrier ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -356,6 +379,7 @@ async function main() {
     fungiEvidence: "UNKNOWN(fungi-cannot-sha256-alert-evidence)",
     kleeneThreeWay: true,
     receiptBinding: true,
+    wireVersionCarrier: true,
   })}\n`);
 }
 

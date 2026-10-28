@@ -364,6 +364,43 @@ contract { intent { "UNKNOWN(fungi-cannot-sha256-alert-evidence). Returns k3Aler
   return k3AlertEvidenceUnknownReason()
 }
 
+pure flow k3WireVersionTsFrozenReason() -> Int
+contract { intent { "Named non-zero reason for UNKNOWN(ts-frozen-emitter). Distinct from lattice 0." } }
+{
+  return 5
+}
+
+pure flow k3WireVersionTsFrozen() -> Int
+contract { intent { "UNKNOWN(ts-frozen-emitter). TS three-valued-governance does not emit k3WireVersion." } }
+{
+  return k3WireVersionTsFrozenReason()
+}
+
+pure flow k3WireVersionCarrier() -> Int
+contract { intent { "Galerina package-artifact k3WireVersion emitted from .fungi. Matches K3_WIRE_HEADER_VERSION / legacy." } }
+{
+  return k3VersionLegacy()
+}
+
+pure flow k3WireVersionCarrierAgree(carrier: Int, header: Int) -> Int
+contract { intent { "Carrier/header agreement. Missing or unknown or disagree refuse as -1. Agree is 1." } }
+{
+  if carrier != k3VersionLegacy() {
+    if carrier != k3VersionCanonical() {
+      return -1
+    }
+  }
+  if header != k3VersionLegacy() {
+    if header != k3VersionCanonical() {
+      return -1
+    }
+  }
+  if carrier != header {
+    return -1
+  }
+  return 1
+}
+
 pure flow k3WireToLattice(wire: Int) -> Int
 contract { intent { "Canonical wire deny/unknown-wire/admit to lattice -1/0/1. Invalid is 2." } }
 {

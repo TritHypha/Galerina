@@ -7,8 +7,8 @@
 // Nothing is deleted. Safe to import as a side-effect from the pin test.
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TOWER = join(HERE, "..");
@@ -16,11 +16,30 @@ const COMPILER = join(TOWER, "..", "galerina-core-compiler");
 const DIST = join(TOWER, "dist");
 
 function tscBin(pkgRoot) {
-  const local = join(pkgRoot, "node_modules", "typescript", "bin", "tsc");
-  if (existsSync(local)) return local;
-  const compilerTs = join(COMPILER, "node_modules", "typescript", "bin", "tsc");
-  if (existsSync(compilerTs)) return compilerTs;
-  return "tsc";
+  const candidates = [];
+  const seen = new Set();
+  const add = (p) => {
+    const n = resolve(p);
+    if (!seen.has(n)) {
+      seen.add(n);
+      candidates.push(n);
+    }
+  };
+  add(join(pkgRoot, "node_modules", "typescript", "bin", "tsc"));
+  add(join(COMPILER, "node_modules", "typescript", "bin", "tsc"));
+  let dir = resolve(TOWER);
+  for (let i = 0; i < 8; i += 1) {
+    add(join(dir, "node_modules", "typescript", "bin", "tsc"));
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+  throw new Error(
+    "k3-sk-pin prebuild: typescript tsc not found under node_modules (bare tsc is refused)",
+  );
 }
 
 function runTsc(pkgRoot, args) {
@@ -35,20 +54,26 @@ function runTsc(pkgRoot, args) {
   }
 }
 
-if (!existsSync(join(COMPILER, "dist", "index.js"))) {
-  runTsc(COMPILER, ["-p", "tsconfig.json", "--pretty", "false"]);
+export function prebuildK3StrongKleenePin() {
+  if (!existsSync(join(COMPILER, "dist", "index.js"))) {
+    runTsc(COMPILER, ["-p", "tsconfig.json", "--pretty", "false"]);
+  }
+
+  mkdirSync(DIST, { recursive: true });
+  runTsc(TOWER, ["-p", "tsconfig.k3-sk-pin.json", "--pretty", "false"]);
+  writeFileSync(
+    join(DIST, "index.js"),
+    "export { Verdict, asVerdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize, decideAtBoundary, GOV_3VL_DIAGNOSTIC, K3_UNKNOWN, isK3Unknown, vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence } from \"./three-valued-governance.js\";\n",
+  );
+
+  if (!existsSync(join(COMPILER, "dist", "index.js"))) {
+    throw new Error("k3-sk-pin prebuild: compiler dist/index.js still missing");
+  }
+  if (!existsSync(join(DIST, "index.js")) || !existsSync(join(DIST, "three-valued-governance.js"))) {
+    throw new Error("k3-sk-pin prebuild: tower-citizen dist overlay still missing");
+  }
 }
 
-mkdirSync(DIST, { recursive: true });
-runTsc(TOWER, ["-p", "tsconfig.k3-sk-pin.json", "--pretty", "false"]);
-writeFileSync(
-  join(DIST, "index.js"),
-  "export { Verdict, asVerdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize, decideAtBoundary, GOV_3VL_DIAGNOSTIC, K3_UNKNOWN, isK3Unknown, vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence } from \"./three-valued-governance.js\";\n",
-);
-
-if (!existsSync(join(COMPILER, "dist", "index.js"))) {
-  throw new Error("k3-sk-pin prebuild: compiler dist/index.js still missing");
-}
-if (!existsSync(join(DIST, "index.js")) || !existsSync(join(DIST, "three-valued-governance.js"))) {
-  throw new Error("k3-sk-pin prebuild: tower-citizen dist overlay still missing");
-}
+const invokedAsCli = process.argv[1] !== undefined
+  && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
+if (invokedAsCli) prebuildK3StrongKleenePin();

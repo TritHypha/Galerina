@@ -30,7 +30,7 @@ pub use lattice::{from_lattice, to_lattice};
 pub use k3_frame::{
     decode_legacy_frame_pure, decode_legacy_frame_with_bridge, k3_alert_evidence,
     k3_alert_evidence_canonical_bytes, k3_parse_serial_instant_unix_s, k3_serial_window_contains,
-    verify_receipt_k3_alert_evidence,
+    verify_k3_wire_version_carrier, verify_receipt_k3_alert_evidence,
     k3_unix_s_to_ymd, k3_wasi_realtime_ns_to_unix_s, k3_wire_and, k3_wire_and3, k3_wire_gate,
     k3_wire_not, k3_wire_or, FrameAlert, FrameDecode, FrameLabel, K3AlertEvidence, K3AlertNoopSink,
     K3ReceiptAlertEvidenceField,

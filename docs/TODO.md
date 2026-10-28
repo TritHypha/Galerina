@@ -230,6 +230,20 @@ Open follow-ups (low; none blocks the merged rows):
   plus `npm run prebuild:k3-sk-pin`; pin test imports it. Fungi stays
   UNKNOWN(fungi-cannot-sha256-alert-evidence). K3_ALERT_SINK_STATUS stays
   UNKNOWN(no audit sink).
+- [x] **K3-WV** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-w merge
+  origin/main `10b96b2a6` (commit `be670c452`, parents `221fffabf`+`10b96b2a6`).
+  Decision: frame header is the on-wire `wireVersion`; Galerina package
+  artifact `k3WireVersion` is the carrier. SLIDE caller
+  `decodeK3PackageFrame` in `src/k3-wire.mjs` (FD-13). Survey of unframed
+  `decodeK3Boundary` gates: publication-loader 568, package-compiler 231,
+  flat-package-abi 481, structured-counted-loop-body-vok 167,
+  vok-component-boundary 118/120/511/513. Receipt v3 does not decode frames.
+  VOK `verify_k3_wire_version_carrier`. `.fungi` `k3WireVersionCarrier()` = 1;
+  `k3WireVersionCarrierAgree`; TS frozen `UNKNOWN(ts-frozen-emitter)` reason 5
+  (`three-valued-governance.ts`, `trit-gates.ts` do not emit). Fixture schema
+  10. N-v: pin awaits `prebuildK3StrongKleenePin` then dynamic-imports
+  fixture and dist; `tscBin` walks to repo-root `node_modules/typescript/bin/tsc`
+  and refuses a bare `tsc`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

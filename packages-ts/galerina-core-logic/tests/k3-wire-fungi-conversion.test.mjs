@@ -624,4 +624,19 @@ describe("core-logic k3-wire.fungi conversion", () => {
       }
     }
   });
+
+  it("K3-WV carrier agree/disagree/missing/unknown and TS-frozen reason 5", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3WireVersionCarrier(), 1);
+    assert.equal(exports.k3WireVersionTsFrozenReason(), 5);
+    assert.equal(exports.k3WireVersionTsFrozen(), 5);
+    assert.notEqual(exports.k3WireVersionTsFrozen(), 0);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 1), 1);
+    assert.equal(exports.k3WireVersionCarrierAgree(2, 2), 1);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 2), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(3, 1), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 3), -1);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(ts-frozen-emitter\)/);
+  });
 });

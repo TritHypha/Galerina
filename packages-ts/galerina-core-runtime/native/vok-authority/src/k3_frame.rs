@@ -325,6 +325,27 @@ pub fn verify_receipt_k3_alert_evidence(
     }
 }
 
+/// VOK verifier: Galerina package-artifact carrier must agree with the
+/// on-wire frame header. Missing / unknown / mismatch refuse. Reference
+/// path only; no production authority.
+pub fn verify_k3_wire_version_carrier(
+    carrier: Option<i32>,
+    header: i32,
+) -> Result<(), &'static str> {
+    let carrier = match carrier {
+        None => return Err("K3_WIRE_VERSION_CARRIER_MISSING"),
+        Some(value) => value,
+    };
+    let known = |v: i32| v == K3_WIRE_VERSION_LEGACY || v == K3_WIRE_VERSION_CANONICAL;
+    if !known(carrier) || !known(header) {
+        return Err("K3_WIRE_VERSION_CARRIER_UNKNOWN");
+    }
+    if carrier != header {
+        return Err("K3_WIRE_VERSION_CARRIER_MISMATCH");
+    }
+    Ok(())
+}
+
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
 /// Logs/receipts only. Never accepted as decoder input.
 pub fn k3_unix_s_to_ymd(unix_s: i64) -> Option<i32> {
@@ -1520,6 +1541,33 @@ mod tests {
         assert_eq!(
             verify_receipt_k3_alert_evidence(Some(&empty), Some(&wrong_version)).unwrap_err(),
             "K3_ALERT_EVIDENCE_MALFORMED"
+        );
+    }
+
+    #[test]
+    fn k3wv_wire_version_carrier_verify() {
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert!(verify_k3_wire_version_carrier(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            K3_WIRE_VERSION_CANONICAL
+        )
+        .is_ok());
+        assert_eq!(
+            verify_k3_wire_version_carrier(None, K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISSING"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_CANONICAL)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(3), K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), 3).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
         );
     }
 
