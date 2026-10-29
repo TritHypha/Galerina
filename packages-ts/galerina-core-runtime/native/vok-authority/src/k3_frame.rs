@@ -411,6 +411,24 @@ pub fn decode_k3_package_gate_opts(
     }
 }
 
+/// K3-FP: external verdict out. step_z is an explicit input, not a constant.
+/// Today (step_z=false) lattice 0 stays 0. Under step_z, lattice 0 -> wire -128.
+/// ALLOW/DENY unchanged.
+pub fn k3_external_verdict_out(lattice: i32, step_z: bool) -> Result<i32, &'static str> {
+    if !step_z {
+        if lattice == -1 || lattice == 0 || lattice == 1 {
+            return Ok(lattice);
+        }
+        return Err(SLIDE_K3_WIRE_INVALID);
+    }
+    match lattice {
+        -1 => Ok(-1),
+        0 => Ok(-128),
+        1 => Ok(1),
+        _ => Err(SLIDE_K3_WIRE_INVALID),
+    }
+}
+
 /// K3-AL (c) rec 4: display-only unix seconds -> YYYYMMDD (UTC, Gregorian).
 /// Logs/receipts only. Never accepted as decoder input.
 pub fn k3_unix_s_to_ymd(unix_s: i64) -> Option<i32> {
@@ -1767,6 +1785,18 @@ mod tests {
             resolve_k3_package_carrier(Some(3), true).unwrap_err(),
             SLIDE_K3_WIRE_INVALID
         );
+    }
+
+    #[test]
+    fn k3fp_external_verdict_out_e2e() {
+        assert_eq!(k3_external_verdict_out(0, false).expect("today"), 0);
+        assert_eq!(k3_external_verdict_out(0, true).expect("stepz"), -128);
+        assert_eq!(k3_external_verdict_out(1, true).expect("allow"), 1);
+        assert_eq!(k3_external_verdict_out(-1, true).expect("deny"), -1);
+        assert_eq!(k3_external_verdict_out(1, false).expect("allow today"), 1);
+        assert_eq!(k3_external_verdict_out(-1, false).expect("deny today"), -1);
+        assert_eq!(k3_external_verdict_out(3, false).unwrap_err(), SLIDE_K3_WIRE_INVALID);
+        assert_eq!(k3_external_verdict_out(3, true).unwrap_err(), SLIDE_K3_WIRE_INVALID);
     }
 
     #[test]

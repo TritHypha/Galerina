@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "b0630214072db4e0b41b0cce25fdc28ded527e6d7e2fa8010865f1a09ca1b0c6";
-const FIXTURE_GIT_BLOB = "cfd47704b808ff2e39309e4eda0a557729168e9a";
+const FIXTURE_DIGEST_D = "468a1b3321ed7a1ce294f566e0693b96720eb5a2384eb744bdc08509a0e56b97";
+const FIXTURE_GIT_BLOB = "eb8dfa7fe83857a4ef7cf4e6d0ca2bb4308d0c32";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 15;
+const FIXTURE_SCHEMA_VERSION = 16;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -149,6 +149,7 @@ async function main() {
     absentCarrierFallbackReads,
     verifyK3WireVersionCarrier,
     verifyReceiptK3AlertEvidence,
+    k3ExternalVerdictOut,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
@@ -523,6 +524,24 @@ async function main() {
       return;
     }
   }
+  const extRows = doc.externalOutputs ?? [];
+  if (extRows.length !== 4) {
+    refuse(`externalOutputs must have 4 rows, got ${extRows.length}`);
+    return;
+  }
+  const extKinds = extRows.map((row) => row.kind).join(",");
+  if (extKinds !== "unknown-today,unknown-stepz,allow-unchanged,deny-unchanged") {
+    refuse(`externalOutputs kinds ${extKinds}`);
+    return;
+  }
+  for (const row of extRows) {
+    const opts = row.stepZ === true ? { stepZ: true } : undefined;
+    const got = k3ExternalVerdictOut(row.lattice, opts);
+    if (got !== row.expect) {
+      refuse(`externalOutputs ${row.id} ${got} != ${row.expect}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -597,6 +616,7 @@ async function main() {
     compilerRequestCarriers: true,
     loaderCarrierBindings: true,
     stepZDryRun: true,
+    externalOutputs: true,
   })}\n`);
 }
 

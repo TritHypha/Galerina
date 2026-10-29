@@ -305,6 +305,26 @@ Open follow-ups (low; none blocks the merged rows):
   explicit fallback and bridge inputs. Fixture schema 15 `stepZDryRun`.
   F5 lattice-0 write sites stay OPEN (SLIDE TODO F5 file:line). Do not
   touch `packages/fungi/memory`.
+- [x] **K3-FP** (2026-10-28) on `grok/k3-frame-epoch-20261028`. DECISION
+  KEEP 0 UNTIL STEP Z: SLIDE helper `k3ExternalVerdictOut` plus process
+  constant `K3_EXTERNAL_WIRE_OUTPUTS = false`. Production outputs stay
+  lattice 0. Injected `{ stepZ: true }` returns `k3LatticeToWire`
+  (UNKNOWN -> -128; ALLOW/DENY unchanged). VOK `k3_external_verdict_out`
+  takes `step_z` as an explicit input, not a constant. Nine INDETERMINATE
+  sites routed in SLIDE (AUTH 5 plus 4 extra). Fixture schema 16
+  `externalOutputs` (unknown-today 0, unknown-stepz -128, allow 1, deny
+  -1) identical bytes both repos. `K3_WIRE_HEADER_VERSION` stays 1.
+  UNKNOWN=-128. option-B and strong Kleene unchanged.
+- [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
+  Readiness required: `legacyUnknownZeroReads` 0,
+  `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
+  `f5RoutedSites` complete (`9/9`), `externalWireOutputs` false.
+  Order: (1) `LEGACY_UNKNOWN_ZERO_BRIDGE = false`, (2)
+  `ABSENT_CARRIER_FALLBACK_BRIDGE = false`, (3)
+  `K3_EXTERNAL_WIRE_OUTPUTS = true`. Delete nothing.
+  Rollback: restore the three constants to true / true / false.
+  Keep legacy-0 removal (by 2027-01-18), absent-carrier sunset and F5
+  OPEN until the flip. Do not touch `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

@@ -1,8 +1,8 @@
 //! Fixture pin: JSON digest is checked by this crate's sha256.rs (G9 preferred).
-//! Byte-identical copy of SLIDE K3-SZ fixture v15
-//! sha256 b0630214072db4e0b41b0cce25fdc28ded527e6d7e2fa8010865f1a09ca1b0c6
+//! Byte-identical copy of SLIDE K3-FP fixture v16
+//! sha256 468a1b3321ed7a1ce294f566e0693b96720eb5a2384eb744bdc08509a0e56b97
 
-const PINNED_DIGEST: &str = "b0630214072db4e0b41b0cce25fdc28ded527e6d7e2fa8010865f1a09ca1b0c6";
+const PINNED_DIGEST: &str = "468a1b3321ed7a1ce294f566e0693b96720eb5a2384eb744bdc08509a0e56b97";
 const V1_DIGEST: &str = "af50342a9f547b6523f632a56d45ea2c4b6eec69f35daf4c7b2f03f061d83f83";
 const JSON: &[u8] = include_bytes!("../vectors/k3-wire-vectors.json");
 const ROWS: &str = include_str!("../vectors/k3-wire-vectors.rows.txt");
@@ -45,6 +45,7 @@ fn k3_wire_vectors_json_has_no_cr_and_keeps_v1_keys() {
         "\"legacyNote\"",
         "\"boundaryBareRefused\"",
         "\"invalid\"",
+        "\"externalOutputs\"",
     ] {
         assert!(text.contains(key), "missing {key}");
     }
