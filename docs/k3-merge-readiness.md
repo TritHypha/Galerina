@@ -15,7 +15,8 @@ KEEP 0 UNTIL STEP Z. SuperGrok does not merge to main. Do not edit
    `node scripts/k3-merge-rehearsal.mjs --slide-root=<SLIDE>`
    (temp clones only, `--no-ff`, never pushes). Resolves `origin/main`
    in the source (clone `origin/main` is the source local `main`) and
-   junctions source `node_modules` so code-index/prebuild can run.
+   junctions package `node_modules` and the prebuilt core-compiler `dist`
+   after the merge so code-index/prebuild can run (N-bd).
 3. Grok Bot's separate merge call (Galerina topic onto Galerina main,
    then SLIDE topic onto SLIDE main).
 4. Post-merge check:

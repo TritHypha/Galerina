@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // K3-ZZ merge rehearsal: --no-ff in temp clones only. Never pushes.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -52,15 +52,59 @@ function pinOriginMain(cloneDir, sha) {
   git(cloneDir, ["update-ref", "refs/remotes/origin/main", sha]);
 }
 
+function packageNodeModules(srcRoot) {
+  const rels = [];
+  if (existsSync(join(srcRoot, "node_modules"))) rels.push("node_modules");
+  const pts = join(srcRoot, "packages-ts");
+  if (existsSync(pts)) {
+    for (const name of readdirSync(pts)) {
+      const rel = join("packages-ts", name, "node_modules");
+      if (existsSync(join(srcRoot, rel))) rels.push(rel);
+    }
+  }
+  return rels;
+}
+
 function junctionIfPresent(srcRoot, cloneDir, rel) {
   const from = join(srcRoot, rel);
   const to = join(cloneDir, rel);
   if (!existsSync(from) || existsSync(to)) return;
+  mkdirSync(dirname(to), { recursive: true });
   try {
-    symlinkSync(from, to, "junction");
+    symlinkSync(realpathSync(from), to, "junction");
   } catch {
-    // Best-effort for gitignored deps. Post-merge stays fail-closed.
+    try {
+      symlinkSync(from, to, "dir");
+    } catch {
+      // Best-effort for gitignored deps. Post-merge stays fail-closed.
+    }
   }
+}
+
+function extraLinkRels(srcRoot) {
+  return [
+    ...packageNodeModules(srcRoot),
+    join("packages-ts", "galerina-core-compiler", "dist"),
+  ].filter((rel) => existsSync(join(srcRoot, rel)));
+}
+
+function linkPackageNodeModules(srcRoot, cloneDir) {
+  for (const rel of extraLinkRels(srcRoot)) {
+    junctionIfPresent(srcRoot, cloneDir, rel);
+  }
+}
+
+function nodePathFor(srcRoot) {
+  const parts = [];
+  for (const rel of packageNodeModules(srcRoot)) {
+    const abs = join(srcRoot, rel);
+    try {
+      parts.push(realpathSync(abs));
+    } catch {
+      parts.push(abs);
+    }
+  }
+  return parts;
 }
 
 function mergeTopicIntoMain(cloneDir, mainRef, topicSha) {
@@ -117,8 +161,6 @@ export function runMergeRehearsal({
   // clone --local maps origin/main to the source local main, which can lag GitHub.
   pinOriginMain(galClone, galMainSha);
   pinOriginMain(slideClone, slideMainSha);
-  junctionIfPresent(galerinaSrc, galClone, "node_modules");
-  junctionIfPresent(slideSrc, slideClone, "node_modules");
   const galMerge = mergeTopicIntoMain(galClone, galMainSha || galMainRef, galTopic);
   if (galMerge.ok !== true) {
     return Object.freeze({
@@ -137,14 +179,26 @@ export function runMergeRehearsal({
       stderr: slideMerge.stderr,
     });
   }
+  // Checkout/merge would drop a pre-merge junction. Link gitignored node_modules after HEAD is merged.
+  linkPackageNodeModules(galerinaSrc, galClone);
+  linkPackageNodeModules(slideSrc, slideClone);
   let post;
   if (typeof runPostMerge === "function") {
     post = runPostMerge({ galerina: galClone, slide: slideClone });
   } else {
+    const nodePath = [...nodePathFor(galerinaSrc), ...nodePathFor(slideSrc), process.env.NODE_PATH]
+      .filter((p) => typeof p === "string" && p !== "")
+      .join(delimiter);
     const spawned = spawnSync(
       process.execPath,
       [join(galClone, "scripts", "k3-post-merge-check.mjs"), `--slide-root=${slideClone}`],
-      { cwd: galClone, encoding: "utf8", timeout: 600000, maxBuffer: 20 * 1024 * 1024 },
+      {
+        cwd: galClone,
+        encoding: "utf8",
+        timeout: 600000,
+        maxBuffer: 20 * 1024 * 1024,
+        env: { ...process.env, NODE_PATH: nodePath },
+      },
     );
     try {
       post = JSON.parse((spawned.stdout ?? "").trim().split(/\r?\n/u).filter(Boolean).pop() ?? "{}");
