@@ -1,5 +1,6 @@
 // MR6: ops 7 (release) and 8 (re-alloc read) are listed in arenaStateAfter
-// and follow the general one-way table. Op 9 is the first unlisted op (11).
+// and follow the general one-way table, except that MR7 makes a malformed
+// (110) or unlisted (111) reply quarantine on these two ops. Op 9 is the first unlisted op (11).
 import { test } from "node:test";
 import { stateAfter, step, expectPacked, OP6, ST } from "./mr6-harness.mjs";
 
@@ -8,8 +9,8 @@ for (const op of [OP6.release, OP6.realloc]) {
     expectPacked(stateAfter(op, ST.active, 100), ST.active, "op " + op + " 100");
   });
 
-  test("op " + op + " malformed reply (111) keeps the state, as in MR3", () => {
-    expectPacked(stateAfter(op, ST.active, 111), ST.active, "op " + op + " 111 active");
+  test("op " + op + " unlisted reply (111) quarantines (MR7; MR6 kept the state)", () => {
+    expectPacked(stateAfter(op, ST.active, 111), ST.quarantined, "op " + op + " 111 active");
   });
 
   test("op " + op + " stale or wrong generation (150) keeps the state", () => {
