@@ -322,6 +322,15 @@ Open follow-ups (low; none blocks the merged rows):
   `rehearsalScript` true and `goldenPinnedSites` `9/9`. cargo
   `k3fp_external_verdict_out_e2e` already covers AUTH (d); no new
   cargo test. Process constants stay true/true/false. Fixture schema 16.
+- [x] **K3-ZT** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `1ab0d1608` (S6-1 D-2 fuse signature gate) as a merge
+  commit. Did not edit `packages/fungi/memory`. SLIDE N-ar nested TAP,
+  N-ap computed readiness, N-as lattice-0 arm, N-aq PIN/BREAK. Copy-only
+  rehearsal: base 294/0/10/307; step1 294/0/10; step2 260/34/10; step3
+  260/34/10; rollback matches; verdict NOT_READY; 34 BREAK OPEN-ZT-1..34
+  (absent-carrier close). OPEN-ZR-K3R-7 closed. OPEN-ZR-F5-CUMULATIVE
+  stays for compiler :656/:781. cargo none added. Fixture schema 16.
+  Process constants stay true/true/false. Flip stays Phillip's call.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
   Readiness required: `legacyUnknownZeroReads` 0,
   `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
@@ -333,10 +342,11 @@ Open follow-ups (low; none blocks the merged rows):
   Rollback: restore the three constants to true / true / false.
   Keep legacy-0 removal (by 2027-01-18), absent-carrier sunset and F5
   OPEN until the flip. Do not touch `packages/fungi/memory`.
-  K3-ZR copy-only rehearsal (SLIDE `scripts/k3-step-z-rehearsal.mjs`):
-  base 291/0/10/303; step1 256/35/10; step2 215/76/10; step3 199/92/10;
-  rollback matches base. OPEN-ZR-K3R-7 and OPEN-ZR-F5-CUMULATIVE live on
-  the SLIDE TODO. Do not touch `packages/fungi/memory`.
+  K3-ZT copy-only rehearsal (SLIDE `scripts/k3-step-z-rehearsal.mjs`):
+  base 294/0/10/307; step1 294/0/10; step2 260/34/10; step3 260/34/10;
+  rollback matches base; NOT_READY. OPEN-ZT-1..34 and
+  OPEN-ZR-F5-CUMULATIVE live on the SLIDE TODO. Do not touch
+  `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
