@@ -344,29 +344,43 @@ Open follow-ups (low; none blocks the merged rows):
   Galerina merge (origin/main still `c5ec5b5e8`). Did not edit
   `packages/fungi/memory`. SLIDE N-ax removes fail-open Threaded
   substitution; N-ay threads real owned/receipt/spec carriers;
-  N-az re-proves compiler :656/:781 at step3. Copy-only rehearsal
+  N-az re-proves compiler :656/:783 at step3. Copy-only rehearsal
   READY: base 310/0/10/324; step1 310/0/10; step2 310/0/10; step3
   310/0/10; rollback matches. Re-opened then closed OPEN-ZT-1..34
   with real carriers (0 remain; no PIN reclassify). OPEN-ZT-35
   stays closed (N-au). OPEN-ZR-F5-CUMULATIVE closed. cargo none
   added. Fixture schema 16. Process constants stay true/true/false.
   Flip stays Phillip's call.
+- [x] **K3-ZW** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `ec33550f5` (MEM-R6 release/re-alloc as arena steps) as
+  a merge commit. Did not edit `packages/fungi/memory` (those files
+  arrived via merge). SLIDE N-ba F5 title pins, N-bb plain-object
+  ownedCarrier, N-bc producer-carrier inventory, Step Z flip packet
+  (`docs/k3-step-z-flip-checklist.md` mirrored here; SLIDE
+  `scripts/k3-step-z-flip-plan.mjs --dry-run`), sunset clock alerts,
+  N-bd pre-build (prebuilt core compiler + tsc in node_modules).
+  cargo none added. Fixture schema 16. Process constants stay
+  true/true/false. Flip stays Phillip's call.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
+  Packet: `docs/k3-step-z-flip-checklist.md` (mirrored from SLIDE) and
+  SLIDE `node scripts/k3-step-z-flip-plan.mjs --dry-run`.
   Readiness required: `legacyUnknownZeroReads` 0,
   `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
   `f5RoutedSites` complete (`9/9`), `goldenPinnedSites` `9/9`,
-  `rehearsalScript` present true, `externalWireOutputs` false.
+  `rehearsalScript` present true, `externalWireOutputs` false,
+  producer-carrier inventory unrecorded 0.
   Order: (1) `LEGACY_UNKNOWN_ZERO_BRIDGE = false`, (2)
   `ABSENT_CARRIER_FALLBACK_BRIDGE = false`, (3)
   `K3_EXTERNAL_WIRE_OUTPUTS = true`. Delete nothing.
   Rollback: restore the three constants to true / true / false.
   Keep legacy-0 removal (by 2027-01-18), absent-carrier sunset and F5
   OPEN until the flip. Do not touch `packages/fungi/memory`.
-  K3-ZV copy-only rehearsal (SLIDE `scripts/k3-step-z-rehearsal.mjs`):
-  base 310/0/10/324; step1 310/0/10; step2 310/0/10; step3 310/0/10;
-  rollback matches base; READY. OPEN-ZT-1..35 and
-  OPEN-ZR-F5-CUMULATIVE closed on the SLIDE TODO. Do not touch
-  `packages/fungi/memory`.
+  Pre-build (N-bd, N-ai): a fresh clone needs the prebuilt core
+  compiler and `tsc` under `node_modules`; then
+  `node packages-ts/galerina-tower-citizen/tests/prebuild-k3-strong-kleene-pin.mjs`
+  and the explicit path
+  `packages-ts/galerina-tower-citizen/tests/k3-strong-kleene-pin.test.mjs`
+  (7 tests; a dist glob can report 8).
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
