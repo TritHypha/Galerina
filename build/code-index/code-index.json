@@ -23973,7 +23973,7 @@
       "doc packages/fungi/memory/evidence/mr1-memory-research/findings.md:13",
       "fungi packages/fungi/memory/src/adapter-profile.fungi:3",
       "fungi packages/fungi/memory/src/secret-arena.fungi:22",
-      "fungi packages/fungi/memory/src/secret-arena.fungi:1033",
+      "fungi packages/fungi/memory/src/secret-arena.fungi:1039",
       "test packages/fungi/memory/tests/s7-product-custody/s7b-php-oom-reuse.test.mjs:6",
       "test packages/fungi/memory/tests/s7-product-custody/s7b-php-oom-reuse.test.mjs:76",
       "test packages/fungi/memory/tests/s7-product-custody/s7b-php-oom-reuse.test.mjs:80",
