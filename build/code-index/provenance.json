@@ -1,7 +1,7 @@
 {
   "tool": "code-index",
   "authority": "NONE",
-  "gitCommit": "76297af31ab7880e3aec581996399e2b46cc3d52",
-  "builtAt": "2026-10-29T06:12:18.000Z",
-  "node": "v24.20.0"
+  "gitCommit": "920d718f0a54033030b44acf870b6d94ae916673",
+  "builtAt": "2026-10-29T08:39:42.000Z",
+  "node": "v24.18.0"
 }

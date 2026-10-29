@@ -423,7 +423,7 @@
       "identity": "@galerina/core-runtime",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-runtime",
-      "contentDigest": "919673cc0ccdb715c938b78ea0bc028acf3305b6c8c8b2a847fa2b7709a6097b",
+      "contentDigest": "bde42d24f9a60bf5408a02a666461978b8e002115e1ea93d6197ff846837e5df",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1734,7 +1734,7 @@
       "identity": "@galerina/framework-app-kernel",
       "version": "1.0.0-beta.2",
       "directory": "galerina-framework-app-kernel",
-      "contentDigest": "0790ea06f2086ea621894aceba0f6caeb3b9613f12eee2769e9efa3e67a2b307",
+      "contentDigest": "69d86b0018dd86c6406366908bb26d7cfc7f0f7718e895ecef6dc072ab60d4ca",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1763,7 +1763,7 @@
       "identity": "@galerina/framework-example-app",
       "version": "1.0.0-beta.2",
       "directory": "galerina-framework-example-app",
-      "contentDigest": "f39969c5fe71645065d0ba1444465545e39cc814f9fda356c339973fd33c4b5a",
+      "contentDigest": "85234822f94fcfaa2e02e7487e9959bc1a9f038428bc529decf669aea500c1c6",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -1869,7 +1869,7 @@
       "identity": "@galerina/observability",
       "version": "1.0.0-beta.2",
       "directory": "galerina-observability",
-      "contentDigest": "4f684fb8189d44a087a09c8f56d3c05a153bd3fe8b448fd27b0bf23e3b614a2b",
+      "contentDigest": "cd850f894fd0f8ca23a5aca3ba1628492949fdce34feea46ab7a1085c73b52de",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "6a96fdaf29b99cefe66f919b63bb3bbe5a16b705f2a59ea70ab266fe37e2871a"
+  "rootDigest": "fe7d8c8b08335ff8ebc610e16b1960cbb7812fbea1ccf277ec992d1917354f2e"
 }
