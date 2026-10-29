@@ -4,8 +4,8 @@
 
 Handover: `AI-RESTART/HANDOVER-20261029.md`.
 - [x] MEM-R3..R10 merged (R9 VOK trap parity `d78df0bbc`, cargo 186/0).
-- [ ] **Lock drift on main:** `node scripts/flat-package-root-lock.mjs --check` REFUSES on `d78df0bbc` (stale lock). Fix with `--write` on a grok branch first.
-- [ ] **K3 merge:** prep branch `grok/k3-frame-epoch-merge-main-20261029` @ `60f0b2294` (main merged, provenance regenerated, code-index green). post-merge check RED at `lock` (pre-existing above). Not merged. Step Z flags unchanged; flip is Phillip's.
+- [x] **Lock drift on main:** fixed `dbc6b6271` (lock + code-index regenerated, generated-only).
+- [ ] **K3 merge:** prep branch `grok/k3-frame-epoch-merge-main-20261029` @ `60f0b2294` (main merged, provenance regenerated, code-index green). re-merged @ `78bf93f14`; post-merge check RED at kleene-pin (no built core-runtime-wasm on this PC). Not merged. Step Z flags unchanged; flip is Phillip's.
 - [ ] VOK CLI verdict wiring; VOK lasting audit record for refused reuse (lib.rs) — both after K3 merge.
 - [ ] Ops 0-6 table-wide malformed rule.
 - [ ] Phillip: D-2 re-sign (`f3172a48372bfb23`) then D-3; VOK on-target zero-on-release; H5 PR_SET_DUMPABLE; serial-3 before 2027-01-25.
