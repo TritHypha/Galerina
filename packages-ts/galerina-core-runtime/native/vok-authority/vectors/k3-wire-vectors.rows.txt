@@ -1,4 +1,4 @@
-sha256=e8e237d6eb405512120594025ae47361a9c97e0141ed1d7967d5f2d7de181ca9
+sha256=b0630214072db4e0b41b0cce25fdc28ded527e6d7e2fa8010865f1a09ca1b0c6
 header|K3_WIRE_HEADER_VERSION|1
 header|LEGACY_UNKNOWN_ZERO_CAP|1000000
 header|LEGACY_UNKNOWN_ZERO_EXPIRY|20261231
@@ -6,8 +6,8 @@ header|LEGACY_UNKNOWN_ZERO_BRIDGE|true
 header|provisional|true
 header|decidedBy|Grok Bot under owner message pt1040u
 header|overridableBy|Phillip
-header|vectorsVersion|14
-header|FIXTURE_SCHEMA_VERSION|14
+header|vectorsVersion|15
+header|FIXTURE_SCHEMA_VERSION|15
 header|LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S|1798761600
 header|K3_EPOCH_YMD_MIN|20261027
 header|K3_EPOCH_YMD_MAX|20991231
@@ -477,3 +477,6 @@ loaderCarrierBindings|loader-match|kind=match;left=2;right=2;expect=AGREE
 loaderCarrierBindings|loader-mismatch|kind=mismatch;left=1;right=2;expect=REFUSE
 loaderCarrierBindings|loader-absent-both|kind=absent-both;left=null;right=null;expect=AGREE
 loaderCarrierBindings|loader-tampered|kind=tampered;left=2;right=3;expect=REFUSE
+stepZDryRun|step-z-bridge-off-legacy-0|kind=bridge-off-legacy-0;carrier=1;value=0;bridge=false;fallback=true;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=
+stepZDryRun|step-z-fallback-off-absent|kind=fallback-off-absent;carrier=null;value=1;bridge=true;fallback=false;expect=REFUSE;code=SLIDE-K3-WIRE-001;trit=
+stepZDryRun|step-z-canonical-unknown-unchanged|kind=canonical-unknown;carrier=2;value=-128;bridge=false;fallback=false;expect=ADMIT;code=;trit=-128

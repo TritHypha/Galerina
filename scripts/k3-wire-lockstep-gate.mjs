@@ -13,13 +13,13 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "e8e237d6eb405512120594025ae47361a9c97e0141ed1d7967d5f2d7de181ca9";
-const FIXTURE_GIT_BLOB = "f4ddfda77ab124d0b957ba0ebeb9d29a13b14563";
+const FIXTURE_DIGEST_D = "b0630214072db4e0b41b0cce25fdc28ded527e6d7e2fa8010865f1a09ca1b0c6";
+const FIXTURE_GIT_BLOB = "cfd47704b808ff2e39309e4eda0a557729168e9a";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 14;
+const FIXTURE_SCHEMA_VERSION = 15;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -493,6 +493,36 @@ async function main() {
       return;
     }
   }
+  const stepZRows = doc.stepZDryRun ?? [];
+  if (stepZRows.length !== 3) {
+    refuse(`stepZDryRun must have 3 rows, got ${stepZRows.length}`);
+    return;
+  }
+  const stepZKinds = stepZRows.map((row) => row.kind).join(",");
+  if (stepZKinds !== "bridge-off-legacy-0,fallback-off-absent,canonical-unknown") {
+    refuse(`stepZDryRun kinds ${stepZKinds}`);
+    return;
+  }
+  for (const row of stepZRows) {
+    const artifact = carrierArtifactFromSpec(row.spec);
+    const got = decodeK3PackageGate(artifact, row.value, {
+      fallback: row.fallback,
+      legacyUnknownZeroBridge: row.legacyUnknownZeroBridge,
+    });
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`stepZDryRun ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`stepZDryRun ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`stepZDryRun ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
   for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
     if (k3WireAnd3(a, b, c) !== e) {
       refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
@@ -566,6 +596,7 @@ async function main() {
     descriptorSpecCarriers: true,
     compilerRequestCarriers: true,
     loaderCarrierBindings: true,
+    stepZDryRun: true,
   })}\n`);
 }
 

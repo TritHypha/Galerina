@@ -289,6 +289,22 @@ Open follow-ups (low; none blocks the merged rows):
   `prebuildK3StrongKleenePin()` (`tsc -p tsconfig.k3-sk-pin.json`). The
   STATUS block uses the explicit file path and reports 7. File unchanged.
   Do not touch `packages/fungi/memory`.
+- [x] **K3-SZ** (2026-10-28) on `grok/k3-frame-epoch-20261028`. DECISION
+  KEEP 0 UNTIL STEP Z (PROVISIONAL, decidedBy Grok Bot, overridableBy
+  Phillip): prepare the flip without making it. Process constants
+  `LEGACY_UNKNOWN_ZERO_BRIDGE` and `ABSENT_CARRIER_FALLBACK_BRIDGE` stay
+  true. N-aj: present-unknown-on-both agrees and still refuses INVALID.
+  SLIDE dry-run sites (injected options, no production flip):
+  `src/checked-fungi-package-publication-loader.mjs`,
+  `src/checked-fungi-package-compiler.mjs`,
+  `src/flat-package-abi.mjs`,
+  `src/structured-counted-loop-body-vok.mjs`,
+  `src/vok-component-boundary.mjs`.
+  Readiness: `node scripts/k3-step-z-readiness.mjs` in SLIDE. VOK
+  `resolve_k3_package_carrier` / `decode_k3_package_gate_opts` take
+  explicit fallback and bridge inputs. Fixture schema 15 `stepZDryRun`.
+  F5 lattice-0 write sites stay OPEN (SLIDE TODO F5 file:line). Do not
+  touch `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

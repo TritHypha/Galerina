@@ -347,12 +347,31 @@ pub fn verify_k3_wire_version_carrier(
 }
 
 /// K3-CE N-ag: absent on both sides is equal. Present values compare by ==.
+/// Agreement is not admission: a present unknown on both sides agrees
+/// and is still refused by resolve_k3_package_carrier (INVALID).
 pub fn k3_wire_versions_agree(left: Option<i32>, right: Option<i32>) -> bool {
     left == right
 }
 
 pub const SLIDE_K3_WIRE_INVALID: &str = "SLIDE-K3-WIRE-001";
 pub const SLIDE_K3_WIRE_BARE_LEGACY_ZERO: &str = "SLIDE-K3-WIRE-003";
+
+/// K3-SZ dry-run: explicit fallback flag. Production decode_k3_package_gate
+/// keeps fallback on. Process constants stay open.
+pub fn resolve_k3_package_carrier(carrier: Option<i32>, fallback: bool) -> Result<i32, &'static str> {
+    match carrier {
+        None => {
+            if !fallback {
+                return Err(SLIDE_K3_WIRE_INVALID);
+            }
+            Ok(K3_WIRE_VERSION_CANONICAL)
+        }
+        Some(version) if version == K3_WIRE_VERSION_CANONICAL || version == K3_WIRE_VERSION_LEGACY => {
+            Ok(version)
+        }
+        Some(_) => Err(SLIDE_K3_WIRE_INVALID),
+    }
+}
 
 /// K3-CC: the carrier the gate uses is the one on the loaded artifact or
 /// spec. Absent carrier falls back to canonical 2. Present unknown fails
@@ -362,17 +381,25 @@ pub fn decode_k3_package_gate(
     carrier: Option<i32>,
     value: i32,
 ) -> Result<(Trit, crate::TritWireForm), &'static str> {
-    let resolved = match carrier {
-        None => K3_WIRE_VERSION_CANONICAL,
-        Some(version) if version == K3_WIRE_VERSION_CANONICAL || version == K3_WIRE_VERSION_LEGACY => {
-            version
-        }
-        Some(_) => return Err(SLIDE_K3_WIRE_INVALID),
-    };
+    decode_k3_package_gate_opts(carrier, value, true, true)
+}
+
+/// K3-SZ dry-run: bridge-off and fallback-off as explicit inputs.
+/// Process constants stay open (decode_k3_package_gate uses true, true).
+pub fn decode_k3_package_gate_opts(
+    carrier: Option<i32>,
+    value: i32,
+    fallback: bool,
+    legacy_unknown_zero_bridge: bool,
+) -> Result<(Trit, crate::TritWireForm), &'static str> {
+    let resolved = resolve_k3_package_carrier(carrier, fallback)?;
     if resolved == K3_WIRE_VERSION_CANONICAL {
         return Trit::decode_canonical(value).map_err(|_| SLIDE_K3_WIRE_INVALID);
     }
     if value == 0 {
+        if !legacy_unknown_zero_bridge {
+            return Err(SLIDE_K3_WIRE_INVALID);
+        }
         return Trit::decode_canonical(-128).map_err(|_| SLIDE_K3_WIRE_INVALID);
     }
     match Trit::decode_wire(value) {
@@ -1714,6 +1741,32 @@ mod tests {
         ));
         assert!(k3_wire_versions_agree(None, None));
         assert!(!k3_wire_versions_agree(Some(K3_WIRE_VERSION_CANONICAL), Some(3)));
+    }
+
+    #[test]
+    fn k3sz_step_z_dry_run_e2e() {
+        use crate::Trit;
+        assert_eq!(
+            decode_k3_package_gate_opts(Some(K3_WIRE_VERSION_LEGACY), 0, true, false).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert_eq!(
+            decode_k3_package_gate_opts(None, 1, false, true).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let canonical = decode_k3_package_gate_opts(Some(K3_WIRE_VERSION_CANONICAL), -128, false, false)
+            .expect("canonical -128 unchanged");
+        assert_eq!(canonical.0, Trit::Unknown);
+        let legacy0 = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("process bridge stays on");
+        assert_eq!(legacy0.0, Trit::Unknown);
+        let absent = decode_k3_package_gate(None, 1).expect("process fallback stays on");
+        assert_eq!(absent.0, Trit::Admit);
+        assert!(k3_wire_versions_agree(Some(3), Some(3)));
+        assert_eq!(
+            resolve_k3_package_carrier(Some(3), true).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
     }
 
     #[test]
