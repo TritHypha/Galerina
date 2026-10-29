@@ -30,6 +30,7 @@ const ALLOWED_FILES = Object.freeze([
   "src/cleanup-evidence.fungi",
   "src/composed-route.fungi",
   "src/durable-store.fungi",
+  "src/fuse-signature-gate.fungi",
   "src/env-anchor-beta.fungi",
   "src/kernel-ports.fungi",
   "src/kernel.fungi",
@@ -48,6 +49,7 @@ const ALLOWED_FILES = Object.freeze([
 
 const ALLOWED_PREFIXES = Object.freeze([
   "tests/31-body-reader/",
+  "tests/d2-fuse-signature/",
   "evidence/31-body-reader/",
   "evidence/32-release-commit-point/",
   "evidence/33-u2-serve-gate/",

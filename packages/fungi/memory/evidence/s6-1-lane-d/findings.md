@@ -122,3 +122,10 @@ work (fuseGreeting must take a central registry verdict, no implicit allow).
 
 Next actions item 3 is closed. Open in this lane: D-6 (.fungi host work), D-2/D-3 (Phillip's
 signed builds).
+
+## Update 2026-10-29 (D-2 root cause)
+
+- The greeting dist manifest is NOT unsigned: it carries a real Ed25519 governanceSignature, keyId `942d6b2726b0a991` (legacy Ed25519-only dev signer per docs/security/galerina-key-register.md).
+- No public half for that keyId is tracked in `governance/`, so a fresh clone warns FUNGI-FUSE-NO-PUBKEY, degrades to "unsigned", and fuse throws FUNGI-FUSE-UNSIGNED.
+- Added `src/fuse-signature-gate.fungi` (K3 strong-Kleene gate; NO_PUBKEY = UNKNOWN -128, reason 2; admits only exact ALLOW) with tests in `tests/d2-fuse-signature/` (8/8 differential vs frozen TS rule; diagnosis 3 pass + 1 todo that turns green once the key is fixed).
+- Remaining (Phillip, needs signing material): either (A) commit the public half `governance/signing-key-942d6b2726b0a991.pub.pem` derived from his private key, or (B) re-sign greeting under operational hybrid key `f3172a48372bfb23` via the offline ceremony (then e2e test 2 needs an injected hybridVerifier). D-3 (signed api-protocol-rest build) unchanged.
