@@ -4,13 +4,23 @@ KEEP 0 UNTIL STEP Z. This packet does not merge and does not flip
 SLIDE production constants. Merge to main stays Grok Bot. The Step Z
 flip stays Phillip's call. Do not edit `packages/fungi/memory`.
 
-## Merge order
+## Merge-day order
 
-1. Galerina topic `grok/k3-frame-epoch-20261028` onto Galerina main.
-2. SLIDE topic `grok/slide-k3-frame-epoch-20261028` onto SLIDE main.
-3. Cross-repo lockstep after each merge:
-   `node scripts/k3-post-merge-check.mjs --slide-root=<SLIDE checkout>`
-   Fixture schema stays 16 unless a later row adds a row, then 17 with
+KEEP 0 UNTIL STEP Z. SuperGrok does not merge to main. Do not edit
+`packages/fungi/memory`.
+
+1. Backup from the SLIDE checkout:
+   `node scripts/k3-pre-merge-backup.mjs --out=D:\Backups\pre-k3-merge-<YYYYMMDD> --galerina=<Galerina topic> --slide=<SLIDE topic>`
+2. Merge rehearsal READY:
+   `node scripts/k3-merge-rehearsal.mjs --slide-root=<SLIDE>`
+   (temp clones only, `--no-ff`, never pushes).
+3. Grok Bot's separate merge call (Galerina topic onto Galerina main,
+   then SLIDE topic onto SLIDE main).
+4. Post-merge check:
+   `node scripts/k3-post-merge-check.mjs --slide-root=<SLIDE>`
+   (lockstep, code-index --check, lock --check, prebuild + kleene-pin,
+   both merge-readiness scripts, SLIDE whole-dir baseline). Fixture
+   schema stays 16 unless a later row adds a row, then 17 with
    identical bytes in both repos.
 
 ## Backup (before either merge)

@@ -66,6 +66,37 @@ export const POST_MERGE_STEPS = Object.freeze([
       };
     },
   }),
+  Object.freeze({
+    id: "gal-merge-readiness",
+    build() {
+      return {
+        command: process.execPath,
+        args: [join(ROOT, "scripts", "k3-merge-readiness.mjs")],
+        cwd: ROOT,
+      };
+    },
+  }),
+  Object.freeze({
+    id: "slide-merge-readiness",
+    build(slideRoot) {
+      return {
+        command: process.execPath,
+        args: [join(slideRoot, "scripts", "k3-merge-readiness.mjs")],
+        cwd: slideRoot,
+      };
+    },
+  }),
+  Object.freeze({
+    id: "slide-baseline",
+    build(slideRoot) {
+      return {
+        command: process.execPath,
+        args: [join(slideRoot, "scripts", "whole-dir-baseline-check.mjs")],
+        cwd: slideRoot,
+        env: { ...process.env, GALERINA_ROOT: ROOT },
+      };
+    },
+  }),
 ]);
 
 export function defaultRunStep(step) {
@@ -74,6 +105,8 @@ export function defaultRunStep(step) {
     cwd: spec.cwd,
     encoding: "utf8",
     timeout: 300000,
+    env: spec.env ?? process.env,
+    maxBuffer: 20 * 1024 * 1024,
   });
   return Object.freeze({
     id: step.id,

@@ -380,6 +380,16 @@ Open follow-ups (low; none blocks the merged rows):
   `scripts/k3-post-merge-check.mjs`. cargo none added. Fixture schema
   16. Process constants stay true/true/false. Flip stays Phillip's
   call. Merge stays Grok Bot.
+- [x] **K3-ZZ** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merge
+  origin/main `76297af31` (MEM-R7) with `--no-ff`; regen code-index;
+  lock `--write` then `--check`. Did not edit `packages/fungi/memory`
+  content brought in by the merge. N-bn post-merge now includes
+  merge-readiness and SLIDE whole-dir baseline. Merge rehearsal
+  `scripts/k3-merge-rehearsal.mjs` in temp clones only. cargo none
+  added. Fixture schema 16. Process constants stay true/true/false.
+  Flip stays Phillip's call. Merge stays Grok Bot.
+- [ ] **OPEN non-K3** SLIDE v2c/v2d Option-wrap recorded in SLIDE
+  `tests/known-red-baseline.json`. Not a K3 row.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
   Packet: `docs/k3-step-z-flip-checklist.md` (mirrored from SLIDE) and
   SLIDE `node scripts/k3-step-z-flip-plan.mjs --dry-run`.

@@ -15,7 +15,7 @@ describe("K3-ZY post-merge check injected runner", () => {
     assert.equal(report.verdict, "GREEN");
     assert.equal(report.ok, true);
     assert.equal(report.failingStep, null);
-    assert.equal(report.steps.length, 5);
+    assert.equal(report.steps.length, 8);
   });
 
   it("ZY-G2 first non-zero step is RED with that failingStep", () => {
@@ -33,6 +33,22 @@ describe("K3-ZY post-merge check injected runner", () => {
     assert.equal(report.verdict, "RED");
     assert.equal(report.ok, false);
     assert.equal(report.failingStep, "lock");
+  });
+
+  it("ZZ-G4 merge-readiness non-zero is RED", () => {
+    const report = runPostMergeCheck({
+      slideRoot: "C:\\injected-slide",
+      runStep(step) {
+        return {
+          id: step.id,
+          status: step.id === "gal-merge-readiness" ? 1 : 0,
+          stdout: "",
+          stderr: "conflicted",
+        };
+      },
+    });
+    assert.equal(report.verdict, "RED");
+    assert.equal(report.failingStep, "gal-merge-readiness");
   });
 
   it("ZY-G3 missing slide-root is RED", () => {
