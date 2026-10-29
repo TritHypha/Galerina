@@ -361,6 +361,15 @@ Open follow-ups (low; none blocks the merged rows):
   N-bd pre-build (prebuilt core compiler + tsc in node_modules).
   cargo none added. Fixture schema 16. Process constants stay
   true/true/false. Flip stays Phillip's call.
+- [x] **K3-ZX** (2026-10-29) on `grok/k3-frame-epoch-20261028`. No
+  Galerina merge (origin/main still `ec33550f5`). Did not edit
+  `packages/fungi/memory`. SLIDE N-be live-clock sunset guard, N-bf
+  effective alert date 2027-01-01T00:00:00Z next to 2027-01-18 and
+  EXPIRY_EPOCH 20261231, N-bg inventory classification cells,
+  merge-readiness packet (`docs/k3-merge-readiness.md` mirrored here).
+  Lockstep checks SLIDE expiry/removal unix against Galerina dates.
+  cargo none added. Fixture schema 16. Process constants stay
+  true/true/false. Flip stays Phillip's call. Merge stays Grok Bot.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
   Packet: `docs/k3-step-z-flip-checklist.md` (mirrored from SLIDE) and
   SLIDE `node scripts/k3-step-z-flip-plan.mjs --dry-run`.

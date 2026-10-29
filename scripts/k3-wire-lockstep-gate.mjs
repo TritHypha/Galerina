@@ -18,6 +18,7 @@ const FIXTURE_GIT_BLOB = "eb8dfa7fe83857a4ef7cf4e6d0ca2bb4308d0c32";
 const CAP = 1000000;
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
+const REMOVAL_UNIX_S = 1800230400;
 const FRAME_HEADER_VERSION = 1;
 const FIXTURE_SCHEMA_VERSION = 16;
 
@@ -150,9 +151,29 @@ async function main() {
     verifyK3WireVersionCarrier,
     verifyReceiptK3AlertEvidence,
     k3ExternalVerdictOut,
+    LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+    LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+    K3_LEGACY_ZERO_REMOVAL_UNIX_S,
+    K3_BRIDGE_SUNSET_ALERT_UNIX_S,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
+  if (LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH !== EXPIRY) {
+    refuse(`slide expiry epoch ${LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH} != ${EXPIRY}`);
+    return;
+  }
+  if (LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S !== EXPIRY_UNIX_S) {
+    refuse(`slide expiry unix ${LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S} != ${EXPIRY_UNIX_S}`);
+    return;
+  }
+  if (K3_BRIDGE_SUNSET_ALERT_UNIX_S !== EXPIRY_UNIX_S) {
+    refuse(`slide effective alert unix ${K3_BRIDGE_SUNSET_ALERT_UNIX_S} != ${EXPIRY_UNIX_S}`);
+    return;
+  }
+  if (K3_LEGACY_ZERO_REMOVAL_UNIX_S !== REMOVAL_UNIX_S) {
+    refuse(`slide removal unix ${K3_LEGACY_ZERO_REMOVAL_UNIX_S} != ${REMOVAL_UNIX_S}`);
+    return;
+  }
   const pin = k3ParseSerialInstantUnixS("2026-10-27T15:45Z");
   if (pin !== 1793115900) {
     refuse(`serial pin ${pin} != 1793115900`);

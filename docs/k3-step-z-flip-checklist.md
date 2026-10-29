@@ -15,8 +15,13 @@ already emits UNKNOWN as -128.
   matches base.
 - Confirm SLIDE producer-carrier inventory has zero unrecorded callers.
 - Confirm sunset alerts stay silent on an injected clock before
-  `LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S` / `K3_LEGACY_ZERO_REMOVAL_UNIX_S`
-  (2027-01-18).
+  `K3_BRIDGE_SUNSET_ALERT_UNIX_S` (effective 2027-01-01T00:00:00Z =
+  `LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S`). Named removal is 2027-01-18
+  (`K3_LEGACY_ZERO_REMOVAL_UNIX_S`). `LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH`
+  is 20261231 (the day before the effective unix instant).
+- Confirm SLIDE `node scripts/k3-bridge-sunset-check.mjs` exits 0 on the
+  live process clock (N-be). Lockstep checks SLIDE expiry/removal unix
+  against Galerina's legacy-0 dates.
 
 ## Who flips
 
