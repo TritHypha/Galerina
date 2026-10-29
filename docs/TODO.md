@@ -315,16 +315,28 @@ Open follow-ups (low; none blocks the merged rows):
   `externalOutputs` (unknown-today 0, unknown-stepz -128, allow 1, deny
   -1) identical bytes both repos. `K3_WIRE_HEADER_VERSION` stays 1.
   UNKNOWN=-128. option-B and strong Kleene unchanged.
+- [x] **K3-ZR** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `e287e3492` (MEM-R3) as a merge commit (N-ao). Did not
+  edit `packages/fungi/memory`. SLIDE N-am goldens 9/9 through real
+  entry points; copy-only Step Z rehearsal; readiness
+  `rehearsalScript` true and `goldenPinnedSites` `9/9`. cargo
+  `k3fp_external_verdict_out_e2e` already covers AUTH (d); no new
+  cargo test. Process constants stay true/true/false. Fixture schema 16.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
   Readiness required: `legacyUnknownZeroReads` 0,
   `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
-  `f5RoutedSites` complete (`9/9`), `externalWireOutputs` false.
+  `f5RoutedSites` complete (`9/9`), `goldenPinnedSites` `9/9`,
+  `rehearsalScript` present true, `externalWireOutputs` false.
   Order: (1) `LEGACY_UNKNOWN_ZERO_BRIDGE = false`, (2)
   `ABSENT_CARRIER_FALLBACK_BRIDGE = false`, (3)
   `K3_EXTERNAL_WIRE_OUTPUTS = true`. Delete nothing.
   Rollback: restore the three constants to true / true / false.
   Keep legacy-0 removal (by 2027-01-18), absent-carrier sunset and F5
   OPEN until the flip. Do not touch `packages/fungi/memory`.
+  K3-ZR copy-only rehearsal (SLIDE `scripts/k3-step-z-rehearsal.mjs`):
+  base 291/0/10/303; step1 256/35/10; step2 215/76/10; step3 199/92/10;
+  rollback matches base. OPEN-ZR-K3R-7 and OPEN-ZR-F5-CUMULATIVE live on
+  the SLIDE TODO. Do not touch `packages/fungi/memory`.
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 
