@@ -22,7 +22,10 @@ const DOCS = join(ROOT, "docs");
 const MARKER = "emitter cannot lower";
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
-const EMITTER_AFTER = "77fa9e53de89816e3ee9b10a4cda67d76d584b0195b330f9367feb0e48b8fdf7";
+// Re-pin: K3C-2 wat-emitter wire-contract (-128 / !Verdict fail-closed) landed on
+// main as merge d7652f72b of grok/k3c2-notes-20261028 (source commit f6fdad4ef).
+// Previous pin 77fa9e53 was the pre-K3C-2 emitter. STACKED_EMITTER stays the pre-product pin.
+const EMITTER_AFTER = "662975f236bb8253d96753805ee14d8d76d899950256a4762eb299d69b969c7d";
 const STACKED_EMITTER = "62f53d58b86ac8e0158428c37061b78d332cefa5466205bb5cd142f209e3a0eb";
 
 const STAGE_HASHES = {
@@ -428,11 +431,13 @@ contract { effects {} }
 });
 
 describe("T7 honesty pin nested Interpreter shares host state", () => {
-  it("step:* wording is SIMULATED; runNestedFlow shares enforcer/capabilityHost/runtimeOptions/stepBudget; drcm.dwi_allocated; stdlib :1512/:1557", () => {
+  it("step:* wording is simulated; runNestedFlow shares enforcer/capabilityHost/runtimeOptions/stepBudget; drcm.dwi_allocated; stdlib :1634/:1701", () => {
     const src = interpSrc();
     const ls = linesOf(src);
-    assert.equal(ls[3196].includes("isolation is SIMULATED"), true, ls[3196]);
-    assert.equal(ls[3196].includes("shared enforcer, capability host and step budget"), true, ls[3196]);
+    // Line pins moved with K3C-2 interpreter message edits on main d7652f72b
+    // (source f6fdad4ef / 4b82f91ae). Same facts, current lines.
+    assert.equal(ls[3152].includes("isolation is simulated"), true, ls[3152]);
+    assert.equal(ls[3153].includes("shared-nothing isolation"), true, ls[3153]);
     const stepBlock = src.slice(src.indexOf("`step:flowName(args)`"), src.indexOf("`step:flowName(args)`") + 900);
     assert.equal(stepBlock.includes("isolation is simulated"), true);
     assert.equal(stepBlock.includes("drcm.dwi_allocated"), true);
@@ -440,8 +445,8 @@ describe("T7 honesty pin nested Interpreter shares host state", () => {
     const nested = src.slice(src.indexOf("private async runNestedFlow"), src.indexOf("private async runNestedFlow") + 1800);
     assert.equal(nested.includes("new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions"), true);
     assert.equal(nested.includes("nested.stepBudget = this.stepBudget"), true);
-    assert.equal(ls[1511].includes("sub.stepBudget = this.stepBudget"), true, ls[1511]);
-    assert.equal(ls[1556].includes("sub.stepBudget = this.stepBudget"), true, ls[1556]);
+    assert.equal(ls[1633].includes("sub.stepBudget = this.stepBudget"), true, ls[1633]);
+    assert.equal(ls[1700].includes("sub.stepBudget = this.stepBudget"), true, ls[1700]);
   });
 });
 

@@ -1867,14 +1867,16 @@ contract {
 }
 
 // Look up a static constant by name; returns the value String or "" when absent.
-pure flow resolveStatic(env: StaticEnv, name: String) -> String
+// Parameter is `staticEnv`, never `env`: interpreter.ts resolveCapabilityEffect
+// maps any `env.<member>` fullName to secret.read (0f949c406).
+pure flow resolveStatic(staticEnv: StaticEnv, name: String) -> String
 contract {
   intent { "Return the compile-time value of a static constant, or empty string when not found." }
 }
 {
   mut i: Int = 0
-  while i < env.entries.count() {
-    let eOpt = env.entries.get(i)
+  while i < staticEnv.entries.count() {
+    let eOpt = staticEnv.entries.get(i)
     match eOpt {
       Some(e) => {
         if e.name == name { return e.value }
@@ -1961,14 +1963,16 @@ contract {
 }
 
 // Look up the bitmask for a REGISTER.field pair; returns -1 when not found.
-pure flow resolveBitfieldAccess(env: BitfieldEnv, register: String, field: String) -> Int
+// Parameter is `bitfieldEnv`, never `env`: interpreter.ts resolveCapabilityEffect
+// maps any `env.<member>` fullName to secret.read (0f949c406).
+pure flow resolveBitfieldAccess(bitfieldEnv: BitfieldEnv, register: String, field: String) -> Int
 contract {
   intent { "Return the bitmask for a bitfield field access, or -1 when the REGISTER.field is unknown." }
 }
 {
   mut i: Int = 0
-  while i < env.entries.count() {
-    let eOpt = env.entries.get(i)
+  while i < bitfieldEnv.entries.count() {
+    let eOpt = bitfieldEnv.entries.get(i)
     match eOpt {
       Some(e) => {
         if e.register == register {

@@ -79,7 +79,10 @@ contract {
 //   GIRStmt op: "store" | "ret" | "branch" | "loop" | "eval" | "check_k3"
 // Values include Int/Bool/Verdict. The environment is an append-only assoc list of
 // Bindings; envLookup returns the most-recent binding for a name (so a
-// later `store` shadows an earlier one). Cross-flow `call` evaluation is
+// later `store` shadows an earlier one). The lookup/bind parameter is
+// `bindings`, never `env`: interpreter.ts resolveCapabilityEffect maps
+// any `env.<method>` fullName to secret.read (0f949c406), which returns
+// the Int 0 sentinel and trips ERR_K3_SUBJECT_TYPE at check_k3. Cross-flow `call` evaluation is
 // resolved against a flow table threaded through the evaluator. A missing
 // callee or arity mismatch is a hard terminal fault, never a default value.
 // ════════════════════════════════════════════════════════════
@@ -222,13 +225,13 @@ contract { intent { "Read a named field from a record runtime value." } }
 }
 
 // Look up the most-recent binding of `name`; rtInt(0) when unbound.
-pure flow envLookup(env: Array<Binding>, name: String) -> RtValue
+pure flow envLookup(bindings: Array<Binding>, name: String) -> RtValue
 contract { intent { "Return the most-recently-bound value for name, or Int 0 if unbound." } }
 {
   mut result: RtValue = rtInt(0)
   mut i: Int = 0
-  while i < env.count() {
-    let bOpt = env.get(i)
+  while i < bindings.count() {
+    let bOpt = bindings.get(i)
     match bOpt {
       Some(b) => {
         if b.name == name { result = b.val }
@@ -242,10 +245,10 @@ contract { intent { "Return the most-recently-bound value for name, or Int 0 if 
 }
 
 // Bind name → value (append; later bindings shadow earlier ones on lookup).
-pure flow envBind(env: Array<Binding>, name: String, v: RtValue) -> Array<Binding>
+pure flow envBind(bindings: Array<Binding>, name: String, v: RtValue) -> Array<Binding>
 contract { intent { "Append a name→value binding to the environment." } }
 {
-  return env.append(Binding { name: name, val: v })
+  return bindings.append(Binding { name: name, val: v })
 }
 
 // Apply a binary opcode to two runtime values.

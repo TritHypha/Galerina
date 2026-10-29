@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -19,6 +19,28 @@ const SRC = join(__dir, "../src");
 const SH = join(SRC, "self-hosted");
 const ROOT = join(__dir, "../../..");
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
+const ZONE_HELPER = join("tools", "grok-probe", "q8-codex-zone-hash.mjs");
+
+function resolveAgentsRoot(root) {
+  if (typeof process.env.AGENTS_ROOT === "string" && process.env.AGENTS_ROOT.trim()) {
+    return process.env.AGENTS_ROOT;
+  }
+  let current = root;
+  for (;;) {
+    const candidates = [
+      join(dirname(current), "AGENTS"),
+      join(current, "AGENTS"),
+      join(current, "Documents", "GitHub", "AGENTS"),
+    ];
+    for (const candidate of candidates) {
+      if (existsSync(join(candidate, ZONE_HELPER))) return candidate;
+    }
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  throw new Error("missing AGENTS path; set AGENTS_ROOT to the AGENTS checkout that owns tools/grok-probe/q8-codex-zone-hash.mjs");
+}
 
 const ZONE = {
   Z1: "7db668236da13ad6e898bd7ab125e67c096b8b4ca2aeea861698fb1c2a649c9f",
@@ -288,7 +310,7 @@ describe("T14 Codex historical and current zone identities", () => {
     assert.equal(rows[2].sha256, ZONE.Z3);
   });
   it("current regions match the separately reviewed packing and length revision", () => {
-    const rows = runCodexZoneHashes(ROOT);
+    const rows = runCodexZoneHashes(ROOT, resolveAgentsRoot(ROOT));
     assert.deepEqual(rows.map(row => row.sha256), Object.values(CURRENT_CODEX_ZONE));
   });
 });

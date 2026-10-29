@@ -179,6 +179,14 @@ NON_AUTHORIZING**. The 2026-10-22 status list below is historical.
   `inference-governance.fungi:7` documents UNKNOWN as the -128 wire value.
   `k3-copies-red.test.mjs` todos dropped and pass, plus sign-extension,
   `load8_s`, serialization, and unsigned-read fuzz.
+- [x] **K3-SH:** rename self-hosted `env` parameters that make `env.<method>`
+  look like `secret.read` (interpreter.ts:3300 / 0f949c406). `runtime.fungi`
+  `envLookup`/`envBind` take `bindings`; `type-checker.fungi` `resolveStatic`
+  / `resolveBitfieldAccess` take `staticEnv` / `bitfieldEnv`. TS interpreter
+  stays frozen. `slide-r1-selfhost-k3` check_k3 no longer trips
+  `ERR_K3_SUBJECT_TYPE` on the Int 0 sentinel. wat-q5n / wat-q6 /
+  wat-q2-parked7 re-pinned for the K3C-2 wat-emitter wire-contract change
+  (`f6fdad4ef`) plus this fungi rename.
 - [ ] **SLIDE-K3-SUNSET at Step Z:** before SLIDE becomes the default execution
   path, remove SLIDE/VOK legacy-0 acceptance and switch SLIDE's external
   outputs from 0 to -128 (owner F5: they stay 0 until Step Z). P2 expiry is
