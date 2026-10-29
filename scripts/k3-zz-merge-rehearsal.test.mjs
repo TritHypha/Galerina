@@ -1,6 +1,6 @@
 // K3-ZZ: merge rehearsal with synthetic temp repos.
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -86,6 +86,40 @@ describe("K3-ZZ merge rehearsal synthetic", () => {
       });
       assert.equal(report.verdict, "NOT_READY");
       assert.equal(report.failingStep, "lock");
+    } finally {
+      rmSync(gal, { recursive: true, force: true });
+      rmSync(sld, { recursive: true, force: true });
+      rmSync(work, { recursive: true, force: true });
+    }
+  });
+
+  it("ZZ-R3 source origin/main SHA is pinned over clone local main", () => {
+    const gal = initRepo("k3zz-gal3-");
+    const sld = initRepo("k3zz-sld3-");
+    const work = mkdtempSync(join(tmpdir(), "k3zz-work3-"));
+    try {
+      const mainSha = git(gal, ["rev-parse", "main"]).stdout.trim();
+      const rootSha = git(gal, ["rev-list", "--max-parents=0", "HEAD"]).stdout.trim();
+      git(gal, ["update-ref", "refs/remotes/origin/main", mainSha]);
+      git(gal, ["branch", "-f", "main", rootSha]);
+      const sMain = git(sld, ["rev-parse", "main"]).stdout.trim();
+      const sRoot = git(sld, ["rev-list", "--max-parents=0", "HEAD"]).stdout.trim();
+      git(sld, ["update-ref", "refs/remotes/origin/main", sMain]);
+      git(sld, ["branch", "-f", "main", sRoot]);
+      const report = runMergeRehearsal({
+        galerinaSrc: gal,
+        slideSrc: sld,
+        workDir: work,
+        galMainRef: "origin/main",
+        slideMainRef: "origin/main",
+        galTopicRef: "topic",
+        slideTopicRef: "topic",
+        runPostMerge({ galerina, slide }) {
+          const ok = existsSync(join(galerina, "c.txt")) && existsSync(join(slide, "c.txt"));
+          return { verdict: ok ? "GREEN" : "RED", ok };
+        },
+      });
+      assert.equal(report.verdict, "READY");
     } finally {
       rmSync(gal, { recursive: true, force: true });
       rmSync(sld, { recursive: true, force: true });

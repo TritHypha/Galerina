@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // K3-ZZ merge rehearsal: --no-ff in temp clones only. Never pushes.
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -38,6 +38,29 @@ function cloneInto(src, dest) {
     stdout: result.stdout ?? "",
     stderr: result.stderr ?? "",
   };
+}
+
+function resolveSha(cwd, ref) {
+  const result = git(cwd, ["rev-parse", ref]);
+  const sha = result.stdout.trim();
+  if (result.status === 0 && /^[0-9a-f]{40}$/u.test(sha)) return sha;
+  return "";
+}
+
+function pinOriginMain(cloneDir, sha) {
+  if (sha === "") return;
+  git(cloneDir, ["update-ref", "refs/remotes/origin/main", sha]);
+}
+
+function junctionIfPresent(srcRoot, cloneDir, rel) {
+  const from = join(srcRoot, rel);
+  const to = join(cloneDir, rel);
+  if (!existsSync(from) || existsSync(to)) return;
+  try {
+    symlinkSync(from, to, "junction");
+  } catch {
+    // Best-effort for gitignored deps. Post-merge stays fail-closed.
+  }
 }
 
 function mergeTopicIntoMain(cloneDir, mainRef, topicSha) {
@@ -81,6 +104,8 @@ export function runMergeRehearsal({
   const slideClone = join(dest, "slide");
   const galTopic = git(galerinaSrc, ["rev-parse", galTopicRef]).stdout.trim();
   const slideTopic = git(slideSrc, ["rev-parse", slideTopicRef]).stdout.trim();
+  const galMainSha = resolveSha(galerinaSrc, galMainRef);
+  const slideMainSha = resolveSha(slideSrc, slideMainRef);
   const galCl = cloneInto(galerinaSrc, galClone);
   if (galCl.status !== 0) {
     return Object.freeze({ verdict: "NOT_READY", failingStep: "clone-galerina", ok: false, stderr: galCl.stderr });
@@ -89,7 +114,12 @@ export function runMergeRehearsal({
   if (slideCl.status !== 0) {
     return Object.freeze({ verdict: "NOT_READY", failingStep: "clone-slide", ok: false, stderr: slideCl.stderr });
   }
-  const galMerge = mergeTopicIntoMain(galClone, galMainRef, galTopic);
+  // clone --local maps origin/main to the source local main, which can lag GitHub.
+  pinOriginMain(galClone, galMainSha);
+  pinOriginMain(slideClone, slideMainSha);
+  junctionIfPresent(galerinaSrc, galClone, "node_modules");
+  junctionIfPresent(slideSrc, slideClone, "node_modules");
+  const galMerge = mergeTopicIntoMain(galClone, galMainSha || galMainRef, galTopic);
   if (galMerge.ok !== true) {
     return Object.freeze({
       verdict: "NOT_READY",
@@ -98,7 +128,7 @@ export function runMergeRehearsal({
       stderr: galMerge.stderr,
     });
   }
-  const slideMerge = mergeTopicIntoMain(slideClone, slideMainRef, slideTopic);
+  const slideMerge = mergeTopicIntoMain(slideClone, slideMainSha || slideMainRef, slideTopic);
   if (slideMerge.ok !== true) {
     return Object.freeze({
       verdict: "NOT_READY",
