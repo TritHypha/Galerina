@@ -388,6 +388,17 @@ Open follow-ups (low; none blocks the merged rows):
   `scripts/k3-merge-rehearsal.mjs` in temp clones only. cargo none
   added. Fixture schema 16. Process constants stay true/true/false.
   Flip stays Phillip's call. Merge stays Grok Bot.
+- [x] **K3-M1** (2026-10-29) on `grok/k3-frame-epoch-20261028`. N-bo
+  `scripts/k3-main-catchup.mjs` `--no-ff` merge of origin/main
+  (MEM-R9 `d78df0bbc` or newer); generated-only `build/code-index/*`
+  resolved by regen, then lock `--write` / `--check`. Did not edit
+  `packages/fungi/memory` or vok-authority MEM-R9 content. N-bp clone
+  `--no-hardlinks` fallback, junction cleanup, merge-step conflicted
+  paths + shas. N-bq warm clone `git status`; ETIMEDOUT is UNKNOWN
+  (exit 2). Merge-day `scripts/k3-merge-day.mjs --dry-run` prints Grok
+  Bot merge commands and does not merge. cargo none added. Fixture
+  schema 16. Process constants stay true/true/false. Flip stays
+  Phillip's call. Merge stays Grok Bot.
 - [ ] **OPEN non-K3** SLIDE v2c/v2d Option-wrap recorded in SLIDE
   `tests/known-red-baseline.json`. Not a K3 row.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).

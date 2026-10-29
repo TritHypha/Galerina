@@ -9,22 +9,40 @@ flip stays Phillip's call. Do not edit `packages/fungi/memory`.
 KEEP 0 UNTIL STEP Z. SuperGrok does not merge to main. Do not edit
 `packages/fungi/memory`.
 
-1. Backup from the SLIDE checkout:
+0. Main catch-up on each topic (N-bo):
+   `node scripts/k3-main-catchup.mjs --slide-root=<SLIDE>`
+   Fetches, `--no-ff` merges current `origin/main`. Generated-only
+   conflicts under `build/code-index/*` are resolved by regenerating
+   code-index (never hand-edit) then lock `--write` / `--check`. Any
+   other conflicted path is RED named and the merge is aborted.
+1. Probe the merge-day sequence without merging (N-bo follow-on):
+   `node scripts/k3-merge-day.mjs --dry-run --slide-root=<SLIDE> --out=D:\Backups\pre-k3-merge-<YYYYMMDD>`
+   Runs backup `--dry-run`, both merge-readiness scripts, and the
+   merge rehearsal, then prints the exact commands Grok Bot would run.
+   Without `--dry-run` the script returns NOT_READY.
+2. Backup from the SLIDE checkout:
    `node scripts/k3-pre-merge-backup.mjs --out=D:\Backups\pre-k3-merge-<YYYYMMDD> --galerina=<Galerina topic> --slide=<SLIDE topic>`
-2. Merge rehearsal READY:
+3. Merge rehearsal READY:
    `node scripts/k3-merge-rehearsal.mjs --slide-root=<SLIDE>`
    (temp clones only, `--no-ff`, never pushes). Resolves `origin/main`
    in the source (clone `origin/main` is the source local `main`) and
    junctions package `node_modules` and the prebuilt core-compiler `dist`
-   after the merge so code-index/prebuild can run (N-bd).
-3. Grok Bot's separate merge call (Galerina topic onto Galerina main,
+   after the merge so code-index/prebuild can run (N-bd). Falls back to
+   `git clone --no-hardlinks` when `--local` fails across volumes (N-bp).
+   Unlinks junctions before cleanup; cleanup errors never change the
+   verdict or exit; leftover dir is reported. Merge NOT_READY carries
+   conflicted paths and both main and head shas. Warms each clone with
+   `git status` before the post-merge check; a spawn timeout or
+   ETIMEDOUT is UNKNOWN (exit 2), distinct from RED (N-bq).
+4. Grok Bot's separate merge call (Galerina topic onto Galerina main,
    then SLIDE topic onto SLIDE main).
-4. Post-merge check:
+5. Post-merge check:
    `node scripts/k3-post-merge-check.mjs --slide-root=<SLIDE>`
    (lockstep, code-index --check, lock --check, prebuild + kleene-pin,
-   both merge-readiness scripts, SLIDE whole-dir baseline). Fixture
-   schema stays 16 unless a later row adds a row, then 17 with
-   identical bytes in both repos.
+   both merge-readiness scripts, SLIDE whole-dir baseline). Timeout or
+   ETIMEDOUT in any step is UNKNOWN with the step and reason (exit 2);
+   RED is still exit 1. Fixture schema stays 16 unless a later row adds
+   a row, then 17 with identical bytes in both repos.
 
 ## Backup (before either merge)
 

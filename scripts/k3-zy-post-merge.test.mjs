@@ -51,6 +51,28 @@ describe("K3-ZY post-merge check injected runner", () => {
     assert.equal(report.failingStep, "gal-merge-readiness");
   });
 
+  it("M1-G1 git spawn ETIMEDOUT is UNKNOWN distinct from RED", () => {
+    const report = runPostMergeCheck({
+      slideRoot: "C:\\injected-slide",
+      runStep(step) {
+        if (step.id === "lock") {
+          return {
+            id: step.id,
+            status: null,
+            stdout: "",
+            stderr: "Git ls-files failed ... ETIMEDOUT",
+            errorCode: "ETIMEDOUT",
+          };
+        }
+        return { id: step.id, status: 0, stdout: "", stderr: "" };
+      },
+    });
+    assert.equal(report.verdict, "UNKNOWN");
+    assert.equal(report.ok, false);
+    assert.equal(report.failingStep, "lock");
+    assert.equal(report.reason, "timeout: lock");
+  });
+
   it("ZY-G3 missing slide-root is RED", () => {
     const report = runPostMergeCheck({
       runStep() {

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 
-import { runMergeRehearsal } from "./k3-merge-rehearsal.mjs";
+import { cleanupWorkDir, cloneInto, runMergeRehearsal } from "./k3-merge-rehearsal.mjs";
 
 function git(cwd, args) {
   const result = spawnSync("git", ["-c", "commit.gpgsign=false", ...args], {
@@ -120,6 +120,80 @@ describe("K3-ZZ merge rehearsal synthetic", () => {
         },
       });
       assert.equal(report.verdict, "READY");
+    } finally {
+      rmSync(gal, { recursive: true, force: true });
+      rmSync(sld, { recursive: true, force: true });
+      rmSync(work, { recursive: true, force: true });
+    }
+  });
+
+  it("M1-R1 clone --local failure falls back to --no-hardlinks", () => {
+    const calls = [];
+    const dest = mkdtempSync(join(tmpdir(), "k3m1-clone-"));
+    try {
+      const report = cloneInto("src", join(dest, "out"), {
+        spawnClone(args) {
+          calls.push(args.slice());
+          if (args.includes("--local")) {
+            return { status: 1, stdout: "", stderr: "fatal: Improper link", error: "" };
+          }
+          return { status: 0, stdout: "", stderr: "", error: "" };
+        },
+      });
+      assert.equal(report.mode, "no-hardlinks");
+      assert.equal(report.status, 0);
+      assert.equal(calls[0].includes("--local"), true);
+      assert.equal(calls[1].includes("--no-hardlinks"), true);
+    } finally {
+      rmSync(dest, { recursive: true, force: true });
+    }
+  });
+
+  it("M1-R2 cleanup EPERM reports leftoverDir and does not throw", () => {
+    const dir = mkdtempSync(join(tmpdir(), "k3m1-clean-"));
+    const cleaned = cleanupWorkDir(dir, {
+      removeFn() {
+        const err = new Error("EPERM: operation not permitted");
+        err.code = "EPERM";
+        throw err;
+      },
+    });
+    assert.equal(cleaned.cleaned, false);
+    assert.equal(cleaned.leftoverDir, dir);
+    assert.equal(/EPERM/u.test(cleaned.cleanupError), true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("M1-R3 merge NOT_READY carries conflicted paths and both shas", () => {
+    const gal = initRepo("k3m1-conf-g-");
+    const sld = initRepo("k3m1-conf-s-");
+    const work = mkdtempSync(join(tmpdir(), "k3m1-conf-w-"));
+    try {
+      git(gal, ["checkout", "main"]);
+      writeFileSync(join(gal, "a.txt"), "main-change\n");
+      git(gal, ["add", "a.txt"]);
+      git(gal, ["commit", "-m", "main a"]);
+      git(gal, ["checkout", "topic"]);
+      writeFileSync(join(gal, "a.txt"), "topic-change\n");
+      git(gal, ["add", "a.txt"]);
+      git(gal, ["commit", "-m", "topic a"]);
+      const report = runMergeRehearsal({
+        galerinaSrc: gal,
+        slideSrc: sld,
+        workDir: work,
+        galMainRef: "origin/main",
+        slideMainRef: "origin/main",
+        galTopicRef: "topic",
+        slideTopicRef: "topic",
+        runPostMerge() {
+          return { verdict: "GREEN", ok: true };
+        },
+      });
+      assert.equal(report.verdict, "NOT_READY");
+      assert.equal(report.failingStep, "galerina-merge");
+      assert.equal(report.conflictedPaths.includes("a.txt"), true);
+      assert.equal(/^[0-9a-f]{40}$/u.test(report.main), true);
+      assert.equal(/^[0-9a-f]{40}$/u.test(report.head), true);
     } finally {
       rmSync(gal, { recursive: true, force: true });
       rmSync(sld, { recursive: true, force: true });

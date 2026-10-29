@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // K3-ZZ merge rehearsal: --no-ff in temp clones only. Never pushes.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -27,17 +27,67 @@ function git(cwd, args) {
   };
 }
 
-function cloneInto(src, dest) {
-  mkdirSync(dirname(dest), { recursive: true });
-  const result = spawnSync("git", ["clone", "--local", src, dest], {
-    encoding: "utf8",
-    timeout: 120000,
-  });
+function spawnGitClone(args) {
+  const result = spawnSync("git", args, { encoding: "utf8", timeout: 120000 });
   return {
     status: result.status,
     stdout: result.stdout ?? "",
     stderr: result.stderr ?? "",
+    error: result.error?.code ?? "",
   };
+}
+
+export function cloneInto(src, dest, { spawnClone = spawnGitClone } = {}) {
+  mkdirSync(dirname(dest), { recursive: true });
+  const local = spawnClone(["clone", "--local", src, dest]);
+  if (local.status === 0) return { ...local, mode: "local" };
+  try {
+    rmSync(dest, { recursive: true, force: true });
+  } catch {
+    // dest may not exist after a failed --local clone
+  }
+  const noHard = spawnClone(["clone", "--no-hardlinks", src, dest]);
+  return { ...noHard, mode: "no-hardlinks", localStderr: local.stderr };
+}
+
+export function unlinkJunctionsUnder(dir) {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const path = join(dir, entry.name);
+    let st;
+    try {
+      st = lstatSync(path);
+    } catch {
+      continue;
+    }
+    if (st.isSymbolicLink()) {
+      try { unlinkSync(path); } catch { /* rmSync still runs */ }
+      continue;
+    }
+    if (st.isDirectory()) unlinkJunctionsUnder(path);
+  }
+}
+
+export function cleanupWorkDir(dir, { removeFn = rmSync } = {}) {
+  if (typeof dir !== "string" || dir === "") {
+    return Object.freeze({ cleaned: true, leftoverDir: null, cleanupError: null });
+  }
+  try {
+    unlinkJunctionsUnder(dir);
+    removeFn(dir, { recursive: true, force: true });
+    return Object.freeze({ cleaned: true, leftoverDir: null, cleanupError: null });
+  } catch (error) {
+    return Object.freeze({
+      cleaned: false,
+      leftoverDir: dir,
+      cleanupError: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 function resolveSha(cwd, ref) {
@@ -108,9 +158,17 @@ function nodePathFor(srcRoot) {
 }
 
 function mergeTopicIntoMain(cloneDir, mainRef, topicSha) {
+  const mainSha = git(cloneDir, ["rev-parse", mainRef]).stdout.trim();
   const co = git(cloneDir, ["checkout", "-B", "k3-merge-rehearsal-main", mainRef]);
   if (co.status !== 0) {
-    return { ok: false, step: "checkout-main", stderr: co.stderr };
+    return {
+      ok: false,
+      step: "checkout-main",
+      stderr: co.stderr,
+      main: mainSha,
+      head: topicSha,
+      conflictedPaths: [],
+    };
   }
   const merge = git(cloneDir, [
     "-c", "user.name=TritHypha",
@@ -118,10 +176,20 @@ function mergeTopicIntoMain(cloneDir, mainRef, topicSha) {
     "merge", "--no-ff", topicSha, "-m", "k3-merge-rehearsal [skip ci]",
   ]);
   if (merge.status !== 0) {
-    return { ok: false, step: "merge", stderr: merge.stderr };
+    const conflictedPaths = git(cloneDir, ["diff", "--name-only", "--diff-filter=U"])
+      .stdout.split(/\r?\n/u).map((row) => row.trim()).filter(Boolean);
+    git(cloneDir, ["merge", "--abort"]);
+    return {
+      ok: false,
+      step: "merge",
+      stderr: merge.stderr,
+      main: mainSha,
+      head: topicSha,
+      conflictedPaths,
+    };
   }
   const sha = git(cloneDir, ["rev-parse", "HEAD"]).stdout.trim();
-  return { ok: true, sha };
+  return { ok: true, sha, main: mainSha, head: topicSha, conflictedPaths: [] };
 }
 
 export function runMergeRehearsal({
@@ -168,6 +236,9 @@ export function runMergeRehearsal({
       failingStep: `galerina-${galMerge.step}`,
       ok: false,
       stderr: galMerge.stderr,
+      conflictedPaths: Object.freeze(galMerge.conflictedPaths ?? []),
+      main: galMerge.main ?? galMainSha,
+      head: galMerge.head ?? galTopic,
     });
   }
   const slideMerge = mergeTopicIntoMain(slideClone, slideMainSha || slideMainRef, slideTopic);
@@ -177,11 +248,16 @@ export function runMergeRehearsal({
       failingStep: `slide-${slideMerge.step}`,
       ok: false,
       stderr: slideMerge.stderr,
+      conflictedPaths: Object.freeze(slideMerge.conflictedPaths ?? []),
+      main: slideMerge.main ?? slideMainSha,
+      head: slideMerge.head ?? slideTopic,
     });
   }
   // Checkout/merge would drop a pre-merge junction. Link gitignored node_modules after HEAD is merged.
   linkPackageNodeModules(galerinaSrc, galClone);
   linkPackageNodeModules(slideSrc, slideClone);
+  git(galClone, ["status"]);
+  git(slideClone, ["status"]);
   let post;
   if (typeof runPostMerge === "function") {
     post = runPostMerge({ galerina: galClone, slide: slideClone });
@@ -200,20 +276,35 @@ export function runMergeRehearsal({
         env: { ...process.env, NODE_PATH: nodePath },
       },
     );
-    try {
-      post = JSON.parse((spawned.stdout ?? "").trim().split(/\r?\n/u).filter(Boolean).pop() ?? "{}");
-    } catch {
-      post = { verdict: "RED", ok: false, failingStep: "post-merge-parse", status: spawned.status };
-    }
-    if (spawned.status !== 0 && post.ok !== false) {
-      post = { verdict: "RED", ok: false, failingStep: post.failingStep ?? "post-merge", status: spawned.status };
+    const timedOut = spawned.error?.code === "ETIMEDOUT"
+      || spawned.status === null
+      || /ETIMEDOUT/u.test(`${spawned.stderr ?? ""}\n${spawned.stdout ?? ""}`);
+    if (timedOut) {
+      post = {
+        verdict: "UNKNOWN",
+        ok: false,
+        failingStep: "post-merge",
+        reason: "timeout: post-merge",
+        status: spawned.status,
+      };
+    } else {
+      try {
+        post = JSON.parse((spawned.stdout ?? "").trim().split(/\r?\n/u).filter(Boolean).pop() ?? "{}");
+      } catch {
+        post = { verdict: "RED", ok: false, failingStep: "post-merge-parse", status: spawned.status };
+      }
+      if (spawned.status !== 0 && post.ok !== false) {
+        post = { verdict: "RED", ok: false, failingStep: post.failingStep ?? "post-merge", status: spawned.status };
+      }
     }
   }
   const ready = post?.ok === true || post?.verdict === "GREEN";
+  const unknown = post?.verdict === "UNKNOWN";
   return Object.freeze({
-    verdict: ready ? "READY" : "NOT_READY",
+    verdict: ready ? "READY" : unknown ? "UNKNOWN" : "NOT_READY",
     ok: ready,
     failingStep: ready ? null : (post?.failingStep ?? "post-merge"),
+    reason: unknown ? (post?.reason ?? "timeout: post-merge") : undefined,
     galerinaMerged: galMerge.sha,
     slideMerged: slideMerge.sha,
     workDir: dest,
@@ -230,9 +321,18 @@ if (invoked) {
     slideSrc: argValue("--slide-root") || argValue("--slide"),
     workDir: argValue("--work-dir") || undefined,
   });
-  process.stdout.write(`${JSON.stringify(report)}\n`);
+  let leftoverDir = null;
+  let cleanupError = null;
   if (keep !== true && report.workDir) {
-    rmSync(report.workDir, { recursive: true, force: true });
+    const cleaned = cleanupWorkDir(report.workDir);
+    if (cleaned.cleaned !== true) {
+      leftoverDir = cleaned.leftoverDir;
+      cleanupError = cleaned.cleanupError;
+    }
   }
-  process.exitCode = report.ok === true ? 0 : 1;
+  const out = leftoverDir
+    ? { ...report, leftoverDir, cleanupError }
+    : report;
+  process.stdout.write(`${JSON.stringify(out)}\n`);
+  process.exitCode = report.ok === true ? 0 : report.verdict === "UNKNOWN" ? 2 : 1;
 }

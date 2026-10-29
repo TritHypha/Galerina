@@ -99,6 +99,13 @@ export const POST_MERGE_STEPS = Object.freeze([
   }),
 ]);
 
+export function stepIsTimeout(got) {
+  const text = `${got?.errorCode ?? ""}\n${got?.error ?? ""}\n${got?.stderr ?? ""}\n${got?.stdout ?? ""}`;
+  if (got?.errorCode === "ETIMEDOUT") return true;
+  if (got?.status === null && (got?.errorCode || got?.error)) return true;
+  return /ETIMEDOUT/u.test(text);
+}
+
 export function defaultRunStep(step) {
   const spec = step.build(step.slideRoot);
   const result = spawnSync(spec.command, spec.args, {
@@ -113,6 +120,8 @@ export function defaultRunStep(step) {
     status: result.status,
     stdout: result.stdout ?? "",
     stderr: result.stderr ?? "",
+    error: result.error ? String(result.error.message) : "",
+    errorCode: result.error?.code ?? "",
   });
 }
 
@@ -129,7 +138,17 @@ export function runPostMergeCheck({ slideRoot, runStep = defaultRunStep } = {}) 
   for (const def of POST_MERGE_STEPS) {
     const step = { ...def, slideRoot: resolve(slideRoot) };
     const got = runStep(step);
-    steps.push({ id: def.id, status: got.status });
+    const timedOut = stepIsTimeout(got);
+    steps.push({ id: def.id, status: got.status, unknown: timedOut || undefined });
+    if (timedOut) {
+      return Object.freeze({
+        verdict: "UNKNOWN",
+        failingStep: def.id,
+        ok: false,
+        reason: `timeout: ${def.id}`,
+        steps: Object.freeze(steps),
+      });
+    }
     if (got.status !== 0) {
       return Object.freeze({
         verdict: "RED",
@@ -152,5 +171,5 @@ const invoked = process.argv[1] !== undefined
 if (invoked) {
   const report = runPostMergeCheck({ slideRoot: argValue("--slide-root") });
   process.stdout.write(`${JSON.stringify(report)}\n`);
-  process.exitCode = report.ok === true ? 0 : 1;
+  process.exitCode = report.ok === true ? 0 : report.verdict === "UNKNOWN" ? 2 : 1;
 }
