@@ -370,9 +370,21 @@ Open follow-ups (low; none blocks the merged rows):
   Lockstep checks SLIDE expiry/removal unix against Galerina dates.
   cargo none added. Fixture schema 16. Process constants stay
   true/true/false. Flip stays Phillip's call. Merge stays Grok Bot.
+  ZX-4 is designed to go red from 2027-01-01T00:00:00Z while a bridge
+  is still true; that red is the sunset alert, not a regression.
+- [x] **K3-ZY** (2026-10-29) on `grok/k3-frame-epoch-20261028`. No
+  Galerina merge (origin/main still `ec33550f5`). Did not edit
+  `packages/fungi/memory`. N-bh merge-tree `--write-tree --name-only`,
+  N-bi `GALERINA_ROOT` documented, N-bj ZX-4 red-by-design, N-bk date
+  comment next to lockstep constants, post-merge runner
+  `scripts/k3-post-merge-check.mjs`. cargo none added. Fixture schema
+  16. Process constants stay true/true/false. Flip stays Phillip's
+  call. Merge stays Grok Bot.
 - [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
   Packet: `docs/k3-step-z-flip-checklist.md` (mirrored from SLIDE) and
   SLIDE `node scripts/k3-step-z-flip-plan.mjs --dry-run`.
+  ZX-4 goes red from 2027-01-01T00:00:00Z while a bridge is true by
+  design (sunset alert, not a regression).
   Readiness required: `legacyUnknownZeroReads` 0,
   `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
   `f5RoutedSites` complete (`9/9`), `goldenPinnedSites` `9/9`,

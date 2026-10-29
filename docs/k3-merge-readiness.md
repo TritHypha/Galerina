@@ -9,26 +9,37 @@ flip stays Phillip's call. Do not edit `packages/fungi/memory`.
 1. Galerina topic `grok/k3-frame-epoch-20261028` onto Galerina main.
 2. SLIDE topic `grok/slide-k3-frame-epoch-20261028` onto SLIDE main.
 3. Cross-repo lockstep after each merge:
-   `node scripts/k3-wire-lockstep-gate.mjs --slide-root=<SLIDE checkout>`
+   `node scripts/k3-post-merge-check.mjs --slide-root=<SLIDE checkout>`
    Fixture schema stays 16 unless a later row adds a row, then 17 with
    identical bytes in both repos.
 
 ## Backup (before either merge)
 
-Verified git bundle plus sha256 manifest:
+From the SLIDE checkout:
 
 ```
-D:\Backups\pre-k3-merge-<YYYYMMDD>\
-  galerina.bundle
-  slide.bundle
-  SHA256SUMS
+node scripts/k3-pre-merge-backup.mjs --out=D:\Backups\pre-k3-merge-<YYYYMMDD> --galerina=<Galerina topic> --slide=<SLIDE topic>
 ```
 
-Create with `git bundle create` from each topic HEAD, then sha256 of
-every file into `SHA256SUMS`. Verify with `git bundle verify` before
-the merge.
+`--dry-run` prints the plan only. A non-empty `--out` is refused.
+Writes `galerina.bundle`, `slide.bundle`, and `SHA256SUMS`, then
+`git bundle verify` on each. Tests use synthetic temp repos and never
+write `D:\Backups`.
+
+## GALERINA_ROOT for the whole SLIDE tests dir
+
+SLIDE tests `v2c-galerina-conformance`, `v2d-reference-validator`, and
+`checked-fungi-string-membership-compiler` read this Galerina tree.
+Set `GALERINA_ROOT` to the Galerina checkout. Default is `../Galerina`
+relative to the SLIDE root.
 
 ## Lock-step CI after each merge
+
+```
+node scripts/k3-post-merge-check.mjs --slide-root=<SLIDE>
+```
+
+Equivalent steps:
 
 ```
 node scripts/k3-wire-lockstep-gate.mjs --slide-root=<SLIDE>
@@ -64,4 +75,16 @@ These stay OPEN after the topic lands on main:
 Effective sunset-alert date is 2027-01-01T00:00:00Z
 (`LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S` / `K3_BRIDGE_SUNSET_ALERT_UNIX_S`).
 Named removal is 2027-01-18. `LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH` is
-20261231 (the day before that unix instant).
+20261231 (the day before that unix instant). ZX-4 is designed to go
+red from 2027-01-01T00:00:00Z while a bridge is still true; that red
+is the sunset alert, not a regression.
+
+## merge-tree
+
+```
+node scripts/k3-merge-readiness.mjs
+```
+
+Uses `git merge-tree --write-tree --name-only origin/main HEAD`.
+Exit 0 is clean, exit 1 is conflict, other non-zero is UNKNOWN
+fail-closed. This script never merges.

@@ -21,7 +21,9 @@ already emits UNKNOWN as -128.
   is 20261231 (the day before the effective unix instant).
 - Confirm SLIDE `node scripts/k3-bridge-sunset-check.mjs` exits 0 on the
   live process clock (N-be). Lockstep checks SLIDE expiry/removal unix
-  against Galerina's legacy-0 dates.
+  against Galerina's legacy-0 dates. ZX-4 is designed to go red from
+  2027-01-01T00:00:00Z while a bridge is still true; that red is the
+  sunset alert, not a regression.
 
 ## Who flips
 
