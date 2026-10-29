@@ -34,7 +34,7 @@ test("MR3 state: Disposed is final and dispose always disposes", () => {
 });
 
 test("MR3 state: unlisted op or state is 11", () => {
-  expectPacked(stateAfter(7, ST.active, 100), 11, "op 7");
+  expectPacked(stateAfter(9, ST.active, 100), 11, "op 9 (ops 7/8 listed in MR6)");
   expectPacked(stateAfter(-1, ST.active, 100), 11, "op -1");
   expectPacked(stateAfter(OP.has, 4, 100), 11, "state 4");
   expectPacked(stateAfter(OP.has, -1, 100), 11, "state -1");
