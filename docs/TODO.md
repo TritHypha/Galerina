@@ -11,6 +11,10 @@ Handover: `AI-RESTART/HANDOVER-20261029.md`.
 - [ ] Phillip: D-2 re-sign (`f3172a48372bfb23`) then D-3; VOK on-target zero-on-release; H5 PR_SET_DUMPABLE; serial-3 before 2027-01-25.
 - Codex local branches pushed as-is; diverged memory-consolidation pushed as `codex/memory-consolidation-20261007-local-20261029`. Not merged.
 
+## Not for now (deferred)
+
+- [ ] (Deferred, not for now) HTTP/3 support (QUIC) - owner request 2026-10-30; no work scheduled. Related: `quic` is declared-but-not-admitted in `packages-ts/galerina-core-network/TODO.md`.
+
 ## RD-1413/1414/1415 split gate — 2026-10-27
 
 Status sync only; it closes no RD. RD-1413/1414/1415 stay **[!] HOLD /
