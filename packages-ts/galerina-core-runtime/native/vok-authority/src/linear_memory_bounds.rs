@@ -16,8 +16,9 @@
 //! * div_s(MIN, -1) traps (overflow), rem_s(MIN, -1) is 0, any zero divisor traps;
 //! * anything outside the admitted input shape is REFUSED with LMB-001, never guessed.
 //!
-//! The module is pulled into `tests/linear_memory_trap_parity.rs` with `#[path]`
-//! so the crate root (`lib.rs`) is untouched.
+//! Since MEM-R13 the crate root exports it (`pub mod linear_memory_bounds`) for
+//! `lmb_verdict` and the `vok-lmb-check` binary; the parity test still pulls the
+//! same file in with `#[path]`, so both paths check one source.
 
 #![allow(dead_code)]
 

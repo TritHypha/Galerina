@@ -25,6 +25,9 @@ mod k3_wire_u8;
 mod k3_frame_counter;
 mod veo;
 mod assurance;
+/// MEM-R13: exact linear-memory/integer-trap checker (MEM-R9) and its K3 batch verdict.
+pub mod linear_memory_bounds;
+pub mod lmb_verdict;
 
 pub use lattice::{from_lattice, to_lattice};
 pub use k3_frame::{
