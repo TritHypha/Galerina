@@ -423,7 +423,7 @@
       "identity": "@galerina/core-runtime",
       "version": "1.0.0-beta.2",
       "directory": "galerina-core-runtime",
-      "contentDigest": "69683e85ff1b95889970b8a425d1a31ad945bdf811c78d9fa58752fe822795a3",
+      "contentDigest": "aa019a50dd96c3de8234886f56ed43d56556c8c0e6ee335f902427d4f0e5c81d",
       "manifestDigests": [
         {
           "path": "package.json",
@@ -3293,5 +3293,5 @@
       ]
     }
   ],
-  "rootDigest": "dd6c206e8d2a79a1d84a22b0cbd8e6e98aacbe685e0996b851222915f57f5b7f"
+  "rootDigest": "7b63be23896a46c7de9d9bb3c1be19f35ef508ef23860cf2b718daf596eda221"
 }
