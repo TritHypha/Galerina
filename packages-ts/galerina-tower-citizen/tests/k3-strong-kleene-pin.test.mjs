@@ -12,8 +12,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-import { executeFlow, parseProgram } from "../../galerina-core-compiler/dist/index.js";
-import { nativeImages } from "./fixtures/k3-fungi-marshal.mjs";
+import { prebuildK3StrongKleenePin } from "./prebuild-k3-strong-kleene-pin.mjs";
+
+await prebuildK3StrongKleenePin();
+const { executeFlow, parseProgram } = await import("../../galerina-core-compiler/dist/index.js");
+const { nativeImages } = await import("./fixtures/k3-fungi-marshal.mjs");
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(HERE, "fixtures", "k3-strong-kleene.test-only.fungi");

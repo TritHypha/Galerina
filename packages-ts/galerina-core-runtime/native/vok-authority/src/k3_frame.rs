@@ -6,10 +6,15 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
+#[cfg(not(panic = "unwind"))]
+compile_error!(
+    "K3-RX N-n: catch_unwind containment requires panic = unwind; an abort profile defeats it"
+);
+
 use crate::{
     Trit, K3_EPOCH_YMD_MAX, K3_EPOCH_YMD_MIN, K3_WIRE_VERSION_CANONICAL, K3_WIRE_VERSION_LEGACY,
     LEGACY_UNKNOWN_ZERO_BRIDGE, LEGACY_UNKNOWN_ZERO_CAP, LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
-    TRUSTED_CLOCK_CEILING_UNIX_S, TRUSTED_CLOCK_FLOOR_UNIX_S,
+    TRUSTED_CLOCK_CEILING_UNIX_S, TRUSTED_CLOCK_FLOOR_UNIX_S, VOK_TRIT_BARE_LEGACY_ZERO,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -152,6 +157,275 @@ impl K3AlertSink for K3AlertRecorder {
             inner.dropped = inner.dropped.saturating_add(1);
         }
         inner.recent.push(record);
+    }
+}
+
+pub const K3_ALERT_EVIDENCE_SCHEMA: &str = "k3-alert-evidence";
+pub const K3_ALERT_EVIDENCE_VERSION: i32 = 1;
+pub const K3_ALERT_EVIDENCE_REFUSED: &str = "K3_ALERT_EVIDENCE_REFUSED";
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct K3AlertEvidence {
+    pub schema: &'static str,
+    pub version: i32,
+    pub frame_header_version: i32,
+    pub tallies: Vec<(String, u64)>,
+    pub recent_count: u64,
+    pub dropped: u64,
+    pub digest: String,
+    pub canonical: Vec<u8>,
+}
+
+fn hex_lower(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    out
+}
+
+/// Byte-exact canonical JSON for lockstep. No sha2 crate; hashes with crate::sha256.
+pub fn k3_alert_evidence_canonical_bytes(snapshot: &K3AlertSnapshot) -> Option<Vec<u8>> {
+    let mut entries: Vec<(String, u64)> = snapshot
+        .tallies
+        .iter()
+        .map(|(code, alert, count)| (format!("{code}|{alert}"), *count))
+        .collect();
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut tally_body = String::new();
+    for (i, (key, count)) in entries.iter().enumerate() {
+        if i > 0 {
+            tally_body.push(',');
+        }
+        tally_body.push('"');
+        tally_body.push_str(key);
+        tally_body.push_str("\":");
+        tally_body.push_str(&count.to_string());
+    }
+    let text = format!(
+        "{{\"schema\":\"{K3_ALERT_EVIDENCE_SCHEMA}\",\"version\":{K3_ALERT_EVIDENCE_VERSION},\"frameHeaderVersion\":{},\"tallies\":{{{tally_body}}},\"recentCount\":{},\"dropped\":{}}}",
+        snapshot.frame_header_version,
+        snapshot.recent.len(),
+        snapshot.dropped
+    );
+    Some(text.into_bytes())
+}
+
+fn trit_from_canonical_wire(value: i32) -> Option<Trit> {
+    match Trit::decode_canonical(value) {
+        Ok((trit, _)) => Some(trit),
+        Err(_) => None,
+    }
+}
+
+/// Strong Kleene AND on the wire: min over DENY < UNKNOWN < ALLOW.
+pub fn k3_wire_and(a: i32, b: i32) -> Option<i32> {
+    Some(trit_from_canonical_wire(a)?.min(trit_from_canonical_wire(b)?).to_wire())
+}
+
+/// Strong Kleene OR on the wire: max over DENY < UNKNOWN < ALLOW.
+pub fn k3_wire_or(a: i32, b: i32) -> Option<i32> {
+    Some(trit_from_canonical_wire(a)?.max(trit_from_canonical_wire(b)?).to_wire())
+}
+
+/// Strong Kleene NOT on the wire: swaps DENY/ALLOW, keeps UNKNOWN.
+pub fn k3_wire_not(a: i32) -> Option<i32> {
+    Some(match trit_from_canonical_wire(a)? {
+        Trit::Refuse => Trit::Admit,
+        Trit::Admit => Trit::Refuse,
+        Trit::Unknown => Trit::Unknown,
+    }
+    .to_wire())
+}
+
+/// Gate: only ALLOW passes; UNKNOWN and DENY (and junk) refuse as DENY.
+pub fn k3_wire_gate(a: i32) -> i32 {
+    match trit_from_canonical_wire(a) {
+        Some(Trit::Admit) => Trit::Admit.to_wire(),
+        _ => Trit::Refuse.to_wire(),
+    }
+}
+
+pub fn k3_wire_and3(a: i32, b: i32, c: i32) -> Option<i32> {
+    k3_wire_and(k3_wire_and(a, b)?, c)
+}
+
+pub fn k3_alert_evidence(snapshot: &K3AlertSnapshot) -> Result<K3AlertEvidence, &'static str> {
+    let canonical = k3_alert_evidence_canonical_bytes(snapshot).ok_or(K3_ALERT_EVIDENCE_REFUSED)?;
+    let digest = hex_lower(&crate::sha256::sha256(&canonical));
+    let mut tallies: Vec<(String, u64)> = snapshot
+        .tallies
+        .iter()
+        .map(|(code, alert, count)| (format!("{code}|{alert}"), *count))
+        .collect();
+    tallies.sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(K3AlertEvidence {
+        schema: K3_ALERT_EVIDENCE_SCHEMA,
+        version: K3_ALERT_EVIDENCE_VERSION,
+        frame_header_version: snapshot.frame_header_version,
+        tallies,
+        recent_count: snapshot.recent.len() as u64,
+        dropped: snapshot.dropped,
+        digest,
+        canonical,
+    })
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct K3ReceiptAlertEvidenceField {
+    pub schema: String,
+    pub version: i32,
+    pub sha256: String,
+}
+
+fn ct_eq_bytes(left: &[u8], right: &[u8]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+    let mut acc = 0u8;
+    for (a, b) in left.iter().zip(right.iter()) {
+        acc |= a ^ b;
+    }
+    acc == 0
+}
+
+fn sha256_hex_ok(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
+/// VOK verifier: recompute k3-alert-evidence from a snapshot and compare the
+/// receipt field. Missing / extra / malformed / mismatch refuse. No production
+/// authority; reference-path lockstep with SLIDE.
+pub fn verify_receipt_k3_alert_evidence(
+    snapshot: Option<&K3AlertSnapshot>,
+    field: Option<&K3ReceiptAlertEvidenceField>,
+) -> Result<(), &'static str> {
+    match (snapshot, field) {
+        (None, None) => Ok(()),
+        (Some(_), None) => Err("K3_ALERT_EVIDENCE_MISSING"),
+        (None, Some(_)) => Err("K3_ALERT_EVIDENCE_EXTRA"),
+        (Some(snapshot), Some(field)) => {
+            if field.schema != K3_ALERT_EVIDENCE_SCHEMA
+                || field.version != K3_ALERT_EVIDENCE_VERSION
+                || !sha256_hex_ok(&field.sha256)
+            {
+                return Err("K3_ALERT_EVIDENCE_MALFORMED");
+            }
+            let expected = k3_alert_evidence(snapshot)?;
+            if !ct_eq_bytes(expected.digest.as_bytes(), field.sha256.as_bytes()) {
+                return Err("K3_ALERT_EVIDENCE_MISMATCH");
+            }
+            Ok(())
+        }
+    }
+}
+
+/// VOK verifier: Galerina package-artifact carrier must agree with the
+/// on-wire frame header. Missing / unknown / mismatch refuse. Reference
+/// path only; no production authority.
+pub fn verify_k3_wire_version_carrier(
+    carrier: Option<i32>,
+    header: i32,
+) -> Result<(), &'static str> {
+    let carrier = match carrier {
+        None => return Err("K3_WIRE_VERSION_CARRIER_MISSING"),
+        Some(value) => value,
+    };
+    let known = |v: i32| v == K3_WIRE_VERSION_LEGACY || v == K3_WIRE_VERSION_CANONICAL;
+    if !known(carrier) || !known(header) {
+        return Err("K3_WIRE_VERSION_CARRIER_UNKNOWN");
+    }
+    if carrier != header {
+        return Err("K3_WIRE_VERSION_CARRIER_MISMATCH");
+    }
+    Ok(())
+}
+
+/// K3-CE N-ag: absent on both sides is equal. Present values compare by ==.
+/// Agreement is not admission: a present unknown on both sides agrees
+/// and is still refused by resolve_k3_package_carrier (INVALID).
+pub fn k3_wire_versions_agree(left: Option<i32>, right: Option<i32>) -> bool {
+    left == right
+}
+
+pub const SLIDE_K3_WIRE_INVALID: &str = "SLIDE-K3-WIRE-001";
+pub const SLIDE_K3_WIRE_BARE_LEGACY_ZERO: &str = "SLIDE-K3-WIRE-003";
+
+/// K3-SZ dry-run: explicit fallback flag. Production decode_k3_package_gate
+/// keeps fallback on. Process constants stay open.
+pub fn resolve_k3_package_carrier(carrier: Option<i32>, fallback: bool) -> Result<i32, &'static str> {
+    match carrier {
+        None => {
+            if !fallback {
+                return Err(SLIDE_K3_WIRE_INVALID);
+            }
+            Ok(K3_WIRE_VERSION_CANONICAL)
+        }
+        Some(version) if version == K3_WIRE_VERSION_CANONICAL || version == K3_WIRE_VERSION_LEGACY => {
+            Ok(version)
+        }
+        Some(_) => Err(SLIDE_K3_WIRE_INVALID),
+    }
+}
+
+/// K3-CC: the carrier the gate uses is the one on the loaded artifact or
+/// spec. Absent carrier falls back to canonical 2. Present unknown fails
+/// closed. Canonical wrap uses decode_canonical (bare 0 = SLIDE-K3-WIRE-001).
+/// Legacy carrier + bare 0 is UNKNOWN (gates then refuse UNKNOWN).
+pub fn decode_k3_package_gate(
+    carrier: Option<i32>,
+    value: i32,
+) -> Result<(Trit, crate::TritWireForm), &'static str> {
+    decode_k3_package_gate_opts(carrier, value, true, true)
+}
+
+/// K3-SZ dry-run: bridge-off and fallback-off as explicit inputs.
+/// Process constants stay open (decode_k3_package_gate uses true, true).
+pub fn decode_k3_package_gate_opts(
+    carrier: Option<i32>,
+    value: i32,
+    fallback: bool,
+    legacy_unknown_zero_bridge: bool,
+) -> Result<(Trit, crate::TritWireForm), &'static str> {
+    let resolved = resolve_k3_package_carrier(carrier, fallback)?;
+    if resolved == K3_WIRE_VERSION_CANONICAL {
+        return Trit::decode_canonical(value).map_err(|_| SLIDE_K3_WIRE_INVALID);
+    }
+    if value == 0 {
+        if !legacy_unknown_zero_bridge {
+            return Err(SLIDE_K3_WIRE_INVALID);
+        }
+        return Trit::decode_canonical(-128).map_err(|_| SLIDE_K3_WIRE_INVALID);
+    }
+    match Trit::decode_wire(value) {
+        Ok(pair) => Ok(pair),
+        Err(fail) if fail.failure_id() == VOK_TRIT_BARE_LEGACY_ZERO => {
+            Err(SLIDE_K3_WIRE_BARE_LEGACY_ZERO)
+        }
+        Err(_) => Err(SLIDE_K3_WIRE_INVALID),
+    }
+}
+
+/// K3-FP: external verdict out. step_z is an explicit input, not a constant.
+/// Today (step_z=false) lattice 0 stays 0. Under step_z, lattice 0 -> wire -128.
+/// ALLOW/DENY unchanged.
+pub fn k3_external_verdict_out(lattice: i32, step_z: bool) -> Result<i32, &'static str> {
+    if !step_z {
+        if lattice == -1 || lattice == 0 || lattice == 1 {
+            return Ok(lattice);
+        }
+        return Err(SLIDE_K3_WIRE_INVALID);
+    }
+    match lattice {
+        -1 => Ok(-1),
+        0 => Ok(-128),
+        1 => Ok(1),
+        _ => Err(SLIDE_K3_WIRE_INVALID),
     }
 }
 
@@ -420,6 +694,7 @@ pub fn decode_legacy_frame_with_bridge(
         reads_after: decoded.reads_after,
         frame_header_version: crate::K3_WIRE_VERSION_LEGACY,
     };
+    // K3-RX N-n: catch_unwind requires panic = unwind. An abort profile defeats containment.
     let _ = catch_unwind(AssertUnwindSafe(|| {
         sink.emit(record);
     }));
@@ -1224,5 +1499,355 @@ mod tests {
         assert!(!snap.tallies.is_empty());
         assert_eq!(K3_ALERT_RECORDER_CAP, 64);
         assert_eq!(K3_ALERT_SINK_STATUS, "UNKNOWN(no audit sink)");
+    }
+
+    #[test]
+    fn k3rx_panic_unwind_profile() {
+        assert!(
+            cfg!(panic = "unwind"),
+            "abort profile defeats catch_unwind containment"
+        );
+    }
+
+    #[test]
+    fn k3rx_alert_evidence_empty_and_overflow() {
+        let empty = K3AlertSnapshot {
+            tallies: Vec::new(),
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        let ev = k3_alert_evidence(&empty).expect("empty snapshot");
+        assert_eq!(ev.schema, K3_ALERT_EVIDENCE_SCHEMA);
+        assert_eq!(ev.version, 1);
+        assert_eq!(ev.recent_count, 0);
+        assert_eq!(ev.dropped, 0);
+        assert_eq!(
+            ev.digest,
+            "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f"
+        );
+        let rec = K3AlertRecorder::with_cap(2);
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            true,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            0,
+            false,
+            &rec,
+        );
+        decode_legacy_frame_with_bridge(
+            K3_WIRE_VERSION_LEGACY,
+            OPEN_UNIX,
+            0,
+            OPEN_UNIX,
+            1_000_000,
+            true,
+            &rec,
+        );
+        let overflow = k3_alert_evidence(&rec.snapshot()).expect("overflow");
+        assert!(overflow.dropped > 0);
+        assert_eq!(overflow.recent_count, 2);
+        let unsorted = K3AlertSnapshot {
+            tallies: vec![
+                ("B".into(), "NONE".into(), 1),
+                ("A".into(), "NONE".into(), 2),
+            ],
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        let sorted = k3_alert_evidence(&unsorted).expect("sorted keys");
+        assert_eq!(sorted.tallies[0].0, "A|NONE");
+        assert_eq!(sorted.tallies[1].0, "B|NONE");
+        assert_eq!(
+            sorted.digest,
+            "d5b88039deffe44c888b8cfcb937cb9f84d95ccdede7ab18d81a4de68806f980"
+        );
+    }
+
+    #[test]
+    fn k3rb_receipt_alert_evidence_verify() {
+        let empty = K3AlertSnapshot {
+            tallies: Vec::new(),
+            recent: Vec::new(),
+            dropped: 0,
+            frame_header_version: K3_WIRE_VERSION_LEGACY,
+        };
+        assert!(verify_receipt_k3_alert_evidence(None, None).is_ok());
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), None).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MISSING"
+        );
+        let matching = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 1,
+            sha256: "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83f".into(),
+        };
+        assert!(verify_receipt_k3_alert_evidence(Some(&empty), Some(&matching)).is_ok());
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(None, Some(&matching)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_EXTRA"
+        );
+        let tampered = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 1,
+            sha256: "c81f9e981ae703dcbd8dc8da3634b26976d351c0a945aa6b62f3a493b071e83e".into(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&tampered)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MISMATCH"
+        );
+        let wrong_schema = K3ReceiptAlertEvidenceField {
+            schema: "k3-alert-evidence-x".into(),
+            version: 1,
+            sha256: matching.sha256.clone(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&wrong_schema)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MALFORMED"
+        );
+        let wrong_version = K3ReceiptAlertEvidenceField {
+            schema: K3_ALERT_EVIDENCE_SCHEMA.into(),
+            version: 2,
+            sha256: matching.sha256.clone(),
+        };
+        assert_eq!(
+            verify_receipt_k3_alert_evidence(Some(&empty), Some(&wrong_version)).unwrap_err(),
+            "K3_ALERT_EVIDENCE_MALFORMED"
+        );
+    }
+
+    #[test]
+    fn k3wv_wire_version_carrier_verify() {
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert!(verify_k3_wire_version_carrier(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            K3_WIRE_VERSION_CANONICAL
+        )
+        .is_ok());
+        assert_eq!(
+            verify_k3_wire_version_carrier(None, K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISSING"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_CANONICAL)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(3), K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), 3).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
+        );
+    }
+
+    #[test]
+    fn k3pw_package_artifact_frames_e2e() {
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_CANONICAL)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(None, K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISSING"
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(3), K3_WIRE_VERSION_LEGACY).unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_UNKNOWN"
+        );
+        assert!(verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_LEGACY), K3_WIRE_VERSION_LEGACY).is_ok());
+        assert!(verify_k3_wire_version_carrier(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            K3_WIRE_VERSION_CANONICAL
+        )
+        .is_ok());
+    }
+
+    #[test]
+    fn k3cr_package_artifact_gates_e2e() {
+        use crate::Trit;
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), -1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), -128).is_ok());
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 0).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), -1).is_ok());
+        assert!(decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), -128).is_ok());
+        let legacy0 = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("legacy carrier bare 0 is UNKNOWN");
+        assert_eq!(legacy0.0, Trit::Unknown);
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_CANONICAL), K3_WIRE_VERSION_LEGACY)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            decode_k3_package_gate(Some(3), 1).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let absent = decode_k3_package_gate(None, 1).expect("absent fallback canonical");
+        assert_eq!(absent.0, Trit::Admit);
+    }
+
+    #[test]
+    fn k3cc_descriptor_spec_carriers_e2e() {
+        use crate::Trit;
+        let unknown = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("spec legacy bare 0 unknown");
+        assert_eq!(unknown.0, Trit::Unknown);
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 0).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert_eq!(
+            verify_k3_wire_version_carrier(Some(K3_WIRE_VERSION_CANONICAL), K3_WIRE_VERSION_LEGACY)
+                .unwrap_err(),
+            "K3_WIRE_VERSION_CARRIER_MISMATCH"
+        );
+        assert_eq!(
+            decode_k3_package_gate(Some(3), 1).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let absent = decode_k3_package_gate(None, 1).expect("spec absent fallback");
+        assert_eq!(absent.0, Trit::Admit);
+    }
+
+    #[test]
+    fn k3ce_compiler_and_loader_carriers_e2e() {
+        use crate::Trit;
+        let absent = decode_k3_package_gate(None, 1).expect("compiler absent fallback");
+        assert_eq!(absent.0, Trit::Admit);
+        let canonical = decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 1)
+            .expect("compiler canonical");
+        assert_eq!(canonical.0, Trit::Admit);
+        assert_eq!(
+            decode_k3_package_gate(Some(3), 1).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let legacy0 = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("compiler legacy bare 0");
+        assert_eq!(legacy0.0, Trit::Unknown);
+        assert_eq!(
+            decode_k3_package_gate(Some(K3_WIRE_VERSION_CANONICAL), 0).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert!(k3_wire_versions_agree(
+            Some(K3_WIRE_VERSION_CANONICAL),
+            Some(K3_WIRE_VERSION_CANONICAL)
+        ));
+        assert!(!k3_wire_versions_agree(
+            Some(K3_WIRE_VERSION_LEGACY),
+            Some(K3_WIRE_VERSION_CANONICAL)
+        ));
+        assert!(k3_wire_versions_agree(None, None));
+        assert!(!k3_wire_versions_agree(Some(K3_WIRE_VERSION_CANONICAL), Some(3)));
+    }
+
+    #[test]
+    fn k3sz_step_z_dry_run_e2e() {
+        use crate::Trit;
+        assert_eq!(
+            decode_k3_package_gate_opts(Some(K3_WIRE_VERSION_LEGACY), 0, true, false).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        assert_eq!(
+            decode_k3_package_gate_opts(None, 1, false, true).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+        let canonical = decode_k3_package_gate_opts(Some(K3_WIRE_VERSION_CANONICAL), -128, false, false)
+            .expect("canonical -128 unchanged");
+        assert_eq!(canonical.0, Trit::Unknown);
+        let legacy0 = decode_k3_package_gate(Some(K3_WIRE_VERSION_LEGACY), 0)
+            .expect("process bridge stays on");
+        assert_eq!(legacy0.0, Trit::Unknown);
+        let absent = decode_k3_package_gate(None, 1).expect("process fallback stays on");
+        assert_eq!(absent.0, Trit::Admit);
+        assert!(k3_wire_versions_agree(Some(3), Some(3)));
+        assert_eq!(
+            resolve_k3_package_carrier(Some(3), true).unwrap_err(),
+            SLIDE_K3_WIRE_INVALID
+        );
+    }
+
+    #[test]
+    fn k3fp_external_verdict_out_e2e() {
+        assert_eq!(k3_external_verdict_out(0, false).expect("today"), 0);
+        assert_eq!(k3_external_verdict_out(0, true).expect("stepz"), -128);
+        assert_eq!(k3_external_verdict_out(1, true).expect("allow"), 1);
+        assert_eq!(k3_external_verdict_out(-1, true).expect("deny"), -1);
+        assert_eq!(k3_external_verdict_out(1, false).expect("allow today"), 1);
+        assert_eq!(k3_external_verdict_out(-1, false).expect("deny today"), -1);
+        assert_eq!(k3_external_verdict_out(3, false).unwrap_err(), SLIDE_K3_WIRE_INVALID);
+        assert_eq!(k3_external_verdict_out(3, true).unwrap_err(), SLIDE_K3_WIRE_INVALID);
+    }
+
+    #[test]
+    fn k3mk_strong_kleene_wire_tables() {
+        const D: i32 = -1;
+        const U: i32 = -128;
+        const A: i32 = 1;
+        let and = [
+            (D, D, D),
+            (D, U, D),
+            (D, A, D),
+            (U, D, D),
+            (U, U, U),
+            (U, A, U),
+            (A, D, D),
+            (A, U, U),
+            (A, A, A),
+        ];
+        let or = [
+            (D, D, D),
+            (D, U, U),
+            (D, A, A),
+            (U, D, U),
+            (U, U, U),
+            (U, A, A),
+            (A, D, A),
+            (A, U, A),
+            (A, A, A),
+        ];
+        for (a, b, e) in and {
+            assert_eq!(k3_wire_and(a, b), Some(e), "{a} AND {b}");
+        }
+        for (a, b, e) in or {
+            assert_eq!(k3_wire_or(a, b), Some(e), "{a} OR {b}");
+        }
+        assert_eq!(k3_wire_not(D), Some(A));
+        assert_eq!(k3_wire_not(U), Some(U));
+        assert_eq!(k3_wire_not(A), Some(D));
+        assert_eq!(k3_wire_gate(U), D);
+        assert_eq!(k3_wire_gate(A), A);
+        assert_eq!(k3_wire_gate(D), D);
+        for x in [D, U, A] {
+            for y in [D, U, A] {
+                for z in [D, U, A] {
+                    let got = k3_wire_and3(x, y, z).expect("triple");
+                    if [x, y, z].contains(&D) {
+                        assert_eq!(got, D);
+                    }
+                    assert_eq!(got == A, x == A && y == A && z == A);
+                }
+            }
+        }
     }
 }

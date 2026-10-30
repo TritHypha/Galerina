@@ -13,13 +13,16 @@ const SEED = 0x4b335701;
 const FUZZ_BYTES = 256;
 const FUZZ_I32 = 65536;
 const FUZZ_FRAMES = 65536;
-const FIXTURE_DIGEST_D = "6fe886f7fea2cbd6f0ae8fe0bba226759f1e091a60ce72fd77172067df3da173";
-const FIXTURE_GIT_BLOB = "29288b48032480b4f64aacdd0ba9f87011e604c0";
+const FIXTURE_DIGEST_D = "468a1b3321ed7a1ce294f566e0693b96720eb5a2384eb744bdc08509a0e56b97";
+const FIXTURE_GIT_BLOB = "eb8dfa7fe83857a4ef7cf4e6d0ca2bb4308d0c32";
 const CAP = 1000000;
+// N-bk: effective sunset alert 2027-01-01T00:00:00Z (EXPIRY_UNIX_S),
+// named removal 2027-01-18 (REMOVAL_UNIX_S), epoch day 20261231 (EXPIRY).
 const EXPIRY = 20261231;
 const EXPIRY_UNIX_S = 1798761600;
+const REMOVAL_UNIX_S = 1800230400;
 const FRAME_HEADER_VERSION = 1;
-const FIXTURE_SCHEMA_VERSION = 6;
+const FIXTURE_SCHEMA_VERSION = 16;
 
 const galerinaRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const galerinaJson = join(
@@ -134,9 +137,45 @@ async function main() {
     k3SerialWindowContains,
     k3UnixSToYmd,
     k3WasiRealtimeNsToUnixS,
+    k3AlertEvidence,
+    k3WireAnd,
+    k3WireAnd3,
+    k3WireGate,
+    k3WireNot,
+    k3WireOr,
+    decodeK3PackageFrame,
+    decodeK3PackageGate,
+    decodeK3PackageGateResolved,
+    resolveK3PackageCarrier,
+    carrierArtifactFromSpec,
+    k3WireVersionsAgree,
+    absentCarrierFallbackReads,
+    verifyK3WireVersionCarrier,
+    verifyReceiptK3AlertEvidence,
+    k3ExternalVerdictOut,
+    LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH,
+    LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S,
+    K3_LEGACY_ZERO_REMOVAL_UNIX_S,
+    K3_BRIDGE_SUNSET_ALERT_UNIX_S,
   } = await import(
     `file:///${join(slideRoot, "src/k3-wire.mjs").replaceAll("\\", "/")}`
   );
+  if (LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH !== EXPIRY) {
+    refuse(`slide expiry epoch ${LEGACY_UNKNOWN_ZERO_EXPIRY_EPOCH} != ${EXPIRY}`);
+    return;
+  }
+  if (LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S !== EXPIRY_UNIX_S) {
+    refuse(`slide expiry unix ${LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S} != ${EXPIRY_UNIX_S}`);
+    return;
+  }
+  if (K3_BRIDGE_SUNSET_ALERT_UNIX_S !== EXPIRY_UNIX_S) {
+    refuse(`slide effective alert unix ${K3_BRIDGE_SUNSET_ALERT_UNIX_S} != ${EXPIRY_UNIX_S}`);
+    return;
+  }
+  if (K3_LEGACY_ZERO_REMOVAL_UNIX_S !== REMOVAL_UNIX_S) {
+    refuse(`slide removal unix ${K3_LEGACY_ZERO_REMOVAL_UNIX_S} != ${REMOVAL_UNIX_S}`);
+    return;
+  }
   const pin = k3ParseSerialInstantUnixS("2026-10-27T15:45Z");
   if (pin !== 1793115900) {
     refuse(`serial pin ${pin} != 1793115900`);
@@ -198,6 +237,349 @@ async function main() {
     refuse("strict bridge null must close");
     return;
   }
+  for (const row of doc.alertEvidence ?? []) {
+    const got = k3AlertEvidence({
+      tallies: row.tallies,
+      recentCount: row.recentCount,
+      dropped: row.dropped,
+      frameHeaderVersion: row.frameHeaderVersion,
+    });
+    if (!got.ok || got.record.digest !== row.digest) {
+      refuse(`alert evidence digest ${row.id}`);
+      return;
+    }
+  }
+  if ((doc.alertEvidence ?? []).length < 4) {
+    refuse("alert evidence rows missing");
+    return;
+  }
+  if ((doc.strongKleeneAnd ?? []).length !== 9) {
+    refuse("strongKleeneAnd must have 9 rows");
+    return;
+  }
+  for (const [a, b, e] of doc.strongKleeneAnd) {
+    if (k3WireAnd(a, b) !== e) {
+      refuse(`strongKleeneAnd ${a} ${b}`);
+      return;
+    }
+  }
+  if ((doc.strongKleeneOr ?? []).length !== 9) {
+    refuse("strongKleeneOr must have 9 rows");
+    return;
+  }
+  for (const [a, b, e] of doc.strongKleeneOr) {
+    if (k3WireOr(a, b) !== e) {
+      refuse(`strongKleeneOr ${a} ${b}`);
+      return;
+    }
+  }
+  if ((doc.strongKleeneNot ?? []).length !== 3) {
+    refuse("strongKleeneNot must have 3 rows");
+    return;
+  }
+  for (const [a, e] of doc.strongKleeneNot) {
+    if (k3WireNot(a) !== e) {
+      refuse(`strongKleeneNot ${a}`);
+      return;
+    }
+  }
+  let gateUnknown = false;
+  for (const [a, e] of doc.strongKleeneGate ?? []) {
+    if (k3WireGate(a) !== e) {
+      refuse(`strongKleeneGate ${a}`);
+      return;
+    }
+    if (a === -128 && e === -1) gateUnknown = true;
+  }
+  if (!gateUnknown) {
+    refuse("gate(UNKNOWN) must refuse");
+    return;
+  }
+  if ((doc.strongKleeneDenySticky ?? []).length !== 27) {
+    refuse("strongKleeneDenySticky must have 27 rows");
+    return;
+  }
+  const binding = doc.receiptBinding ?? [];
+  if (binding.length !== 5) {
+    refuse(`receiptBinding must have 5 rows, got ${binding.length}`);
+    return;
+  }
+  const kinds = binding.map((row) => row.kind).join(",");
+  if (kinds !== "without-field,with-field,tampered-digest,wrong-schema,wrong-version") {
+    refuse(`receiptBinding kinds ${kinds}`);
+    return;
+  }
+  for (const row of binding) {
+    const got = verifyReceiptK3AlertEvidence(row.snapshot, row.field);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`receiptBinding ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`receiptBinding ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const carriers = doc.wireVersionCarrier ?? [];
+  if (carriers.length !== 5) {
+    refuse(`wireVersionCarrier must have 5 rows, got ${carriers.length}`);
+    return;
+  }
+  const carrierKinds = carriers.map((row) => row.kind).join(",");
+  if (carrierKinds !== "agree,disagree,missing,unknown-version,legacy-bridge") {
+    refuse(`wireVersionCarrier kinds ${carrierKinds}`);
+    return;
+  }
+  for (const row of carriers) {
+    const got = verifyK3WireVersionCarrier(row.carrier, row.header);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`wireVersionCarrier ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (row.code && got.code !== row.code) {
+      refuse(`wireVersionCarrier ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const artifactFrames = doc.packageArtifactFrames ?? [];
+  if (artifactFrames.length !== 5) {
+    refuse(`packageArtifactFrames must have 5 rows, got ${artifactFrames.length}`);
+    return;
+  }
+  const artifactKinds = artifactFrames.map((row) => row.kind).join(",");
+  if (artifactKinds !== "agree,disagree,missing-carrier,unknown-version,legacy-bridge") {
+    refuse(`packageArtifactFrames kinds ${artifactKinds}`);
+    return;
+  }
+  for (const row of artifactFrames) {
+    const got = decodeK3PackageFrame(row.artifact, row.frame);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`packageArtifactFrames ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`packageArtifactFrames ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const artifactGates = doc.packageArtifactGates ?? [];
+  if (artifactGates.length !== 11) {
+    refuse(`packageArtifactGates must have 11 rows, got ${artifactGates.length}`);
+    return;
+  }
+  const gateKinds = artifactGates.map((row) => row.kind).join(",");
+  if (
+    gateKinds
+    !== "canonical-allow,canonical-deny,canonical-unknown,canonical-bare0,legacy-allow,legacy-deny,legacy-unknown,legacy-bare0,mismatched,unknown-carrier,absent-fallback"
+  ) {
+    refuse(`packageArtifactGates kinds ${gateKinds}`);
+    return;
+  }
+  for (const row of artifactGates) {
+    const got = row.kind === "mismatched"
+      ? decodeK3PackageFrame(row.artifact, row.frame)
+      : decodeK3PackageGate(row.artifact, row.value);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`packageArtifactGates ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`packageArtifactGates ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`packageArtifactGates ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const specRows = doc.descriptorSpecCarriers ?? [];
+  if (specRows.length !== 5) {
+    refuse(`descriptorSpecCarriers must have 5 rows, got ${specRows.length}`);
+    return;
+  }
+  const specKinds = specRows.map((row) => row.kind).join(",");
+  if (
+    specKinds
+    !== "legacy-bare0-unknown,canonical-bare0-invalid,mismatch-frame-header,unknown-carrier,absent-fallback-once"
+  ) {
+    refuse(`descriptorSpecCarriers kinds ${specKinds}`);
+    return;
+  }
+  for (const row of specRows) {
+    const artifact = carrierArtifactFromSpec(row.spec);
+    if (row.kind === "mismatch-frame-header") {
+      const got = decodeK3PackageFrame(artifact, row.frame);
+      if (got.ok) {
+        refuse(`descriptorSpecCarriers ${row.id} expected REFUSE`);
+        return;
+      }
+      if (row.code && got.code !== row.code) {
+        refuse(`descriptorSpecCarriers ${row.id} code ${got.code} != ${row.code}`);
+        return;
+      }
+      continue;
+    }
+    if (row.kind === "absent-fallback-once") {
+      const before = absentCarrierFallbackReads();
+      const resolved = resolveK3PackageCarrier(artifact);
+      for (const value of row.values) {
+        const got = decodeK3PackageGateResolved(resolved, value);
+        if (!got.ok || (row.trit !== undefined && got.trit !== row.trit)) {
+          refuse(`descriptorSpecCarriers ${row.id} value ${value}`);
+          return;
+        }
+      }
+      const delta = absentCarrierFallbackReads() - before;
+      if (delta !== row.count) {
+        refuse(`descriptorSpecCarriers ${row.id} count ${delta} != ${row.count}`);
+        return;
+      }
+      continue;
+    }
+    const got = decodeK3PackageGate(artifact, row.value);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`descriptorSpecCarriers ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`descriptorSpecCarriers ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`descriptorSpecCarriers ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const compilerRows = doc.compilerRequestCarriers ?? [];
+  if (compilerRows.length !== 5) {
+    refuse(`compilerRequestCarriers must have 5 rows, got ${compilerRows.length}`);
+    return;
+  }
+  const compilerKinds = compilerRows.map((row) => row.kind).join(",");
+  if (
+    compilerKinds
+    !== "compiler-absent,compiler-canonical,compiler-unknown,compiler-legacy-bare0,compiler-canonical-bare0"
+  ) {
+    refuse(`compilerRequestCarriers kinds ${compilerKinds}`);
+    return;
+  }
+  for (const row of compilerRows) {
+    const artifact = carrierArtifactFromSpec(row.spec);
+    if (row.kind === "compiler-absent") {
+      const before = absentCarrierFallbackReads();
+      const resolved = resolveK3PackageCarrier(artifact);
+      const got = decodeK3PackageGateResolved(resolved, row.value);
+      if (!got.ok || (row.trit !== undefined && got.trit !== row.trit)) {
+        refuse(`compilerRequestCarriers ${row.id}`);
+        return;
+      }
+      const delta = absentCarrierFallbackReads() - before;
+      if (delta !== row.count) {
+        refuse(`compilerRequestCarriers ${row.id} count ${delta} != ${row.count}`);
+        return;
+      }
+      continue;
+    }
+    const got = decodeK3PackageGate(artifact, row.value);
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`compilerRequestCarriers ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`compilerRequestCarriers ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`compilerRequestCarriers ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const loaderRows = doc.loaderCarrierBindings ?? [];
+  if (loaderRows.length !== 4) {
+    refuse(`loaderCarrierBindings must have 4 rows, got ${loaderRows.length}`);
+    return;
+  }
+  const loaderKinds = loaderRows.map((row) => row.kind).join(",");
+  if (loaderKinds !== "match,mismatch,absent-both,tampered") {
+    refuse(`loaderCarrierBindings kinds ${loaderKinds}`);
+    return;
+  }
+  for (const row of loaderRows) {
+    const agree = k3WireVersionsAgree(row.left, row.right);
+    if (agree !== (row.expect === "AGREE")) {
+      refuse(`loaderCarrierBindings ${row.id} agree=${agree} expect ${row.expect}`);
+      return;
+    }
+  }
+  const stepZRows = doc.stepZDryRun ?? [];
+  if (stepZRows.length !== 3) {
+    refuse(`stepZDryRun must have 3 rows, got ${stepZRows.length}`);
+    return;
+  }
+  const stepZKinds = stepZRows.map((row) => row.kind).join(",");
+  if (stepZKinds !== "bridge-off-legacy-0,fallback-off-absent,canonical-unknown") {
+    refuse(`stepZDryRun kinds ${stepZKinds}`);
+    return;
+  }
+  for (const row of stepZRows) {
+    const artifact = carrierArtifactFromSpec(row.spec);
+    const got = decodeK3PackageGate(artifact, row.value, {
+      fallback: row.fallback,
+      legacyUnknownZeroBridge: row.legacyUnknownZeroBridge,
+    });
+    const admit = row.expect === "ADMIT";
+    if (got.ok !== admit) {
+      refuse(`stepZDryRun ${row.id} ok=${got.ok} expect ${row.expect}`);
+      return;
+    }
+    if (admit && row.trit !== undefined && got.trit !== row.trit) {
+      refuse(`stepZDryRun ${row.id} trit ${got.trit} != ${row.trit}`);
+      return;
+    }
+    if (!admit && row.code && got.code !== row.code) {
+      refuse(`stepZDryRun ${row.id} code ${got.code} != ${row.code}`);
+      return;
+    }
+  }
+  const extRows = doc.externalOutputs ?? [];
+  if (extRows.length !== 4) {
+    refuse(`externalOutputs must have 4 rows, got ${extRows.length}`);
+    return;
+  }
+  const extKinds = extRows.map((row) => row.kind).join(",");
+  if (extKinds !== "unknown-today,unknown-stepz,allow-unchanged,deny-unchanged") {
+    refuse(`externalOutputs kinds ${extKinds}`);
+    return;
+  }
+  for (const row of extRows) {
+    const opts = row.stepZ === true ? { stepZ: true } : undefined;
+    const got = k3ExternalVerdictOut(row.lattice, opts);
+    if (got !== row.expect) {
+      refuse(`externalOutputs ${row.id} ${got} != ${row.expect}`);
+      return;
+    }
+  }
+  for (const [a, b, c, e] of doc.strongKleeneDenySticky) {
+    if (k3WireAnd3(a, b, c) !== e) {
+      refuse(`strongKleeneDenySticky ${a} ${b} ${c}`);
+      return;
+    }
+  }
+  const kleeneReaders = {
+    js: countReaders(join(slideRoot, "src"), ["function k3WireAnd"]),
+    rust: countReaders(join(galerinaRoot, "packages-ts/galerina-core-runtime/native/vok-authority/src"), ["fn k3_wire_and"]),
+    fungi: countReaders(join(galerinaRoot, "packages-ts/galerina-core-logic/src/self-hosted"), ["pure flow k3WireAnd"]),
+  };
+  if (kleeneReaders.js["function k3WireAnd"] < 1 || kleeneReaders.rust["fn k3_wire_and"] < 1 || kleeneReaders.fungi["pure flow k3WireAnd"] < 1) {
+    refuse(`kleene three-way missing ${JSON.stringify(kleeneReaders)}`);
+    return;
+  }
   if (k3UnixSToYmd(1798761599) !== 20261231 || k3UnixSToYmd(1798761600) !== 20270101 || k3UnixSToYmd(1793115900) !== 20261027) {
     refuse("display ymd pins");
     return;
@@ -247,6 +629,17 @@ async function main() {
     fixtureSchemaVersion: FIXTURE_SCHEMA_VERSION,
     frameHeaderVersion: FRAME_HEADER_VERSION,
     k3x: k3xState,
+    fungiEvidence: "UNKNOWN(fungi-cannot-sha256-alert-evidence)",
+    kleeneThreeWay: true,
+    receiptBinding: true,
+    wireVersionCarrier: true,
+    packageArtifactFrames: true,
+    packageArtifactGates: true,
+    descriptorSpecCarriers: true,
+    compilerRequestCarriers: true,
+    loaderCarrierBindings: true,
+    stepZDryRun: true,
+    externalOutputs: true,
   })}\n`);
 }
 

@@ -576,4 +576,94 @@ describe("core-logic k3-wire.fungi conversion", () => {
     const kindBody = src.slice(kindStart, kindEnd);
     assert.equal(kindBody.includes("if bridge != 1"), true);
   });
+
+  it("K3-RX evidence unknown, recorder cap stays 64", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3AlertEvidenceUnknownReason(), 4);
+    assert.equal(exports.k3AlertEvidenceUnknown(), 4);
+    assert.notEqual(exports.k3AlertEvidenceUnknown(), 0);
+    assert.equal(exports.k3AlertRecorderCap(), 64);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(fungi-cannot-sha256-alert-evidence\)/);
+  });
+
+  it("K3-MK strong Kleene AND/OR/NOT/gate and DENY-sticky triples", async () => {
+    const { exports } = await compileK3();
+    const D = -1;
+    const U = -128;
+    const A = 1;
+    const and = [
+      [D, D, D], [D, U, D], [D, A, D],
+      [U, D, D], [U, U, U], [U, A, U],
+      [A, D, D], [A, U, U], [A, A, A],
+    ];
+    const or = [
+      [D, D, D], [D, U, U], [D, A, A],
+      [U, D, U], [U, U, U], [U, A, A],
+      [A, D, A], [A, U, A], [A, A, A],
+    ];
+    for (const [a, b, e] of and) {
+      assert.equal(exports.k3WireAnd(a, b), e, `${a} AND ${b}`);
+    }
+    for (const [a, b, e] of or) {
+      assert.equal(exports.k3WireOr(a, b), e, `${a} OR ${b}`);
+    }
+    assert.equal(exports.k3WireNot(D), A);
+    assert.equal(exports.k3WireNot(U), U);
+    assert.equal(exports.k3WireNot(A), D);
+    assert.equal(exports.k3WireGate(U), D);
+    assert.equal(exports.k3WireGate(A), A);
+    assert.equal(exports.k3WireGate(D), D);
+    for (const x of [D, U, A]) {
+      for (const y of [D, U, A]) {
+        for (const z of [D, U, A]) {
+          const got = exports.k3WireAnd3(x, y, z);
+          if ([x, y, z].includes(D)) assert.equal(got, D, `${x},${y},${z}`);
+          assert.equal(got === A, x === A && y === A && z === A);
+        }
+      }
+    }
+  });
+
+  it("K3-WV carrier agree/disagree/missing/unknown and TS-frozen reason 5", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3WireVersionCarrier(), 1);
+    assert.equal(exports.k3WireVersionTsFrozenReason(), 5);
+    assert.equal(exports.k3WireVersionTsFrozen(), 5);
+    assert.notEqual(exports.k3WireVersionTsFrozen(), 0);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 1), 1);
+    assert.equal(exports.k3WireVersionCarrierAgree(2, 2), 1);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 2), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(3, 1), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(1, 3), -1);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /UNKNOWN\(ts-frozen-emitter\)/);
+  });
+
+  it("K3-PW emits k3WireVersion as a package-artifact field; TS frozen sites named", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3PackageArtifactWireVersion(), 2);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(2), 2);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(1), 1);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(3), -1);
+    assert.equal(exports.k3EmitPackageArtifactCarrier(0), -1);
+    assert.equal(exports.k3WireVersionCarrierAgree(exports.k3PackageArtifactWireVersion(), 2), 1);
+    const src = readFileSync(SOURCE, "utf8");
+    assert.match(src, /three-valued-governance\.ts:1/);
+    assert.match(src, /trit-gates\.ts:1/);
+    assert.match(src, /receipt-bound-slide-build\.mjs:50/);
+    assert.match(src, /production-boot-composition-candidate\.ts:29/);
+  });
+
+  it("K3-CR absent-carrier fallback is canonical 2 with named non-zero reason 6", async () => {
+    const { exports } = await compileK3();
+    assert.equal(exports.k3AbsentCarrierFallbackVersion(), 2);
+    assert.equal(exports.k3AbsentCarrierFallbackReason(), 6);
+    assert.notEqual(exports.k3AbsentCarrierFallbackReason(), 0);
+    assert.notEqual(exports.k3AbsentCarrierFallbackReason(), 5);
+    assert.equal(
+      exports.k3WireVersionCarrierAgree(exports.k3AbsentCarrierFallbackVersion(), 2),
+      1,
+    );
+  });
 });

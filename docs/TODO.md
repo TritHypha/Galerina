@@ -141,21 +141,12 @@ beside SLIDE and is not part of the production build.
 
 Open follow-ups (low; none blocks the merged rows):
 
-- [ ] **K3-SH r2** (2026-10-28): `grok/k3-selfhost-pins-20261028` from main
-  `19e061568`. Stale wat-q5n T14 AGENTS path, wat-q6 T1/T7 emitter+line pins,
-  wat-q2 T13 emitter pin; 14 self-hosted-type-checker misses because the
-  harness omitted parser-shaped `stmt.litI32Overflow` and match-arm `name`.
-  Twin contract kept (q2 T6 forbids `rhs.litI32Overflow`). TS frozen.
-  Old env-receiver rename is already on main; `grok/k3-selfhost-env-20261028`
-  abandoned. Merge stays Grok Bot.
-- [ ] **K3-SH r3** (2026-10-28): continue `grok/k3-selfhost-pins-20261028` at
-  `c03117bd6`. Work-driver 10:55 counts (bootstrap 17, i3-corpus 5, pipeline 8,
-  runtime 6) were envLookup/envBind `env.count/get/append` → secret.read;
-  already closed on main `19e061568`. Leaf on HEAD: bootstrap 21/0, i3 83/0,
-  pipeline 38/0, runtime 31/0. Leftover pin `k3sh-r3-selfhost-env-shape`:
-  runGIRBody still takes param `env` (runtime.fungi:1108); harness key `env`;
-  envLookup/envBind take `bindings`. wat-q6 T10 parked. OPEN-S5/S6 Work driver.
-  TS frozen. Merge stays Grok Bot.
+- [x] **K3-SH r2** (2026-10-28): merged to main `4499645c2`. Stale wat-q5n T14
+  AGENTS path, wat-q6 T1/T7 emitter+line pins, wat-q2 T13 emitter pin, and
+  the 14 self-hosted-type-checker misses closed on that merge.
+- [x] **K3-SH r3** (2026-10-28): merged to main `4499645c2`. envLookup/envBind
+  secret.read closed on main `19e061568`; leftover `k3sh-r3-selfhost-env-shape`
+  recorded. wat-q6 T10 parked. OPEN-S5/S6 Work driver.
 - [x] **K3C-2** (the K3-COPIES compiler change below): owner go-ahead 2026-10-28 07:46 GMT.
 - [x] **VOK wrapper cap race** (step 2c note N2): done 2026-10-28 on
   `grok/vok-k3-followups-20261028`. `Trit::decode_legacy_frame` now goes
@@ -211,6 +202,227 @@ Open follow-ups (low; none blocks the merged rows):
   production admission/lease/receipt path exists (the JS VOK reference
   model in `verified-object-kernel.mjs` is not that path). Merge-prep:
   merged origin/main `4499645c2` (not rebase). Shared fixture schema 6.
+- [x] **K3-RX** (2026-10-28) on `grok/k3-frame-epoch-20261028` (continues
+  K3-RC). N-m survey: a later K3 alert evidence digest would bind in SLIDE
+  `src/typed-package-execution-receipt-v3.mjs` function
+  `executePreparedDetachedScalarVok` (receipt fields ~728-764, `receiptDigest`
+  helper 460, inspector `inspectTypedPackageExecutionReceiptV3` 788). Do not
+  change that schema in this row. The JS VOK reference model in
+  `verified-object-kernel.mjs` is not a production receipt path.
+  `k3-alert-evidence` v1 builder in JS/VOK; fungi
+  `UNKNOWN(fungi-cannot-sha256-alert-evidence)`. N-n panic=unwind pin.
+  N-o JS recorder stores a frozen copy. Shared fixture schema 7.
+- [x] **K3-MK** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Merge
+  origin/main `40de24627` (commit `4f98adcc0`, parents `38afae1e9`+`40de24627`).
+  Audited fold sites (strong Kleene; none weak): SLIDE `src/k3-wire.mjs`
+  `k3FoldAdmission` 726 AND, `k3FoldJoin` 738 OR, `k3WireAnd` 766,
+  `k3WireOr` 773, `k3WireNot` 780, `k3WireGate` 786; Rust `k3_frame.rs`
+  `k3_wire_and` 224 Trit.min, `k3_wire_or` 229 Trit.max, `k3_wire_not` 234,
+  `k3_wire_gate` 244; `lib.rs` `authority_verdict` 954 `.min()` and
+  gate_outcome 1078 `.min()` listed unchanged; `.fungi` `k3-wire.fungi`
+  `k3WireAnd` 397, `k3WireOr` 423, `k3WireNot` 449, `k3WireGate` 465.
+  N-q `k3AlertEvidenceUnknownReason` = 4. Shared fixture schema 8.
+- [x] **K3-RB** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Additive
+  opt-in `k3AlertEvidence` on SLIDE receipt v3
+  `executePreparedDetachedScalarVok` (typed-package-execution-receipt-v3.mjs).
+  VOK `verify_receipt_k3_alert_evidence` constant-time compare. Fixture schema
+  9 receiptBinding rows (with-field, without-field, tampered-digest,
+  wrong-schema, wrong-version). N-t
+  `packages-ts/galerina-tower-citizen/tests/prebuild-k3-strong-kleene-pin.mjs`
+  plus `npm run prebuild:k3-sk-pin`; pin test imports it. Fungi stays
+  UNKNOWN(fungi-cannot-sha256-alert-evidence). K3_ALERT_SINK_STATUS stays
+  UNKNOWN(no audit sink).
+- [x] **K3-WV** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-w merge
+  origin/main `10b96b2a6` (commit `be670c452`, parents `221fffabf`+`10b96b2a6`).
+  Decision: frame header is the on-wire `wireVersion`; Galerina package
+  artifact `k3WireVersion` is the carrier. SLIDE caller
+  `decodeK3PackageFrame` in `src/k3-wire.mjs` (FD-13). Survey of unframed
+  `decodeK3Boundary` gates: publication-loader 568, package-compiler 231,
+  flat-package-abi 481, structured-counted-loop-body-vok 167,
+  vok-component-boundary 118/120/511/513. Receipt v3 does not decode frames.
+  VOK `verify_k3_wire_version_carrier`. `.fungi` `k3WireVersionCarrier()` = 1;
+  `k3WireVersionCarrierAgree`; TS frozen `UNKNOWN(ts-frozen-emitter)` reason 5
+  (`three-valued-governance.ts`, `trit-gates.ts` do not emit). Fixture schema
+  10. N-v: pin awaits `prebuildK3StrongKleenePin` then dynamic-imports
+  fixture and dist; `tscBin` walks to repo-root `node_modules/typescript/bin/tsc`
+  and refuses a bare `tsc`.
+- [x] **K3-PW** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-x merge
+  origin/main `bad441e9c` (commit `14d9be5a9`, parents `878552d9f`+`bad441e9c`).
+  Decision: the carrier must actually travel. `.fungi`
+  `k3PackageArtifactWireVersion()` = 2 (canonical) is the field SLIDE loads;
+  `k3EmitPackageArtifactCarrier` refuses unknown. SLIDE production loaders
+  `publication-loader` 568, `package-compiler` 231, `flat-package-abi` 481,
+  `loop-body-vok` 167, `vok-component-boundary` 118/120/511/513 route through
+  `decodeK3PackageGate` -> `decodeK3PackageFrame` with a canonical wrap so
+  bare 0 stays INVALID (F1). Additive `k3WireVersion` on publication artifacts.
+  TS frozen `UNKNOWN(ts-frozen-emitter)` reason 5 at
+  `three-valued-governance.ts:1`, `trit-gates.ts:1`,
+  `receipt-bound-slide-build.mjs:50`,
+  `production-boot-composition-candidate.ts:29` (Step Y/Z). Fixture schema 11
+  `packageArtifactFrames` e2e rows. N-z prebuild compiler tsc error names
+  `npm install / npm run build` in `galerina-core-compiler`.
+- [x] **K3-CR** (2026-10-28) on `grok/k3-frame-epoch-20261028`. N-ac merge
+  origin/main `c20cbbf6c` (MEM-R2 test+evidence). Decision: the carrier the
+  gate uses is the one on the artifact being loaded. Present known carrier
+  must agree with any frame header (else INVALID). Absent carrier during
+  Y-to-Z falls back to canonical 2, counted and capped like the legacy-0
+  bridge (`ABSENT_CARRIER_FALLBACK`, reason 6 in `.fungi`), never silently.
+  `.fungi` `k3AbsentCarrierFallbackVersion()` = 2;
+  `k3PackageArtifactWireVersion()` remains the emitter field. No other
+  `.fungi` package-artifact builder exists. TS/mjs emitters stay
+  `UNKNOWN(ts-frozen-emitter)` reason 5 at
+  `three-valued-governance.ts:1`, `trit-gates.ts:1`,
+  `receipt-bound-slide-build.mjs:50`,
+  `production-boot-composition-candidate.ts:29` (Step Y replaces each).
+  Fixture schema 12 `packageArtifactGates`. SUNSET the absent-carrier
+  fallback at Step Z with the legacy-0 path. Do not touch
+  `packages/fungi/memory`.
+- [x] **K3-CC** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Decision:
+  the loaded artifact or spec carrier decides wherever one exists; the
+  module constant is only for sites with genuinely no artifact or spec.
+  Publication-loader early request check is shape-only; gates decode once
+  against the selected artifact. Absent-carrier fallback counted once per
+  load. Optional `k3WireVersion` on flat-package-abi admission, loop-body-vok
+  specs and vok-component-boundary specs. Remaining CONSTANT-CARRIER:
+  `src/checked-fungi-package-compiler.mjs:exactGates`. Fixture schema 13
+  `descriptorSpecCarriers`. VOK `decode_k3_package_gate` legacy + 0 is
+  UNKNOWN. Do not touch `packages/fungi/memory`.
+- [x] **K3-CE** (2026-10-28) on `grok/k3-frame-epoch-20261028`. Decision:
+  the loaded artifact or spec carrier decides everywhere; the module
+  constant is retired. `K3_CONSTANT_CARRIER_SITES` is empty.
+  Publication-loader binds decode carrier to the loaded artifact
+  (absent-both equal, mismatch INVALID). Early refusal paths decode
+  without counting absent-carrier. Compiler compile/execute request takes
+  optional `k3WireVersion`. Fixture schema 14 `compilerRequestCarriers`
+  and `loaderCarrierBindings`. VOK `k3_wire_versions_agree`. PRE-BUILD:
+  `k3-strong-kleene-pin.test.mjs` has 7 `it()` cases; an 8-count appears
+  when a directory glob also collects the tower-citizen dist overlay from
+  `prebuildK3StrongKleenePin()` (`tsc -p tsconfig.k3-sk-pin.json`). The
+  STATUS block uses the explicit file path and reports 7. File unchanged.
+  Do not touch `packages/fungi/memory`.
+- [x] **K3-SZ** (2026-10-28) on `grok/k3-frame-epoch-20261028`. DECISION
+  KEEP 0 UNTIL STEP Z (PROVISIONAL, decidedBy Grok Bot, overridableBy
+  Phillip): prepare the flip without making it. Process constants
+  `LEGACY_UNKNOWN_ZERO_BRIDGE` and `ABSENT_CARRIER_FALLBACK_BRIDGE` stay
+  true. N-aj: present-unknown-on-both agrees and still refuses INVALID.
+  SLIDE dry-run sites (injected options, no production flip):
+  `src/checked-fungi-package-publication-loader.mjs`,
+  `src/checked-fungi-package-compiler.mjs`,
+  `src/flat-package-abi.mjs`,
+  `src/structured-counted-loop-body-vok.mjs`,
+  `src/vok-component-boundary.mjs`.
+  Readiness: `node scripts/k3-step-z-readiness.mjs` in SLIDE. VOK
+  `resolve_k3_package_carrier` / `decode_k3_package_gate_opts` take
+  explicit fallback and bridge inputs. Fixture schema 15 `stepZDryRun`.
+  F5 lattice-0 write sites stay OPEN (SLIDE TODO F5 file:line). Do not
+  touch `packages/fungi/memory`.
+- [x] **K3-FP** (2026-10-28) on `grok/k3-frame-epoch-20261028`. DECISION
+  KEEP 0 UNTIL STEP Z: SLIDE helper `k3ExternalVerdictOut` plus process
+  constant `K3_EXTERNAL_WIRE_OUTPUTS = false`. Production outputs stay
+  lattice 0. Injected `{ stepZ: true }` returns `k3LatticeToWire`
+  (UNKNOWN -> -128; ALLOW/DENY unchanged). VOK `k3_external_verdict_out`
+  takes `step_z` as an explicit input, not a constant. Nine INDETERMINATE
+  sites routed in SLIDE (AUTH 5 plus 4 extra). Fixture schema 16
+  `externalOutputs` (unknown-today 0, unknown-stepz -128, allow 1, deny
+  -1) identical bytes both repos. `K3_WIRE_HEADER_VERSION` stays 1.
+  UNKNOWN=-128. option-B and strong Kleene unchanged.
+- [x] **K3-ZR** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `e287e3492` (MEM-R3) as a merge commit (N-ao). Did not
+  edit `packages/fungi/memory`. SLIDE N-am goldens 9/9 through real
+  entry points; copy-only Step Z rehearsal; readiness
+  `rehearsalScript` true and `goldenPinnedSites` `9/9`. cargo
+  `k3fp_external_verdict_out_e2e` already covers AUTH (d); no new
+  cargo test. Process constants stay true/true/false. Fixture schema 16.
+- [x] **K3-ZT** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `1ab0d1608` (S6-1 D-2 fuse signature gate) as a merge
+  commit. Did not edit `packages/fungi/memory`. SLIDE N-ar nested TAP,
+  N-ap computed readiness, N-as lattice-0 arm, N-aq PIN/BREAK. Copy-only
+  rehearsal: base 294/0/10/307; step1 294/0/10; step2 260/34/10; step3
+  260/34/10; rollback matches; verdict NOT_READY; 34 BREAK OPEN-ZT-1..34
+  (absent-carrier close). OPEN-ZR-K3R-7 closed. OPEN-ZR-F5-CUMULATIVE
+  stays for compiler :656/:781. cargo none added. Fixture schema 16.
+  Process constants stay true/true/false. Flip stays Phillip's call.
+- [x] **K3-ZU** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `c5ec5b5e8` (MEM-R4/R5 arena steps) as a merge commit.
+  Did not edit `packages/fungi/memory`. SLIDE N-au gate default from
+  process LEGACY, N-av threaded production carrier, N-aw golden
+  self-check. Copy-only rehearsal READY: base 296/0/10/309; step1
+  296/0/10; step2 296/0/10; step3 296/0/10; rollback matches.
+  OPEN-ZT-1..35 closed. OPEN-ZR-F5-CUMULATIVE closed. cargo none
+  added. Fixture schema 16. Process constants stay true/true/false.
+  Flip stays Phillip's call.
+- [x] **K3-ZV** (2026-10-29) on `grok/k3-frame-epoch-20261028`. No
+  Galerina merge (origin/main still `c5ec5b5e8`). Did not edit
+  `packages/fungi/memory`. SLIDE N-ax removes fail-open Threaded
+  substitution; N-ay threads real owned/receipt/spec carriers;
+  N-az re-proves compiler :656/:783 at step3. Copy-only rehearsal
+  READY: base 310/0/10/324; step1 310/0/10; step2 310/0/10; step3
+  310/0/10; rollback matches. Re-opened then closed OPEN-ZT-1..34
+  with real carriers (0 remain; no PIN reclassify). OPEN-ZT-35
+  stays closed (N-au). OPEN-ZR-F5-CUMULATIVE closed. cargo none
+  added. Fixture schema 16. Process constants stay true/true/false.
+  Flip stays Phillip's call.
+- [x] **K3-ZW** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merged
+  origin/main `ec33550f5` (MEM-R6 release/re-alloc as arena steps) as
+  a merge commit. Did not edit `packages/fungi/memory` (those files
+  arrived via merge). SLIDE N-ba F5 title pins, N-bb plain-object
+  ownedCarrier, N-bc producer-carrier inventory, Step Z flip packet
+  (`docs/k3-step-z-flip-checklist.md` mirrored here; SLIDE
+  `scripts/k3-step-z-flip-plan.mjs --dry-run`), sunset clock alerts,
+  N-bd pre-build (prebuilt core compiler + tsc in node_modules).
+  cargo none added. Fixture schema 16. Process constants stay
+  true/true/false. Flip stays Phillip's call.
+- [x] **K3-ZX** (2026-10-29) on `grok/k3-frame-epoch-20261028`. No
+  Galerina merge (origin/main still `ec33550f5`). Did not edit
+  `packages/fungi/memory`. SLIDE N-be live-clock sunset guard, N-bf
+  effective alert date 2027-01-01T00:00:00Z next to 2027-01-18 and
+  EXPIRY_EPOCH 20261231, N-bg inventory classification cells,
+  merge-readiness packet (`docs/k3-merge-readiness.md` mirrored here).
+  Lockstep checks SLIDE expiry/removal unix against Galerina dates.
+  cargo none added. Fixture schema 16. Process constants stay
+  true/true/false. Flip stays Phillip's call. Merge stays Grok Bot.
+  ZX-4 is designed to go red from 2027-01-01T00:00:00Z while a bridge
+  is still true; that red is the sunset alert, not a regression.
+- [x] **K3-ZY** (2026-10-29) on `grok/k3-frame-epoch-20261028`. No
+  Galerina merge (origin/main still `ec33550f5`). Did not edit
+  `packages/fungi/memory`. N-bh merge-tree `--write-tree --name-only`,
+  N-bi `GALERINA_ROOT` documented, N-bj ZX-4 red-by-design, N-bk date
+  comment next to lockstep constants, post-merge runner
+  `scripts/k3-post-merge-check.mjs`. cargo none added. Fixture schema
+  16. Process constants stay true/true/false. Flip stays Phillip's
+  call. Merge stays Grok Bot.
+- [x] **K3-ZZ** (2026-10-29) on `grok/k3-frame-epoch-20261028`. Merge
+  origin/main `76297af31` (MEM-R7) with `--no-ff`; regen code-index;
+  lock `--write` then `--check`. Did not edit `packages/fungi/memory`
+  content brought in by the merge. N-bn post-merge now includes
+  merge-readiness and SLIDE whole-dir baseline. Merge rehearsal
+  `scripts/k3-merge-rehearsal.mjs` in temp clones only. cargo none
+  added. Fixture schema 16. Process constants stay true/true/false.
+  Flip stays Phillip's call. Merge stays Grok Bot.
+- [ ] **OPEN non-K3** SLIDE v2c/v2d Option-wrap recorded in SLIDE
+  `tests/known-red-baseline.json`. Not a K3 row.
+- [ ] **Step Z flip checklist** (Phillip's call; do not run this row).
+  Packet: `docs/k3-step-z-flip-checklist.md` (mirrored from SLIDE) and
+  SLIDE `node scripts/k3-step-z-flip-plan.mjs --dry-run`.
+  ZX-4 goes red from 2027-01-01T00:00:00Z while a bridge is true by
+  design (sunset alert, not a regression).
+  Readiness required: `legacyUnknownZeroReads` 0,
+  `absentCarrierFallbackReads` 0, `bareLegacyZeroRefusals` 0,
+  `f5RoutedSites` complete (`9/9`), `goldenPinnedSites` `9/9`,
+  `rehearsalScript` present true, `externalWireOutputs` false,
+  producer-carrier inventory unrecorded 0.
+  Order: (1) `LEGACY_UNKNOWN_ZERO_BRIDGE = false`, (2)
+  `ABSENT_CARRIER_FALLBACK_BRIDGE = false`, (3)
+  `K3_EXTERNAL_WIRE_OUTPUTS = true`. Delete nothing.
+  Rollback: restore the three constants to true / true / false.
+  Keep legacy-0 removal (by 2027-01-18), absent-carrier sunset and F5
+  OPEN until the flip. Do not touch `packages/fungi/memory`.
+  Pre-build (N-bd, N-ai): a fresh clone needs the prebuilt core
+  compiler and `tsc` under `node_modules`; then
+  `node packages-ts/galerina-tower-citizen/tests/prebuild-k3-strong-kleene-pin.mjs`
+  and the explicit path
+  `packages-ts/galerina-tower-citizen/tests/k3-strong-kleene-pin.test.mjs`
+  (7 tests; a dist glob can report 8).
 
 ## Fungi memory chapter wrap-up — 2026-10-26
 

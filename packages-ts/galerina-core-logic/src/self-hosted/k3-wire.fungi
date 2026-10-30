@@ -352,6 +352,198 @@ contract { intent { "UNKNOWN(fungi-alert-recorder-is-tally). Pure Fungi has no h
   return 0
 }
 
+pure flow k3AlertEvidenceUnknownReason() -> Int
+contract { intent { "Named non-zero reason for fungi-cannot-sha256-alert-evidence. Distinct from lattice 0." } }
+{
+  return 4
+}
+
+pure flow k3AlertEvidenceUnknown() -> Int
+contract { intent { "UNKNOWN(fungi-cannot-sha256-alert-evidence). Returns k3AlertEvidenceUnknownReason, never lattice 0." } }
+{
+  return k3AlertEvidenceUnknownReason()
+}
+
+pure flow k3WireVersionTsFrozenReason() -> Int
+contract { intent { "Named non-zero reason for UNKNOWN(ts-frozen-emitter). Distinct from lattice 0." } }
+{
+  return 5
+}
+
+pure flow k3WireVersionTsFrozen() -> Int
+contract { intent { "UNKNOWN(ts-frozen-emitter). TS three-valued-governance.ts:1 trit-gates.ts:1 receipt-bound-slide-build.mjs:50 production-boot-composition-candidate.ts:29 do not emit k3WireVersion. Step Y/Z replaces them." } }
+{
+  return k3WireVersionTsFrozenReason()
+}
+
+pure flow k3WireVersionCarrier() -> Int
+contract { intent { "Legacy-header constant matching K3_WIRE_HEADER_VERSION. The package-artifact field is k3PackageArtifactWireVersion." } }
+{
+  return k3VersionLegacy()
+}
+
+pure flow k3PackageArtifactWireVersion() -> Int
+contract { intent { "Field k3WireVersion emitted on Galerina package artifacts SLIDE loads. Canonical 2 so production gates wrap as canonical frames and bare 0 stays INVALID." } }
+{
+  return k3VersionCanonical()
+}
+
+pure flow k3EmitPackageArtifactCarrier(carrier: Int) -> Int
+contract { intent { "Emit k3WireVersion onto a package artifact. Unknown carrier refuses as -1. Known returns the field value." } }
+{
+  if carrier != k3VersionLegacy() {
+    if carrier != k3VersionCanonical() {
+      return -1
+    }
+  }
+  return carrier
+}
+
+pure flow k3AbsentCarrierFallbackReason() -> Int
+contract { intent { "Named non-zero reason for Y-to-Z absent-carrier fallback. Distinct from lattice 0 and ts-frozen reason 5. Count lives in SLIDE; fungi cannot hold the counter. SUNSET Step Z." } }
+{
+  return 6
+}
+
+pure flow k3AbsentCarrierFallbackVersion() -> Int
+contract { intent { "Absent artifact.k3WireVersion during Y-to-Z falls back to canonical 2 so bare 0 stays INVALID. SUNSET Step Z." } }
+{
+  return k3VersionCanonical()
+}
+
+pure flow k3WireVersionCarrierAgree(carrier: Int, header: Int) -> Int
+contract { intent { "Carrier/header agreement. Missing or unknown or disagree refuse as -1. Agree is 1." } }
+{
+  if carrier != k3VersionLegacy() {
+    if carrier != k3VersionCanonical() {
+      return -1
+    }
+  }
+  if header != k3VersionLegacy() {
+    if header != k3VersionCanonical() {
+      return -1
+    }
+  }
+  if carrier != header {
+    return -1
+  }
+  return 1
+}
+
+pure flow k3WireToLattice(wire: Int) -> Int
+contract { intent { "Canonical wire deny/unknown-wire/admit to lattice -1/0/1. Invalid is 2." } }
+{
+  if wire == -1 {
+    return -1
+  }
+  if wire == k3UnknownWire() {
+    return 0
+  }
+  if wire == 1 {
+    return 1
+  }
+  return 2
+}
+
+pure flow k3LatticeToWireSigned(lattice: Int) -> Int
+contract { intent { "Lattice -1/0/1 to signed wire deny/unknown-wire/admit. Invalid is 2." } }
+{
+  if lattice == -1 {
+    return -1
+  }
+  if lattice == 0 {
+    return k3UnknownWire()
+  }
+  if lattice == 1 {
+    return 1
+  }
+  return 2
+}
+
+pure flow k3WireAnd(a: Int, b: Int) -> Int
+contract { intent { "Strong Kleene AND on the wire. DENY AND UNKNOWN = DENY." } }
+{
+  let la: Int = k3WireToLattice(a)
+  let lb: Int = k3WireToLattice(b)
+  if la == 2 {
+    return 2
+  }
+  if lb == 2 {
+    return 2
+  }
+  if la == -1 {
+    return -1
+  }
+  if lb == -1 {
+    return -1
+  }
+  if la == 0 {
+    return k3UnknownWire()
+  }
+  if lb == 0 {
+    return k3UnknownWire()
+  }
+  return 1
+}
+
+pure flow k3WireOr(a: Int, b: Int) -> Int
+contract { intent { "Strong Kleene OR on the wire. ALLOW OR UNKNOWN = ALLOW." } }
+{
+  let la: Int = k3WireToLattice(a)
+  let lb: Int = k3WireToLattice(b)
+  if la == 2 {
+    return 2
+  }
+  if lb == 2 {
+    return 2
+  }
+  if la == 1 {
+    return 1
+  }
+  if lb == 1 {
+    return 1
+  }
+  if la == 0 {
+    return k3UnknownWire()
+  }
+  if lb == 0 {
+    return k3UnknownWire()
+  }
+  return -1
+}
+
+pure flow k3WireNot(a: Int) -> Int
+contract { intent { "Strong Kleene NOT on the wire. NOT UNKNOWN = UNKNOWN." } }
+{
+  let la: Int = k3WireToLattice(a)
+  if la == 2 {
+    return 2
+  }
+  if la == -1 {
+    return 1
+  }
+  if la == 1 {
+    return -1
+  }
+  return k3UnknownWire()
+}
+
+pure flow k3WireGate(a: Int) -> Int
+contract { intent { "Gate: only ALLOW passes. UNKNOWN and DENY refuse as DENY." } }
+{
+  let la: Int = k3WireToLattice(a)
+  if la == 1 {
+    return 1
+  }
+  return -1
+}
+
+pure flow k3WireAnd3(a: Int, b: Int, c: Int) -> Int
+contract { intent { "Strong Kleene AND of three wire values. DENY is sticky." } }
+{
+  return k3WireAnd(k3WireAnd(a, b), c)
+}
+
 pure flow k3SerialInstantUnixS(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
 contract { intent { "Z-implied civil instant to unix seconds. 0 on invalid date/time, Int overflow, or below the trusted floor. String ISO 8601 parse is SLIDE/VOK; Int cannot hold the 2100-01-01Z ceiling." } }
 {

@@ -92,6 +92,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prebuild:k3-sk-pin": "node tests/prebuild-k3-strong-kleene-pin.mjs",
     "test": "node ../../scripts/build-core-chain.mjs galerina-core-compiler galerina-core-sentinel-egress galerina-core-sentinel-io galerina-core-sentinel-memory galerina-core-sentinel-power galerina-core-sentinel-state galerina-core-sentinel-time galerina-ext-photonic-emulator && npm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
