@@ -2903,18 +2903,24 @@ Baseline comparison (governance-cost):
     // Marshal CLI args to WASM i32. Bool literals → 1/0; numbers → themselves. Fail LOUDLY on
     // anything else — the old `.map(Number)` turned BOTH "true" and "false" into NaN→i32 0→false,
     // so a wrong-but-plausible Bool arg silently fizzled to `false` with no error (dogfooding #3).
+    // MEM-R27 (gap 4.6/H13): marshal each argument by the flow's DECLARED parameter type, the
+    // same way the governed path does. Before this, Number(a) admitted "" (0), "1.5" (1), "1e3",
+    // "0x10" and any value beyond i32, which WebAssembly then wrapped (4294967300 became 4).
+    // Now Int takes only a canonical decimal inside i32, Bool only true/false, Float/Float64/Double
+    // only a plain finite decimal, and every other type is refused (use --governed). Rejected
+    // argument text is never echoed (MEM-R20).
+    const rawFlowMeta = (parsed.flows ?? []).find(f => f.name === flowName);
+    const rawParamTypes = rawFlowMeta ? (rawFlowMeta.params ?? []).map(declaredRawParamType) : null;
+    if (rawParamTypes !== null && rawParamTypes.some(t => t === "")) {
+      console.error(`REFUSED: raw invoke parameter metadata for '${flowName}' is malformed; execution denied.`);
+      process.exit(2);
+    }
     const args = (invokeIdx >= 0 ? rest.slice(invokeIdx + 2) : []).map((a, i) => {
-      if (a === "true") return 1;
-      if (a === "false") return 0;
-      const n = Number(a);
-      if (!Number.isFinite(n)) {
-        // MEM-R20 (gap 1.3/H4): name the argument by position only. A rejected
-        // argument can be a secret pasted by mistake, so its text is never echoed.
-        console.error(`\n  ✗ invoke argument #${i + 1} is not a valid Int or Bool (the value is not echoed).`);
-        console.error(`    Pass a number (e.g. 42, -3) or a Bool literal (true / false).\n`);
-        process.exit(2);
-      }
-      return n;
+      const declared = rawParamTypes !== null && i < rawParamTypes.length ? rawParamTypes[i] : "";
+      const r = marshalRawInvokeArg(a, declared);
+      if (r.ok === true) return r.value;
+      for (const line of rawInvokeRefusalLines(r.reason, i, declared)) console.error(line);
+      process.exit(2);
     });
 
     // ── Host runtime (P9.3) — the CANONICAL closed import object ───────────────
@@ -3020,6 +3026,95 @@ Baseline comparison (governance-cost):
 
   console.error(`Unknown command: ${command}. Run with --help.`);
   process.exit(1);
+}
+
+// ── MEM-R27 (gap 4.6/H13): raw WASM --invoke argument marshalling ─────────────────────────
+// .fungi Int lowers to a WebAssembly i32, so the raw path admits only what that lane holds
+// exactly. Each helper is pure and exported so the rules are pinned without spawning the CLI.
+export const RAW_INVOKE_I32_MIN = -2147483648;
+export const RAW_INVOKE_I32_MAX = 2147483647;
+// Longest admitted Int text is "-2147483648" (11 chars); Float text is capped well above any
+// value a person would type. Longer input is refused before any parsing.
+export const RAW_INVOKE_MAX_ARG_CHARS = 64;
+const RAW_INVOKE_INT_TEXT = /^-?(0|[1-9][0-9]*)$/u;
+const RAW_INVOKE_FLOAT_TEXT = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/u;
+// Float32/Float16 ride the f64 lane only as exact carriers (E5, provisional), so the raw path
+// refuses them rather than hand an unrounded value to that lane.
+const RAW_INVOKE_FLOAT_TYPES = new Set(["Float", "Float64", "Double"]);
+
+/** Declared type of a "name: Type" parameter string, or "" when the metadata is malformed. */
+export function declaredRawParamType(parameter) {
+  const text = String(parameter);
+  const separator = text.indexOf(":");
+  if (separator <= 0) return "";
+  const nameParts = text.slice(0, separator).trim().split(/\s+/);
+  const name = nameParts[nameParts.length - 1] ?? "";
+  const withMetadata = text.slice(separator + 1).trim();
+  const type = withMetadata.split(/\s+source_from\s+/u, 1)[0]?.trim() ?? "";
+  if (name === "" || type === "") return "";
+  return type;
+}
+
+/**
+ * Marshal one raw CLI argument for a parameter of the declared type ("" = flow metadata not
+ * found, which admits Bool literals or a canonical i32). Returns { ok: true, value } or
+ * { ok: false, reason } with reason one of RAW_ARG_NOT_TEXT, RAW_ARG_TOO_LONG, RAW_ARG_MALFORMED,
+ * RAW_ARG_I32_RANGE, RAW_ARG_TYPE_UNSUPPORTED. The reason never carries the argument text.
+ */
+export function marshalRawInvokeArg(text, declaredType) {
+  if (typeof text !== "string") return { ok: false, reason: "RAW_ARG_NOT_TEXT" };
+  if (text.length > RAW_INVOKE_MAX_ARG_CHARS) return { ok: false, reason: "RAW_ARG_TOO_LONG" };
+  const type = typeof declaredType === "string" ? declaredType.trim() : "";
+  if (type === "Bool") {
+    if (text === "true") return { ok: true, value: 1 };
+    if (text === "false") return { ok: true, value: 0 };
+    return { ok: false, reason: "RAW_ARG_MALFORMED" };
+  }
+  if (type === "Int" || type === "") {
+    if (type === "" && text === "true") return { ok: true, value: 1 };
+    if (type === "" && text === "false") return { ok: true, value: 0 };
+    if (!RAW_INVOKE_INT_TEXT.test(text) || text === "-0") return { ok: false, reason: "RAW_ARG_MALFORMED" };
+    if (text.length > 11) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
+    const n = Number(text);
+    if (!Number.isSafeInteger(n)) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
+    if (n < RAW_INVOKE_I32_MIN || n > RAW_INVOKE_I32_MAX) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
+    return { ok: true, value: n };
+  }
+  if (RAW_INVOKE_FLOAT_TYPES.has(type)) {
+    if (!RAW_INVOKE_FLOAT_TEXT.test(text)) return { ok: false, reason: "RAW_ARG_MALFORMED" };
+    const f = Number(text);
+    if (!Number.isFinite(f)) return { ok: false, reason: "RAW_ARG_MALFORMED" };
+    return { ok: true, value: Object.is(f, -0) ? 0 : f };
+  }
+  return { ok: false, reason: "RAW_ARG_TYPE_UNSUPPORTED" };
+}
+
+/** Operator-facing refusal lines. They name the argument by position and never echo its text. */
+export function rawInvokeRefusalLines(reason, index, declaredType) {
+  const pos = `invoke argument #${index + 1}`;
+  const type = typeof declaredType === "string" ? declaredType.trim() : "";
+  if (reason === "RAW_ARG_I32_RANGE") {
+    return [
+      `\n  ✗ ${pos} is not a valid Int or Bool: Int is a 32-bit integer from ${RAW_INVOKE_I32_MIN} to ${RAW_INVOKE_I32_MAX} (the value is not echoed).`,
+      `    Values outside that range are refused instead of wrapping.\n`,
+    ];
+  }
+  if (reason === "RAW_ARG_TYPE_UNSUPPORTED") {
+    return [
+      `\n  ✗ ${pos} is for a parameter the raw WASM path cannot marshal (the value is not echoed).`,
+      `    Only Int, Bool, Float, Float64 and Double are admitted here; use --governed for other types.\n`,
+    ];
+  }
+  if (RAW_INVOKE_FLOAT_TYPES.has(type)) {
+    return [
+      `\n  ✗ ${pos} is not a valid Float (the value is not echoed).`,
+      `    Pass a plain decimal such as 2.5 or -3; exponents, hex, NaN and Infinity are refused.\n`,
+    ];
+  }
+  return [
+    `\n  ✗ ${pos} is not a valid Int or Bool (the value is not echoed).`,
+    `    Pass a plain decimal integer (e.g. 42, -3) or a Bool literal (true / false).\n`,
+  ];
 }
 
 function isDirectRun() {

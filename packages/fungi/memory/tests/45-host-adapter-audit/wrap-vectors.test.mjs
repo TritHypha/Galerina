@@ -42,23 +42,26 @@ function invokeEcho(argList, galerinaPath) {
   return { status: r.status, text, present, value, reason, stdout: r.stdout || "", stderr: r.stderr || "" };
 }
 
+// MEM-R27 (gap 4.6/H13): Q45 first characterised the raw path as Number(a) then WebAssembly
+// ToInt32, so out-of-range, fractional and empty arguments wrapped silently. The raw path now
+// refuses everything that is not a canonical decimal inside i32 (exit 2, nothing reaches WASM).
 const VECTORS = Object.freeze([
   { input: "0", admitted: true, wasm: 0 },
   { input: "1", admitted: true, wasm: 1 },
   { input: "-1", admitted: true, wasm: -1 },
   { input: "2147483647", admitted: true, wasm: 2147483647 },
-  { input: "2147483648", admitted: true, wasm: -2147483648 },
+  { input: "2147483648", admitted: false, wasm: 0 },
   { input: "-2147483648", admitted: true, wasm: -2147483648 },
-  { input: "-2147483649", admitted: true, wasm: 2147483647 },
-  { input: "4294967295", admitted: true, wasm: -1 },
-  { input: "4294967296", admitted: true, wasm: 0 },
-  { input: "4294967300", admitted: true, wasm: 4 },
-  { input: "9007199254740991", admitted: true, wasm: -1 },
-  { input: "9007199254740992", admitted: true, wasm: 0 },
-  { input: "9223372036854775807", admitted: true, wasm: 0 },
+  { input: "-2147483649", admitted: false, wasm: 0 },
+  { input: "4294967295", admitted: false, wasm: 0 },
+  { input: "4294967296", admitted: false, wasm: 0 },
+  { input: "4294967300", admitted: false, wasm: 0 },
+  { input: "9007199254740991", admitted: false, wasm: 0 },
+  { input: "9007199254740992", admitted: false, wasm: 0 },
+  { input: "9223372036854775807", admitted: false, wasm: 0 },
   { input: "abc", admitted: false, wasm: 0 },
-  { input: "1.5", admitted: true, wasm: 1 },
-  { input: "", admitted: true, wasm: 0 },
+  { input: "1.5", admitted: false, wasm: 0 },
+  { input: "", admitted: false, wasm: 0 },
 ]);
 
 test("echo.fungi check admits the identity flow", () => {
@@ -70,7 +73,7 @@ test("echo.fungi check admits the identity flow", () => {
   assert.equal(r.status, 0, (r.stdout || "") + (r.stderr || ""));
 });
 
-test("Q2 wrap vectors: Number then WebAssembly ToInt32 at fn(...args)", () => {
+test("Q2 wrap vectors: only canonical i32 reaches fn(...args) (MEM-R27)", () => {
   let i = 0;
   while (i < VECTORS.length) {
     const row = VECTORS[i];
@@ -91,22 +94,23 @@ test("Q2 wrap vectors: Number then WebAssembly ToInt32 at fn(...args)", () => {
   }
 });
 
-test("mutant refuse n>2147483647 turns 4294967300 RED then restore", () => {
+test("mutant restoring the old Number(a) wrap turns 4294967300 RED then restore", () => {
   const orig = readFileSync(GALERINA, "utf8");
-  const needle = "const n = Number(a);";
+  const needle = "const r = marshalRawInvokeArg(a, declared);";
   const parts = orig.split(needle);
-  assert.equal(parts.length, 2, "marshal Number(a) must be unique");
-  const mutant = orig.replace(needle, "const n = Number(a); if (n > 2147483647) { process.exit(2); }");
+  assert.equal(parts.length, 2, "raw marshal call must be unique");
+  const mutant = orig.replace(needle, "const r = { ok: true, value: Number(a) };");
   assert.notEqual(mutant, orig, "mutant must change galerina.mjs marshal");
   const mutantPath = join(REPO, "__q45_mutant_galerina.mjs");
   writeFileSync(mutantPath, mutant);
   try {
     const live = invokeEcho(["4294967300"]);
-    assert.equal(live.status, 0, live.text);
-    assert.equal(live.value, 4, live.text);
+    assert.equal(live.status, 2, live.text);
+    assert.equal(live.present, false, live.text);
     const red = invokeEcho(["4294967300"], mutantPath);
-    assert.equal(red.status, 2, "mutant must refuse 4294967300 " + red.text);
-    assert.notEqual(red.status, live.status, "mutant diverges from live admit");
+    assert.equal(red.status, 0, "mutant must wrap 4294967300 " + red.text);
+    assert.equal(red.value, 4, "mutant wraps to 4 " + red.text);
+    assert.notEqual(red.status, live.status, "mutant diverges from live refusal");
   } finally {
     if (existsSync(mutantPath)) rmSync(mutantPath, { force: true });
   }
