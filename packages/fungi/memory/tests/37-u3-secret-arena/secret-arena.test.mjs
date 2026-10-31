@@ -327,8 +327,13 @@ test("MUST-REFUSE quarantined epoch lastEpoch at i32 max is 140 never a trap", (
   expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "state quarantined last max");
   expectPacked(epoch({ stateToken: 1, lastEpoch: 2147483647, fenceEpoch: 2147483647 }), 140, "state quarantined both max");
   expectPacked(epoch({ statusToken: 2, lastEpoch: 2147483647, fenceEpoch: 0 }), 140, "frame quarantined last max");
-  expectPacked(epoch({ lastEpoch: 2147483648, fenceEpoch: 0 }), 140, "wide lastEpoch");
-  expectPacked(epoch({ fenceEpoch: 2147483648 }), 140, "wide fenceEpoch");
+  // MEM-R27: the raw --invoke path now refuses a value outside i32 before the flow runs
+  // (exit 2, no value), so a wide epoch can no longer reach the flow at all.
+  for (const [o, label] of [[{ lastEpoch: 2147483648, fenceEpoch: 0 }, "wide lastEpoch"], [{ fenceEpoch: 2147483648 }, "wide fenceEpoch"]]) {
+    const r = epoch(o);
+    assert.equal(r.status, 2, label + " refused at the CLI " + r.text);
+    assert.equal(r.present, false, label + " no value " + r.text);
+  }
 });
 
 test("MUST-ADMIT use wiped-ok once-void", () => {
