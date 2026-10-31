@@ -82,18 +82,41 @@ fn read_exact_n(reader: &mut impl Read, n: usize) -> io::Result<Vec<u8>> {
     Ok(buf)
 }
 
-fn read_frame(reader: &mut impl Read) -> io::Result<Vec<u8>> {
+/// Read one length-prefixed request frame.
+///
+/// `Ok(None)` means a clean EOF exactly on a frame boundary (no header byte
+/// arrived), which is the only way the loop exits 0. MEM-R19 (gap map 3.5 /
+/// H11): a partial header (1 to 3 bytes), a zero or oversize declared length,
+/// or a body shorter than its declared length is a protocol error, so the
+/// loop exits 1. Before MEM-R19 a truncated header or body was read as a
+/// clean shutdown (exit 0), hiding a cut-off request from the parent.
+fn read_frame(reader: &mut impl Read) -> io::Result<Option<Vec<u8>>> {
     let mut header = [0_u8; 4];
-    if let Err(error) = reader.read_exact(&mut header) {
+    let mut got = 0usize;
+    while got < header.len() {
+        match reader.read(&mut header[got..]) {
+            Ok(0) => break,
+            Ok(n) => got += n,
+            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+            Err(error) => {
+                wipe_volatile(&mut header);
+                return Err(error);
+            }
+        }
+    }
+    if got == 0 {
+        return Ok(None);
+    }
+    if got < header.len() {
         wipe_volatile(&mut header);
-        return Err(error);
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "frame"));
     }
     let len = u32::from_be_bytes(header);
     wipe_volatile(&mut header);
     if len == 0 || len > MAX_FRAME {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "frame"));
     }
-    read_exact_n(reader, len as usize)
+    read_exact_n(reader, len as usize).map(Some)
 }
 
 fn unbuffered_stdio() -> (File, File) {
@@ -149,9 +172,87 @@ fn read_name(payload: &[u8]) -> Result<(&str, &[u8]), SecretArenaError> {
     Ok((name, &payload[2 + name_len..]))
 }
 
+/// HAS and GET carry exactly one name and nothing after it (MEM-R19, H11
+/// length equality): trailing bytes are refused as INVALID, so a lookup
+/// can't carry a smuggled value and a framing slip can't be read as a name.
+fn read_name_exact(payload: &[u8]) -> Result<&str, SecretArenaError> {
+    let (name, rest) = read_name(payload)?;
+    if !rest.is_empty() {
+        return Err(SecretArenaError::InvalidLength);
+    }
+    Ok(name)
+}
+
+/// H5 (gap map 1.5): before any secret can arrive, make the custodian
+/// non-dumpable (`PR_SET_DUMPABLE` 0) and give it a zero core-file limit,
+/// then read both back. A crash then writes no core, and a same-uid process
+/// can't attach or read `/proc/<pid>/mem`. This adds to memfd_secret, which
+/// already keeps arena pages out of dumps and swap; it also covers the
+/// request and reply buffers on the ordinary heap. Fail closed: if any call
+/// or read-back disagrees, `apply` returns false and the custodian refuses
+/// before opening the store.
+#[cfg(target_os = "linux")]
+#[allow(unsafe_code)]
+mod harden {
+    use std::ffi::{c_int, c_ulong};
+
+    const PR_GET_DUMPABLE: c_int = 3;
+    const PR_SET_DUMPABLE: c_int = 4;
+    const RLIMIT_CORE: c_int = 4;
+
+    #[repr(C)]
+    struct RLimit {
+        cur: c_ulong,
+        max: c_ulong,
+    }
+
+    extern "C" {
+        fn prctl(option: c_int, ...) -> c_int;
+        fn setrlimit(resource: c_int, limit: *const RLimit) -> c_int;
+        fn getrlimit(resource: c_int, limit: *mut RLimit) -> c_int;
+    }
+
+    pub(super) fn apply() -> bool {
+        let zero = RLimit { cur: 0, max: 0 };
+        // SAFETY: `zero` is a live, initialised rlimit for the duration of the
+        // call; setrlimit only reads it.
+        let core_set = unsafe { setrlimit(RLIMIT_CORE, &zero) } == 0;
+        // SAFETY: PR_SET_DUMPABLE takes integer arguments only, no pointers.
+        let dump_set = unsafe {
+            prctl(PR_SET_DUMPABLE, 0 as c_ulong, 0 as c_ulong, 0 as c_ulong, 0 as c_ulong)
+        } == 0;
+        core_set && dump_set && confirmed()
+    }
+
+    /// Read both settings back; trust the kernel's answer, not the set calls.
+    fn confirmed() -> bool {
+        let mut core = RLimit { cur: 1, max: 1 };
+        // SAFETY: `core` is a live, writable rlimit owned by this frame.
+        let core_read = unsafe { getrlimit(RLIMIT_CORE, &mut core) } == 0;
+        // SAFETY: PR_GET_DUMPABLE takes integer arguments only, no pointers.
+        let dumpable = unsafe {
+            prctl(PR_GET_DUMPABLE, 0 as c_ulong, 0 as c_ulong, 0 as c_ulong, 0 as c_ulong)
+        };
+        core_read && core.cur == 0 && core.max == 0 && dumpable == 0
+    }
+}
+
+/// No portable non-dumpable switch here, so refuse: the store has no
+/// memfd_secret off Linux and would refuse at open anyway.
+#[cfg(not(target_os = "linux"))]
+mod harden {
+    pub(super) fn apply() -> bool {
+        false
+    }
+}
+
 /// Blocking request loop. Exits the process on a fatal protocol or store-open failure.
 pub fn run_secret_arena_custodian() -> ! {
     let (mut stdin, mut stdout) = unbuffered_stdio();
+    if !harden::apply() {
+        let _ = reply(&mut stdout, ST_UNSUPPORTED, &[]);
+        process::exit(2);
+    }
     let mut store = match SecretArenaStore::open() {
         Ok(store) => store,
         Err(error) => {
@@ -162,8 +263,8 @@ pub fn run_secret_arena_custodian() -> ! {
 
     loop {
         let mut frame = match read_frame(&mut stdin) {
-            Ok(frame) => frame,
-            Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => process::exit(0),
+            Ok(Some(frame)) => frame,
+            Ok(None) => process::exit(0),
             Err(_) => process::exit(1),
         };
         if handle_frame(&mut store, &mut frame, &mut stdout).is_err() {
@@ -220,8 +321,8 @@ fn dispatch(
             }
         }
         OP_HAS => {
-            let (name, _) = match read_name(rest) {
-                Ok(pair) => pair,
+            let name = match read_name_exact(rest) {
+                Ok(name) => name,
                 Err(error) => return Ok((status_of(error), Vec::new())),
             };
             if store.quarantined() {
@@ -233,8 +334,8 @@ fn dispatch(
             }
         }
         OP_GET => {
-            let (name, _) = match read_name(rest) {
-                Ok(pair) => pair,
+            let name = match read_name_exact(rest) {
+                Ok(name) => name,
                 Err(error) => return Ok((status_of(error), Vec::new())),
             };
             match store.get(name) {
@@ -242,6 +343,9 @@ fn dispatch(
                 Err(error) => Ok((status_of(error), Vec::new())),
             }
         }
+        // CLEANUP, STATUS and EPOCH carry no operand (H11): any trailing byte
+        // is INVALID and the operation does not run.
+        OP_CLEANUP | OP_STATUS | OP_EPOCH if !rest.is_empty() => Ok((ST_INVALID, Vec::new())),
         OP_CLEANUP => match store.cleanup() {
             Ok(()) => Ok((ST_OK, Vec::new())),
             Err(error) => Ok((status_of(error), Vec::new())),
@@ -403,10 +507,10 @@ mod canary_tests {
     #[test]
     fn missing_canary_names_report_absence_only() {
         let mut store = SecretArenaStore::unopened_for_tests();
-        let (status, data) = one(&mut store, "get missing canary", named(OP_GET, CANARY, CANARY));
+        let (status, data) = one(&mut store, "get missing canary", named(OP_GET, CANARY, b""));
         assert_eq!(status, ST_NOT_FOUND);
         assert!(data.is_empty());
-        let (status, data) = one(&mut store, "has missing canary", named(OP_HAS, CANARY, CANARY));
+        let (status, data) = one(&mut store, "has missing canary", named(OP_HAS, CANARY, b""));
         assert_eq!((status, data), (ST_OK, vec![0]));
     }
 
@@ -509,5 +613,188 @@ mod canary_tests {
         let (status, data) = one(&mut store, "has after cleanup", named(OP_HAS, CANARY, b""));
         assert_eq!((status, data), (ST_OK, vec![0]));
         assert!(!store.quarantined());
+    }
+}
+
+/// MEM-R19 (gap map 3.5 / H11): frame-boundary EOF and exact operand lengths.
+/// Synthetic data only.
+#[cfg(test)]
+mod frame_length_tests {
+    use std::io::{self, Cursor, Read};
+
+    use super::*;
+
+    const CANARY: &[u8] = b"SYNTH-CANARY-7f3a";
+
+    fn framed(payload: &[u8]) -> Vec<u8> {
+        let mut out = (payload.len() as u32).to_be_bytes().to_vec();
+        out.extend_from_slice(payload);
+        out
+    }
+
+    fn named(opcode: u8, name: &[u8], value: &[u8]) -> Vec<u8> {
+        let mut frame = vec![opcode];
+        frame.extend_from_slice(&(name.len() as u16).to_be_bytes());
+        frame.extend_from_slice(name);
+        frame.extend_from_slice(value);
+        frame
+    }
+
+    /// Hands out at most one byte per read, with an Interrupted before each,
+    /// so every short-read and retry path in read_frame runs.
+    struct Trickle {
+        bytes: Vec<u8>,
+        at: usize,
+        interrupt_next: bool,
+    }
+
+    impl Trickle {
+        fn new(bytes: Vec<u8>) -> Self {
+            Self { bytes, at: 0, interrupt_next: true }
+        }
+    }
+
+    impl Read for Trickle {
+        fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+            if self.interrupt_next {
+                self.interrupt_next = false;
+                return Err(io::Error::new(io::ErrorKind::Interrupted, "again"));
+            }
+            self.interrupt_next = true;
+            if self.at >= self.bytes.len() || buf.is_empty() {
+                return Ok(0);
+            }
+            buf[0] = self.bytes[self.at];
+            self.at += 1;
+            Ok(1)
+        }
+    }
+
+    struct Failing;
+
+    impl Read for Failing {
+        fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+            Err(io::Error::new(io::ErrorKind::BrokenPipe, "closed"))
+        }
+    }
+
+    fn handle(store: &mut SecretArenaStore, frame: Vec<u8>) -> (u8, Vec<u8>) {
+        let mut frame = frame;
+        let mut out = Vec::new();
+        handle_frame(store, &mut frame, &mut out).expect("in-memory write");
+        assert!(frame.iter().all(|b| *b == 0), "request frame wiped");
+        assert!(out.len() >= 5, "one reply frame");
+        let len = u32::from_be_bytes([out[0], out[1], out[2], out[3]]) as usize;
+        assert_eq!(out.len(), 4 + len, "exactly one reply frame");
+        (out[4], out[5..].to_vec())
+    }
+
+    #[test]
+    fn clean_eof_on_a_frame_boundary_is_none() {
+        assert!(read_frame(&mut Cursor::new(Vec::<u8>::new())).expect("eof").is_none());
+        assert!(read_frame(&mut Trickle::new(Vec::new())).expect("eof").is_none());
+    }
+
+    #[test]
+    fn a_partial_header_is_a_protocol_error_not_a_clean_exit() {
+        for cut in 1..4 {
+            let header = 5_u32.to_be_bytes()[..cut].to_vec();
+            let error = read_frame(&mut Cursor::new(header.clone())).expect_err("partial header");
+            assert_eq!(error.kind(), io::ErrorKind::InvalidData, "cut {cut}");
+            let error = read_frame(&mut Trickle::new(header)).expect_err("partial header");
+            assert_eq!(error.kind(), io::ErrorKind::InvalidData, "trickled cut {cut}");
+        }
+    }
+
+    #[test]
+    fn a_body_shorter_than_declared_is_an_error_at_every_cut() {
+        let whole = framed(CANARY);
+        for cut in 5..whole.len() {
+            let error = read_frame(&mut Cursor::new(whole[..cut].to_vec())).expect_err("short body");
+            assert_eq!(error.kind(), io::ErrorKind::UnexpectedEof, "cut {cut}");
+            assert!(!format!("{error:?}").contains("SYNTH"), "error carries no bytes");
+        }
+    }
+
+    #[test]
+    fn trickled_frames_read_whole_then_stop_cleanly() {
+        let mut bytes = framed(&[OP_STATUS]);
+        bytes.extend(framed(&named(OP_HAS, b"synthetic-name", b"")));
+        let mut reader = Trickle::new(bytes);
+        assert_eq!(read_frame(&mut reader).expect("first"), Some(vec![OP_STATUS]));
+        assert_eq!(
+            read_frame(&mut reader).expect("second"),
+            Some(named(OP_HAS, b"synthetic-name", b""))
+        );
+        assert!(read_frame(&mut reader).expect("boundary").is_none());
+    }
+
+    #[test]
+    fn a_failing_reader_is_an_error_not_eof() {
+        let error = read_frame(&mut Failing).expect_err("broken");
+        assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
+    }
+
+    #[test]
+    fn lookups_with_trailing_bytes_are_invalid_and_echo_nothing() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [OP_HAS, OP_GET] {
+            for tail in [&b"x"[..], CANARY, &[0_u8][..]] {
+                let (status, data) = handle(&mut store, named(opcode, b"synthetic-name", tail));
+                assert_eq!((status, data.is_empty()), (ST_INVALID, true), "op {opcode}");
+            }
+            let (status, _) = handle(&mut store, named(opcode, b"synthetic-name", b""));
+            assert_ne!(status, ST_INVALID, "exact lookup still accepted, op {opcode}");
+        }
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn no_operand_ops_with_trailing_bytes_are_invalid() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [OP_CLEANUP, OP_STATUS, OP_EPOCH] {
+            let mut frame = vec![opcode];
+            frame.extend_from_slice(CANARY);
+            let (status, data) = handle(&mut store, frame);
+            assert_eq!((status, data.is_empty()), (ST_INVALID, true), "op {opcode}");
+            let (status, data) = handle(&mut store, vec![opcode, 0]);
+            assert_eq!((status, data.is_empty()), (ST_INVALID, true), "op {opcode} + NUL");
+        }
+        assert_eq!(handle(&mut store, vec![OP_STATUS]), (ST_OK, vec![0]));
+        assert_eq!(handle(&mut store, vec![OP_EPOCH]).0, ST_OK);
+        assert_eq!(handle(&mut store, vec![OP_CLEANUP]), (ST_OK, Vec::new()));
+    }
+
+    /// A CLEANUP with a trailing byte must not run: a stored name survives.
+    #[test]
+    fn cleanup_with_a_trailing_byte_does_not_clean_up() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let (status, _) = handle(&mut store, named(OP_PUT, b"synthetic-name", b"synthetic-value"));
+        if status == ST_UNSUPPORTED {
+            return; // no secretmem on this host: nothing stored to observe.
+        }
+        assert_eq!(status, ST_OK);
+        let epoch = handle(&mut store, vec![OP_EPOCH]).1;
+        assert_eq!(handle(&mut store, vec![OP_CLEANUP, 1]), (ST_INVALID, Vec::new()));
+        assert_eq!(
+            handle(&mut store, named(OP_HAS, b"synthetic-name", b"")),
+            (ST_OK, vec![1]),
+            "name survives a refused cleanup"
+        );
+        assert_eq!(handle(&mut store, vec![OP_EPOCH]).1, epoch, "epoch unchanged");
+        assert_eq!(handle(&mut store, vec![OP_CLEANUP]), (ST_OK, Vec::new()));
+        assert_eq!(
+            handle(&mut store, named(OP_HAS, b"synthetic-name", b"")),
+            (ST_OK, vec![0])
+        );
+    }
+
+    #[test]
+    fn a_put_still_carries_its_value_after_the_name() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let (status, data) = handle(&mut store, named(OP_PUT, b"synthetic-name", b"v"));
+        assert!(status == ST_OK || status == ST_UNSUPPORTED, "put status {status}");
+        assert!(data.is_empty());
+        let _ = handle(&mut store, vec![OP_CLEANUP]);
     }
 }
