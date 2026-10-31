@@ -1,0 +1,29 @@
+@version 1
+/// @file: mr30-widths.fungi
+/// @purpose: MEM-R30 (gap 4.6/H13) synthetic flows: Int is an alias of Int32 (checked i32),
+/// Int64 is the 64-bit built-in. Runs on both the raw WASM and the governed CLI paths.
+
+pure flow echoInt(x: Int) -> Int {
+  return x
+}
+
+pure flow echoInt32(x: Int32) -> Int32 {
+  return x
+}
+
+pure flow mixInt(a: Int, b: Int32) -> Int {
+  return a + b
+}
+
+pure flow echoI64(x: Int64) -> Int64 {
+  return x
+}
+
+pure flow pickBool(b: Bool) -> Int {
+  if b { return 777 }
+  return 333
+}
+
+pure flow i64Max() -> Int64 {
+  return 9223372036854775807
+}

@@ -99,7 +99,7 @@ test("mutant restoring the old Number(a) wrap turns 4294967300 RED then restore"
   const needle = "const r = marshalRawInvokeArg(a, declared);";
   const parts = orig.split(needle);
   assert.equal(parts.length, 2, "raw marshal call must be unique");
-  const mutant = orig.replace(needle, "const r = { ok: true, value: Number(a) };");
+  const mutant = orig.replace(needle, "const r = { ok: true, verdict: \"ALLOW\", value: Number(a) };");
   assert.notEqual(mutant, orig, "mutant must change galerina.mjs marshal");
   const mutantPath = join(REPO, "__q45_mutant_galerina.mjs");
   writeFileSync(mutantPath, mutant);

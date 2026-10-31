@@ -2249,47 +2249,27 @@ Baseline comparison (governance-cost):
         );
         process.exit(2);
       }
-      const gargs = new Map();
+      // MEM-R30 (gap 4.6/H13): the governed path marshals through the SAME declared-type admission as
+      // raw --invoke (admitInvokeArg). Each argument yields a K3 verdict (ALLOW / DENY / UNKNOWN); the
+      // verdicts fold with strong Kleene AND (min) and only an exact ALLOW runs. Int/Int32 are canonical
+      // decimals inside i32 (the old check admitted anything up to 2^53), Int64/UInt64 are parsed as
+      // BigInt within their exact ranges and never pass through Number. Rejected text is never echoed.
       for (let i = 0; i < gparams.length; i++) {
-        const parameter = gparams[i];
-        const raw = gposArgs[i];
-        if (parameter === undefined || raw === undefined) {
+        if (gparams[i] === undefined || gposArgs[i] === undefined) {
           console.error(`REFUSED: governed argument #${i + 1} has no exact parameter binding; execution denied.`);
           process.exit(2);
         }
-        if (parameter.type === "Bool") {
-          if (raw !== "true" && raw !== "false") {
-            console.error(
-              `REFUSED: governed argument #${i + 1} for parameter '${parameter.name}' declared Bool is invalid; ` +
-              `expected true or false.`,
-            );
-            process.exit(2);
-          }
-          gargs.set(parameter.name, { __tag: "bool", value: raw === "true" });
-          continue;
-        }
-        if (parameter.type === "Int") {
-          const value = /^-?(0|[1-9][0-9]*)$/u.test(raw) ? Number(raw) : Number.NaN;
-          if (!Number.isSafeInteger(value)) {
-            console.error(
-              `REFUSED: governed argument #${i + 1} for parameter '${parameter.name}' declared Int is invalid; ` +
-              `expected a canonical signed decimal safe integer.`,
-            );
-            process.exit(2);
-          }
-          gargs.set(parameter.name, { __tag: "int", value });
-          continue;
-        }
-        if (parameter.type === "String") {
-          gargs.set(parameter.name, { __tag: "string", value: raw });
-          continue;
-        }
-        console.error(
-          `REFUSED: governed CLI cannot marshal argument #${i + 1} for parameter '${parameter.name}' ` +
-          `declared ${parameter.type}; use a typed admitted execution surface.`,
-        );
+      }
+      const gverdicts = gparams.map((parameter, i) => admitInvokeArg(gposArgs[i], parameter.type, "governed"));
+      const gfold = foldInvokeArgVerdicts(gverdicts);
+      if (gfold.verdict !== "ALLOW") {
+        const at = gfold.index;
+        const parameter = gparams[at];
+        console.error(governedRefusalLine(gfold.verdict, gfold.reason, at, parameter?.name ?? "", parameter?.type ?? ""));
         process.exit(2);
       }
+      const gargs = new Map();
+      for (let i = 0; i < gparams.length; i++) gargs.set(gparams[i].name, gverdicts[i].value);
 
       const gres = await m.run(source, fungiFile, gflow, gargs, { mode: "dev" });
 
@@ -2305,6 +2285,8 @@ Baseline comparison (governance-cost):
         if (!val) return "(void)";
         switch (val.__tag) {
           case "int": case "byte": case "float": return String(val.value);
+          // MEM-R30: 64-bit values carry a bigint; print its exact decimal (JSON.stringify threw on it).
+          case "int64": case "uint64": return typeof val.value === "bigint" ? val.value.toString() : "<error: invalid 64-bit payload>";
           case "bool": return val.value ? "true" : "false";
           case "string": return JSON.stringify(val.value);
           case "void": return "(void)";
@@ -2321,6 +2303,13 @@ Baseline comparison (governance-cost):
       };
       const gexec = gres.execution;
       const geffects = gexec?.audit?.effectsObserved ?? gexec?.effectsObserved ?? [];
+      // MEM-R30: a result declared Int/Int32 (or a narrower width) must fit that width exactly. A
+      // 64-bit value or an out-of-range int is refused (DENY), never truncated or rounded for display.
+      const gnarrow = checkDeclaredIntegerResult(gres.value, gmeta.returnType ?? "");
+      if (gnarrow !== null) {
+        console.error(`REFUSED: governed result of '${gflow}' does not fit declared ${String(gmeta.returnType).trim()} (K3 DENY ${gnarrow}); the value is not printed.`);
+        process.exit(2);
+      }
       console.log(render(gres.value));
       console.log(`\n🛡  governed · flow=${gflow} · tier=${gexec?.executionTier ?? "tree"} · effects=[${geffects.join(", ")}]`);
       return;
@@ -2915,13 +2904,30 @@ Baseline comparison (governance-cost):
       console.error(`REFUSED: raw invoke parameter metadata for '${flowName}' is malformed; execution denied.`);
       process.exit(2);
     }
-    const args = (invokeIdx >= 0 ? rest.slice(invokeIdx + 2) : []).map((a, i) => {
-      const declared = rawParamTypes !== null && i < rawParamTypes.length ? rawParamTypes[i] : "";
-      const r = marshalRawInvokeArg(a, declared);
-      if (r.ok === true) return r.value;
-      for (const line of rawInvokeRefusalLines(r.reason, i, declared)) console.error(line);
+    // MEM-R30: every argument is admitted first, then the K3 verdicts fold (strong Kleene AND); the
+    // first argument holding the folded verdict is reported. Only an all-ALLOW vector reaches WASM.
+    const rawTexts = invokeIdx >= 0 ? rest.slice(invokeIdx + 2) : [];
+    const rawDeclared = rawTexts.map((_, i) => (rawParamTypes !== null && i < rawParamTypes.length ? rawParamTypes[i] : ""));
+    // S2 X-N1 exact arity is decided before any argument is admitted, so a surplus or missing argument
+    // reports the arity refusal rather than a per-argument type verdict.
+    if (rawParamTypes !== null && rawTexts.length !== rawParamTypes.length) {
+      console.error(
+        `REFUSED: raw invoke of '${flowName}' expected ${rawParamTypes.length} positional argument(s) ` +
+        `but received ${rawTexts.length}; exact arity is required.`,
+      );
       process.exit(2);
+    }
+    const rawResults = rawTexts.map((a, i) => {
+      const declared = rawDeclared[i];
+      const r = marshalRawInvokeArg(a, declared);
+      return r;
     });
+    const rawFold = foldInvokeArgVerdicts(rawResults);
+    if (rawFold.verdict !== "ALLOW") {
+      for (const line of rawInvokeRefusalLines(rawFold.reason, rawFold.index, rawDeclared[rawFold.index])) console.error(line);
+      process.exit(2);
+    }
+    const args = rawResults.map((r) => r.value);
 
     // ── Host runtime (P9.3) — the CANONICAL closed import object ───────────────
     // Single source of truth: createHostRuntime() (wasm-runtime.ts) — the registry the
@@ -2955,6 +2961,11 @@ Baseline comparison (governance-cost):
       return parts;
     }
     function formatRunOutput(raw, declaredType) {
+      // MEM-R30: an i64 export returns a bigint; print the exact decimal (console.log showed "123n").
+      if (typeof raw === "bigint") {
+        const bt = String(declaredType).trim();
+        return (bt === "UInt64" ? BigInt.asUintN(64, raw) : raw).toString();
+      }
       if (typeof raw !== "number") return raw;
       const t = String(declaredType).trim();
       if (t === "String") {
@@ -3020,6 +3031,11 @@ Baseline comparison (governance-cost):
     }
     const rawOutput = fn(...args);
     const declaredReturn = (parsed.flows ?? []).find((f) => f.name === flowName)?.returnType ?? "";
+    const rawNarrow = checkDeclaredIntegerResult(rawOutput, declaredReturn);
+    if (rawNarrow !== null) {
+      console.error(`REFUSED: raw result of '${flowName}' does not fit declared ${String(declaredReturn).trim()} (K3 DENY ${rawNarrow}); the value is not printed.`);
+      process.exit(2);
+    }
     console.log(formatRunOutput(rawOutput, declaredReturn));
     return;
   }
@@ -3055,44 +3071,181 @@ export function declaredRawParamType(parameter) {
   return type;
 }
 
-/**
- * Marshal one raw CLI argument for a parameter of the declared type ("" = flow metadata not
- * found, which admits Bool literals or a canonical i32). Returns { ok: true, value } or
- * { ok: false, reason } with reason one of RAW_ARG_NOT_TEXT, RAW_ARG_TOO_LONG, RAW_ARG_MALFORMED,
- * RAW_ARG_I32_RANGE, RAW_ARG_TYPE_UNSUPPORTED. The reason never carries the argument text.
- */
-export function marshalRawInvokeArg(text, declaredType) {
-  if (typeof text !== "string") return { ok: false, reason: "RAW_ARG_NOT_TEXT" };
-  if (text.length > RAW_INVOKE_MAX_ARG_CHARS) return { ok: false, reason: "RAW_ARG_TOO_LONG" };
-  const type = typeof declaredType === "string" ? declaredType.trim() : "";
-  if (type === "Bool") {
-    if (text === "true") return { ok: true, value: 1 };
-    if (text === "false") return { ok: true, value: 0 };
-    return { ok: false, reason: "RAW_ARG_MALFORMED" };
-  }
-  if (type === "Int" || type === "") {
-    if (type === "" && text === "true") return { ok: true, value: 1 };
-    if (type === "" && text === "false") return { ok: true, value: 0 };
-    if (!RAW_INVOKE_INT_TEXT.test(text) || text === "-0") return { ok: false, reason: "RAW_ARG_MALFORMED" };
-    if (text.length > 11) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
-    const n = Number(text);
-    if (!Number.isSafeInteger(n)) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
-    if (n < RAW_INVOKE_I32_MIN || n > RAW_INVOKE_I32_MAX) return { ok: false, reason: "RAW_ARG_I32_RANGE" };
-    return { ok: true, value: n };
-  }
-  if (RAW_INVOKE_FLOAT_TYPES.has(type)) {
-    if (!RAW_INVOKE_FLOAT_TEXT.test(text)) return { ok: false, reason: "RAW_ARG_MALFORMED" };
-    const f = Number(text);
-    if (!Number.isFinite(f)) return { ok: false, reason: "RAW_ARG_MALFORMED" };
-    return { ok: true, value: Object.is(f, -0) ? 0 : f };
-  }
-  return { ok: false, reason: "RAW_ARG_TYPE_UNSUPPORTED" };
+// ── MEM-R30 (gap 4.6/H13): one declared-type admission for raw --invoke AND --governed ─────
+// Phillip's decision (2026-10-31): .fungi has 32-bit and 64-bit integers. Int is an alias of
+// Int32 (checked i32, GIR type id 1); Int64/UInt64 are the existing 64-bit built-ins. Every CLI
+// argument is admitted by its DECLARED type and yields a K3 verdict:
+//   ALLOW   canonical text, exactly inside the declared range (value carried out-of-band);
+//   DENY    malformed, out of range, or would wrap / round / truncate, or the surface cannot carry it;
+//   UNKNOWN the declared type is missing or not recognised, or a needed part is absent.
+// Verdicts fold with strong Kleene AND (min, DENY < UNKNOWN < ALLOW); only ALLOW runs. A verdict
+// is never encoded inside an integer value; where one crosses as a byte it uses the K3 wire
+// (ALLOW 0x01, DENY 0xFF, UNKNOWN 0x80).
+export const K3_ARG_ORDER = Object.freeze({ DENY: -1, UNKNOWN: 0, ALLOW: 1 });
+export const K3_ARG_WIRE = Object.freeze({ ALLOW: 0x01, DENY: 0xff, UNKNOWN: 0x80 });
+/** Exact inclusive ranges, as bigint, for every integer width the CLI can name. */
+export const INVOKE_INTEGER_RANGES = Object.freeze({
+  Int: Object.freeze([-(2n ** 31n), 2n ** 31n - 1n]),
+  Int32: Object.freeze([-(2n ** 31n), 2n ** 31n - 1n]),
+  Int8: Object.freeze([-128n, 127n]),
+  Int16: Object.freeze([-32768n, 32767n]),
+  UInt8: Object.freeze([0n, 255n]),
+  Byte: Object.freeze([0n, 255n]),
+  UInt16: Object.freeze([0n, 65535n]),
+  UInt32: Object.freeze([0n, 2n ** 32n - 1n]),
+  Int64: Object.freeze([-(2n ** 63n), 2n ** 63n - 1n]),
+  UInt64: Object.freeze([0n, 2n ** 64n - 1n]),
+});
+const INVOKE_I64_TYPES = new Set(["Int64", "UInt64"]);
+// What each surface can carry exactly. Raw WASM: i32 lane for Int/Int32, i64 lane (bigint) for
+// Int64. UInt64 has no signed-free raw lane yet and the narrow widths have no raw lowering pin.
+const RAW_INTEGER_TYPES = new Set(["Int", "Int32", "Int64"]);
+const GOVERNED_INTEGER_TAGS = Object.freeze({ Int: "int", Int32: "int", Int64: "int64", UInt64: "uint64" });
+// A syntactically well-formed declared type the surface does not carry is DENY (known, refused);
+// anything else (empty, garbage) is UNKNOWN.
+const INVOKE_DECLARED_TYPE_TEXT = /^[A-Z][A-Za-z0-9_]*(<.+>)?$/u;
+
+/** K3 verdict (ALLOW/DENY/UNKNOWN) as its one-byte wire value. Never an integer argument value. */
+export function k3ArgVerdictWire(verdict) {
+  return Object.hasOwn(K3_ARG_WIRE, verdict) ? K3_ARG_WIRE[verdict] : K3_ARG_WIRE.UNKNOWN;
 }
 
+/**
+ * Admit canonical integer text for a declared integer width. Returns
+ * { verdict: "ALLOW", value: bigint } or { verdict: "DENY"|"UNKNOWN", reason }. Never uses Number.
+ * Reasons: INT_NOT_TEXT / INT_TYPE_UNKNOWN (UNKNOWN), INT_TOO_LONG / INT_MALFORMED / INT_RANGE (DENY).
+ */
+export function admitIntegerText(text, declaredType) {
+  const type = typeof declaredType === "string" ? declaredType.trim() : "";
+  const range = Object.hasOwn(INVOKE_INTEGER_RANGES, type) ? INVOKE_INTEGER_RANGES[type] : undefined;
+  if (range === undefined) return { verdict: "UNKNOWN", reason: "INT_TYPE_UNKNOWN" };
+  if (typeof text !== "string") return { verdict: "UNKNOWN", reason: "INT_NOT_TEXT" };
+  if (text.length > RAW_INVOKE_MAX_ARG_CHARS) return { verdict: "DENY", reason: "INT_TOO_LONG" };
+  if (!RAW_INVOKE_INT_TEXT.test(text) || text === "-0") return { verdict: "DENY", reason: "INT_MALFORMED" };
+  // Longest in-range text is "18446744073709551615" / "-9223372036854775808" (20 chars).
+  if (text.length > 20) return { verdict: "DENY", reason: "INT_RANGE" };
+  const value = BigInt(text);
+  if (value < range[0] || value > range[1]) return { verdict: "DENY", reason: "INT_RANGE" };
+  return { verdict: "ALLOW", value };
+}
+
+/**
+ * The ONE declared-type argument admission shared by raw --invoke ("raw") and --governed
+ * ("governed"). Returns { ok, verdict, value? , reason? }: ok is true exactly when verdict is ALLOW.
+ * Raw values: i32 lane → number, i64 lane → bigint, Bool → 1/0, Float → number. Governed values
+ * are tagged interpreter values. Reasons are RAW_ARG_* / GOV_ARG_* and never carry the text.
+ */
+export function admitInvokeArg(text, declaredType, surface) {
+  const P = surface === "governed" ? "GOV_ARG_" : "RAW_ARG_";
+  const deny = (r) => ({ ok: false, verdict: "DENY", reason: P + r });
+  const unknown = (r) => ({ ok: false, verdict: "UNKNOWN", reason: P + r });
+  const allow = (value) => ({ ok: true, verdict: "ALLOW", value });
+  if (surface !== "raw" && surface !== "governed") return { ok: false, verdict: "UNKNOWN", reason: "ARG_SURFACE_UNKNOWN" };
+  if (typeof text !== "string") return unknown("NOT_TEXT");
+  if (text.length > RAW_INVOKE_MAX_ARG_CHARS && !(surface === "governed" && declaredType === "String")) return deny("TOO_LONG");
+  const type = typeof declaredType === "string" ? declaredType.trim() : "";
+  if (type === "") return unknown("TYPE_UNKNOWN");
+  if (type === "Bool") {
+    if (text !== "true" && text !== "false") return deny("MALFORMED");
+    return allow(surface === "raw" ? (text === "true" ? 1 : 0) : { __tag: "bool", value: text === "true" });
+  }
+  if (Object.hasOwn(INVOKE_INTEGER_RANGES, type)) {
+    const carried = surface === "raw" ? RAW_INTEGER_TYPES.has(type) : Object.hasOwn(GOVERNED_INTEGER_TAGS, type);
+    const r = admitIntegerText(text, type);
+    if (r.verdict === "DENY") {
+      if (r.reason === "INT_RANGE") return deny(surface === "raw" ? (INVOKE_I64_TYPES.has(type) ? "I64_RANGE" : "I32_RANGE") : "RANGE");
+      return deny(r.reason === "INT_TOO_LONG" ? "TOO_LONG" : "MALFORMED");
+    }
+    if (r.verdict !== "ALLOW") return unknown("TYPE_UNKNOWN");
+    if (!carried) return deny("TYPE_UNSUPPORTED");
+    if (surface === "raw") return allow(INVOKE_I64_TYPES.has(type) ? r.value : Number(r.value));
+    const tag = GOVERNED_INTEGER_TAGS[type];
+    return allow({ __tag: tag, value: tag === "int" ? Number(r.value) : r.value });
+  }
+  if (surface === "raw" && RAW_INVOKE_FLOAT_TYPES.has(type)) {
+    if (!RAW_INVOKE_FLOAT_TEXT.test(text)) return deny("MALFORMED");
+    const f = Number(text);
+    if (!Number.isFinite(f)) return deny("MALFORMED");
+    return allow(Object.is(f, -0) ? 0 : f);
+  }
+  if (surface === "governed" && type === "String") return allow({ __tag: "string", value: text });
+  if (INVOKE_DECLARED_TYPE_TEXT.test(type)) return deny("TYPE_UNSUPPORTED");
+  return unknown("TYPE_UNKNOWN");
+}
+
+/** Raw --invoke marshal (MEM-R27 API kept): the shared admission on the "raw" surface. */
+export function marshalRawInvokeArg(text, declaredType) {
+  return admitInvokeArg(text, declaredType, "raw");
+}
+
+/**
+ * Strong Kleene AND over per-argument verdicts: the minimum (DENY < UNKNOWN < ALLOW). Returns
+ * { verdict, index, reason } naming the first argument that holds the folded verdict; an empty
+ * vector is ALLOW (arity is checked separately). A malformed entry counts as UNKNOWN.
+ */
+export function foldInvokeArgVerdicts(results) {
+  let verdict = "ALLOW";
+  let index = -1;
+  let reason = "";
+  const list = Array.isArray(results) ? results : [];
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    const v = r !== null && typeof r === "object" && Object.hasOwn(K3_ARG_ORDER, r.verdict) ? r.verdict : "UNKNOWN";
+    const ok = v === "ALLOW" && r.ok === true;
+    const eff = ok ? "ALLOW" : (v === "ALLOW" ? "UNKNOWN" : v);
+    if (K3_ARG_ORDER[eff] < K3_ARG_ORDER[verdict]) {
+      verdict = eff;
+      index = i;
+      reason = typeof r?.reason === "string" ? r.reason : "ARG_VERDICT_MALFORMED";
+    }
+  }
+  if (!Array.isArray(results)) return { verdict: "UNKNOWN", index: 0, reason: "ARG_VECTOR_ABSENT" };
+  return { verdict, index, reason };
+}
+
+/** Governed refusal line: position, parameter, declared type, K3 verdict and reason; never the text. */
+export function governedRefusalLine(verdict, reason, index, name, type) {
+  return `REFUSED: governed argument #${index + 1} for parameter '${name}' declared ${type} is invalid; K3 ${verdict} (${reason}); ` +
+    `execution denied (the value is not echoed).`;
+}
+
+/**
+ * Narrowing guard for a result whose declared return type is an integer width: returns null when the
+ * value fits exactly (or the declared type is not an integer width), else a DENY reason. Accepts a raw
+ * WASM number/bigint or a tagged interpreter value. A 64-bit value is never truncated into Int/Int32.
+ */
+export function checkDeclaredIntegerResult(value, declaredReturn) {
+  const type = typeof declaredReturn === "string" ? declaredReturn.trim() : "";
+  if (!Object.hasOwn(INVOKE_INTEGER_RANGES, type)) return null;
+  let payload = value;
+  if (payload !== null && typeof payload === "object") {
+    if (!["int", "int64", "uint64", "byte"].includes(payload.__tag)) return null; // errors / void render as before
+    payload = payload.value;
+  }
+  let big;
+  if (typeof payload === "bigint") big = type === "UInt64" ? BigInt.asUintN(64, payload) : payload;
+  else if (typeof payload === "number" && Number.isSafeInteger(payload)) big = BigInt(payload);
+  else return "RESULT_NOT_EXACT_INTEGER";
+  const [lo, hi] = INVOKE_INTEGER_RANGES[type];
+  return big < lo || big > hi ? "RESULT_RANGE" : null;
+}
 /** Operator-facing refusal lines. They name the argument by position and never echo its text. */
 export function rawInvokeRefusalLines(reason, index, declaredType) {
   const pos = `invoke argument #${index + 1}`;
   const type = typeof declaredType === "string" ? declaredType.trim() : "";
+  if (reason === "RAW_ARG_TYPE_UNKNOWN") {
+    return [
+      `\n  ✗ ${pos} has no recognised declared type (K3 UNKNOWN, the value is not echoed).`,
+      `    The raw path fails closed when a parameter type is missing or not recognised.\n`,
+    ];
+  }
+  if (reason === "RAW_ARG_I64_RANGE") {
+    const [lo, hi] = INVOKE_INTEGER_RANGES[type] ?? INVOKE_INTEGER_RANGES.Int64;
+    return [
+      `\n  ✗ ${pos} is not a valid ${type || "Int64"}: the range is ${lo} to ${hi} (K3 DENY, the value is not echoed).`,
+      `    Values outside that range are refused instead of wrapping or rounding.\n`,
+    ];
+  }
   if (reason === "RAW_ARG_I32_RANGE") {
     return [
       `\n  ✗ ${pos} is not a valid Int or Bool: Int is a 32-bit integer from ${RAW_INVOKE_I32_MIN} to ${RAW_INVOKE_I32_MAX} (the value is not echoed).`,
@@ -3102,7 +3255,7 @@ export function rawInvokeRefusalLines(reason, index, declaredType) {
   if (reason === "RAW_ARG_TYPE_UNSUPPORTED") {
     return [
       `\n  ✗ ${pos} is for a parameter the raw WASM path cannot marshal (the value is not echoed).`,
-      `    Only Int, Bool, Float, Float64 and Double are admitted here; use --governed for other types.\n`,
+      `    Only Int, Int32, Int64, Bool, Float, Float64 and Double are admitted here; use --governed for other types.\n`,
     ];
   }
   if (RAW_INVOKE_FLOAT_TYPES.has(type)) {

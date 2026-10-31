@@ -1,0 +1,7 @@
+@version 1
+/// @file: mr30-narrow.fungi
+/// @purpose: MEM-R30 narrowing pin: an Int64 value returned as Int must be refused, never truncated.
+
+pure flow narrow(x: Int64) -> Int {
+  return x
+}

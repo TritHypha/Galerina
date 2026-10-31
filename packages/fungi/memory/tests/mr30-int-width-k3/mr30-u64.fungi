@@ -1,0 +1,11 @@
+@version 1
+/// @file: mr30-u64.fungi
+/// @purpose: MEM-R30 UInt64 flows (governed path only; the raw WASM lane has no UInt64 carrier).
+
+pure flow echoU64(x: UInt64) -> UInt64 {
+  return x
+}
+
+pure flow u64Max() -> UInt64 {
+  return 18446744073709551615
+}
