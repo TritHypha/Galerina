@@ -14946,9 +14946,9 @@
       "ref scripts/audit-examples-vs-declared.mjs:92",
       "ref scripts/audit-examples-vs-declared.mjs:102",
       "ref galerina.mjs:1494",
-      "ref galerina.mjs:2362",
+      "ref galerina.mjs:2351",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2368"
+      "ref galerina.mjs:2357"
     ]
   },
   {
@@ -15271,9 +15271,9 @@
       "ref scripts/component-health.mjs:419",
       "test scripts/tests/cg4-signing-boundary.test.mjs:80",
       "ref galerina.mjs:1500",
-      "ref galerina.mjs:2366",
+      "ref galerina.mjs:2355",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2368"
+      "ref galerina.mjs:2357"
     ]
   },
   {
@@ -15450,8 +15450,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2445",
-      "galerina.mjs:2449"
+      "galerina.mjs:2434",
+      "galerina.mjs:2438"
     ],
     "tests": 0,
     "refs": 0,
@@ -15460,8 +15460,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2445",
-      "emit galerina.mjs:2449"
+      "emit galerina.mjs:2434",
+      "emit galerina.mjs:2438"
     ]
   },
   {
@@ -16380,7 +16380,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2509"
+      "galerina.mjs:2498"
     ],
     "tests": 0,
     "refs": 0,
@@ -16389,7 +16389,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2509"
+      "emit galerina.mjs:2498"
     ]
   },
   {
@@ -17204,7 +17204,7 @@
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "scripts/audit-signed-fixture-drift.mjs:80",
-      "galerina.mjs:2493"
+      "galerina.mjs:2482"
     ],
     "tests": 0,
     "refs": 0,
@@ -17216,7 +17216,7 @@
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "emit scripts/audit-signed-fixture-drift.mjs:80",
-      "emit galerina.mjs:2493"
+      "emit galerina.mjs:2482"
     ]
   },
   {
@@ -22124,7 +22124,7 @@
     "allSites": [
       "ref governance/key-lifecycle.mjs:30",
       "emit governance/key-lifecycle.mjs:98",
-      "ref galerina.mjs:2621"
+      "ref galerina.mjs:2610"
     ]
   },
   {
@@ -23424,10 +23424,10 @@
       "galerina.mjs:1898",
       "galerina.mjs:2097",
       "galerina.mjs:2139",
-      "galerina.mjs:2635",
-      "galerina.mjs:2655",
-      "galerina.mjs:2723",
-      "galerina.mjs:2765"
+      "galerina.mjs:2624",
+      "galerina.mjs:2644",
+      "galerina.mjs:2712",
+      "galerina.mjs:2754"
     ],
     "tests": 0,
     "refs": 0,
@@ -23440,10 +23440,10 @@
       "emit galerina.mjs:1898",
       "emit galerina.mjs:2097",
       "emit galerina.mjs:2139",
-      "emit galerina.mjs:2635",
-      "emit galerina.mjs:2655",
-      "emit galerina.mjs:2723",
-      "emit galerina.mjs:2765"
+      "emit galerina.mjs:2624",
+      "emit galerina.mjs:2644",
+      "emit galerina.mjs:2712",
+      "emit galerina.mjs:2754"
     ]
   },
   {
@@ -23456,7 +23456,7 @@
     "emits": [
       "galerina.mjs:1827",
       "galerina.mjs:2088",
-      "galerina.mjs:2648"
+      "galerina.mjs:2637"
     ],
     "tests": 0,
     "refs": 0,
@@ -23467,7 +23467,7 @@
     "allSites": [
       "emit galerina.mjs:1827",
       "emit galerina.mjs:2088",
-      "emit galerina.mjs:2648"
+      "emit galerina.mjs:2637"
     ]
   },
   {
@@ -25925,7 +25925,7 @@
       "ref packages-ts/galerina-devtools-hypha/src/extract.mjs:374",
       "ref galerina.mjs:1513",
       "ref galerina.mjs:1612",
-      "ref galerina.mjs:2376"
+      "ref galerina.mjs:2365"
     ]
   },
   {
@@ -31272,7 +31272,7 @@
     "code": "FUNGI-RUNTIME-003",
     "namespace": "FUNGI",
     "family": "RUNTIME",
-    "occurrences": 19,
+    "occurrences": 20,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -31285,7 +31285,7 @@
       "packages-ts/galerina-core-compiler/src/interpreter.ts:1923",
       "packages-ts/galerina-core-compiler/src/interpreter.ts:2005"
     ],
-    "tests": 11,
+    "tests": 12,
     "refs": 0,
     "docs": 0,
     "names": [],
@@ -31310,7 +31310,8 @@
       "test packages-ts/galerina-core-compiler/tests/rd-0363-plan-admission.test.mjs:332",
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:120",
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:127",
-      "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:128"
+      "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:128",
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:165"
     ]
   },
   {
@@ -33742,9 +33743,9 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:88",
       "ref galerina.mjs:1495",
-      "ref galerina.mjs:2363",
+      "ref galerina.mjs:2352",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2368"
+      "ref galerina.mjs:2357"
     ]
   },
   {
@@ -35689,9 +35690,9 @@
       "ref scripts/audit-twin-emit-parity.mjs:115",
       "ref galerina.mjs:1488",
       "ref galerina.mjs:1496",
-      "ref galerina.mjs:2333",
+      "ref galerina.mjs:2322",
+      "ref galerina.mjs:2326",
       "ref galerina.mjs:2337",
-      "ref galerina.mjs:2348",
       "ref galerina.mjs:1493"
     ]
   },
@@ -37205,15 +37206,15 @@
     "code": "FUNGI-TYPE-008",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 100,
+    "occurrences": 103,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2523"
     ],
-    "tests": 82,
+    "tests": 84,
     "refs": 6,
-    "docs": 5,
+    "docs": 6,
     "names": [
       "INVALID_RETURN_TYPE"
     ],
@@ -37318,9 +37319,12 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:866",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1126",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:73",
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:154",
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:155",
       "doc docs/TODO.md:4238",
       "doc docs/TODO.md:4360",
       "doc docs/TODO.md:4372",
+      "doc docs/examples/Level-2-Types/051-int-basic/notes.md:12",
       "doc docs/examples/README.md:87"
     ]
   },
@@ -39814,9 +39818,9 @@
       "ref scripts/audit-muted-diagnostics.mjs:55",
       "ref galerina.mjs:1488",
       "ref galerina.mjs:1512",
-      "ref galerina.mjs:2337",
-      "ref galerina.mjs:2349",
-      "ref galerina.mjs:2381",
+      "ref galerina.mjs:2326",
+      "ref galerina.mjs:2338",
+      "ref galerina.mjs:2370",
       "ref galerina.mjs:1521"
     ]
   },

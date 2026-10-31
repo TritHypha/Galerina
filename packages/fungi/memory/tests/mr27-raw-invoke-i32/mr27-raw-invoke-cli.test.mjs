@@ -113,23 +113,24 @@ test("exact arity still applies before marshalling", () => {
   assert.equal(r.status, 2, r.text);
 });
 
+// MEM-R30 retargeted the needles onto the shared admitInvokeArg / admitIntegerText code.
 const MUTANTS = [
   { id: "M1-no-i32-range", flow: "echoInt", args: ["4294967300"],
-    edits: [["if (n < RAW_INVOKE_I32_MIN || n > RAW_INVOKE_I32_MAX)", "if (false)"],
-      ['if (text.length > 11) return { ok: false, reason: "RAW_ARG_I32_RANGE" };', ""]] },
+    edits: [['if (value < range[0] || value > range[1]) return { verdict: "DENY", reason: "INT_RANGE" };', ""],
+      ['if (text.length > 20) return { verdict: "DENY", reason: "INT_RANGE" };', ""]] },
   { id: "M2-bool-admits-digits", flow: "pickBool", args: ["1"],
-    edits: [['if (type === "Bool") {', 'if (type === "Bool" && false) {'],
-      ['if (type === "Int" || type === "") {', 'if (type === "Int" || type === "" || type === "Bool") {']] },
+    edits: [['if (text !== "true" && text !== "false") return deny("MALFORMED");', ""]] },
   { id: "M3-negative-zero", flow: "echoInt", args: ["-0"],
     edits: [['|| text === "-0")', ")"]] },
   { id: "M4-unsupported-falls-through", flow: "textLen", args: ["1"],
-    edits: [['return { ok: false, reason: "RAW_ARG_TYPE_UNSUPPORTED" };', "return { ok: true, value: Number(text) };"]] },
+    edits: [['if (INVOKE_DECLARED_TYPE_TEXT.test(type)) return deny("TYPE_UNSUPPORTED");', "return allow(Number(text));"]] },
   { id: "M5-refusal-echoes", flow: "echoInt", args: [CANARY], echo: true,
-    edits: [["for (const line of rawInvokeRefusalLines(r.reason, i, declared)) console.error(line);", "console.error(String(a));"]] },
+    edits: [["for (const line of rawInvokeRefusalLines(rawFold.reason, rawFold.index, rawDeclared[rawFold.index])) console.error(line);",
+      "console.error(String(rawTexts[rawFold.index]));"]] },
   { id: "M6-untyped-lookup", flow: "pickBool", args: ["5"],
-    edits: [["const rawParamTypes = rawFlowMeta ?", "const rawParamTypes = false ?"]] },
+    edits: [["const rawParamTypes = rawFlowMeta ?", "const rawParamTypes = false ?"],
+      ['if (type === "") return unknown("TYPE_UNKNOWN");', 'if (type === "") return allow(Number(text));']] },
 ];
-
 for (const mutant of MUTANTS) {
   test(`mutant ${mutant.id} turns its pin RED`, () => {
     const orig = readFileSync(GALERINA, "utf8");

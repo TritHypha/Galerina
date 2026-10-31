@@ -140,12 +140,13 @@ test("S2-GA-06 a Bool parameter admits only true or false", () => {
   assert.equal(firstLine(f.stdout), "9", f.text);
 });
 
-test("S2-GA-07 an Int parameter admits only a canonical signed decimal safe integer", () => {
-  for (const bad of ["01", "+1", "1.5", "1e3", "0x10", " 1", "1 ", "", "abc", "9007199254740992", "-9007199254740992"]) {
+// MEM-R30: Int is the canonical checked i32 (alias of Int32), so the admitted range is i32, not the JS safe range.
+test("S2-GA-07 an Int parameter admits only a canonical signed decimal inside i32", () => {
+  for (const bad of ["01", "+1", "1.5", "1e3", "0x10", " 1", "1 ", "", "abc", "2147483648", "-2147483649", "9007199254740991", "9007199254740992", "-9007199254740992"]) {
     const r = governed("one", [bad]);
     assertRefused(r, /REFUSED: governed argument #1 for parameter 'n' declared Int is invalid/u, "Int " + JSON.stringify(bad));
   }
-  for (const [good, want] of [["0", "0"], ["-1", "-1"], ["9007199254740991", "9007199254740991"], ["-9007199254740991", "-9007199254740991"]]) {
+  for (const [good, want] of [["0", "0"], ["-1", "-1"], ["2147483647", "2147483647"], ["-2147483648", "-2147483648"]]) {
     const r = governed("one", [good]);
     assert.equal(r.status, 0, good + " " + r.text);
     assert.equal(firstLine(r.stdout), want, good + " " + r.text);

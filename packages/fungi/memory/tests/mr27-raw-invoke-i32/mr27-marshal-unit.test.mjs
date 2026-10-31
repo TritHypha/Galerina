@@ -60,13 +60,13 @@ test("Bool admits only the two literals", () => {
   }
 });
 
-test("undeclared type admits Bool literals or a canonical i32 only", () => {
-  assert.equal(ok("true", ""), 1);
-  assert.equal(ok("false", ""), 0);
-  assert.equal(ok("-7", ""), -7);
-  assert.equal(refused("1.5", ""), "RAW_ARG_MALFORMED");
-  assert.equal(refused("4294967300", ""), "RAW_ARG_I32_RANGE");
-  assert.equal(refused("", undefined), "RAW_ARG_MALFORMED");
+// MEM-R30 superseded the MEM-R27 legacy admission: a missing declared type is K3 UNKNOWN and refuses.
+test("undeclared type is K3 UNKNOWN and refused (MEM-R30)", () => {
+  for (const text of ["true", "false", "-7", "1.5", "4294967300", ""]) {
+    assert.equal(refused(text, ""), "RAW_ARG_TYPE_UNKNOWN", JSON.stringify(text));
+    assert.equal(marshalRawInvokeArg(text, "").verdict, "UNKNOWN");
+  }
+  assert.equal(refused("", undefined), "RAW_ARG_TYPE_UNKNOWN");
 });
 
 test("Float, Float64 and Double admit plain finite decimals only", () => {
@@ -83,7 +83,7 @@ test("Float, Float64 and Double admit plain finite decimals only", () => {
 
 test("types the raw lane cannot hold exactly are refused", () => {
   for (const type of ["String", "Array<Int>", "Result<Int, String>", "Option<Int>", "Float32",
-    "Float16", "Int64", "Bytes", "Secret<String>"]) {
+    "Float16", "UInt64", "Bytes", "Secret<String>"]) {
     assert.equal(refused("1", type), "RAW_ARG_TYPE_UNSUPPORTED", type);
   }
 });
