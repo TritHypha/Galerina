@@ -1543,7 +1543,10 @@ Baseline comparison (governance-cost):
     // holes, never advisory: they fail closed in EVERY mode (mirrors integrityEffectErrors). The REST of
     // the type-error class stays dev-advisory unless --strict-types (the ~150-baseline reason below).
     const securityTypeErrors = allTypeErrors.filter(d => SECURITY_TYPE_CODES.has(d.code));
-    const typeErrors = allTypeErrors.filter(d => !SECURITY_TYPE_CODES.has(d.code));
+    // MEM-R30b: Int/Int32 alias pairs are one type (dropped); integer-width NARROWING pairs are lifted out
+    // of the advisory class and reported as fail-closed FUNGI-INT-NARROW-001 in EVERY mode (like the security codes).
+    const typeErrors = withoutIntegerWidthHandled(allTypeErrors.filter(d => !SECURITY_TYPE_CODES.has(d.code)));
+    const narrowingTypeErrors = integerNarrowingDiagnostics(allTypeErrors);
     // Advisory in plain check: type errors must NOT suppress the ✅ clean line — they are a separate
     // NOTE below it. Otherwise every one of the ~150 baseline files with an unmigrated type error (or a
     // checkTypeRef false positive) loses its ✅, and the canonical clean example verifyPassword.fungi —
@@ -1551,7 +1554,7 @@ Baseline comparison (governance-cost):
     // --strict-types folds them into the hard, ✅-suppressing, exit-failing set. The security carve-out
     // above is ALWAYS folded (no --strict-types gate) — a fail-open must fail closed at plain check too.
     const dupFlowErrors = duplicateFlowDiagnostics(parsed.flows);
-    const allDiags = [...dupFlowErrors, ...errors, ...gov.diagnostics, ...eventDiagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...strictGovernanceEffectDiagnostics, ...securityTypeErrors, ...(strictTypes ? typeErrors : [])];
+    const allDiags = [...dupFlowErrors, ...errors, ...gov.diagnostics, ...eventDiagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...strictGovernanceEffectDiagnostics, ...securityTypeErrors, ...narrowingTypeErrors, ...(strictTypes ? typeErrors : [])];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1614,7 +1617,7 @@ Baseline comparison (governance-cost):
     // Tier/boundary findings stay display-only WARNINGS in check mode and do NOT affect the exit code.
     process.exit(dupFlowErrors.length > 0 || errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0
       || strictGovernanceEffectErrors.length > 0
-      || governanceErrors.length > 0 || eventErrors.length > 0 || securityTypeErrors.length > 0
+      || governanceErrors.length > 0 || eventErrors.length > 0 || securityTypeErrors.length > 0 || narrowingTypeErrors.length > 0
       || (strictTypes && typeErrors.length > 0) ? 1 : 0);
   }
 
@@ -2386,6 +2389,10 @@ Baseline comparison (governance-cost):
   for (const d of m.checkTypes(parsed.ast).diagnostics ?? []) {
     if (d.severity === "error" && SECURITY_TYPE_CODES.has(d.code)) govErrors.push(d);
   }
+  // MEM-R30b (gap 4.6/H13): integer-width narrowing (Int64 -> Int, UInt64 <-> Int64, ...) fails closed in
+  // EVERY profile here in the shared section, so `build` and raw `run --invoke` both refuse it before any
+  // WASM is generated. Before this the raw path only failed late, inside wabt validation.
+  for (const d of integerNarrowingDiagnostics(m.checkTypes(parsed.ast).diagnostics ?? [])) govErrors.push(d);
   // RD-0234b Class A(iii): the bundled build path never ran symbol resolution, so a file
   // referencing an UNRESOLVED symbol (typo'd flow / missing helper) still minted a hybrid-signed
   // manifest. Mirror cli.ts and fail the BUILD closed on any unresolved-symbol (FUNGI-NAME-*) error.
@@ -3268,6 +3275,96 @@ export function rawInvokeRefusalLines(reason, index, declaredType) {
     `\n  ✗ ${pos} is not a valid Int or Bool (the value is not echoed).`,
     `    Pass a plain decimal integer (e.g. 42, -3) or a Bool literal (true / false).\n`,
   ];
+}
+
+// -- MEM-R30b (gap 4.6/H13): integer-width narrowing is refused before any module is built -----------
+// The type checker reports an Int64 value flowing into an Int slot as an ADVISORY FUNGI-TYPE-002 / 005 /
+// 008, so plain `check` passed it, raw `run --invoke` only failed late inside wabt validation, and the
+// Int / Int32 alias was itself reported as a mismatch. Phillip's decision (2026-10-31): narrowing 64-to-32
+// is checked and refuses. TypeScript is frozen, so galerina.mjs classifies each integer-width checker
+// diagnostic from the checker's own pinned message shapes:
+//   ALIAS      Int vs Int32: one type (Int is an alias of Int32, checked i32), not an error;
+//   NARROWING  the source range is NOT inside the target range (Int64 -> Int, UInt64 -> Int64,
+//              Int64 -> UInt64, Int32 -> Int16, ...): K3 DENY, fails closed in every profile, on
+//              check, build and run alike, with FUNGI-INT-NARROW-001;
+//   WIDENING   the source range is inside the target range: left in the checker's advisory class.
+// A diagnostic whose two types are not both known integer widths, or whose message is not one of the three
+// pinned shapes, is NOT classified (null) and keeps its existing treatment: nothing is silently relaxed.
+// The refusal names the types and the site (assignment / argument / return), never a value.
+export const INT_WIDTH_ALIAS = Object.freeze({ Int: "Int32" });
+export const INT_NARROW_CODE = "FUNGI-INT-NARROW-001";
+const INT_WIDTH_NAME = "([A-Z][A-Za-z0-9_]*)";
+export const INT_WIDTH_MESSAGE_SHAPES = Object.freeze({
+  "FUNGI-TYPE-002": Object.freeze({
+    re: new RegExp(`^Cannot assign '${INT_WIDTH_NAME}' to '${INT_WIDTH_NAME}'\\.`, "u"), from: 1, to: 2, site: "assignment" }),
+  "FUNGI-TYPE-005": Object.freeze({
+    re: new RegExp(`^Argument [1-9][0-9]* to '[^']*' expects '${INT_WIDTH_NAME}' but received '${INT_WIDTH_NAME}'\\.`, "u"),
+    from: 2, to: 1, site: "argument" }),
+  "FUNGI-TYPE-008": Object.freeze({
+    re: new RegExp(`^Flow declares return type '${INT_WIDTH_NAME}' but this return expression has type '${INT_WIDTH_NAME}'\\.`, "u"),
+    from: 2, to: 1, site: "return" }),
+});
+
+/** The canonical integer width a type name denotes (Int -> Int32), or undefined when it is not one. */
+export function normalizeIntegerWidth(type) {
+  if (typeof type !== "string") return undefined;
+  const name = Object.hasOwn(INT_WIDTH_ALIAS, type) ? INT_WIDTH_ALIAS[type] : type;
+  return Object.hasOwn(INVOKE_INTEGER_RANGES, name) ? name : undefined;
+}
+
+/** The integer-width pair a checker diagnostic names, or null when it is not one of the pinned shapes. */
+export function integerWidthTypePair(d) {
+  if (d === null || typeof d !== "object") return null;
+  if (typeof d.code !== "string" || typeof d.message !== "string") return null;
+  const shape = Object.hasOwn(INT_WIDTH_MESSAGE_SHAPES, d.code) ? INT_WIDTH_MESSAGE_SHAPES[d.code] : undefined;
+  if (shape === undefined) return null;
+  const match = shape.re.exec(d.message);
+  if (match === null) return null;
+  const from = match[shape.from];
+  const to = match[shape.to];
+  const normalizedFrom = normalizeIntegerWidth(from);
+  const normalizedTo = normalizeIntegerWidth(to);
+  if (normalizedFrom === undefined || normalizedTo === undefined) return null;
+  return { from, to, normalizedFrom, normalizedTo, site: shape.site };
+}
+
+/** "ALIAS" | "NARROWING" | "WIDENING" for an integer-width checker diagnostic, else null. */
+export function classifyIntegerWidthDiagnostic(d) {
+  const pair = integerWidthTypePair(d);
+  if (pair === null) return null;
+  if (pair.normalizedFrom === pair.normalizedTo) return "ALIAS";
+  const [fromLo, fromHi] = INVOKE_INTEGER_RANGES[pair.normalizedFrom];
+  const [toLo, toHi] = INVOKE_INTEGER_RANGES[pair.normalizedTo];
+  return fromLo >= toLo && fromHi <= toHi ? "WIDENING" : "NARROWING";
+}
+
+/** One fail-closed FUNGI-INT-NARROW-001 (K3 DENY INT_NARROWING) per narrowing checker ERROR. */
+export function integerNarrowingDiagnostics(diagnostics) {
+  const out = [];
+  for (const d of Array.isArray(diagnostics) ? diagnostics : []) {
+    if (d === null || typeof d !== "object" || d.severity !== "error") continue;
+    if (classifyIntegerWidthDiagnostic(d) !== "NARROWING") continue;
+    const pair = integerWidthTypePair(d);
+    out.push({
+      code: INT_NARROW_CODE,
+      severity: "error",
+      verdict: "DENY",
+      reason: "INT_NARROWING",
+      sourceCode: d.code,
+      message: `K3 DENY INT_NARROWING: a ${pair.from} value used as ${pair.to} (${pair.site}, ${d.code}) is refused; ` +
+        `${pair.from} does not fit ${pair.to}, and narrowing is never implicit (no wrap, no truncation).`,
+      location: d.location,
+    });
+  }
+  return out;
+}
+
+/** Checker diagnostics minus the Int/Int32 alias pairs and the narrowing pairs (those are re-reported above). */
+export function withoutIntegerWidthHandled(diagnostics) {
+  return (Array.isArray(diagnostics) ? diagnostics : []).filter((d) => {
+    const c = classifyIntegerWidthDiagnostic(d);
+    return c !== "ALIAS" && c !== "NARROWING";
+  });
 }
 
 function isDirectRun() {

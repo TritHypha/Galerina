@@ -14946,9 +14946,9 @@
       "ref scripts/audit-examples-vs-declared.mjs:92",
       "ref scripts/audit-examples-vs-declared.mjs:102",
       "ref galerina.mjs:1494",
-      "ref galerina.mjs:2351",
+      "ref galerina.mjs:2354",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2357"
+      "ref galerina.mjs:2360"
     ]
   },
   {
@@ -15271,9 +15271,9 @@
       "ref scripts/component-health.mjs:419",
       "test scripts/tests/cg4-signing-boundary.test.mjs:80",
       "ref galerina.mjs:1500",
-      "ref galerina.mjs:2355",
+      "ref galerina.mjs:2358",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2357"
+      "ref galerina.mjs:2360"
     ]
   },
   {
@@ -15450,8 +15450,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2434",
-      "galerina.mjs:2438"
+      "galerina.mjs:2441",
+      "galerina.mjs:2445"
     ],
     "tests": 0,
     "refs": 0,
@@ -15460,8 +15460,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2434",
-      "emit galerina.mjs:2438"
+      "emit galerina.mjs:2441",
+      "emit galerina.mjs:2445"
     ]
   },
   {
@@ -16380,7 +16380,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2498"
+      "galerina.mjs:2505"
     ],
     "tests": 0,
     "refs": 0,
@@ -16389,7 +16389,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2498"
+      "emit galerina.mjs:2505"
     ]
   },
   {
@@ -17204,7 +17204,7 @@
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "scripts/audit-signed-fixture-drift.mjs:80",
-      "galerina.mjs:2482"
+      "galerina.mjs:2489"
     ],
     "tests": 0,
     "refs": 0,
@@ -17216,7 +17216,7 @@
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:962",
       "emit packages-ts/galerina-framework-app-kernel/src/fuse-loader.ts:968",
       "emit scripts/audit-signed-fixture-drift.mjs:80",
-      "emit galerina.mjs:2482"
+      "emit galerina.mjs:2489"
     ]
   },
   {
@@ -20679,6 +20679,42 @@
     ]
   },
   {
+    "code": "FUNGI-INT-NARROW-001",
+    "namespace": "FUNGI",
+    "family": "INT",
+    "occurrences": 13,
+    "docOnly": false,
+    "defs": [
+      "galerina.mjs:3295"
+    ],
+    "emits": [
+      "galerina.mjs:3349"
+    ],
+    "tests": 8,
+    "refs": 3,
+    "docs": 0,
+    "names": [],
+    "severities": [
+      "error"
+    ],
+    "aliases": [],
+    "allSites": [
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:155",
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:156",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrow-sites.fungi:4",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:1",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:51",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:4",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:29",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:85",
+      "ref galerina.mjs:1547",
+      "ref galerina.mjs:3289",
+      "ref galerina.mjs:3341",
+      "def galerina.mjs:3295",
+      "emit galerina.mjs:3349"
+    ]
+  },
+  {
     "code": "FUNGI-INTEL-001",
     "namespace": "FUNGI",
     "family": "INTEL",
@@ -22124,7 +22160,7 @@
     "allSites": [
       "ref governance/key-lifecycle.mjs:30",
       "emit governance/key-lifecycle.mjs:98",
-      "ref galerina.mjs:2610"
+      "ref galerina.mjs:2617"
     ]
   },
   {
@@ -23308,10 +23344,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1866",
-      "galerina.mjs:2031",
-      "galerina.mjs:2068",
-      "galerina.mjs:2204"
+      "galerina.mjs:1869",
+      "galerina.mjs:2034",
+      "galerina.mjs:2071",
+      "galerina.mjs:2207"
     ],
     "tests": 0,
     "refs": 0,
@@ -23320,10 +23356,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1866",
-      "emit galerina.mjs:2031",
-      "emit galerina.mjs:2068",
-      "emit galerina.mjs:2204"
+      "emit galerina.mjs:1869",
+      "emit galerina.mjs:2034",
+      "emit galerina.mjs:2071",
+      "emit galerina.mjs:2207"
     ]
   },
   {
@@ -23334,7 +23370,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:2177"
+      "galerina.mjs:2180"
     ],
     "tests": 0,
     "refs": 0,
@@ -23343,7 +23379,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:2177"
+      "emit galerina.mjs:2180"
     ]
   },
   {
@@ -23380,7 +23416,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1751"
+      "galerina.mjs:1754"
     ],
     "tests": 0,
     "refs": 0,
@@ -23389,7 +23425,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1751"
+      "emit galerina.mjs:1754"
     ]
   },
   {
@@ -23400,7 +23436,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1778"
+      "galerina.mjs:1781"
     ],
     "tests": 0,
     "refs": 0,
@@ -23409,7 +23445,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1778"
+      "emit galerina.mjs:1781"
     ]
   },
   {
@@ -23420,14 +23456,14 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1836",
-      "galerina.mjs:1898",
-      "galerina.mjs:2097",
-      "galerina.mjs:2139",
-      "galerina.mjs:2624",
-      "galerina.mjs:2644",
-      "galerina.mjs:2712",
-      "galerina.mjs:2754"
+      "galerina.mjs:1839",
+      "galerina.mjs:1901",
+      "galerina.mjs:2100",
+      "galerina.mjs:2142",
+      "galerina.mjs:2631",
+      "galerina.mjs:2651",
+      "galerina.mjs:2719",
+      "galerina.mjs:2761"
     ],
     "tests": 0,
     "refs": 0,
@@ -23436,14 +23472,14 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1836",
-      "emit galerina.mjs:1898",
-      "emit galerina.mjs:2097",
-      "emit galerina.mjs:2139",
-      "emit galerina.mjs:2624",
-      "emit galerina.mjs:2644",
-      "emit galerina.mjs:2712",
-      "emit galerina.mjs:2754"
+      "emit galerina.mjs:1839",
+      "emit galerina.mjs:1901",
+      "emit galerina.mjs:2100",
+      "emit galerina.mjs:2142",
+      "emit galerina.mjs:2631",
+      "emit galerina.mjs:2651",
+      "emit galerina.mjs:2719",
+      "emit galerina.mjs:2761"
     ]
   },
   {
@@ -23454,9 +23490,9 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1827",
-      "galerina.mjs:2088",
-      "galerina.mjs:2637"
+      "galerina.mjs:1830",
+      "galerina.mjs:2091",
+      "galerina.mjs:2644"
     ],
     "tests": 0,
     "refs": 0,
@@ -23465,9 +23501,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1827",
-      "emit galerina.mjs:2088",
-      "emit galerina.mjs:2637"
+      "emit galerina.mjs:1830",
+      "emit galerina.mjs:2091",
+      "emit galerina.mjs:2644"
     ]
   },
   {
@@ -23478,10 +23514,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1915",
-      "galerina.mjs:2009",
-      "galerina.mjs:2150",
-      "galerina.mjs:2189"
+      "galerina.mjs:1918",
+      "galerina.mjs:2012",
+      "galerina.mjs:2153",
+      "galerina.mjs:2192"
     ],
     "tests": 0,
     "refs": 0,
@@ -23490,10 +23526,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1915",
-      "emit galerina.mjs:2009",
-      "emit galerina.mjs:2150",
-      "emit galerina.mjs:2189"
+      "emit galerina.mjs:1918",
+      "emit galerina.mjs:2012",
+      "emit galerina.mjs:2153",
+      "emit galerina.mjs:2192"
     ]
   },
   {
@@ -23504,10 +23540,10 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1909",
-      "galerina.mjs:1966",
-      "galerina.mjs:2144",
-      "galerina.mjs:2183"
+      "galerina.mjs:1912",
+      "galerina.mjs:1969",
+      "galerina.mjs:2147",
+      "galerina.mjs:2186"
     ],
     "tests": 0,
     "refs": 0,
@@ -23516,10 +23552,10 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1909",
-      "emit galerina.mjs:1966",
-      "emit galerina.mjs:2144",
-      "emit galerina.mjs:2183"
+      "emit galerina.mjs:1912",
+      "emit galerina.mjs:1969",
+      "emit galerina.mjs:2147",
+      "emit galerina.mjs:2186"
     ]
   },
   {
@@ -23530,16 +23566,16 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1765",
-      "galerina.mjs:1929",
-      "galerina.mjs:1946",
-      "galerina.mjs:1950",
-      "galerina.mjs:1995",
-      "galerina.mjs:2003",
-      "galerina.mjs:2058",
-      "galerina.mjs:2160",
-      "galerina.mjs:2170",
-      "galerina.mjs:2196"
+      "galerina.mjs:1768",
+      "galerina.mjs:1932",
+      "galerina.mjs:1949",
+      "galerina.mjs:1953",
+      "galerina.mjs:1998",
+      "galerina.mjs:2006",
+      "galerina.mjs:2061",
+      "galerina.mjs:2163",
+      "galerina.mjs:2173",
+      "galerina.mjs:2199"
     ],
     "tests": 0,
     "refs": 0,
@@ -23548,16 +23584,16 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1765",
-      "emit galerina.mjs:1929",
-      "emit galerina.mjs:1946",
-      "emit galerina.mjs:1950",
-      "emit galerina.mjs:1995",
-      "emit galerina.mjs:2003",
-      "emit galerina.mjs:2058",
-      "emit galerina.mjs:2160",
-      "emit galerina.mjs:2170",
-      "emit galerina.mjs:2196"
+      "emit galerina.mjs:1768",
+      "emit galerina.mjs:1932",
+      "emit galerina.mjs:1949",
+      "emit galerina.mjs:1953",
+      "emit galerina.mjs:1998",
+      "emit galerina.mjs:2006",
+      "emit galerina.mjs:2061",
+      "emit galerina.mjs:2163",
+      "emit galerina.mjs:2173",
+      "emit galerina.mjs:2199"
     ]
   },
   {
@@ -23568,9 +23604,9 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1880",
-      "galerina.mjs:2016",
-      "galerina.mjs:2129"
+      "galerina.mjs:1883",
+      "galerina.mjs:2019",
+      "galerina.mjs:2132"
     ],
     "tests": 0,
     "refs": 0,
@@ -23579,9 +23615,9 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1880",
-      "emit galerina.mjs:2016",
-      "emit galerina.mjs:2129"
+      "emit galerina.mjs:1883",
+      "emit galerina.mjs:2019",
+      "emit galerina.mjs:2132"
     ]
   },
   {
@@ -23592,7 +23628,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1784"
+      "galerina.mjs:1787"
     ],
     "tests": 0,
     "refs": 0,
@@ -23601,7 +23637,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1784"
+      "emit galerina.mjs:1787"
     ]
   },
   {
@@ -25924,8 +25960,8 @@
       "test packages-ts/galerina-core-compiler/tests/wat-i64-milestone.test.mjs:9",
       "ref packages-ts/galerina-devtools-hypha/src/extract.mjs:374",
       "ref galerina.mjs:1513",
-      "ref galerina.mjs:1612",
-      "ref galerina.mjs:2365"
+      "ref galerina.mjs:1615",
+      "ref galerina.mjs:2368"
     ]
   },
   {
@@ -31154,7 +31190,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1970"
+      "galerina.mjs:1973"
     ],
     "tests": 0,
     "refs": 0,
@@ -31163,7 +31199,7 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1970"
+      "emit galerina.mjs:1973"
     ]
   },
   {
@@ -31174,8 +31210,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "galerina.mjs:1906",
-      "galerina.mjs:1963"
+      "galerina.mjs:1909",
+      "galerina.mjs:1966"
     ],
     "tests": 0,
     "refs": 0,
@@ -31184,8 +31220,8 @@
     "severities": [],
     "aliases": [],
     "allSites": [
-      "emit galerina.mjs:1906",
-      "emit galerina.mjs:1963"
+      "emit galerina.mjs:1909",
+      "emit galerina.mjs:1966"
     ]
   },
   {
@@ -31311,7 +31347,7 @@
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:120",
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:127",
       "test packages-ts/galerina-core-compiler/tests/rd0528-char-fromcode-lowering.test.mjs:128",
-      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:165"
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:167"
     ]
   },
   {
@@ -33743,9 +33779,9 @@
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:87",
       "doc docs/reports/fungi-corpus-adjudication-2026-07-29.md:88",
       "ref galerina.mjs:1495",
-      "ref galerina.mjs:2352",
+      "ref galerina.mjs:2355",
       "ref galerina.mjs:1502",
-      "ref galerina.mjs:2357"
+      "ref galerina.mjs:2360"
     ]
   },
   {
@@ -35690,9 +35726,9 @@
       "ref scripts/audit-twin-emit-parity.mjs:115",
       "ref galerina.mjs:1488",
       "ref galerina.mjs:1496",
-      "ref galerina.mjs:2322",
-      "ref galerina.mjs:2326",
-      "ref galerina.mjs:2337",
+      "ref galerina.mjs:2325",
+      "ref galerina.mjs:2329",
+      "ref galerina.mjs:2340",
       "ref galerina.mjs:1493"
     ]
   },
@@ -35959,6 +35995,26 @@
     "allSites": [
       "test packages-ts/galerina-core-compiler/tests/type-checker-phase11.test.mjs:481",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4101"
+    ]
+  },
+  {
+    "code": "FUNGI-TYPE-00",
+    "namespace": "FUNGI",
+    "family": "TYPE",
+    "occurrences": 3,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 3,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "aliases": [],
+    "allSites": [
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:63",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:91",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:93"
     ]
   },
   {
@@ -36349,14 +36405,14 @@
     "code": "FUNGI-TYPE-002",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 200,
+    "occurrences": 206,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2955"
     ],
-    "tests": 141,
-    "refs": 26,
+    "tests": 145,
+    "refs": 28,
     "docs": 16,
     "names": [
       "TYPE_MISMATCH",
@@ -36540,6 +36596,10 @@
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:262",
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:269",
       "test packages-ts/galerina-core-compiler/tests/wat-type002-literals.test.mjs:295",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:58",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:3",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:20",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:30",
       "doc docs/TODO.md:3504",
       "doc docs/TODO.md:4342",
       "doc docs/TODO.md:4359",
@@ -36567,14 +36627,16 @@
       "ref scripts/audit-twin-emit-parity.mjs:193",
       "ref scripts/audit-twin-emit-parity.mjs:194",
       "ref scripts/code-index.mjs:386",
-      "ref scripts/lib/twin-parity-ladder.mjs:68"
+      "ref scripts/lib/twin-parity-ladder.mjs:68",
+      "ref galerina.mjs:3281",
+      "ref galerina.mjs:3298"
     ]
   },
   {
     "code": "FUNGI-TYPE-003",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 103,
+    "occurrences": 104,
     "docOnly": false,
     "defs": [
       "packages-ts/galerina-core-compiler/src/index.ts:855"
@@ -36582,7 +36644,7 @@
     "emits": [
       "packages-ts/galerina-core-compiler/src/type-checker.ts:3015"
     ],
-    "tests": 64,
+    "tests": 65,
     "refs": 14,
     "docs": 15,
     "names": [
@@ -36676,6 +36738,7 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1065",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1073",
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1074",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:72",
       "doc docs/examples/EXAMPLES_INDEX.md:76",
       "doc docs/examples/EXAMPLES_INDEX.md:154",
       "fungi docs/examples/Level-2-Types/060-invalid-email-assignment/example.fungi:6",
@@ -36983,7 +37046,7 @@
     "code": "FUNGI-TYPE-005",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 99,
+    "occurrences": 103,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -36996,8 +37059,8 @@
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2693",
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2740"
     ],
-    "tests": 59,
-    "refs": 11,
+    "tests": 62,
+    "refs": 12,
     "docs": 9,
     "names": [
       "INVALID_CALL_ARG_TYPE"
@@ -37100,12 +37163,16 @@
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:324",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:377",
       "test packages-ts/galerina-core-compiler/tests/wat-p9-typechecker-parity.test.mjs:186",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:58",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:22",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:30",
       "doc docs/TODO.md:4360",
       "doc docs/TODO.md:4372",
       "doc docs/architecture/self-hosting-evolution-plan-2026-07-10.md:28",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4087",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:4089",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:4103"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:4103",
+      "ref galerina.mjs:3300"
     ]
   },
   {
@@ -37206,14 +37273,14 @@
     "code": "FUNGI-TYPE-008",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 103,
+    "occurrences": 109,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/type-checker.ts:2523"
     ],
-    "tests": 84,
-    "refs": 6,
+    "tests": 89,
+    "refs": 7,
     "docs": 6,
     "names": [
       "INVALID_RETURN_TYPE"
@@ -37320,12 +37387,18 @@
       "test packages-ts/galerina-core-compiler/tests/type-checker.test.mjs:1126",
       "test packages-ts/galerina-core-compiler/tests/wat-float-positive-classifier.test.mjs:73",
       "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:154",
-      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:155",
+      "test packages/fungi/memory/tests/mr30-int-width-k3/mr30-cli.test.mjs:156",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:58",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-cli.test.mjs:72",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:18",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:74",
+      "test packages/fungi/memory/tests/mr30b-int-narrowing/mr30b-narrowing-unit.test.mjs:30",
       "doc docs/TODO.md:4238",
       "doc docs/TODO.md:4360",
       "doc docs/TODO.md:4372",
       "doc docs/examples/Level-2-Types/051-int-basic/notes.md:12",
-      "doc docs/examples/README.md:87"
+      "doc docs/examples/README.md:87",
+      "ref galerina.mjs:3303"
     ]
   },
   {
@@ -39818,9 +39891,9 @@
       "ref scripts/audit-muted-diagnostics.mjs:55",
       "ref galerina.mjs:1488",
       "ref galerina.mjs:1512",
-      "ref galerina.mjs:2326",
-      "ref galerina.mjs:2338",
-      "ref galerina.mjs:2370",
+      "ref galerina.mjs:2329",
+      "ref galerina.mjs:2341",
+      "ref galerina.mjs:2373",
       "ref galerina.mjs:1521"
     ]
   },

@@ -1,0 +1,29 @@
+@version 1
+/// @file: mr30b-narrow-sites.fungi
+/// @purpose: MEM-R30b pin: integer-width narrowing at every checker site (return, let, argument,
+/// UInt64 <-> Int64) must fail closed with FUNGI-INT-NARROW-001 on check, build and raw run alike.
+
+pure flow id32(x: Int) -> Int {
+  return x
+}
+
+pure flow retNarrow(x: Int64) -> Int {
+  return x
+}
+
+pure flow letNarrow(x: Int64) -> Int {
+  let y: Int = x
+  return y
+}
+
+pure flow argNarrow(x: Int64) -> Int {
+  return id32(x)
+}
+
+pure flow u64ToI64(x: UInt64) -> Int64 {
+  return x
+}
+
+pure flow i64ToU64(x: Int64) -> UInt64 {
+  return x
+}

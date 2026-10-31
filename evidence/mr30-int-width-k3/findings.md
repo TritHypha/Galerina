@@ -78,6 +78,8 @@ superseded untyped admission and Int64 now admitted raw; its 6 mutants were reta
   the arguments and the result; intermediate overflow is the interpreter's job).
 * F3 raw `run --invoke`: run the type checker before WASM generation so narrowing gets FUNGI-TYPE-008
   rather than a wabt validation error.
+  CLOSED by MEM-R30b in galerina.mjs (no TS edit): narrowing is refused as FUNGI-INT-NARROW-001 before
+  WASM generation; see `evidence/mr30b-int-narrowing/findings.md`.
 * F4 raw UInt64 lane: an unsigned i64 marshal so UInt64 can be invoked raw.
 
 ## Deferred

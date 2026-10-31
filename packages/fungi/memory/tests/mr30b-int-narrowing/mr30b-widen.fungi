@@ -1,0 +1,12 @@
+@version 1
+/// @file: mr30b-widen.fungi
+/// @purpose: MEM-R30b pin: widening (Int -> Int64, Int64 + Int) is not narrowing and still runs
+/// exactly on both CLI surfaces.
+
+pure flow widen(x: Int) -> Int64 {
+  return x
+}
+
+pure flow mixAdd(a: Int64, b: Int) -> Int64 {
+  return a + b
+}

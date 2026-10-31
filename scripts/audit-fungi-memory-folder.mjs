@@ -99,6 +99,7 @@ const ALLOWED_PREFIXES = Object.freeze([
   "tests/mr23-child-death/",
   "tests/mr27-raw-invoke-i32/",
   "tests/mr30-int-width-k3/",
+  "tests/mr30b-int-narrowing/",
   "tests/mr28-clock-trust/",
   "tests/mr3-fungi-arena/",
   "tests/mr4-arena-steps/",

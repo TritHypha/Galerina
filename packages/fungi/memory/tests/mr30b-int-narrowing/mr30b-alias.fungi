@@ -1,0 +1,13 @@
+@version 1
+/// @file: mr30b-alias.fungi
+/// @purpose: MEM-R30b pin: Int and Int32 are one type (Int is an alias of Int32, checked i32), so
+/// `check` reports no diagnostic and raw `run --invoke` runs exactly. The governed TS runner still
+/// refuses the pair (findings F1, a frozen-TS follow-up): fail closed, never lossy.
+
+pure flow int32AsInt(x: Int32) -> Int {
+  return x
+}
+
+pure flow intAsInt32(x: Int) -> Int32 {
+  return x
+}

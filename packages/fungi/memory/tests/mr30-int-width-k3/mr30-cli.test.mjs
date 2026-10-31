@@ -151,8 +151,10 @@ test("Int64 -> Int narrowing is refused statically, never truncated", () => {
   both((g) => {
     const r = run(NARROW, "narrow", ["4294967297"], { governed: g });
     assert.notEqual(r.status, 0, r.text);
-    // Governed: the type checker (FUNGI-TYPE-008). Raw: the WASM validator rejects i64 -> i32.
-    assert.match(r.text, /FUNGI-TYPE-008|type mismatch in implicit return, expected \[i32\] but got \[i64\]/);
+    // Governed: the TS runner (FUNGI-TYPE-008). Raw: MEM-R30b refuses before WASM generation
+    // (FUNGI-INT-NARROW-001); the late wabt "type mismatch" failure must no longer be the only guard.
+    assert.match(r.text, g ? /FUNGI-TYPE-008/ : /FUNGI-INT-NARROW-001: K3 DENY INT_NARROWING/);
+    if (!g) assert.doesNotMatch(r.text, /type mismatch/);
     assert.equal(r.value, null, `no truncated value may print: ${r.text}`);
   });
 });
