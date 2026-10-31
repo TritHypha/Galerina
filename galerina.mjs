@@ -2908,7 +2908,9 @@ Baseline comparison (governance-cost):
       if (a === "false") return 0;
       const n = Number(a);
       if (!Number.isFinite(n)) {
-        console.error(`\n  ✗ invoke argument #${i + 1} = ${JSON.stringify(a)} is not a valid Int or Bool.`);
+        // MEM-R20 (gap 1.3/H4): name the argument by position only. A rejected
+        // argument can be a secret pasted by mistake, so its text is never echoed.
+        console.error(`\n  ✗ invoke argument #${i + 1} is not a valid Int or Bool (the value is not echoed).`);
         console.error(`    Pass a number (e.g. 42, -3) or a Bool literal (true / false).\n`);
         process.exit(2);
       }
