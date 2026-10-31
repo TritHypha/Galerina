@@ -8,11 +8,12 @@ import { flowSignatures, sweepJobs, pool, traceFindings, CANARY_INTS } from "./m
 export const SHARDS = 4;
 
 // Every packed result seen across the full sweep (MEM-R20 probe: 756 runs over
-// 36 flows, 29 arena* entry points and 7 shared helpers).
+// 36 flows, 29 arena* entry points and 7 shared helpers; MEM-R22 added four
+// one-use lease flows, whose canary results add -128 K3 UNKNOWN).
 // A value outside this set is either a new refusal code (update the pin and
 // the findings) or a result that carries caller bits: both must be looked at.
 export const CLOSED_RESULTS = Object.freeze([
-  0, 1, 11, 100, 106, 111, 112, 121, 124, 140, 144, 1061, 1110, 1111, 1211, 1240, 1401,
+  -128, 0, 1, 11, 100, 106, 111, 112, 121, 124, 140, 144, 1061, 1110, 1111, 1211, 1240, 1401,
 ]);
 
 export function shardFlows(k, sigs = flowSignatures()) {
