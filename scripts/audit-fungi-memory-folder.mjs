@@ -94,6 +94,7 @@ const ALLOWED_PREFIXES = Object.freeze([
   "tests/kg06/",
   "tests/mr1-memory-research/",
   "tests/mr2-memory-research/",
+  "tests/mr20-fungi-canary/",
   "tests/mr3-fungi-arena/",
   "tests/mr4-arena-steps/",
   "tests/mr5-release-realloc/",
