@@ -600,20 +600,14 @@ mod linux {
         }
 
         fn wipe_and_verify(&self) -> Result<(), ()> {
-            // SAFETY: the mapping is live and owns exactly `self.length` bytes.
-            // Volatile writes/read-back prevent dead-store elimination from
-            // masquerading as a successful wipe; no other safe alias exists.
-            unsafe {
-                for offset in 0..self.length {
-                    std::ptr::write_volatile(self.address.as_ptr().add(offset), 0);
-                }
-                for offset in 0..self.length {
-                    if std::ptr::read_volatile(self.address.as_ptr().add(offset)) != 0 {
-                        return Err(());
-                    }
-                }
-            }
-            Ok(())
+            // MEM-R24: the zero-then-read-back loop lives in secret_wipe so it
+            // runs in CI on every host; this mapping is one caller of it.
+            // SAFETY: the mapping is live and owns exactly `self.length` bytes;
+            // no reference into it exists while the region is alive.
+            let mut region = unsafe {
+                crate::secret_wipe::VolatileRegion::new(self.address, self.length)
+            };
+            crate::secret_wipe::wipe_then_verify(&mut region).map_err(|_| ())
         }
 
         fn unmap_close(&mut self) -> Result<(), ()> {

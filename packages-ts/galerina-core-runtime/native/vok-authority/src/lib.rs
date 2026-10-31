@@ -14,6 +14,9 @@ mod resource;
 mod secret_arena;
 mod secret_arena_custodian;
 mod secret_arena_store;
+#[allow(unsafe_code)]
+mod secret_wipe;
+mod secret_handle_table;
 mod sha256;
 mod lattice;
 mod k3_frame;
