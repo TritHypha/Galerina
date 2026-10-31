@@ -1,0 +1,25 @@
+@version 1
+/// @file: mr27-scalars.fungi
+/// @purpose: Synthetic scalar flows for MEM-R27 (gap 4.6/H13) raw --invoke marshalling pins.
+/// One flow per declared parameter type the raw WASM path admits or refuses.
+
+pure flow echoInt(x: Int) -> Int {
+  return x
+}
+
+pure flow pickBool(b: Bool) -> Int {
+  if b { return 777 }
+  return 333
+}
+
+pure flow addInts(a: Int, b: Int) -> Int {
+  return a + b
+}
+
+pure flow echoFloat(f: Float) -> Float {
+  return f
+}
+
+pure flow textLen(s: String) -> Int {
+  return 5
+}
