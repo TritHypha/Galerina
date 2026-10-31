@@ -8,6 +8,7 @@ use std::sync::atomic::{compiler_fence, Ordering};
 
 use super::secret_arena::SecretArenaError;
 use super::secret_arena_store::SecretArenaStore;
+use super::secret_handle_table::SecretHandle;
 
 const OP_PUT: u8 = 1;
 const OP_HAS: u8 = 2;
@@ -15,6 +16,15 @@ const OP_GET: u8 = 3;
 const OP_CLEANUP: u8 = 4;
 const OP_STATUS: u8 = 5;
 const OP_EPOCH: u8 = 7;
+// MEM-R25 (gap 2.5 / H8 on the wire): handle-addressed ops. Opcode 6 stays
+// unassigned so an old client that ever used it can't reach a new meaning.
+const OP_PUT_HANDLE: u8 = 8;
+const OP_GET_HANDLE: u8 = 9;
+const OP_RELEASE: u8 = 10;
+
+/// A handle on the wire is the name frame followed by exactly 8 bytes of
+/// big-endian generation.
+const GENERATION_BYTES: usize = 8;
 
 const ST_OK: u8 = 0;
 const ST_NOT_FOUND: u8 = 1;
@@ -183,6 +193,18 @@ fn read_name_exact(payload: &[u8]) -> Result<&str, SecretArenaError> {
     Ok(name)
 }
 
+/// GET_HANDLE and RELEASE carry one name and exactly 8 bytes of big-endian
+/// generation (MEM-R25). A shorter or longer tail, or generation 0 (never
+/// issued), is INVALID before the store is consulted, so a malformed handle
+/// can't reach or release anything.
+fn read_handle_exact(payload: &[u8]) -> Result<SecretHandle, SecretArenaError> {
+    let (name, rest) = read_name(payload)?;
+    let bytes: [u8; GENERATION_BYTES] = rest
+        .try_into()
+        .map_err(|_| SecretArenaError::InvalidLength)?;
+    SecretHandle::from_wire(name, u64::from_be_bytes(bytes)).ok_or(SecretArenaError::InvalidLength)
+}
+
 /// H5 (gap map 1.5): before any secret can arrive, make the custodian
 /// non-dumpable (`PR_SET_DUMPABLE` 0) and give it a zero core-file limit,
 /// then read both back. A crash then writes no core, and a same-uid process
@@ -340,6 +362,46 @@ fn dispatch(
             };
             match store.get(name) {
                 Ok(bytes) => Ok((ST_OK, bytes)),
+                Err(error) => Ok((status_of(error), Vec::new())),
+            }
+        }
+        // MEM-R25: PUT_HANDLE stores like PUT and answers with the handle's
+        // generation (8 bytes, big-endian). The generation is a counter, not
+        // secret material, and the name is never echoed back.
+        OP_PUT_HANDLE => {
+            let (name, value) = match read_name(rest) {
+                Ok(pair) => pair,
+                Err(error) => return Ok((status_of(error), Vec::new())),
+            };
+            match store.put_handle(name, value) {
+                Ok(handle) => Ok((ST_OK, handle.generation().to_be_bytes().to_vec())),
+                Err(error) => Ok((status_of(error), Vec::new())),
+            }
+        }
+        // GET_HANDLE reaches only the entry issued under that generation. A
+        // stale handle (the name was released, or released and put again) is
+        // NOT_FOUND, the same answer as an absent name, so the wire gives no
+        // oracle for which of the two happened.
+        OP_GET_HANDLE => {
+            let handle = match read_handle_exact(rest) {
+                Ok(handle) => handle,
+                Err(error) => return Ok((status_of(error), Vec::new())),
+            };
+            match store.get_by_handle(&handle) {
+                Ok(bytes) => Ok((ST_OK, bytes)),
+                Err(error) => Ok((status_of(error), Vec::new())),
+            }
+        }
+        // RELEASE wipes, verifies and unmaps the one entry this handle names.
+        // A stale or double release is NOT_FOUND and touches nothing; a
+        // release that can't be confirmed quarantines the store.
+        OP_RELEASE => {
+            let handle = match read_handle_exact(rest) {
+                Ok(handle) => handle,
+                Err(error) => return Ok((status_of(error), Vec::new())),
+            };
+            match store.release(&handle) {
+                Ok(()) => Ok((ST_OK, Vec::new())),
                 Err(error) => Ok((status_of(error), Vec::new())),
             }
         }
@@ -796,5 +858,266 @@ mod frame_length_tests {
         assert!(status == ST_OK || status == ST_UNSUPPORTED, "put status {status}");
         assert!(data.is_empty());
         let _ = handle(&mut store, vec![OP_CLEANUP]);
+    }
+}
+
+/// MEM-R25 (gap 2.5 / H8 on the wire): OP_PUT_HANDLE, OP_GET_HANDLE and
+/// OP_RELEASE. Malformed handles are INVALID before the store is touched;
+/// stale, forged and released handles are NOT_FOUND (no oracle) and leave the
+/// live entry alone; a quarantined store refuses. Live cases accept the
+/// UNSUPPORTED answer on hosts without memfd_secret and stop there.
+/// Synthetic data only.
+#[cfg(test)]
+mod handle_op_tests {
+    use super::*;
+
+    const CANARY: &[u8] = b"SYNTH-CANARY-7f3a";
+    const WINDOW: usize = 4;
+
+    fn named(opcode: u8, name: &[u8], value: &[u8]) -> Vec<u8> {
+        let mut frame = vec![opcode];
+        frame.extend_from_slice(&(name.len() as u16).to_be_bytes());
+        frame.extend_from_slice(name);
+        frame.extend_from_slice(value);
+        frame
+    }
+
+    fn with_gen(opcode: u8, name: &[u8], generation: u64) -> Vec<u8> {
+        named(opcode, name, &generation.to_be_bytes())
+    }
+
+    fn has_trace(hay: &[u8]) -> bool {
+        CANARY
+            .windows(WINDOW)
+            .any(|needle| hay.windows(WINDOW).any(|w| w == needle))
+    }
+
+    /// One request through the real frame path: the request is wiped, there
+    /// is exactly one reply frame, and no canary window leaves the custodian.
+    fn send(store: &mut SecretArenaStore, frame: Vec<u8>) -> (u8, Vec<u8>) {
+        let mut frame = frame;
+        let mut out = Vec::new();
+        handle_frame(store, &mut frame, &mut out).expect("in-memory write");
+        assert!(frame.iter().all(|b| *b == 0), "request frame wiped");
+        assert!(out.len() >= 5, "one reply frame");
+        let len = u32::from_be_bytes([out[0], out[1], out[2], out[3]]) as usize;
+        assert_eq!(out.len(), 4 + len, "exactly one reply frame");
+        assert!(!has_trace(&out), "canary window in reply");
+        (out[4], out[5..].to_vec())
+    }
+
+    /// PUT_HANDLE on a live host: Some(generation), or None when the host
+    /// has no memfd_secret (the only accepted refusal).
+    fn put(store: &mut SecretArenaStore, name: &[u8], value: &[u8]) -> Option<u64> {
+        let (status, data) = send(store, named(OP_PUT_HANDLE, name, value));
+        if status == ST_UNSUPPORTED {
+            assert!(data.is_empty());
+            return None;
+        }
+        assert_eq!(status, ST_OK, "put_handle status");
+        let bytes: [u8; 8] = data.as_slice().try_into().expect("8-byte generation");
+        let generation = u64::from_be_bytes(bytes);
+        assert_ne!(generation, 0, "generation 0 is never issued");
+        Some(generation)
+    }
+
+    #[test]
+    fn opcodes_are_pinned_and_six_stays_unassigned() {
+        assert_eq!((OP_PUT_HANDLE, OP_GET_HANDLE, OP_RELEASE), (8, 9, 10));
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [6u8, 11, 0x7f, 0xff] {
+            let (status, data) = send(&mut store, with_gen(opcode, b"k", 1));
+            assert_eq!((status, data.is_empty()), (ST_INVALID, true), "opcode {opcode}");
+        }
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn generation_zero_is_invalid_before_any_lookup() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [OP_GET_HANDLE, OP_RELEASE] {
+            let (status, data) = send(&mut store, with_gen(opcode, b"k", 0));
+            assert_eq!((status, data.is_empty()), (ST_INVALID, true), "opcode {opcode}");
+        }
+        assert!(SecretHandle::from_wire("k", 0).is_none());
+        assert_eq!(SecretHandle::from_wire("k", 7).map(|h| h.generation()), Some(7));
+    }
+
+    #[test]
+    fn generation_operand_must_be_exactly_eight_bytes() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [OP_GET_HANDLE, OP_RELEASE] {
+            for len in [0usize, 1, 7, 9, 16] {
+                let operand = vec![0x01; len];
+                let (status, data) = send(&mut store, named(opcode, b"k", &operand));
+                assert_eq!(
+                    (status, data.is_empty()),
+                    (ST_INVALID, true),
+                    "opcode {opcode} operand {len}"
+                );
+            }
+        }
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn malformed_names_on_handle_ops_refuse_without_echo() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for opcode in [OP_PUT_HANDLE, OP_GET_HANDLE, OP_RELEASE] {
+            // Name length runs past the frame.
+            let mut frame = vec![opcode, 0xff, 0xff];
+            frame.extend_from_slice(CANARY);
+            assert_eq!(send(&mut store, frame), (ST_INVALID, Vec::new()), "overrun {opcode}");
+            // Name is not UTF-8.
+            let (status, data) = send(&mut store, with_gen(opcode, &[0xff, 0xfe, 0x80], 1));
+            assert_eq!((status, data.is_empty()), (ST_INVALID, true), "utf8 {opcode}");
+            // Bare opcode.
+            assert_eq!(send(&mut store, vec![opcode]), (ST_INVALID, Vec::new()), "bare {opcode}");
+        }
+        // An empty value on PUT_HANDLE is refused like PUT.
+        let (status, data) = send(&mut store, named(OP_PUT_HANDLE, b"k", b""));
+        assert_eq!((status, data.is_empty()), (ST_INVALID, true));
+    }
+
+    #[test]
+    fn forged_handles_on_an_empty_store_are_not_found() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        for generation in [1u64, 2, 0x8000_0000_0000_0000, u64::MAX] {
+            for opcode in [OP_GET_HANDLE, OP_RELEASE] {
+                let (status, data) = send(&mut store, with_gen(opcode, CANARY, generation));
+                assert_eq!(
+                    (status, data.is_empty()),
+                    (ST_NOT_FOUND, true),
+                    "opcode {opcode} generation {generation:#x}"
+                );
+            }
+        }
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn a_quarantined_store_refuses_every_handle_op() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        store.force_cleanup_failure();
+        let (status, data) = send(&mut store, named(OP_PUT_HANDLE, CANARY, CANARY));
+        assert_eq!((status, data.is_empty()), (ST_QUARANTINED, true));
+        for opcode in [OP_GET_HANDLE, OP_RELEASE] {
+            let (status, data) = send(&mut store, with_gen(opcode, CANARY, 1));
+            assert_eq!((status, data.is_empty()), (ST_QUARANTINED, true), "opcode {opcode}");
+            // A malformed handle is still INVALID first: parsing comes
+            // before the store, so quarantine can't be probed with junk.
+            let (status, _) = send(&mut store, with_gen(opcode, CANARY, 0));
+            assert_eq!(status, ST_INVALID, "opcode {opcode}");
+        }
+    }
+
+    #[test]
+    fn live_round_trip_then_release_ends_the_handle() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let Some(generation) = put(&mut store, b"k", b"round-trip-synthetic") else {
+            return;
+        };
+        assert_eq!(
+            send(&mut store, with_gen(OP_GET_HANDLE, b"k", generation)),
+            (ST_OK, b"round-trip-synthetic".to_vec())
+        );
+        // The name path sees the same entry.
+        assert_eq!(send(&mut store, named(OP_HAS, b"k", b"")), (ST_OK, vec![1]));
+        assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"k", generation)), (ST_OK, Vec::new()));
+        assert_eq!(send(&mut store, named(OP_HAS, b"k", b"")), (ST_OK, vec![0]));
+        assert_eq!(
+            send(&mut store, with_gen(OP_GET_HANDLE, b"k", generation)),
+            (ST_NOT_FOUND, Vec::new())
+        );
+        assert_eq!(send(&mut store, named(OP_GET, b"k", b"")), (ST_NOT_FOUND, Vec::new()));
+        // Double release is NOT_FOUND and harmless.
+        assert_eq!(
+            send(&mut store, with_gen(OP_RELEASE, b"k", generation)),
+            (ST_NOT_FOUND, Vec::new())
+        );
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn live_stale_handle_after_reput_cannot_reach_or_release_the_new_entry() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let Some(old) = put(&mut store, b"k", b"first-synthetic") else {
+            return;
+        };
+        let new = put(&mut store, b"k", b"second-synthetic").expect("second put on a live host");
+        assert!(new > old, "generations increase");
+        assert_eq!(send(&mut store, with_gen(OP_GET_HANDLE, b"k", old)), (ST_NOT_FOUND, Vec::new()));
+        assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"k", old)), (ST_NOT_FOUND, Vec::new()));
+        // The live entry survived the stale release.
+        assert_eq!(
+            send(&mut store, with_gen(OP_GET_HANDLE, b"k", new)),
+            (ST_OK, b"second-synthetic".to_vec())
+        );
+        // A future (never issued) generation is refused the same way.
+        assert_eq!(
+            send(&mut store, with_gen(OP_GET_HANDLE, b"k", new + 1)),
+            (ST_NOT_FOUND, Vec::new())
+        );
+        assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"k", new)), (ST_OK, Vec::new()));
+        assert!(!store.quarantined());
+    }
+
+    #[test]
+    fn live_handles_do_not_cross_names() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let Some(a) = put(&mut store, b"a", b"alpha-synthetic") else {
+            return;
+        };
+        let b = put(&mut store, b"b", b"beta-synthetic").expect("second put on a live host");
+        assert_eq!(b, a + 1, "one counter across names");
+        // Each generation only opens its own name.
+        assert_eq!(send(&mut store, with_gen(OP_GET_HANDLE, b"b", a)), (ST_NOT_FOUND, Vec::new()));
+        assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"a", b)), (ST_NOT_FOUND, Vec::new()));
+        assert_eq!(
+            send(&mut store, with_gen(OP_GET_HANDLE, b"a", a)),
+            (ST_OK, b"alpha-synthetic".to_vec())
+        );
+        assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"b", b)), (ST_OK, Vec::new()));
+        assert_eq!(send(&mut store, named(OP_HAS, b"a", b"")), (ST_OK, vec![1]));
+        assert_eq!(send(&mut store, vec![OP_CLEANUP]), (ST_OK, Vec::new()));
+        assert_eq!(send(&mut store, with_gen(OP_GET_HANDLE, b"a", a)), (ST_NOT_FOUND, Vec::new()));
+    }
+
+    #[test]
+    fn live_generation_exhaustion_on_the_wire_quarantines() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        store.set_next_generation_for_tests(u64::MAX);
+        let (status, data) = send(&mut store, named(OP_PUT_HANDLE, b"k", CANARY));
+        assert!(data.is_empty());
+        if status == ST_UNSUPPORTED {
+            return;
+        }
+        assert_eq!(status, ST_QUARANTINED);
+        assert!(store.quarantined());
+        assert_eq!(send(&mut store, named(OP_HAS, b"k", b"")), (ST_QUARANTINED, Vec::new()));
+        assert_eq!(send(&mut store, vec![OP_STATUS]), (ST_OK, vec![1]));
+    }
+
+    #[test]
+    fn live_name_put_entries_are_not_reachable_by_guessing_generations() {
+        let mut store = SecretArenaStore::unopened_for_tests();
+        let (status, _) = send(&mut store, named(OP_PUT, b"k", CANARY));
+        if status == ST_UNSUPPORTED {
+            return;
+        }
+        assert_eq!(status, ST_OK);
+        // A name PUT also takes a generation (1 here); a client guessing it
+        // still only gets the entry it could already read by name, and a
+        // wrong guess is the same NOT_FOUND as an absent name.
+        for guess in [2u64, 3, u64::MAX] {
+            assert_eq!(
+                send(&mut store, with_gen(OP_GET_HANDLE, b"k", guess)),
+                (ST_NOT_FOUND, Vec::new()),
+                "guess {guess}"
+            );
+            assert_eq!(send(&mut store, with_gen(OP_RELEASE, b"k", guess)), (ST_NOT_FOUND, Vec::new()));
+        }
+        assert_eq!(send(&mut store, named(OP_HAS, b"k", b"")), (ST_OK, vec![1]));
+        assert_eq!(send(&mut store, vec![OP_CLEANUP]), (ST_OK, Vec::new()));
     }
 }

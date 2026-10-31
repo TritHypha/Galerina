@@ -9,10 +9,9 @@
 //! the live entry. Generations are never reused: the counter is checked and
 //! the table refuses new inserts once it would wrap.
 
-// The handle-addressed calls (get_mut, release) have no custodian wire op
-// yet; the store exposes them in-crate and tests pin them. Until OP_RELEASE
-// lands, a non-test build only uses the name-addressed path.
-#![cfg_attr(not(test), allow(dead_code))]
+// MEM-R25: the handle-addressed calls (get_mut, release) are on the
+// custodian wire as OP_PUT_HANDLE / OP_GET_HANDLE / OP_RELEASE, so a non-test
+// build uses them and the module-wide dead-code allowance is gone.
 
 use std::collections::BTreeMap;
 
@@ -32,12 +31,27 @@ pub(crate) struct SecretHandle {
 }
 
 impl SecretHandle {
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn name(&self) -> &str {
         &self.name
     }
 
     pub(crate) fn generation(&self) -> u64 {
         self.generation
+    }
+
+    /// Rebuild a handle a caller sent back over the custodian wire. The
+    /// caller's claim is not trusted: the table still checks name and
+    /// generation before anything is reached. Generation 0 is never issued,
+    /// so it is refused here, before any lookup (MEM-R25).
+    pub(crate) fn from_wire(name: &str, generation: u64) -> Option<Self> {
+        if generation == 0 {
+            return None;
+        }
+        Some(Self {
+            name: name.to_owned(),
+            generation,
+        })
     }
 
     #[cfg(test)]
