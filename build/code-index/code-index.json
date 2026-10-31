@@ -41875,13 +41875,13 @@
     "code": "FUNGI-WAT-METHOD-001",
     "namespace": "FUNGI",
     "family": "WAT",
-    "occurrences": 19,
+    "occurrences": 22,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-ts/galerina-core-compiler/src/wat-emitter-refusals.ts:45"
     ],
-    "tests": 15,
+    "tests": 18,
     "refs": 2,
     "docs": 1,
     "names": [
@@ -41910,7 +41910,10 @@
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:9",
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:196",
       "test packages-ts/galerina-core-compiler/tests/wat-zippair-lowering.test.mjs:214",
-      "doc packages/fungi/memory/evidence/45-host-adapter-audit/audit.md:98"
+      "doc packages/fungi/memory/evidence/45-host-adapter-audit/audit.md:98",
+      "test packages/fungi/memory/tests/mr28-clock-trust/mr28-no-wall-clock.test.mjs:69",
+      "test packages/fungi/memory/tests/mr28-clock-trust/mr28-no-wall-clock.test.mjs:75",
+      "test packages/fungi/memory/tests/mr28-clock-trust/mr28-no-wall-clock.test.mjs:88"
     ]
   },
   {
