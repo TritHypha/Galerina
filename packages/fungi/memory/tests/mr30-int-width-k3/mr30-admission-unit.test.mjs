@@ -185,7 +185,7 @@ test("narrowing guard: Int/Int32 results must fit i32, 64-bit results print exac
 
 test("governed refusal line names position and verdict, never the text", () => {
   const line = governedRefusalLine("DENY", "GOV_ARG_RANGE", 1, "x", "Int64");
-  assert.match(line, /argument #2 for parameter 'x' declared Int64: K3 DENY \(GOV_ARG_RANGE\)/);
+  assert.match(line, /argument #2 for parameter 'x' declared Int64 is invalid; .*K3 DENY \(GOV_ARG_RANGE\)/);
   assert.match(line, /cannot marshal/);
   assert.match(line, /not echoed/);
 });

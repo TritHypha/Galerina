@@ -3205,7 +3205,7 @@ export function foldInvokeArgVerdicts(results) {
 
 /** Governed refusal line: position, parameter, declared type, K3 verdict and reason; never the text. */
 export function governedRefusalLine(verdict, reason, index, name, type) {
-  return `REFUSED: governed argument #${index + 1} for parameter '${name}' declared ${type} is invalid; K3 ${verdict} (${reason}); ` +
+  return `REFUSED: governed argument #${index + 1} for parameter '${name}' declared ${type} is invalid; the governed CLI cannot marshal declared type ${type}: K3 ${verdict} (${reason}); ` +
     `execution denied (the value is not echoed).`;
 }
 

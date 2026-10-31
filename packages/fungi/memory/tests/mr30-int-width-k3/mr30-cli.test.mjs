@@ -132,9 +132,9 @@ test("K3 fold: one DENY anywhere refuses the call and names that argument", () =
   });
 });
 
-test("K3 UNKNOWN (no declared type) refuses with its own code on the raw path", () => {
-  const r = refused(WIDTHS, "echoInt", ["1", "2"], false, /K3 UNKNOWN/);
-  assert.doesNotMatch(r.text, /K3 DENY/);
+test("a surplus raw argument is refused by exact arity before any per-argument verdict (S2 X-N1)", () => {
+  const r = refused(WIDTHS, "echoInt", ["1", "2"], false, /exact arity is required/);
+  assert.doesNotMatch(r.text, /K3 (DENY|UNKNOWN)/);
 });
 
 test("no refusal echoes the synthetic canary", () => {
