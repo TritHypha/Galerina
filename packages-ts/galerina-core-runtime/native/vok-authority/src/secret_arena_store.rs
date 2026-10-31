@@ -5,7 +5,9 @@
 //! returns a `SecretHandle`; a handle kept across a release or a replacement
 //! is refused (`NotActive`) instead of reaching the new secret under the same
 //! name. A release, replacement or exhaustion failure quarantines the store.
-//! The name-only `put`/`get`/`has` remain for the custodian wire.
+//! The name-only `put`/`get`/`has` remain for the custodian wire; MEM-R25
+//! puts the handle calls on the wire too (OP_PUT_HANDLE, OP_GET_HANDLE,
+//! OP_RELEASE).
 
 use super::secret_arena::{SecretArena, SecretArenaError, MAX_SECRET_ARENA_BYTES};
 use super::secret_handle_table::{HandleError, HandleTable, Releasable, SecretHandle};
@@ -119,7 +121,6 @@ impl SecretArenaStore {
 
     /// Copy out through a handle. A stale or absent handle is `NotActive`;
     /// the same caller rules as `get` apply to the returned buffer.
-    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn get_by_handle(
         &mut self,
         handle: &SecretHandle,
@@ -133,7 +134,6 @@ impl SecretArenaStore {
 
     /// Release (wipe, verify, unmap) the entry this handle names. A stale
     /// handle is refused and the live entry is not touched.
-    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn release(&mut self, handle: &SecretHandle) -> Result<(), SecretArenaError> {
         self.refuse_if_quarantined()?;
         self.entries
