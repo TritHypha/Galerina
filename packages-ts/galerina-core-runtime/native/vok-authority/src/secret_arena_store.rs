@@ -98,6 +98,17 @@ impl SecretArenaStore {
         }
     }
 
+    /// Test-only: an empty store that skips the secretmem probe, so failure
+    /// paths that refuse before platform work run on any host (MEM-R15).
+    #[cfg(test)]
+    pub(crate) fn unopened_for_tests() -> Self {
+        Self {
+            entries: BTreeMap::new(),
+            quarantined: false,
+            epoch: 0,
+        }
+    }
+
     #[cfg(test)]
     pub(crate) fn force_cleanup_failure(&mut self) {
         self.enter_quarantine();
