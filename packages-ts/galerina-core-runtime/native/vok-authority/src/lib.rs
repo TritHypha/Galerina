@@ -30,6 +30,8 @@ pub mod linear_memory_bounds;
 pub mod lmb_verdict;
 /// MEM-R14: one-use lease audit checker (gap map H1 / 1.1 / 1.4, VOK side).
 pub mod lease_audit;
+/// MEM-R21: trusted-clock window classifier in lock-step with SLIDE (gap 4.1/4.3/4.6/H13/H14).
+pub mod trusted_clock;
 
 pub use lattice::{from_lattice, to_lattice};
 pub use k3_frame::{
@@ -158,19 +160,10 @@ fn trusted_utc_ymd() -> i32 {
     civil_ymd_from_unix_days((elapsed.as_secs() / 86_400) as i64)
 }
 
-/// Trusted i64 Unix seconds UTC for the process wrapper. Pre-epoch fails closed as 0.
+/// Trusted i64 Unix seconds UTC for the process wrapper. Pre-epoch or an
+/// unrepresentable reading fails closed as 0 (MEM-R21: refuse, never saturate).
 fn trusted_unix_seconds() -> i64 {
-    match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(elapsed) => {
-            let secs = elapsed.as_secs();
-            if secs > i64::MAX as u64 {
-                i64::MAX
-            } else {
-                secs as i64
-            }
-        }
-        Err(_) => 0,
-    }
+    trusted_clock::process_unix_seconds()
 }
 
 pub(crate) fn civil_ymd_from_unix_days(days: i64) -> i32 {

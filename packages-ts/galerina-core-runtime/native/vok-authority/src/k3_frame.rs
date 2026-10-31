@@ -1262,18 +1262,9 @@ mod tests {
             Trit::decode_legacy_frame(1),
             Ok((Trit::Admit, TritWireForm::Canonical))
         );
-        let now_unix_s = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-            Ok(elapsed) => {
-                let secs = elapsed.as_secs();
-                if secs > i64::MAX as u64 {
-                    i64::MAX
-                } else {
-                    secs as i64
-                }
-            }
-            Err(_) => 0,
-        };
-        let clock_open = now_unix_s > 0 && now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S;
+        let now_unix_s = crate::trusted_clock::process_unix_seconds();
+        let clock_open = crate::trusted_clock::classify_trusted_clock(now_unix_s).is_trusted()
+            && now_unix_s < LEGACY_UNKNOWN_ZERO_EXPIRY_UNIX_S;
         if clock_open {
             let before = legacy_unknown_zero_reads();
             assert_eq!(
